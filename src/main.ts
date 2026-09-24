@@ -6,8 +6,11 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { loadTerrainConfig, wgs84ToWorld } from './config';
-import { createDiagnostics, type DiagnosticsSnapshot } from './diagnostics';
-import { loadTerrain, type WorldTerrain } from './terrain';
+import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
+import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
+import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/index';
+import { createVehicleControls } from './vehicle/controls';
+import type { VehicleInput, VehicleParams } from './vehicle/physics';
 
 const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
@@ -62,8 +65,31 @@ function formatSnapshot(snapshot: DiagnosticsSnapshot, terrain: WorldTerrain): s
     `mallas     ${snapshot.activeMeshes}`,
     `tiles      ${terrain.samplers.length}`,
     `centro     x=${center.x.toFixed(0)} z=${center.z.toFixed(0)} y=${center.height.toFixed(1)}`,
-    `cámara     x=${camera.position.x.toFixed(0)} y=${camera.position.y.toFixed(0)} z=${camera.position.z.toFixed(0)}`,
   ].join('\n');
+}
+
+/** API de depuración/medición expuesta en `window.__game` para CDP. */
+interface DebugApi {
+  terrainHeightAt(x: number, z: number): number;
+  terrainNormalAt(x: number, z: number): { x: number; y: number; z: number };
+  perf(): DiagnosticsSnapshot;
+  auditDatum(): { verticalDatum: number; maxAbsDiffM: number; ok: boolean; samples: readonly unknown[] };
+  vehicle: {
+    telemetry(): VehicleTelemetry;
+    setInput(input: VehicleInput | null): void;
+    teleport(x: number, z: number, yaw: number): void;
+    setState(partial: Partial<{ x: number; z: number; yaw: number; speed: number; lateral: number }>): void;
+    setParams(partial: Partial<VehicleParams>): void;
+    params(): VehicleParams;
+    step(seconds: number, dt?: number): void;
+    reset(): void;
+  } | null;
+}
+
+declare global {
+  interface Window {
+    __game?: DebugApi;
+  }
 }
 
 function showError(message: string): void {
@@ -89,38 +115,142 @@ async function bootstrap(): Promise<void> {
     spawnX = worldX;
     spawnZ = worldZ;
   }
-  const groundY = terrain.heightAt(spawnX, spawnZ);
 
-  // Posición/objetivo por query (para capturas reproducibles) o vista por defecto.
+  // La cámara libre histórica se activa con px/py/pz (capturas de terreno). Sin
+  // esos parámetros arranca el MODO VEHÍCULO con cámara de persecución.
   const px = queryNumber(params, 'px');
   const py = queryNumber(params, 'py');
   const pz = queryNumber(params, 'pz');
   const tx = queryNumber(params, 'tx');
   const ty = queryNumber(params, 'ty');
   const tz = queryNumber(params, 'tz');
+  const freeCamera = px !== null || py !== null || pz !== null;
 
-  camera.position = new Vector3(px ?? spawnX, py ?? groundY + 100, pz ?? spawnZ - 40);
-  const target = new Vector3(tx ?? spawnX, ty ?? groundY - 15, tz ?? spawnZ + 480);
-  camera.setTarget(target);
+  // ----- Auditoría del footgun de los dos heightAt (ver src/terrain.ts) -----
+  const auditPoints: { x: number; z: number }[] = [];
+  for (const sampler of terrain.samplers) {
+    const grid = sampler.grid;
+    const midX = grid.x0 + ((grid.columns - 1) * grid.dx) / 2;
+    const midZ = grid.z0 + ((grid.rows - 1) * grid.dz) / 2;
+    auditPoints.push({ x: midX, z: midZ });
+  }
+  auditPoints.push({ x: spawnX, z: spawnZ });
+  const datumAudit = auditVerticalDatum(terrain, auditPoints);
+  console.info(
+    `[datum] verticalDatum=${datumAudit.verticalDatum} muestras=${datumAudit.samples.length} ` +
+      `diff_max=${datumAudit.maxAbsDiffM.toExponential(2)} => ${datumAudit.ok ? 'OK' : 'FALLA'}`,
+  );
+  console.assert(datumAudit.ok, 'Los dos heightAt NO difieren exactamente en el verticalDatum', datumAudit);
+  if (!datumAudit.ok) {
+    throw new Error(`Auditoría de datum FALLÓ (diff max ${datumAudit.maxAbsDiffM} m)`);
+  }
+
+  let vehicle: Vehicle | null = null;
+  let controls: ReturnType<typeof createVehicleControls> | null = null;
+  let manualStep = false;
+
+  const groundY = terrain.heightAt(spawnX, spawnZ);
+
+  if (freeCamera) {
+    camera.position = new Vector3(px ?? spawnX, py ?? groundY + 100, pz ?? spawnZ - 40);
+    const target = new Vector3(tx ?? spawnX, ty ?? groundY - 15, tz ?? spawnZ + 480);
+    camera.setTarget(target);
+  } else {
+    camera.detachControl();
+    const yaw = queryNumber(params, 'vyaw') ?? 0;
+    controls = createVehicleControls({
+      onReset: () => vehicle?.teleport(spawnX, spawnZ, yaw),
+    });
+    vehicle = createVehicle({ scene, terrain, spawn: { x: spawnX, z: spawnZ, yaw }, controls });
+    // Posición de cámara inicial detrás del vehículo.
+    camera.position = new Vector3(spawnX - Math.sin(yaw) * 7.5, terrain.heightAt(spawnX, spawnZ) + 2.4, spawnZ - Math.cos(yaw) * 7.5);
+    camera.minZ = 0.3;
+  }
 
   window.addEventListener('resize', () => engine.resize());
 
   const diagnostics = createDiagnostics(scene);
   let hudTick = 0;
 
-  // Primer culling antes de renderizar y en cada frame (36 AABB: trivial).
   terrain.cull(camera);
 
+  const updateChaseCamera = (dt: number): void => {
+    if (!vehicle) return;
+    const state = vehicle.state;
+    const fx = Math.sin(state.yaw);
+    const fz = Math.cos(state.yaw);
+    const car = vehicle.root.position;
+    const desired = new Vector3(car.x - fx * 7.5, car.y + 2.4, car.z - fz * 7.5);
+    const k = 1 - Math.exp(-dt * 5);
+    camera.position = Vector3.Lerp(camera.position, desired, k);
+    const target = new Vector3(car.x + fx * 1.8, car.y + 0.85, car.z + fz * 1.8);
+    camera.setTarget(target);
+  };
+
   engine.runRenderLoop(() => {
+    const dt = engine.getDeltaTime() / 1000;
+    if (vehicle && !manualStep) vehicle.step(dt);
+    updateChaseCamera(dt);
     terrain.cull(camera);
     scene.render();
     hudTick++;
-    if (hud && hudTick % 10 === 0) {
-      hud.textContent = formatSnapshot(diagnostics.snapshot(), terrain);
+    if (hud && hudTick % 5 === 0) {
+      const perf = formatSnapshot(diagnostics.snapshot(), terrain);
+      const veh = vehicle ? formatVehicleHud(vehicle.telemetry()) : '';
+      const keys = vehicle ? 'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · R reposicionar' : '';
+      hud.textContent = [perf, veh, keys].filter((block) => block.length > 0).join('\n\n');
     }
   });
 
+  // ----- API de medición (CDP / capturas) -----
+  const debugVehicle = vehicle
+    ? {
+        telemetry: () => vehicle!.telemetry(),
+        setInput: (input: VehicleInput | null) => vehicle!.setInput(input),
+        teleport: (x: number, z: number, yaw: number) => vehicle!.teleport(x, z, yaw),
+        setState: (partial: Partial<{ x: number; z: number; yaw: number; speed: number; lateral: number }>) => {
+          const s = vehicle!.state;
+          if (partial.x !== undefined) s.x = partial.x;
+          if (partial.z !== undefined) s.z = partial.z;
+          if (partial.yaw !== undefined) s.yaw = partial.yaw;
+          if (partial.speed !== undefined) s.speed = partial.speed;
+          if (partial.lateral !== undefined) s.lateral = partial.lateral;
+          vehicle!.applyPose();
+        },
+        setParams: (partial: Partial<VehicleParams>) => Object.assign(vehicle!.params, partial),
+        params: () => ({ ...vehicle!.params }),
+        step: (seconds: number, dt = 1 / 60) => {
+          manualStep = true;
+          const steps = Math.max(1, Math.round(seconds / dt));
+          for (let i = 0; i < steps; i++) vehicle!.step(dt);
+        },
+        reset: () => {
+          manualStep = false;
+          vehicle!.setInput(null);
+          vehicle!.teleport(spawnX, spawnZ, queryNumber(params, 'vyaw') ?? 0);
+        },
+      }
+    : null;
+
+  window.__game = {
+    terrainHeightAt: (x, z) => terrain.heightAt(x, z),
+    terrainNormalAt: (x, z) => {
+      const n = terrain.normalAt(x, z);
+      return { x: n.x, y: n.y, z: n.z };
+    },
+    perf: () => diagnostics.snapshot(),
+    auditDatum: () => ({
+      verticalDatum: datumAudit.verticalDatum,
+      maxAbsDiffM: datumAudit.maxAbsDiffM,
+      ok: datumAudit.ok,
+      samples: datumAudit.samples,
+    }),
+    vehicle: debugVehicle,
+  };
+
   window.addEventListener('beforeunload', () => {
+    controls?.dispose();
+    vehicle?.dispose();
     diagnostics.dispose();
     terrain.dispose();
     engine.dispose();

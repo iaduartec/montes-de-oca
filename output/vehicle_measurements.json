@@ -1,0 +1,535 @@
+{
+  "generado_por": "scripts/vehicle/measure_physics.mjs",
+  "parametros": {
+    "mass": 1800,
+    "wheelBase": 2.8,
+    "track": 1.62,
+    "cgHeight": 0.78,
+    "wheelRadius": 0.38,
+    "maxDriveForce": 14000,
+    "maxSpeed": 32,
+    "brakeForce": 12000,
+    "reverseForce": 6500,
+    "handbrakeForce": 14000,
+    "engineBrakeForce": 1200,
+    "rollingResistance": 0.025,
+    "dragCoefficient": 0.66,
+    "grip": 0.8,
+    "gripLateral": 0.8,
+    "steerMax": 0.55,
+    "steerRate": 6,
+    "lateralDamp": 40000,
+    "staticSpeed": 0.08
+  },
+  "teoria": {
+    "pendiente_max_por_traccion_deg": 38.659808254090095,
+    "nota": "Con tracción μ y normal m·g·cosθ, el límite de subida es atan(μ)."
+  },
+  "pendiente_max": {
+    "sintetico": {
+      "descripcion": "Plano sintético, desde parado, acelerador a fondo 25 s. \"sube\" = velocidad final > 0.5 m/s.",
+      "pendiente_max_escalable_deg": 38.5,
+      "velocidad_en_el_limite_kmh": 3.1,
+      "teoria_atan_mu_deg": 38.659808254090095,
+      "barrido": [
+        {
+          "slopeDeg": 20,
+          "finalSpeed": 16.792,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 20.5,
+          "finalSpeed": 16.48,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 21,
+          "finalSpeed": 16.17,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 21.5,
+          "finalSpeed": 15.86,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 22,
+          "finalSpeed": 15.551,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 22.5,
+          "finalSpeed": 15.243,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 23,
+          "finalSpeed": 14.936,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 23.5,
+          "finalSpeed": 14.63,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 24,
+          "finalSpeed": 14.325,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 24.5,
+          "finalSpeed": 14.021,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 25,
+          "finalSpeed": 13.718,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 25.5,
+          "finalSpeed": 13.416,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 26,
+          "finalSpeed": 13.115,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 26.5,
+          "finalSpeed": 12.815,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 27,
+          "finalSpeed": 12.516,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 27.5,
+          "finalSpeed": 12.219,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 28,
+          "finalSpeed": 11.922,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 28.5,
+          "finalSpeed": 11.627,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 29,
+          "finalSpeed": 11.333,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 29.5,
+          "finalSpeed": 11.04,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 30,
+          "finalSpeed": 10.749,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 30.5,
+          "finalSpeed": 10.458,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 31,
+          "finalSpeed": 10.169,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 31.5,
+          "finalSpeed": 9.882,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 32,
+          "finalSpeed": 9.595,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 32.5,
+          "finalSpeed": 9.31,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 33,
+          "finalSpeed": 9.026,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 33.5,
+          "finalSpeed": 8.743,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 34,
+          "finalSpeed": 8.462,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 34.5,
+          "finalSpeed": 8.181,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 35,
+          "finalSpeed": 7.901,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 35.5,
+          "finalSpeed": 7.62,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 36,
+          "finalSpeed": 7.337,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 36.5,
+          "finalSpeed": 7.045,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 37,
+          "finalSpeed": 6.714,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 37.5,
+          "finalSpeed": 6.063,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 38,
+          "finalSpeed": 3.577,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 38.5,
+          "finalSpeed": 0.874,
+          "climbed": true
+        },
+        {
+          "slopeDeg": 39,
+          "finalSpeed": -1.854,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 39.5,
+          "finalSpeed": -4.542,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 40,
+          "finalSpeed": -7.185,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 40.5,
+          "finalSpeed": -9.786,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 41,
+          "finalSpeed": -12.345,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 41.5,
+          "finalSpeed": -14.863,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 42,
+          "finalSpeed": -17.341,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 42.5,
+          "finalSpeed": -19.78,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 43,
+          "finalSpeed": -22.181,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 43.5,
+          "finalSpeed": -24.545,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 44,
+          "finalSpeed": -26.873,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 44.5,
+          "finalSpeed": -29.166,
+          "climbed": false
+        },
+        {
+          "slopeDeg": 45,
+          "finalSpeed": -31.423,
+          "climbed": false
+        }
+      ]
+    },
+    "real": {
+      "descripcion": "Terreno real: arranca DESDE PARADO en el punto, mirando a la máxima pendiente local, acelerador a fondo 22 s. \"subió\" = velocidad final > 0.5 m/s y ganó > 5 m de cota. OJO: las caras de 40° del DEM son cortas; con carrera se pueden \"saltar\" con energía cinética, por eso acá se arranca detenido.",
+      "pruebas": [
+        {
+          "x": 3320,
+          "z": 3705,
+          "pendiente_local_deg": 40.5,
+          "finalSpeed": -0.375,
+          "maxSpeed": 0.6,
+          "deltaY_m": -1.39,
+          "subio": false
+        },
+        {
+          "x": 2280,
+          "z": 4100,
+          "pendiente_local_deg": 32.6,
+          "finalSpeed": 28.107,
+          "maxSpeed": 29.73,
+          "deltaY_m": 45.19,
+          "subio": true
+        },
+        {
+          "x": 2690,
+          "z": 4350,
+          "pendiente_local_deg": 40.3,
+          "finalSpeed": -0.514,
+          "maxSpeed": 0.59,
+          "deltaY_m": -0.47,
+          "subio": false
+        },
+        {
+          "x": 3685,
+          "z": 3365,
+          "pendiente_local_deg": 40.7,
+          "finalSpeed": 0.432,
+          "maxSpeed": 0.83,
+          "deltaY_m": -0.21,
+          "subio": false
+        },
+        {
+          "x": 2795,
+          "z": 2935,
+          "pendiente_local_deg": 43.5,
+          "finalSpeed": -0.91,
+          "maxSpeed": 1.61,
+          "deltaY_m": -3.52,
+          "subio": false
+        }
+      ]
+    }
+  },
+  "bajada_punto_muerto": {
+    "sintetico": {
+      "descripcion": "Punto muerto, sin acelerar, mirando pendiente abajo. Aceleración = Δv/Δt entre t=1 s y t=5 s.",
+      "perdidas": "Crr·g·cosθ (rodadura) + arrastre aero. A baja velocidad manda la rodadura.",
+      "pruebas": [
+        {
+          "pendiente_deg": 10,
+          "aceleracion_medida_ms2": 1.451,
+          "g_sin_theta_ms2": 1.703,
+          "desvio_pct": -14.8
+        },
+        {
+          "pendiente_deg": 15,
+          "aceleracion_medida_ms2": 2.275,
+          "g_sin_theta_ms2": 2.539,
+          "desvio_pct": -10.4
+        },
+        {
+          "pendiente_deg": 25,
+          "aceleracion_medida_ms2": 3.844,
+          "g_sin_theta_ms2": 4.146,
+          "desvio_pct": -7.3
+        },
+        {
+          "pendiente_deg": 40,
+          "aceleracion_medida_ms2": 5.927,
+          "g_sin_theta_ms2": 6.306,
+          "desvio_pct": -6
+        }
+      ]
+    },
+    "real": {
+      "descripcion": "Punto muerto, sin acelerar, mirando pendiente abajo en el terreno real (4 s).",
+      "pruebas": [
+        {
+          "punto": "x=3025 z=3950 (22.4°)",
+          "pendiente_local_deg": 22.4,
+          "aceleracion_medida_ms2": 2.589,
+          "g_sin_theta_ms2": 3.739,
+          "desvio_pct": -30.8,
+          "velocidad_final_ms": 9.55
+        },
+        {
+          "punto": "x=3320 z=3705 (40.5°)",
+          "pendiente_local_deg": 40.5,
+          "aceleracion_medida_ms2": 3.441,
+          "g_sin_theta_ms2": 6.372,
+          "desvio_pct": -46,
+          "velocidad_final_ms": 13.41
+        },
+        {
+          "punto": "x=2280 z=4100 (32.6°)",
+          "pendiente_local_deg": 32.6,
+          "aceleracion_medida_ms2": -0.172,
+          "g_sin_theta_ms2": 5.29,
+          "desvio_pct": -103.2,
+          "velocidad_final_ms": 2.02
+        }
+      ]
+    }
+  },
+  "traccion_desde_parado": {
+    "sintetico": {
+      "descripcion": "Acelerador a fondo desde parado en plano inclinado, 12 s, sin freno de mano.",
+      "pruebas": [
+        {
+          "pendiente_deg": 25,
+          "velocidad_final_ms": 13.066,
+          "patino_algun_momento": true,
+          "resultado": "sube"
+        },
+        {
+          "pendiente_deg": 30,
+          "velocidad_final_ms": 10.196,
+          "patino_algun_momento": true,
+          "resultado": "sube"
+        },
+        {
+          "pendiente_deg": 35,
+          "velocidad_final_ms": 7.223,
+          "patino_algun_momento": true,
+          "resultado": "sube"
+        },
+        {
+          "pendiente_deg": 38,
+          "velocidad_final_ms": 1.732,
+          "patino_algun_momento": true,
+          "resultado": "sube"
+        },
+        {
+          "pendiente_deg": 40,
+          "velocidad_final_ms": -3.508,
+          "patino_algun_momento": true,
+          "resultado": "resbala hacia atrás"
+        }
+      ]
+    }
+  },
+  "estabilidad": {
+    "descripcion": "Giro a fondo (steer=1) sobre llano. Se mide aceleración lateral, derrape y riesgo de vuelco.",
+    "max_aceleracion_lateral_teorica_ms2": 7.85,
+    "umbral_vuelco_llano_ms2": 10.19,
+    "conclusion": "en llano derrapa ANTES de volcar",
+    "pruebas": [
+      {
+        "velocidad_inicial_ms": 5,
+        "velocidad_inicial_kmh": 18,
+        "max_aceleracion_lateral_ms2": 4.26,
+        "derrapo": false,
+        "riesgo_vuelco": false
+      },
+      {
+        "velocidad_inicial_ms": 10,
+        "velocidad_inicial_kmh": 36,
+        "max_aceleracion_lateral_ms2": 7.85,
+        "derrapo": true,
+        "riesgo_vuelco": false
+      },
+      {
+        "velocidad_inicial_ms": 15,
+        "velocidad_inicial_kmh": 54,
+        "max_aceleracion_lateral_ms2": 7.85,
+        "derrapo": true,
+        "riesgo_vuelco": false
+      },
+      {
+        "velocidad_inicial_ms": 20,
+        "velocidad_inicial_kmh": 72,
+        "max_aceleracion_lateral_ms2": 7.85,
+        "derrapo": true,
+        "riesgo_vuelco": false
+      },
+      {
+        "velocidad_inicial_ms": 25,
+        "velocidad_inicial_kmh": 90,
+        "max_aceleracion_lateral_ms2": 7.85,
+        "derrapo": true,
+        "riesgo_vuelco": false
+      },
+      {
+        "velocidad_inicial_ms": 30,
+        "velocidad_inicial_kmh": 108,
+        "max_aceleracion_lateral_ms2": 7.85,
+        "derrapo": true,
+        "riesgo_vuelco": false
+      }
+    ],
+    "ladera_lateral": {
+      "descripcion": "Plano sintético que sube al Este, vehículo mirando al Norte (de costado). Punto muerto, 5 s. Teoría: patina si tanθ > μ (≈38.7°) y vuelca si tanθ > (vía/2)/h_cg (≈46°).",
+      "umbral_escurrimiento_teorico_deg": 38.659808254090095,
+      "umbral_vuelco_ladera_teorico_deg": 46.080924186660695,
+      "pruebas": [
+        {
+          "pendiente_deg": 30,
+          "velocidad_lateral_max_ms": 0.22,
+          "se_escurre": false,
+          "riesgo_vuelco": false
+        },
+        {
+          "pendiente_deg": 40,
+          "velocidad_lateral_max_ms": 1.7,
+          "se_escurre": true,
+          "riesgo_vuelco": false
+        },
+        {
+          "pendiente_deg": 45,
+          "velocidad_lateral_max_ms": 7.1,
+          "se_escurre": true,
+          "riesgo_vuelco": false
+        },
+        {
+          "pendiente_deg": 48,
+          "velocidad_lateral_max_ms": 10.33,
+          "se_escurre": true,
+          "riesgo_vuelco": true
+        }
+      ]
+    }
+  },
+  "contacto": {
+    "descripcion": "Residual del ajuste del plano de 4 puntos sobre el terreno real (grilla 100 m, yaw 0.7). Es la desviación no-planar del apoyo; el residual rueda-terreno de la app se mide en el navegador.",
+    "margen_declarado_m": 0.5,
+    "samples": [
+      {
+        "residual_max_m": 0.2125,
+        "peor_punto": {
+          "x": 200,
+          "z": 3900
+        }
+      }
+    ]
+  }
+}

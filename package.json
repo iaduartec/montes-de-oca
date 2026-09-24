@@ -9,7 +9,10 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
-    "make:dev-terrain": "node scripts/make-dev-terrain.mjs"
+    "make:dev-terrain": "node scripts/make-dev-terrain.mjs",
+    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && python3 scripts/roads/validate_roads.py",
+    "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
+    "test:roads": "python3 scripts/roads/validate_roads.py"
   },
   "dependencies": {
     "@babylonjs/core": "^8.0.0"

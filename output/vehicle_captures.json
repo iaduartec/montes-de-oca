@@ -1,0 +1,583 @@
+{
+  "generado_por": "scripts/vehicle/capture_vehicle.mjs",
+  "base": "http://127.0.0.1:4173",
+  "fecha": "2026-09-24T23:28:25.734Z",
+  "datum_audit": {
+    "verticalDatum": 870,
+    "maxAbsDiffM": 0,
+    "ok": true,
+    "samples": [
+      {
+        "tile": "tile_0_0#0",
+        "x": 500,
+        "z": 500,
+        "absoluteM": 1164,
+        "worldY": 294,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_0#1",
+        "x": 1500,
+        "z": 500,
+        "absoluteM": 1127,
+        "worldY": 257,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_0#2",
+        "x": 2500,
+        "z": 500,
+        "absoluteM": 1072,
+        "worldY": 202,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_0#3",
+        "x": 3500,
+        "z": 500,
+        "absoluteM": 1060,
+        "worldY": 190,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_0#4",
+        "x": 4500,
+        "z": 500,
+        "absoluteM": 1138,
+        "worldY": 268,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_0#5",
+        "x": 5500,
+        "z": 500,
+        "absoluteM": 1115,
+        "worldY": 245,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_1#6",
+        "x": 500,
+        "z": 1500,
+        "absoluteM": 1140,
+        "worldY": 270,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_1#7",
+        "x": 1500,
+        "z": 1500,
+        "absoluteM": 1075,
+        "worldY": 205,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_1#8",
+        "x": 2500,
+        "z": 1500,
+        "absoluteM": 1022,
+        "worldY": 152,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_1#9",
+        "x": 3500,
+        "z": 1500,
+        "absoluteM": 1065,
+        "worldY": 195,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_1#10",
+        "x": 4500,
+        "z": 1500,
+        "absoluteM": 1105,
+        "worldY": 235,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_1#11",
+        "x": 5500,
+        "z": 1500,
+        "absoluteM": 1056,
+        "worldY": 186,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_2#12",
+        "x": 500,
+        "z": 2500,
+        "absoluteM": 1164,
+        "worldY": 294,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_2#13",
+        "x": 1500,
+        "z": 2500,
+        "absoluteM": 1092,
+        "worldY": 222,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_2#14",
+        "x": 2500,
+        "z": 2500,
+        "absoluteM": 1056,
+        "worldY": 186,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_2#15",
+        "x": 3500,
+        "z": 2500,
+        "absoluteM": 1028,
+        "worldY": 158,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_2#16",
+        "x": 4500,
+        "z": 2500,
+        "absoluteM": 1079,
+        "worldY": 209,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_2#17",
+        "x": 5500,
+        "z": 2500,
+        "absoluteM": 1084,
+        "worldY": 214,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_3#18",
+        "x": 500,
+        "z": 3500,
+        "absoluteM": 1134,
+        "worldY": 264,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_3#19",
+        "x": 1500,
+        "z": 3500,
+        "absoluteM": 1132,
+        "worldY": 262,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_3#20",
+        "x": 2500,
+        "z": 3500,
+        "absoluteM": 1011,
+        "worldY": 141,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_3#21",
+        "x": 3500,
+        "z": 3500,
+        "absoluteM": 986,
+        "worldY": 116,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_3#22",
+        "x": 4500,
+        "z": 3500,
+        "absoluteM": 1066,
+        "worldY": 196,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_3#23",
+        "x": 5500,
+        "z": 3500,
+        "absoluteM": 1044,
+        "worldY": 174,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_4#24",
+        "x": 500,
+        "z": 4500,
+        "absoluteM": 1099,
+        "worldY": 229,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_4#25",
+        "x": 1500,
+        "z": 4500,
+        "absoluteM": 1069,
+        "worldY": 199,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_4#26",
+        "x": 2500,
+        "z": 4500,
+        "absoluteM": 1009,
+        "worldY": 139,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_4#27",
+        "x": 3500,
+        "z": 4500,
+        "absoluteM": 939,
+        "worldY": 69,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_4#28",
+        "x": 4500,
+        "z": 4500,
+        "absoluteM": 977,
+        "worldY": 107,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_4#29",
+        "x": 5500,
+        "z": 4500,
+        "absoluteM": 990,
+        "worldY": 120,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_5#30",
+        "x": 500,
+        "z": 5500,
+        "absoluteM": 1094,
+        "worldY": 224,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_5#31",
+        "x": 1500,
+        "z": 5500,
+        "absoluteM": 1068,
+        "worldY": 198,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_5#32",
+        "x": 2500,
+        "z": 5500,
+        "absoluteM": 1028,
+        "worldY": 158,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_5#33",
+        "x": 3500,
+        "z": 5500,
+        "absoluteM": 913,
+        "worldY": 43,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_5#34",
+        "x": 4500,
+        "z": 5500,
+        "absoluteM": 928,
+        "worldY": 58,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_5#35",
+        "x": 5500,
+        "z": 5500,
+        "absoluteM": 905,
+        "worldY": 35,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_3#21",
+        "x": 3082.7792910179037,
+        "z": 3958.8163834963275,
+        "absoluteM": 945.4441417964193,
+        "worldY": 75.44414179641933,
+        "diffM": 0
+      }
+    ]
+  },
+  "perf": {
+    "fps": 9.341998375304632,
+    "frameTimeMs": 35.90000000037253,
+    "drawCalls": 13,
+    "triangles": 240360,
+    "vertices": 1454892,
+    "activeMeshes": 13
+  },
+  "perf_nota": "FPS y frame time medidos en Chrome headless con SwiftShader (CPU). NO representan el rendimiento del juego en GPU. draw calls y triángulos sí son válidos.",
+  "contacto": [
+    {
+      "punto": "spawn",
+      "x": 3097.258,
+      "z": 3945.02,
+      "residual_max_m": 0.01471130371101026,
+      "y": 74.4045467332802,
+      "contacts": [
+        74.70454673328015,
+        74.3805467332802,
+        74.4285467332802,
+        74.10454673328024
+      ]
+    },
+    {
+      "punto": "fuerte_40",
+      "x": 3320,
+      "z": 3705,
+      "residual_max_m": 0.15988037109377728,
+      "y": 83.73091370751246,
+      "contacts": [
+        82.65160604379139,
+        83.94760604379132,
+        83.51422137123359,
+        84.81022137123352
+      ]
+    },
+    {
+      "punto": "moderada_22",
+      "x": 3025,
+      "z": 3950,
+      "residual_max_m": 0.06361724853513806,
+      "y": 84.07311860931074,
+      "contacts": [
+        84.29384983921227,
+        83.64584983921225,
+        84.42692491960611,
+        83.92584983921233
+      ]
+    },
+    {
+      "punto": "oeste_32",
+      "x": 2280,
+      "z": 4100,
+      "residual_max_m": 0.12545043945317502,
+      "y": 146.8847033010131,
+      "contacts": [
+        147.91486494868798,
+        147.0925492522988,
+        146.58969950153278,
+        145.94169950153287
+      ]
+    },
+    {
+      "punto": "sur_40",
+      "x": 2690,
+      "z": 4350,
+      "residual_max_m": 0.17241088867183407,
+      "y": 118.68673417822299,
+      "contacts": [
+        120.04925053102443,
+        119.07725053102467,
+        118.2231851198178,
+        117.39725053102507
+      ]
+    },
+    {
+      "punto": "este_40",
+      "x": 3685,
+      "z": 3365,
+      "residual_max_m": 0.21870910644531705,
+      "y": 106.45928795665102,
+      "contacts": [
+        107.02624606542145,
+        107.69958040484175,
+        105.31899626302561,
+        105.79232909331529
+      ]
+    }
+  ],
+  "captura_spawn": {
+    "x": 3097.2872663335993,
+    "z": 3945.02,
+    "y": 74.4045467332802,
+    "yawDeg": 0,
+    "speed": 0,
+    "speedKmh": 0,
+    "lateral": 0.06328612036857659,
+    "yawRate": 0,
+    "lateralAccel": 0,
+    "distance": 0,
+    "slopeForwardDeg": 3.1061216487704955,
+    "slopeRightDeg": -8.269172773169387,
+    "slopeMagnitudeDeg": 8.818294218758385,
+    "pitchDeg": -5.629541020801021,
+    "rollDeg": -11.309932474018698,
+    "slipping": false,
+    "skidding": false,
+    "rolloverRisk": false,
+    "neutral": false,
+    "handbrake": false,
+    "tractionLimitN": 13959.418656556642,
+    "tireForceN": 937.0441698007695,
+    "gravityForceN": -937.0441698007695,
+    "wheelResidualMaxM": 0.01471130371101026,
+    "airborne": false,
+    "contacts": [
+      74.70454673328015,
+      74.3805467332802,
+      74.4285467332802,
+      74.10454673328024
+    ]
+  },
+  "captura_pendiente": {
+    "slopeDeg": 40.51058943733277,
+    "telemetry": {
+      "x": 3319.0221529475907,
+      "z": 3703.442978163334,
+      "y": 83.52721427542491,
+      "yawDeg": 200.55604521958347,
+      "speed": 3.5097474062364364,
+      "speedKmh": 12.635090662451171,
+      "lateral": 0.423039431133931,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 1.8012299981728161,
+      "slopeForwardDeg": -0.8584989709941487,
+      "slopeRightDeg": -37.77166404822447,
+      "slopeMagnitudeDeg": 37.77685013459526,
+      "pitchDeg": 5.271577448786395,
+      "rollDeg": -39.4082037996122,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 11165.543114603808,
+      "tireForceN": 5889.443276431129,
+      "gravityForceN": 165.317310843324,
+      "wheelResidualMaxM": 0.11914550781250455,
+      "airborne": false,
+      "contacts": [
+        84.06166394514821,
+        82.73441733594427,
+        84.32383611486728,
+        82.98893970573988
+      ]
+    }
+  },
+  "intento_subida_40": {
+    "x": 3319.8445104196117,
+    "z": 3705.0169009155843,
+    "y": 83.7946953976309,
+    "yawDeg": 110.55604521958348,
+    "speed": -0.31575228723639964,
+    "speedKmh": -1.1367082340510388,
+    "lateral": 0.0008145804982632027,
+    "yawRate": 0,
+    "lateralAccel": 0,
+    "distance": 3.6324190456988164,
+    "slopeForwardDeg": 40.22859373978426,
+    "slopeRightDeg": -0.19237116753808092,
+    "slopeMagnitudeDeg": 40.228816268354684,
+    "pitchDeg": -40.51058943733433,
+    "rollDeg": 0.119549349088111,
+    "slipping": true,
+    "skidding": false,
+    "rolloverRisk": false,
+    "neutral": false,
+    "handbrake": false,
+    "tractionLimitN": 10785.101062143083,
+    "tireForceN": 10785.101062143083,
+    "gravityForceN": -11404.119491932734,
+    "wheelResidualMaxM": 0.1654483032226608,
+    "airborne": false,
+    "contacts": [
+      85.03832311223937,
+      84.94338873171148,
+      82.54768749990558,
+      82.64938224666719
+    ]
+  },
+  "arranque_moderada": [
+    {
+      "t": 0.5,
+      "v": 1.763470407792629,
+      "slope": 21.880139587306143
+    },
+    {
+      "t": 1,
+      "v": 3.4506529388797498,
+      "slope": 20.278567349125908
+    },
+    {
+      "t": 1.5,
+      "v": 5.105313558567602,
+      "slope": 17.580079617936256
+    },
+    {
+      "t": 2,
+      "v": 6.783998026454046,
+      "slope": 15.384242616188981
+    },
+    {
+      "t": 2.5,
+      "v": 8.510384239033126,
+      "slope": 10.635314730770755
+    },
+    {
+      "t": 3,
+      "v": 10.399491501639643,
+      "slope": 6.93084677775316
+    },
+    {
+      "t": 3.5,
+      "v": 12.29996639333836,
+      "slope": 4.4919383155914
+    },
+    {
+      "t": 4,
+      "v": 13.924419970271446,
+      "slope": 3.3523011793648325
+    },
+    {
+      "t": 4.5,
+      "v": 15.461881566283783,
+      "slope": 2.085820168274681
+    },
+    {
+      "t": 5,
+      "v": 16.86269886386092,
+      "slope": 8.07057642941122
+    }
+  ],
+  "bajada_app": [
+    {
+      "t": 0.5,
+      "v": 1.7699320277128376,
+      "slope": -22.707365460726646
+    },
+    {
+      "t": 1,
+      "v": 3.580479467021297,
+      "slope": -23.615508426319195
+    },
+    {
+      "t": 1.5,
+      "v": 5.4776639388851835,
+      "slope": -25.12888725876606
+    },
+    {
+      "t": 2,
+      "v": 7.388900159879351,
+      "slope": -23.22384563996148
+    },
+    {
+      "t": 2.5,
+      "v": 8.959157713786961,
+      "slope": -17.125165694163943
+    },
+    {
+      "t": 3,
+      "v": 9.671040691922085,
+      "slope": -4.014194768360385
+    }
+  ]
+}

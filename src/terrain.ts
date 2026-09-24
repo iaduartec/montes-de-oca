@@ -261,6 +261,75 @@ export interface WorldTerrain {
   dispose(): void;
 }
 
+/* ------------------------------------------------------------------------- *
+ * FOOTGUN DOCUMENTADO: hay DOS funciones `heightAt` y NO devuelven lo mismo.
+ *
+ *   createHeightfield(grid, scale).heightAt(x, z)   -> m ABSOLUTOS (944.5484)
+ *   terrain.heightAt(x, z)  (esta interfaz)          -> Y DE MUNDO (74.5484)
+ *
+ * `src/heightfield.ts` NO resta el datum (`surfaceMeters(...) * worldScale`).
+ * `src/terrain.ts` SÍ lo resta al resolver el tile. Para apoyar el vehículo
+ * sobre el suelo hay que usar SIEMPRE el de `terrain.ts` (Y de mundo); usar el
+ * de `heightfield.ts` sin restar 870 deja el coche 870 m bajo tierra.
+ *
+ * `worldHeightFromSampler` es la ÚNICA traducción entre ambas y existe para
+ * poder testear la invariante `mundo === absoluto − datum` con una aserción.
+ * ------------------------------------------------------------------------- */
+
+/** Traduce altura ABSOLUTA de un sampler de tile a Y de mundo (resta el datum). */
+export function worldHeightFromSampler(
+  sampler: HeightfieldSampler,
+  datumOffset: number,
+  x: number,
+  z: number,
+): number {
+  return sampler.heightAt(x, z) - datumOffset;
+}
+
+/** Muestra del chequeo `absoluto vs mundo`. */
+export interface DatumAuditSample {
+  readonly tile: string;
+  readonly x: number;
+  readonly z: number;
+  readonly absoluteM: number;
+  readonly worldY: number;
+  readonly diffM: number;
+}
+
+export interface DatumAuditReport {
+  readonly verticalDatum: number;
+  readonly samples: readonly DatumAuditSample[];
+  readonly maxAbsDiffM: number;
+  readonly ok: boolean;
+}
+
+/**
+ * Verifica, en el WorldTerrain REAL y ya cargado, que los dos `heightAt`
+ * difieren EXACTAMENTE en el `verticalDatum`. Los puntos deben caer dentro de
+ * los tiles (nada de bordes). Si esto falla, algo rompió el datum.
+ */
+export function auditVerticalDatum(terrain: WorldTerrain, points: readonly { x: number; z: number }[]): DatumAuditReport {
+  const datum = terrain.config.verticalDatum * terrain.config.worldScale;
+  const samples: DatumAuditSample[] = [];
+  let maxAbsDiffM = 0;
+  for (const point of points) {
+    const sampler = resolveSampler(terrain.samplers, point.x, point.z);
+    if (!sampler) continue;
+    const absoluteM = sampler.heightAt(point.x, point.z);
+    const worldY = terrain.heightAt(point.x, point.z);
+    const diffM = worldY - (absoluteM - datum);
+    if (Math.abs(diffM) > maxAbsDiffM) maxAbsDiffM = Math.abs(diffM);
+    samples.push({ tile: tileIdOf(terrain, sampler), x: point.x, z: point.z, absoluteM, worldY, diffM });
+  }
+  return { verticalDatum: datum, samples, maxAbsDiffM, ok: maxAbsDiffM < 1e-9 };
+}
+
+function tileIdOf(terrain: WorldTerrain, sampler: HeightfieldSampler): string {
+  const index = terrain.samplers.indexOf(sampler);
+  const extent = gridExtent(sampler.grid);
+  return `tile_${Math.round(extent.minX / 1000)}_${Math.round(extent.minZ / 1000)}#${index}`;
+}
+
 function resolveSampler(samplers: readonly HeightfieldSampler[], x: number, z: number): HeightfieldSampler | undefined {
   for (const sampler of samplers) {
     if (containsPoint(sampler.grid, x, z)) return sampler;
@@ -336,7 +405,7 @@ export async function loadTerrain(
 
   const heightAt = (x: number, z: number): number => {
     const sampler = resolveSampler(samplers, x, z);
-    return sampler ? sampler.heightAt(x, z) - datumOffset : 0;
+    return sampler ? worldHeightFromSampler(sampler, datumOffset, x, z) : 0;
   };
 
   const normalAt = (x: number, z: number, out?: Vector3): Vector3 => {

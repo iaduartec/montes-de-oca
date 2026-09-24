@@ -1,5 +1,6 @@
 import { SceneInstrumentation } from '@babylonjs/core/Instrumentation/sceneInstrumentation';
 import type { Scene } from '@babylonjs/core/scene';
+import type { VehicleTelemetry } from './vehicle/index';
 
 /** Foto instantánea de rendimiento para el overlay. */
 export interface DiagnosticsSnapshot {
@@ -50,4 +51,35 @@ export function createDiagnostics(scene: Scene): Diagnostics {
     snapshot,
     dispose: () => instrumentation.dispose(),
   };
+}
+
+/** Estado de tracción legible para el HUD. */
+function tractionLabel(t: VehicleTelemetry): string {
+  if (t.slipping) return 'PATINA (rueda recortada por tracción)';
+  if (t.skidding) return 'DERRAPA (sin agarre lateral)';
+  return 'tracción OK';
+}
+
+/**
+ * HUD del vehículo. Es el instrumento de medición de la FASE 4: velocidad,
+ * pendiente con signo, altura de mundo, posición y estado de tracción.
+ */
+export function formatVehicleHud(t: VehicleTelemetry): string {
+  const mode: string[] = [];
+  if (t.neutral) mode.push('punto muerto');
+  if (t.handbrake) mode.push('freno de mano');
+  return [
+    `— VEHÍCULO —`,
+    `velocidad  ${t.speedKmh.toFixed(1)} km/h (${t.speed.toFixed(2)} m/s)`,
+    `pendiente  ${t.slopeForwardDeg >= 0 ? '+' : ''}${t.slopeForwardDeg.toFixed(1)}° (avance)  |  ${t.slopeRightDeg >= 0 ? '+' : ''}${t.slopeRightDeg.toFixed(1)}° (lateral)`,
+    `pend. abs  ${t.slopeMagnitudeDeg.toFixed(1)}°`,
+    `actitud    cabeceo ${t.pitchDeg.toFixed(1)}°  alabeo ${t.rollDeg.toFixed(1)}°`,
+    `Y mundo    ${t.y.toFixed(3)} m`,
+    `posición   x=${t.x.toFixed(1)} z=${t.z.toFixed(1)}  yaw=${t.yawDeg.toFixed(0)}°`,
+    `tracción   ${tractionLabel(t)}`,
+    `límite μN  ${t.tractionLimitN.toFixed(0)} N  ·  neumático ${t.tireForceN.toFixed(0)} N  ·  gravedad ${t.gravityForceN.toFixed(0)} N`,
+    `ruedas     residual máx ${t.wheelResidualMaxM.toFixed(3)} m${t.airborne ? '  ⚠ SIN CONTACTO' : ''}`,
+    `modo       ${mode.length > 0 ? mode.join(' + ') : 'marcha'}${t.rolloverRisk ? '  ⚠ RIESGO VUELCO' : ''}`,
+    `odómetro   ${t.distance.toFixed(1)} m`,
+  ].join('\n');
 }
