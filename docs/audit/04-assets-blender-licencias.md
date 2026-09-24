@@ -122,7 +122,7 @@ Ejemplos reales:
   carriles, siembra marcas/señales; «OSM derivative data, same local
   east/north coordinates as city.json».
 - `scripts/prepare_city_mountains.py` — relief desde teselas Copernicus
-  (referenciado en `public/licenses/coastal-terrain.md:19-20`).
+  (referenciado en `public/licenses/coastal-terrain.md:15`).
 - `scripts/prepare_architecture_textures.mjs:22-24` — redimensiona a atlas
   512×512 y registra `{sha256, sourceSha256, generationTool}` por textura.
 
