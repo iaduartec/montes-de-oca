@@ -1,0 +1,847 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-09-24T22:55:40+00:00",
+    "script": "scripts/roads/build_roads.py",
+    "coordinate_system": "EPSG:25830 (UTM 30N) -> worldX = E - 471500, worldZ = N - 4689000",
+    "world_scale": 1.0,
+    "window_m": {
+      "e": [
+        471500.0,
+        477500.0
+      ],
+      "n": [
+        4689000.0,
+        4695000.0
+      ],
+      "size": [
+        6000.0,
+        6000.0
+      ]
+    },
+    "spawn_world": [
+      3097.0,
+      3945.0
+    ],
+    "license": "ODbL-1.0 — OpenStreetMap contributors",
+    "caveats": [
+      "Tags OSM = metadatos mapeados, no mediciones.",
+      "width y speedFactor son estimaciones de DISENO de gameplay.",
+      "grade = tag layer (compatibilidad con Road del motor de referencia); la calidad de la pista esta en tracktype."
+    ]
+  },
+  "source": {
+    "file": "data/roads/raw/osm_highways_window.json",
+    "bytes": 529998,
+    "sha256": "98782f981b1cd50737aeae5a0f646010338676a26edc138420f697ed522b99ef",
+    "endpoint": "https://overpass-api.de/api/interpreter",
+    "user_agent": "MontesDeOcaOffroad-RoadsBot/1.0 (open-world driving game data; offline research)",
+    "query": "[out:json][timeout:180];\nway[\"highway\"](42.351242,-3.347844,42.408475,-3.271696);\nout tags geom qt;\n",
+    "bbox_wgs84_s_w_n_e": [
+      42.351242,
+      -3.347844,
+      42.408475,
+      -3.271696
+    ],
+    "buffer_deg": 0.0015,
+    "overpass_timestamp_osm_base": "2026-09-24T22:33:36Z",
+    "fetched_at_utc": "2026-09-24T22:34:47+00:00",
+    "elements": {
+      "total": 469,
+      "by_type": {
+        "way": 469
+      }
+    }
+  },
+  "counts": {
+    "ways_downloaded": 469,
+    "ways_kept": 434,
+    "segments_kept": 438,
+    "segments_shorter_than_2m": 2,
+    "ways_excluded": 16,
+    "ways_fully_outside_window": 19,
+    "by_class_segments": {
+      "ROAD": 131,
+      "TRACK": 213,
+      "PATH": 94
+    },
+    "by_kind_segments": {
+      "footway": 5,
+      "living_street": 7,
+      "path": 77,
+      "pedestrian": 9,
+      "residential": 78,
+      "service": 11,
+      "steps": 3,
+      "tertiary": 7,
+      "track": 213,
+      "trunk": 27,
+      "unclassified": 1
+    },
+    "by_kind_ways": {
+      "footway": 5,
+      "living_street": 7,
+      "path": 77,
+      "pedestrian": 9,
+      "residential": 77,
+      "service": 11,
+      "steps": 3,
+      "tertiary": 7,
+      "track": 210,
+      "trunk": 27,
+      "unclassified": 1
+    }
+  },
+  "length_km": {
+    "by_class": {
+      "ROAD": 20.592,
+      "TRACK": 91.515,
+      "PATH": 26.914
+    },
+    "total": 139.021,
+    "by_kind": {
+      "track": 91.515,
+      "path": 26.028,
+      "trunk": 8.118,
+      "residential": 5.193,
+      "tertiary": 5.059,
+      "service": 1.754,
+      "pedestrian": 0.582,
+      "living_street": 0.301,
+      "footway": 0.207,
+      "unclassified": 0.167,
+      "steps": 0.097
+    },
+    "by_tracktype": {
+      "grade1": 1.259,
+      "grade2": 19.603,
+      "grade3": 7.851,
+      "grade4": 26.598,
+      "grade5": 17.61,
+      "sin_tracktype": 18.594
+    },
+    "by_surface": {
+      "asphalt": 14.831,
+      "compacted": 6.687,
+      "dirt": 2.366,
+      "ground": 1.584,
+      "concrete": 0.715,
+      "gravel": 0.462,
+      "paving_stones": 0.185,
+      "grass": 0.09,
+      "wood": 0.015
+    }
+  },
+  "segments_by_tracktype": {
+    "grade1": 7,
+    "grade2": 31,
+    "grade3": 23,
+    "grade4": 49,
+    "grade5": 34,
+    "sin_tracktype": 69
+  },
+  "excluded": {
+    "by_reason": {
+      "access=private": {
+        "ways": 12,
+        "km": 0.795,
+        "km_by_class": {
+          "PATH": 0.141,
+          "ROAD": 0.654
+        }
+      },
+      "highway=proposed": {
+        "ways": 3,
+        "km": 15.578,
+        "km_by_class": {
+          "sin_clase": 15.578
+        }
+      },
+      "motor_vehicle=no": {
+        "ways": 1,
+        "km": 0.945,
+        "km_by_class": {
+          "ROAD": 0.945
+        }
+      }
+    },
+    "total_km": 17.318,
+    "total_ways": 16,
+    "note": "access=agricultural/forestry NO se descartan (terreno forestal jugable)."
+  },
+  "design_tables": {
+    "note": "DISENO de gameplay, NO medicion. OSM no trae ancho fiable salvo el tag width.",
+    "width_m": {
+      "by_road_kind": {
+        "motorway": 7.5,
+        "trunk": 7.5,
+        "primary": 7.0,
+        "secondary": 6.5,
+        "tertiary": 6.0,
+        "unclassified": 5.5,
+        "residential": 5.5,
+        "living_street": 5.0,
+        "service": 4.5
+      },
+      "by_tracktype": {
+        "grade1": 4.5,
+        "grade2": 4.0,
+        "grade3": 3.5,
+        "grade4": 3.0,
+        "grade5": 2.5
+      },
+      "tracktype_default": 3.5,
+      "path": 1.5,
+      "precedence": "tag width/est_width de OSM > tabla de diseno"
+    },
+    "speed_factor": {
+      "road": 1.0,
+      "by_tracktype": {
+        "grade1": 0.6,
+        "grade2": 0.5,
+        "grade3": 0.42,
+        "grade4": 0.33,
+        "grade5": 0.25
+      },
+      "tracktype_default": 0.45,
+      "path": 0.1,
+      "meaning": "multiplicador sobre la velocidad maxima en asfalto; lo aplica el runtime"
+    }
+  },
+  "simplification": {
+    "tolerance_m": 1.0,
+    "protected_vertices": "vertices compartidos entre ways (cruces) nunca se eliminan",
+    "vertices_before": 6911,
+    "vertices_after": 4450,
+    "vertices_removed_pct": 35.6,
+    "km_before": 139.074,
+    "km_after": 139.021,
+    "km_shaved_by_simplify": 0.053,
+    "note": "las cifras de length_km de este archivo se miden SOBRE la geometria simplificada; la simplificacion recorta la curvatura y acorta un 0.03% aprox."
+  },
+  "graph": {
+    "nodes": 3869,
+    "edges": 4007,
+    "duplicate_edges_same_pair": {
+      "count": 5,
+      "detail": [
+        {
+          "length_m": 4.727,
+          "kept": "168459092",
+          "skipped": "310896782",
+          "classes": [
+            "ROAD",
+            "PATH"
+          ]
+        },
+        {
+          "length_m": 13.212,
+          "kept": "168459092",
+          "skipped": "310896782",
+          "classes": [
+            "ROAD",
+            "PATH"
+          ]
+        },
+        {
+          "length_m": 8.932,
+          "kept": "741760077",
+          "skipped": "310896782",
+          "classes": [
+            "ROAD",
+            "PATH"
+          ],
+          "tie_break": "reemplazada por clase rodable"
+        },
+        {
+          "length_m": 6.088,
+          "kept": "310896783",
+          "skipped": "310896782",
+          "classes": [
+            "ROAD",
+            "PATH"
+          ],
+          "tie_break": "reemplazada por clase rodable"
+        },
+        {
+          "length_m": 4.358,
+          "kept": "645040295",
+          "skipped": "719482689",
+          "classes": [
+            "PATH",
+            "PATH"
+          ]
+        }
+      ],
+      "note": "dos ways con el mismo tramo de geometria; el Map del RoadGraph solo conserva uno, aqui se registra cual"
+    },
+    "components": 10,
+    "largest_component_nodes": 3801,
+    "largest_component_pct_nodes": 98.2,
+    "components_le_2_nodes": 1,
+    "format": "{nodes:[[x,z]...], edges:[[a,b]...], edgeMeta:[{length,class,roadId,kind,tracktype,speedFactor}]}",
+    "compatible_with": "rama `noded` de RoadGraph (src/navigation.ts del motor de referencia)",
+    "quantization": "Sin cuantizar /3: el motor de referencia cuantiza porque deriva los nodos de listas de puntos; aca los nodos vienen explicitos y en coordenadas OSM exactas (cm), la cuantizacion solo introduciria error. La estructura {nodes, edges en pares} es la misma y entra tal cual al constructor."
+  },
+  "connectivity": {
+    "spawn_world": [
+      3097.0,
+      3945.0
+    ],
+    "spawn_nearest_edge": {
+      "distance_m": 8.51,
+      "class": "ROAD",
+      "roadId": "34075414",
+      "road_name": "Calle Mayor",
+      "note": "el arranque se proyecta al arista mas cercana y se siembran ambos extremos"
+    },
+    "variants": {
+      "todas_las_clases": {
+        "nodes_reached": 3801,
+        "edges_reached": 3947,
+        "km_by_class": {
+          "PATH": 26.877,
+          "ROAD": 20.56,
+          "TRACK": 89.553
+        },
+        "max_route_distance_m": 6531.1,
+        "track_total_km": 91.515,
+        "track_reached_km": 89.553,
+        "track_pct_reached": 97.9,
+        "allowed_classes": [
+          "PATH",
+          "ROAD",
+          "TRACK"
+        ]
+      },
+      "solo_rodables_ROAD_TRACK": {
+        "nodes_reached": 2869,
+        "edges_reached": 2953,
+        "km_by_class": {
+          "ROAD": 20.56,
+          "TRACK": 87.324
+        },
+        "max_route_distance_m": 6665.1,
+        "track_total_km": 91.515,
+        "track_reached_km": 87.324,
+        "track_pct_reached": 95.4,
+        "allowed_classes": [
+          "ROAD",
+          "TRACK"
+        ]
+      },
+      "diagnostico_incluyendo_access_excluido": {
+        "nodes_reached": 3946,
+        "edges_reached": 4095,
+        "km_by_class": {
+          "PATH": 27.018,
+          "ROAD": 22.09,
+          "TRACK": 89.593
+        },
+        "max_route_distance_m": 5986.5,
+        "track_total_km": 91.515,
+        "track_reached_km": 89.593,
+        "track_pct_reached": 97.9,
+        "allowed_classes": [
+          "PATH",
+          "ROAD",
+          "TRACK"
+        ]
+      }
+    },
+    "unreachable": {
+      "components": 10,
+      "isolated_components": 9,
+      "track_km_unreachable_by_cause": {
+        "conexion_fuera_de_ventana": 1.818,
+        "hueco_de_mapeo": 0.144
+      },
+      "detail": [
+        {
+          "component": 1,
+          "nodes": 17,
+          "roads": [
+            "1228075600"
+          ],
+          "km_by_class": {
+            "TRACK": 0.544
+          },
+          "min_distance_to_main_network_m": 565.6,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 2,
+          "nodes": 15,
+          "roads": [
+            "170306190"
+          ],
+          "km_by_class": {
+            "TRACK": 0.472
+          },
+          "min_distance_to_main_network_m": 785.5,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 3,
+          "nodes": 9,
+          "roads": [
+            "858669218.1"
+          ],
+          "km_by_class": {
+            "TRACK": 0.348
+          },
+          "min_distance_to_main_network_m": 74.3,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 4,
+          "nodes": 8,
+          "roads": [
+            "858630485.0",
+            "858630485.1"
+          ],
+          "km_by_class": {
+            "TRACK": 0.104
+          },
+          "min_distance_to_main_network_m": 36.6,
+          "touches_window_border": false,
+          "cause": "hueco_de_mapeo"
+        },
+        {
+          "component": 5,
+          "nodes": 5,
+          "roads": [
+            "1120670232"
+          ],
+          "km_by_class": {
+            "TRACK": 0.04
+          },
+          "min_distance_to_main_network_m": 31.8,
+          "touches_window_border": false,
+          "cause": "hueco_de_mapeo"
+        },
+        {
+          "component": 6,
+          "nodes": 4,
+          "roads": [
+            "218781062"
+          ],
+          "km_by_class": {
+            "TRACK": 0.398
+          },
+          "min_distance_to_main_network_m": 156.7,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 7,
+          "nodes": 4,
+          "roads": [
+            "1228075601"
+          ],
+          "km_by_class": {
+            "TRACK": 0.049
+          },
+          "min_distance_to_main_network_m": 703.2,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 8,
+          "nodes": 4,
+          "roads": [
+            "168431338"
+          ],
+          "km_by_class": {
+            "ROAD": 0.032
+          },
+          "min_distance_to_main_network_m": 8.9,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        },
+        {
+          "component": 9,
+          "nodes": 2,
+          "roads": [
+            "741763074"
+          ],
+          "km_by_class": {
+            "TRACK": 0.008
+          },
+          "min_distance_to_main_network_m": 2.4,
+          "touches_window_border": true,
+          "cause": "conexion_fuera_de_ventana"
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "audit_buffer": {
+      "file": "data/roads/raw/osm_highways_audit_buffer001.json",
+      "buffer_deg": 0.01,
+      "ways": 524,
+      "ways_only_in_audit": 55,
+      "ways_only_in_main": 0,
+      "ways_intersecting_window_missing_in_main": [],
+      "coverage_ok": true,
+      "criterion": "toda way que intersecta la ventana con longitud > 0 debe estar en la descarga principal"
+    },
+    "query_bbox_complete": true,
+    "ways_touching_window_border": 46,
+    "ways_crossing_border": 46,
+    "ways_fully_inside_window": 404,
+    "border_endpoints": 55,
+    "interior_endpoints": 853,
+    "interior_endpoints_not_original_vertex": 0,
+    "clip_errors": [],
+    "max_vertex_outside_window_m": 0.0,
+    "km_outside_window": 121200.104,
+    "ways_fully_outside_window": 19,
+    "snap": {
+      "tolerance_m": 1.0,
+      "applied": 3,
+      "max_distance_m": 0.829,
+      "detail": [
+        {
+          "record": 292,
+          "osm_id": 431702017,
+          "from": [
+            2963.62,
+            3716.02
+          ],
+          "to": [
+            2963.89,
+            3715.71
+          ],
+          "dist_m": 0.411,
+          "resolved_to": [
+            2963.89,
+            3715.71
+          ]
+        },
+        {
+          "record": 329,
+          "osm_id": 645040295,
+          "from": [
+            3092.07,
+            4029.07
+          ],
+          "to": [
+            3092.43,
+            4029.14
+          ],
+          "dist_m": 0.367,
+          "resolved_to": [
+            3092.43,
+            4029.14
+          ]
+        },
+        {
+          "record": 438,
+          "osm_id": 651574760,
+          "from": [
+            5506.97,
+            6000.0
+          ],
+          "to": [
+            5507.38,
+            5999.28
+          ],
+          "dist_m": 0.829,
+          "resolved_to": [
+            5507.38,
+            5999.28
+          ]
+        }
+      ]
+    },
+    "quadrant_km_northeast_x>=3000_z>=3000": {
+      "ROAD": 11.594,
+      "TRACK": 22.295,
+      "PATH": 2.272
+    },
+    "grid_1km_km": [
+      [
+        {
+          "x": 0,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 3.22,
+          "PATH": 1.224
+        },
+        {
+          "x": 1000,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 1.041,
+          "PATH": 0.834
+        },
+        {
+          "x": 2000,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 0.766,
+          "PATH": 2.438
+        },
+        {
+          "x": 3000,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 1.583,
+          "PATH": 3.562
+        },
+        {
+          "x": 4000,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 3.511,
+          "PATH": 1.296
+        },
+        {
+          "x": 5000,
+          "z": 0,
+          "ROAD": 0.0,
+          "TRACK": 4.964,
+          "PATH": 0.796
+        }
+      ],
+      [
+        {
+          "x": 0,
+          "z": 1000,
+          "ROAD": 0.922,
+          "TRACK": 3.632,
+          "PATH": 0.0
+        },
+        {
+          "x": 1000,
+          "z": 1000,
+          "ROAD": 0.16,
+          "TRACK": 1.533,
+          "PATH": 0.999
+        },
+        {
+          "x": 2000,
+          "z": 1000,
+          "ROAD": 0.0,
+          "TRACK": 2.31,
+          "PATH": 2.539
+        },
+        {
+          "x": 3000,
+          "z": 1000,
+          "ROAD": 0.0,
+          "TRACK": 1.389,
+          "PATH": 1.865
+        },
+        {
+          "x": 4000,
+          "z": 1000,
+          "ROAD": 0.0,
+          "TRACK": 1.175,
+          "PATH": 0.0
+        },
+        {
+          "x": 5000,
+          "z": 1000,
+          "ROAD": 0.0,
+          "TRACK": 3.134,
+          "PATH": 3.227
+        }
+      ],
+      [
+        {
+          "x": 0,
+          "z": 2000,
+          "ROAD": 1.687,
+          "TRACK": 5.563,
+          "PATH": 0.0
+        },
+        {
+          "x": 1000,
+          "z": 2000,
+          "ROAD": 1.673,
+          "TRACK": 4.73,
+          "PATH": 0.409
+        },
+        {
+          "x": 2000,
+          "z": 2000,
+          "ROAD": 2.698,
+          "TRACK": 2.156,
+          "PATH": 0.547
+        },
+        {
+          "x": 3000,
+          "z": 2000,
+          "ROAD": 0.405,
+          "TRACK": 3.292,
+          "PATH": 1.398
+        },
+        {
+          "x": 4000,
+          "z": 2000,
+          "ROAD": 0.0,
+          "TRACK": 0.943,
+          "PATH": 0.828
+        },
+        {
+          "x": 5000,
+          "z": 2000,
+          "ROAD": 0.0,
+          "TRACK": 2.185,
+          "PATH": 1.257
+        }
+      ],
+      [
+        {
+          "x": 0,
+          "z": 3000,
+          "ROAD": 0.0,
+          "TRACK": 6.289,
+          "PATH": 0.0
+        },
+        {
+          "x": 1000,
+          "z": 3000,
+          "ROAD": 0.0,
+          "TRACK": 2.458,
+          "PATH": 0.0
+        },
+        {
+          "x": 2000,
+          "z": 3000,
+          "ROAD": 0.438,
+          "TRACK": 3.024,
+          "PATH": 1.424
+        },
+        {
+          "x": 3000,
+          "z": 3000,
+          "ROAD": 3.96,
+          "TRACK": 3.908,
+          "PATH": 0.838
+        },
+        {
+          "x": 4000,
+          "z": 3000,
+          "ROAD": 0.0,
+          "TRACK": 2.841,
+          "PATH": 0.261
+        },
+        {
+          "x": 5000,
+          "z": 3000,
+          "ROAD": 0.0,
+          "TRACK": 0.968,
+          "PATH": 0.0
+        }
+      ],
+      [
+        {
+          "x": 0,
+          "z": 4000,
+          "ROAD": 0.0,
+          "TRACK": 2.39,
+          "PATH": 0.0
+        },
+        {
+          "x": 1000,
+          "z": 4000,
+          "ROAD": 0.0,
+          "TRACK": 1.857,
+          "PATH": 0.0
+        },
+        {
+          "x": 2000,
+          "z": 4000,
+          "ROAD": 0.0,
+          "TRACK": 2.086,
+          "PATH": 0.0
+        },
+        {
+          "x": 3000,
+          "z": 4000,
+          "ROAD": 2.448,
+          "TRACK": 3.407,
+          "PATH": 0.797
+        },
+        {
+          "x": 4000,
+          "z": 4000,
+          "ROAD": 0.0,
+          "TRACK": 1.683,
+          "PATH": 0.0
+        },
+        {
+          "x": 5000,
+          "z": 4000,
+          "ROAD": 0.0,
+          "TRACK": 0.136,
+          "PATH": 0.0
+        }
+      ],
+      [
+        {
+          "x": 0,
+          "z": 5000,
+          "ROAD": 0.0,
+          "TRACK": 0.513,
+          "PATH": 0.0
+        },
+        {
+          "x": 1000,
+          "z": 5000,
+          "ROAD": 0.0,
+          "TRACK": 0.749,
+          "PATH": 0.0
+        },
+        {
+          "x": 2000,
+          "z": 5000,
+          "ROAD": 1.016,
+          "TRACK": 2.726,
+          "PATH": 0.0
+        },
+        {
+          "x": 3000,
+          "z": 5000,
+          "ROAD": 1.515,
+          "TRACK": 1.923,
+          "PATH": 0.0
+        },
+        {
+          "x": 4000,
+          "z": 5000,
+          "ROAD": 1.024,
+          "TRACK": 3.491,
+          "PATH": 0.0
+        },
+        {
+          "x": 5000,
+          "z": 5000,
+          "ROAD": 2.648,
+          "TRACK": 3.939,
+          "PATH": 0.376
+        }
+      ]
+    ],
+    "old_bbox_gap": {
+      "old_bbox_wgs84_s_w_n_e": [
+        42.350651,
+        -3.350784,
+        42.404549,
+        -3.277816
+      ],
+      "km_outside_old_bbox_by_class": {
+        "PATH": 1.856,
+        "ROAD": 3.489,
+        "TRACK": 10.298
+      },
+      "ways_affected": 91,
+      "note": "km de la ventana que el bbox viejo NO cubria"
+    }
+  }
+}

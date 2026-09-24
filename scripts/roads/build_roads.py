@@ -1,0 +1,1098 @@
+#!/usr/bin/env python3
+"""Construye la red vial rural de la ventana jugable (FASE 3a — SOLO DATOS).
+
+Entrada
+    data/roads/raw/osm_highways_window.json           Overpass `out tags geom`
+    data/roads/raw/osm_highways_window_manifest.json  SHA256 + URL + timestamp
+    data/roads/raw/osm_highways_audit_buffer001.json  auditoria de cobertura
+                                                      (buffer 0.01 deg, opcional)
+
+Salida
+    public/roads/roads.json       vias clasificadas, tags y geometria en
+                                  coordenadas de mundo
+    public/roads/navigation.json  grafo nodos/aristas para pathfinding
+    public/roads/stats.json       km por clase, conectividad, cobertura
+
+Pipeline
+    1. proyeccion  WGS84 -> EPSG:25830 -> coords de mundo (origen sudoeste)
+    2. recorte EXACTO a la ventana 6000 x 6000 m + verificacion de endpoints
+    3. clasificacion off-road: ROAD / TRACK / PATH / EXCLUDE
+    4. snap de extremos colgantes (<=1 m) y simplificacion que PROTEGE los
+       vertices compartidos entre ways (si un cruce se simplificara, el grafo
+       se romperia en silencio)
+    5. grafo: un nodo por cada vertice, arista entre vertices consecutivos
+       => la longitud de la arista ES el largo de la polilinea, asi que el
+          RoadGraph del motor de referencia la consume sin traduccion
+    6. validaciones: borde, cuadrante noreste, conectividad desde Villafranca
+
+Regla del proyecto: los tags de OSM son METADATOS MAPEADOS, no mediciones.
+Ancho y speedFactor son DISENO de gameplay, no dato. Ver docs/roads/.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import heapq
+import json
+import math
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+
+from pyproj import Transformer
+from shapely.geometry import LineString, Polygon, box
+
+ROOT = Path(__file__).resolve().parents[2]
+RAW_DIR = ROOT / "data" / "roads" / "raw"
+OUT_DIR = ROOT / "public" / "roads"
+
+RAW_MAIN = RAW_DIR / "osm_highways_window.json"
+RAW_MANIFEST = RAW_DIR / "osm_highways_window_manifest.json"
+RAW_AUDIT = RAW_DIR / "osm_highways_audit_buffer001.json"
+
+# --- Convencion de coordenadas (FIJA, no reinterpretar) ---------------------
+E_MIN, E_MAX = 471500.0, 477500.0
+N_MIN, N_MAX = 4689000.0, 4695000.0
+E0, N0 = E_MIN, N_MIN          # origen del mundo = esquina SUDOESTE
+WORLD_SIZE = 6000.0            # metros, worldScale = 1
+SPAWN = (3097.0, 3945.0)       # Villafranca Montes de Oca, coords de mundo
+
+# bbox viejo de data/geo/raw (YA NO SIRVE): corrido al sudoeste.
+OLD_BBOX_WGS84 = (42.350651, -3.350784, 42.404549, -3.277816)  # S, W, N, E
+
+# --- Parametros de construccion --------------------------------------------
+SIMPLIFY_TOL_M = 1.0    # Douglas-Peucker; los vertices compartidos se salvan
+SNAP_TOL_M = 1.0        # pegado de extremos colgantes que casi se tocan
+TINY_SEG_M = 2.0        # umbral para CONTAR segmentos diminutos (no se borran)
+PRECISION_M = 2         # decimales de metro (centimetros) en la salida
+
+# --- CLASIFICACION OFF-ROAD -------------------------------------------------
+ROAD_KINDS = {
+    "trunk", "primary", "secondary", "tertiary",
+    "unclassified", "residential", "living_street", "service",
+    # Extension documentada: en la ventana no hay ninguna, pero si la hubiera
+    # un motorway no puede quedar fuera de la red rodable.
+    "motorway",
+}
+TRACK_KINDS = {"track"}
+PATH_KINDS = {"path", "footway", "bridleway", "cycleway", "steps", "pedestrian"}
+EXCLUDE_KINDS = {
+    "proposed", "construction", "raceway", "escape", "ferry",
+    "corridor", "via_ferrata", "rest_area", "services", "bus_stop",
+    "platform", "proposed_link", "construction_link",
+}
+
+# --- Tablas de DISENO (estimacion, NO medicion) -----------------------------
+ROAD_WIDTH_M = {
+    "motorway": 7.5, "trunk": 7.5, "primary": 7.0, "secondary": 6.5,
+    "tertiary": 6.0, "unclassified": 5.5, "residential": 5.5,
+    "living_street": 5.0, "service": 4.5,
+}
+TRACK_WIDTH_M = {"grade1": 4.5, "grade2": 4.0, "grade3": 3.5, "grade4": 3.0, "grade5": 2.5}
+TRACK_WIDTH_DEFAULT_M = 3.5
+PATH_WIDTH_M = 1.5
+
+ROAD_SPEED_FACTOR = 1.0
+TRACK_SPEED_FACTOR = {"grade1": 0.60, "grade2": 0.50, "grade3": 0.42,
+                      "grade4": 0.33, "grade5": 0.25}
+TRACK_SPEED_FACTOR_DEFAULT = 0.45   # sin tracktype: centro cauteloso
+PATH_SPEED_FACTOR = 0.10
+
+# Desempate cuando dos ways comparten exactamente un tramo de geometria.
+PRIORITY = {"ROAD": 0, "TRACK": 1, "PATH": 2}
+
+
+# --------------------------------------------------------------------------
+# Geometria
+# --------------------------------------------------------------------------
+def make_projector():
+    tr = Transformer.from_crs("EPSG:4326", "EPSG:25830", always_xy=True)
+
+    def to_world(lon: float, lat: float) -> tuple[float, float]:
+        e, n = tr.transform(lon, lat)
+        return (round(e - E0, PRECISION_M), round(n - N0, PRECISION_M))
+
+    return to_world
+
+
+def clamp_world(p) -> tuple[float, float]:
+    return (
+        min(WORLD_SIZE, max(0.0, round(float(p[0]), PRECISION_M))),
+        min(WORLD_SIZE, max(0.0, round(float(p[1]), PRECISION_M))),
+    )
+
+
+def polyline_length(pts) -> float:
+    return sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts, pts[1:]))
+
+
+def dedupe(pts):
+    out = []
+    for p in pts:
+        if out and out[-1] == p:
+            continue
+        out.append(p)
+    return out
+
+
+def parts_of(geom) -> list:
+    if geom.is_empty:
+        return []
+    if geom.geom_type == "LineString":
+        return [geom]
+    if hasattr(geom, "geoms"):
+        out = []
+        for g in geom.geoms:
+            out.extend(parts_of(g))
+        return out
+    return []
+
+
+WIN = box(0.0, 0.0, WORLD_SIZE, WORLD_SIZE)
+
+
+def clip_to_window(pts):
+    """Recorta a la ventana.
+
+    Devuelve (partes, largo_total, largo_fuera, desvio_max_fuera_del_borde).
+    Todo punto de corte queda exactamente sobre el borde (se redondea y
+    acota), salvo un error numerico que se mide y se reporta.
+    """
+    total = polyline_length(pts)
+    if len(pts) < 2:
+        return [], total, total, 0.0
+    line = LineString(pts)
+    if not line.intersects(WIN):
+        return [], total, total, 0.0
+    clipped = line.intersection(WIN)
+    out = []
+    deviation = 0.0
+    for g in parts_of(clipped):
+        raw = list(g.coords)
+        for p in raw:
+            deviation = max(deviation,
+                            max(-float(p[0]), float(p[0]) - WORLD_SIZE,
+                                -float(p[1]), float(p[1]) - WORLD_SIZE))
+        pts2 = dedupe([clamp_world(p) for p in raw])
+        if len(pts2) >= 2:
+            out.append(pts2)
+    inside = sum(polyline_length(p) for p in out)
+    return out, total, max(0.0, total - inside), deviation
+
+
+# --------------------------------------------------------------------------
+# Clasificacion
+# --------------------------------------------------------------------------
+def classify(tags: dict) -> tuple[str | None, str | None]:
+    """Devuelve (clase, motivo_de_exclusion).
+
+    clase = None  -> EXCLUDE por tipo de via (proposed, construction, ...).
+    motivo no nulo con clase valida -> EXCLUDE por acceso (motor_vehicle/access).
+    """
+    hw = tags.get("highway", "")
+    base = hw[: -len("_link")] if hw.endswith("_link") else hw
+    if hw in EXCLUDE_KINDS or base in EXCLUDE_KINDS:
+        return None, f"highway={hw}"
+    if base in TRACK_KINDS:
+        cls = "TRACK"
+    elif base in PATH_KINDS:
+        cls = "PATH"
+    elif base in ROAD_KINDS:
+        cls = "ROAD"
+    else:
+        return None, f"highway_sin_clasificar={hw or '<sin-tag>'}"
+    return cls, access_reason(tags)
+
+
+def access_reason(tags: dict) -> str | None:
+    """Filtros de acceso. Solo `no` y `private`: no ser agresivo de mas.
+
+    agricultural/forestry y destination NO se descartan: en un juego de
+    pistas forestales son justamente el terreno que queremos.
+    """
+    if tags.get("motor_vehicle") == "no":
+        return "motor_vehicle=no"
+    if tags.get("motorcar") == "no":
+        return "motorcar=no"
+    if tags.get("vehicle") == "no":
+        return "vehicle=no"
+    acc = tags.get("access")
+    if acc in ("no", "private"):
+        return f"access={acc}"
+    return None
+
+
+def parse_width(tags: dict) -> tuple[float | None, str]:
+    for key in ("width", "est_width"):
+        raw = tags.get(key)
+        if not raw:
+            continue
+        try:
+            val = float(str(raw).split(";")[0].split()[0])
+        except (ValueError, IndexError):
+            continue
+        if 0.4 <= val <= 30.0:
+            return val, f"osm_{key}"
+    return None, ""
+
+
+def design_width(cls: str, kind: str, tracktype: str | None) -> tuple[float, str]:
+    if cls == "ROAD":
+        base = kind[: -len("_link")] if kind.endswith("_link") else kind
+        return ROAD_WIDTH_M.get(base, 5.5), f"diseno_road/{base}"
+    if cls == "TRACK":
+        if tracktype in TRACK_WIDTH_M:
+            return TRACK_WIDTH_M[tracktype], f"diseno_track/{tracktype}"
+        return TRACK_WIDTH_DEFAULT_M, "diseno_track/sin_tracktype"
+    return PATH_WIDTH_M, "diseno_path"
+
+
+def design_speed(cls: str, tracktype: str | None) -> float:
+    if cls == "ROAD":
+        return ROAD_SPEED_FACTOR
+    if cls == "TRACK":
+        return TRACK_SPEED_FACTOR.get(tracktype, TRACK_SPEED_FACTOR_DEFAULT)
+    return PATH_SPEED_FACTOR
+
+
+# --------------------------------------------------------------------------
+# Snap y simplificacion
+# --------------------------------------------------------------------------
+def snap_endpoints(records: list[dict], tol: float) -> tuple[list[dict], list[dict]]:
+    """Pega extremos de way que caen a <= tol de un vertice ajeno.
+
+    Solo extremos (grado 1): cruces mal mapeados o dos tramos que se tocan a
+    <1 m sin compartir node. No se tocan vertices intermedios, para no
+    inventar cruces entre pistas paralelas.
+    """
+    if tol <= 0:
+        return records, []
+    index: dict[tuple[int, int], list[tuple[float, float]]] = defaultdict(list)
+    for rec in records:
+        for p in rec["pts"]:
+            index[(int(p[0] // tol), int(p[1] // tol))].append(p)
+
+    remap: dict[tuple[float, float], tuple[float, float]] = {}
+    log: list[dict] = []
+    for ri, rec in enumerate(records):
+        n = len(rec["pts"])
+        for end in (0, n - 1):
+            if n < 2:
+                continue
+            p = rec["pts"][end]
+            gx, gy = int(p[0] // tol), int(p[1] // tol)
+            best, best_d = None, tol
+            for cx in (gx - 1, gx, gx + 1):
+                for cy in (gy - 1, gy, gy + 1):
+                    for q in index.get((cx, cy), ()):
+                        if q == p:
+                            continue
+                        d = math.hypot(q[0] - p[0], q[1] - p[1])
+                        if 0 < d <= best_d:
+                            best, best_d = q, d
+            if best is not None:
+                remap[p] = best
+                if not any(e["record"] == ri and e["from"] == [p[0], p[1]] for e in log):
+                    log.append({"record": ri, "osm_id": rec["osm_id"],
+                                "from": [p[0], p[1]], "to": [best[0], best[1]],
+                                "dist_m": round(best_d, 3)})
+    if not remap:
+        return records, []
+
+    def resolve(p, depth=0):
+        while p in remap and depth < 8:
+            p = remap[p]
+            depth += 1
+        return p
+
+    for rec in records:
+        rec["pts"] = dedupe([resolve(p) for p in rec["pts"]])
+    for entry in log:
+        entry["resolved_to"] = [c for c in resolve(tuple(entry["from"]))]
+    return records, log
+
+
+def simplify_protected(pts, protected: set[int], tol: float):
+    """Douglas-Peucker por tramos, sin tocar los indices protegidos.
+
+    Si un vertice compartido entre dos ways desapareciera, el cruce dejaria de
+    existir en el grafo y la red se partiria en silencio. Por eso se parte la
+    polilinea en tramos entre vertices protegidos y se simplifica cada tramo.
+    """
+    if len(pts) <= 2 or tol <= 0:
+        return pts
+    marks = sorted(protected | {0, len(pts) - 1})
+    out: list[tuple[float, float]] = []
+    for i in range(len(marks) - 1):
+        span = pts[marks[i]:marks[i + 1] + 1]
+        if len(span) <= 2:
+            seg = span
+        else:
+            seg = [(round(float(c[0]), PRECISION_M), round(float(c[1]), PRECISION_M))
+                   for c in LineString(span).simplify(tol).coords]
+        for p in seg:
+            if out and out[-1] == p:
+                continue
+            out.append(p)
+    return dedupe(out)
+
+
+# --------------------------------------------------------------------------
+# Grafo
+# --------------------------------------------------------------------------
+def build_graph(roads: list[dict]) -> dict:
+    """Un nodo por vertice; arista entre vertices consecutivos de cada via.
+
+    Asi length(arista) == largo real de la polilinea (el RoadGraph del motor
+    de referencia calcula hypot(a,b), y con un vertice por tramo coincide
+    exactamente con la geometria de roads.json).
+    """
+    node_id: dict[tuple[float, float], int] = {}
+    nodes: list[list[float]] = []
+    edges: list[list[int]] = []
+    edge_meta: list[dict] = []
+    seen_pairs: dict[frozenset, int] = {}
+    dup_log: list[dict] = []
+
+    for road in roads:
+        prev = None
+        for p in road["points"]:
+            key = (p[0], p[1])
+            nid = node_id.get(key)
+            if nid is None:
+                nid = len(nodes)
+                node_id[key] = nid
+                nodes.append([p[0], p[1]])
+            if prev is not None and prev != nid:
+                pair = frozenset((prev, nid))
+                dup_idx = seen_pairs.get(pair)
+                if dup_idx is not None:
+                    # Dos ways con la MISMA geometria de tramo: el Map del
+                    # RoadGraph solo conserva uno. Desempate a favor de la
+                    # clase rodable, para que un tramo de asfalto mapeado
+                    # sobre una senda no quede etiquetado como PATH.
+                    kept_meta = edge_meta[dup_idx]
+                    if PRIORITY[road["class"]] < PRIORITY[kept_meta["class"]]:
+                        dup_log.append({"length_m": kept_meta["length"],
+                                        "kept": road["id"], "skipped": kept_meta["roadId"],
+                                        "classes": [road["class"], kept_meta["class"]],
+                                        "tie_break": "reemplazada por clase rodable"})
+                        edge_meta[dup_idx] = {
+                            "length": kept_meta["length"],
+                            "class": road["class"],
+                            "roadId": road["id"],
+                            "kind": road["kind"],
+                            "tracktype": road.get("tracktype"),
+                            "speedFactor": road["speedFactor"],
+                        }
+                    else:
+                        dup_log.append({
+                            "length_m": round(math.hypot(nodes[prev][0] - nodes[nid][0],
+                                                         nodes[prev][1] - nodes[nid][1]), 3),
+                            "kept": kept_meta["roadId"],
+                            "skipped": road["id"],
+                            "classes": [kept_meta["class"], road["class"]],
+                        })
+                else:
+                    seen_pairs[pair] = len(edges)
+                    a, b = nodes[prev], nodes[nid]
+                    edges.append([prev, nid])
+                    edge_meta.append({
+                        "length": round(math.hypot(a[0] - b[0], a[1] - b[1]), 3),
+                        "class": road["class"],
+                        "roadId": road["id"],
+                        "kind": road["kind"],
+                        "tracktype": road.get("tracktype"),
+                        "speedFactor": road["speedFactor"],
+                    })
+            prev = nid
+
+    adj: list[list[tuple[int, int]]] = [[] for _ in nodes]
+    for ei, (a, b) in enumerate(edges):
+        adj[a].append((b, ei))
+        adj[b].append((a, ei))
+
+    return {"nodes": nodes, "edges": edges, "edge_meta": edge_meta, "adj": adj,
+            "duplicate_edges": dup_log}
+
+
+def component_sets(graph: dict) -> list[set[int]]:
+    """Componentes conexas como conjuntos de nodos, de mayor a menor."""
+    seen = [False] * len(graph["nodes"])
+    out = []
+    for start in range(len(graph["nodes"])):
+        if seen[start]:
+            continue
+        stack, group = [start], set()
+        seen[start] = True
+        while stack:
+            v = stack.pop()
+            group.add(v)
+            for nxt, _ in graph["adj"][v]:
+                if not seen[nxt]:
+                    seen[nxt] = True
+                    stack.append(nxt)
+        out.append(group)
+    return sorted(out, key=len, reverse=True)
+
+
+def on_border(p) -> bool:
+    return (p[0] <= 0.01 or p[0] >= WORLD_SIZE - 0.01
+            or p[1] <= 0.01 or p[1] >= WORLD_SIZE - 0.01)
+
+
+def isolated_report(graph: dict, roads: list[dict], groups: list[set[int]]) -> dict:
+    """Desglose de lo que NO se alcanza desde el arranque.
+
+    Distingue dos causas muy distintas:
+      * conexion_fuera_de_ventana -> la via toca el borde: el empalme real
+        esta FUERA del mapa, es geometria legitima que el grafo interior no
+        puede unir.
+      * hueco_de_mapeo            -> no toca ningun borde: la way existe
+        adentro pero no comparte node con nadie (falta el cruce en OSM).
+    """
+    node_comp = [0] * len(graph["nodes"])
+    for ci, group in enumerate(groups):
+        for v in group:
+            node_comp[v] = ci
+
+    road_lines: dict[int, list] = defaultdict(list)
+    for road in roads:
+        pts = [tuple(p) for p in road["points"]]
+        if len(pts) >= 2:
+            # todos los vertices de una way caen en la misma componente
+            first = next((i for i, n in enumerate(graph["nodes"])
+                          if n[0] == pts[0][0] and n[1] == pts[0][1]), None)
+            if first is not None:
+                road_lines[node_comp[first]].append(LineString(pts))
+
+    main_lines = road_lines.get(0, [])
+    detail = []
+    km_by_cause: dict[str, Counter] = {"conexion_fuera_de_ventana": Counter(),
+                                       "hueco_de_mapeo": Counter()}
+    for ci, group in enumerate(groups[1:], start=1):
+        km: Counter = Counter()
+        road_ids = set()
+        for ei, (a, b) in enumerate(graph["edges"]):
+            if a in group and b in group:
+                meta = graph["edge_meta"][ei]
+                km[meta["class"]] += meta["length"] / 1000.0
+                road_ids.add(meta["roadId"])
+        lines = road_lines.get(ci, [])
+        dist = min((l.distance(m) for l in lines for m in main_lines), default=None)
+        border = any(on_border(p) for l in lines
+                     for p in (list(l.coords)[0], list(l.coords)[-1]))
+        cause = "conexion_fuera_de_ventana" if border else "hueco_de_mapeo"
+        for cls, v in km.items():
+            km_by_cause[cause][cls] += v
+        detail.append({
+            "component": ci,
+            "nodes": len(group),
+            "roads": sorted(road_ids),
+            "km_by_class": {c: round(v, 3) for c, v in sorted(km.items())},
+            "min_distance_to_main_network_m": None if dist is None else round(dist, 1),
+            "touches_window_border": border,
+            "cause": cause,
+        })
+    return {
+        "components": len(groups),
+        "isolated_components": len(detail),
+        "track_km_unreachable_by_cause": {
+            k: round(v.get("TRACK", 0.0), 3) for k, v in km_by_cause.items()},
+        "detail": detail,
+    }
+
+
+
+def nearest_edge(graph: dict, p: tuple[float, float]) -> dict:
+    best = {"edge": -1, "dist": math.inf, "t": 0.0, "length": 0.0}
+    nodes = graph["nodes"]
+    for ei, (a, b) in enumerate(graph["edges"]):
+        ax, az = nodes[a]
+        bx, bz = nodes[b]
+        dx, dz = bx - ax, bz - az
+        denom = dx * dx + dz * dz
+        t = 0.0 if denom == 0 else max(0.0, min(1.0, ((p[0] - ax) * dx + (p[1] - az) * dz) / denom))
+        px, pz = ax + dx * t, az + dz * t
+        d = math.hypot(p[0] - px, p[1] - pz)
+        if d < best["dist"]:
+            best = {"edge": ei, "dist": d, "t": t, "length": math.sqrt(denom),
+                    "point": [px, pz], "a": a, "b": b}
+    return best
+
+
+def reachable(graph: dict, seeds: list[tuple[int, float]], allowed: set[str]) -> dict:
+    """Dijkstra solo para marcar alcance; suma TODA arista con ambos extremos
+    alcanzados (asi los ciclos no subestiman los km)."""
+    n = len(graph["nodes"])
+    dist = [math.inf] * n
+    heap: list[tuple[float, int]] = []
+    for node, d0 in seeds:
+        if d0 < dist[node]:
+            dist[node] = d0
+            heapq.heappush(heap, (d0, node))
+    visited = [False] * n
+    while heap:
+        d, v = heapq.heappop(heap)
+        if visited[v]:
+            continue
+        visited[v] = True
+        for nb, ei in graph["adj"][v]:
+            if graph["edge_meta"][ei]["class"] not in allowed:
+                continue
+            nd = d + graph["edge_meta"][ei]["length"]
+            if nd < dist[nb]:
+                dist[nb] = nd
+                heapq.heappush(heap, (nd, nb))
+
+    km_by_class: dict[str, float] = defaultdict(float)
+    edges_reached = 0
+    for ei, (a, b) in enumerate(graph["edges"]):
+        meta = graph["edge_meta"][ei]
+        if meta["class"] not in allowed:
+            continue
+        if visited[a] and visited[b]:
+            km_by_class[meta["class"]] += meta["length"] / 1000.0
+            edges_reached += 1
+    max_dist = max((dist[i] for i in range(n) if visited[i] and dist[i] < math.inf), default=0.0)
+    return {
+        "nodes_reached": int(sum(visited)),
+        "edges_reached": edges_reached,
+        "km_by_class": {k: round(v, 3) for k, v in sorted(km_by_class.items())},
+        "max_route_distance_m": round(max_dist, 1),
+    }
+
+
+# --------------------------------------------------------------------------
+# Principal
+# --------------------------------------------------------------------------
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--raw", default=str(RAW_MAIN), help="JSON crudo de Overpass")
+    ap.add_argument("--no-audit", action="store_true", help="omite la auditoria de buffer")
+    args = ap.parse_args()
+
+    raw_path = Path(args.raw)
+    manifest = json.loads(RAW_MANIFEST.read_text(encoding="utf-8")) if RAW_MANIFEST.exists() else {}
+    payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    elements = payload.get("elements", [])
+    to_world = make_projector()
+
+    # -------- 1-3. proyeccion, recorte y clasificacion ---------------------
+    records: list[dict] = []
+    ways_outside = 0
+    km_outside = 0.0
+    max_deviation = 0.0
+    clip_errors: list[dict] = []
+    border_endpoints = 0
+    interior_endpoints = 0
+    border_ways: set[int] = set()
+    crossing_ways: set[int] = set()
+    inside_ways: set[int] = set()
+
+    for el in elements:
+        if el.get("type") != "way" or "geometry" not in el:
+            continue
+        tags = el.get("tags", {})
+        proj = [to_world(p["lon"], p["lat"]) for p in el["geometry"]]
+        if len(proj) < 2:
+            continue
+        orig_keys = set(proj)
+        parts, total, lost, dev = clip_to_window(proj)
+        max_deviation = max(max_deviation, dev)
+        if not parts:
+            ways_outside += 1
+            km_outside += total
+            continue
+        if lost > 0.001:
+            crossing_ways.add(el["id"])
+        else:
+            inside_ways.add(el["id"])
+        km_outside += lost
+
+        cls, reason = classify(tags)
+        for pts in parts:
+            for end in (pts[0], pts[-1]):
+                on_border = (end[0] <= 0.01 or end[0] >= WORLD_SIZE - 0.01
+                             or end[1] <= 0.01 or end[1] >= WORLD_SIZE - 0.01)
+                if on_border:
+                    border_endpoints += 1
+                else:
+                    interior_endpoints += 1
+                    if end not in orig_keys:
+                        # ni sobre el borde ni un vertice original de la way:
+                        # eso SI seria un recorte erroneo.
+                        clip_errors.append({"way": el["id"], "point": list(end),
+                                            "highway": tags.get("highway")})
+            if lost > 0.001:
+                border_ways.add(el["id"])
+            records.append({
+                "osm_id": el["id"],
+                "pts": pts,
+                "tags": tags,
+                "class": cls,
+                "exclude_reason": reason,
+            })
+
+    # -------- 4. snap (solo ways con clase valida) -------------------------
+    class_ok = [r for r in records if r["class"] is not None]
+    class_ok, snap_log = snap_endpoints(class_ok, SNAP_TOL_M)
+
+    # -------- 4b. simplificacion protegida (solo las que van al juego) -----
+    kept = [r for r in class_ok if r["exclude_reason"] is None]
+    km_before_simplify = sum(polyline_length(r["pts"]) for r in kept)
+    vertices_before = sum(len(r["pts"]) for r in kept)
+    vertex_count: Counter = Counter()
+    for rec in kept:
+        for p in rec["pts"]:
+            vertex_count[p] += 1
+    for rec in kept:
+        prot = {i for i, p in enumerate(rec["pts"]) if vertex_count[p] >= 2}
+        rec["pts"] = simplify_protected(rec["pts"], prot, SIMPLIFY_TOL_M)
+    km_after_simplify = sum(polyline_length(r["pts"]) for r in kept)
+    vertices_after = sum(len(r["pts"]) for r in kept)
+
+    # -------- objeto via ---------------------------------------------------
+    def make_road(rec: dict, idx: int, n_parts: int) -> dict:
+        tags = rec["tags"]
+        cls = rec["class"]
+        tracktype = tags.get("tracktype")
+        width_osm, width_src = parse_width(tags)
+        if width_osm is not None:
+            width, width_source = width_osm, width_src
+        else:
+            width, width_source = design_width(cls, tags.get("highway", ""), tracktype)
+        road_id = str(rec["osm_id"]) if n_parts == 1 else f"{rec['osm_id']}.{idx}"
+        return {
+            "id": road_id,
+            "osmType": "way",
+            "osmId": rec["osm_id"],
+            "name": tags.get("name", ""),
+            "ref": tags.get("ref", ""),
+            "kind": tags.get("highway", ""),        # compat Road.kind
+            "class": cls,                           # ROAD | TRACK | PATH
+            "width": round(width, 2),
+            "widthSource": width_source,            # osm_* | diseno_*
+            "speedFactor": design_speed(cls, tracktype),
+            "oneway": tags.get("oneway") == "yes",
+            "onewayValue": tags.get("oneway", ""),
+            "grade": tags.get("layer", "0"),        # compat Road.grade = layer
+            "tracktype": tracktype or "",
+            "surface": tags.get("surface", ""),
+            "smoothness": tags.get("smoothness", ""),
+            "access": tags.get("access", ""),
+            "bridge": tags.get("bridge", "no") not in ("no", ""),
+            "tunnel": tags.get("tunnel", "no") not in ("no", ""),
+            "length": round(polyline_length(rec["pts"]), 2),
+            "points": [[p[0], p[1]] for p in rec["pts"]],
+            "tags": tags,                           # tags crudos, completos
+        }
+
+    parts_by_way: dict[int, list[dict]] = defaultdict(list)
+    for rec in kept:
+        parts_by_way[rec["osm_id"]].append(rec)
+    roads: list[dict] = []
+    for recs in parts_by_way.values():
+        for i, rec in enumerate(recs):
+            roads.append(make_road(rec, i, len(recs)))
+
+    # grafo diagnostico: ademas de las del juego, las excluidas SOLO por acceso
+    diag_by_way: dict[int, list[dict]] = defaultdict(list)
+    for rec in class_ok:
+        diag_by_way[rec["osm_id"]].append(rec)
+    diag_roads: list[dict] = []
+    for recs in diag_by_way.values():
+        for i, rec in enumerate(recs):
+            diag_roads.append(make_road(rec, i, len(recs)))
+
+    # -------- 5. grafos ----------------------------------------------------
+    graph = build_graph(roads)
+    graph_diag = build_graph(diag_roads)
+    groups = component_sets(graph)
+    comp_sizes = [len(g) for g in groups]
+    unreachable = isolated_report(graph, roads, groups)
+
+    # -------- 6. conectividad desde Villafranca ----------------------------
+    ne = nearest_edge(graph, SPAWN)
+    if ne["edge"] >= 0:
+        seeds = [(ne["a"], ne["t"] * ne["length"]), (ne["b"], (1 - ne["t"]) * ne["length"])]
+        spawn_meta = graph["edge_meta"][ne["edge"]]
+        spawn_dist = round(ne["dist"], 2)
+    else:
+        seeds, spawn_meta, spawn_dist = [], {}, None
+
+    total_km: Counter = Counter()
+    for road in roads:
+        total_km[road["class"]] += road["length"] / 1000.0
+
+    def variant(graph_, seeds_, allowed) -> dict:
+        res = reachable(graph_, seeds_, allowed)
+        track_total = total_km["TRACK"]
+        track_reached = res["km_by_class"].get("TRACK", 0.0)
+        res.update({
+            "track_total_km": round(track_total, 3),
+            "track_reached_km": round(track_reached, 3),
+            "track_pct_reached": round(100.0 * track_reached / track_total, 1) if track_total else 0.0,
+            "allowed_classes": sorted(allowed),
+        })
+        return res
+
+    conn_all = variant(graph, seeds, {"ROAD", "TRACK", "PATH"})
+    conn_drive = variant(graph, seeds, {"ROAD", "TRACK"})
+    conn_diag = variant(graph_diag, seeds, {"ROAD", "TRACK", "PATH"})
+
+    # -------- cobertura: rejilla 1 km y cuadrante noreste ------------------
+    grid = [[{"x": i * 1000, "z": j * 1000, "ROAD": 0.0, "TRACK": 0.0, "PATH": 0.0}
+             for i in range(6)] for j in range(6)]
+    quadrant_km: Counter = Counter()
+    lines = [(road, LineString([tuple(p) for p in road["points"]])) for road in roads]
+    for j in range(6):
+        for i in range(6):
+            cell = box(i * 1000, j * 1000, (i + 1) * 1000, (j + 1) * 1000)
+            for road, line in lines:
+                if line.intersects(cell):
+                    km = line.intersection(cell).length / 1000.0
+                    grid[j][i][road["class"]] += km
+                    if i >= 3 and j >= 3:
+                        quadrant_km[road["class"]] += km
+    for j in range(6):
+        for i in range(6):
+            for cls in ("ROAD", "TRACK", "PATH"):
+                grid[j][i][cls] = round(grid[j][i][cls], 3)
+
+    # -------- bbox viejo: km de la ventana que no cubria -------------------
+    tr4326 = Transformer.from_crs("EPSG:4326", "EPSG:25830", always_xy=True)
+    s, w, n, e = OLD_BBOX_WGS84
+    corners_ll = [(s, w), (s, e), (n, e), (n, w)]
+    ring = []
+    for i in range(4):
+        a, b = corners_ll[i], corners_ll[(i + 1) % 4]
+        for k in range(25):
+            f = k / 25.0
+            ee, nn = tr4326.transform(a[1] + (b[1] - a[1]) * f, a[0] + (b[0] - a[0]) * f)
+            ring.append((ee - E0, nn - N0))
+    old_poly = Polygon(ring)
+    old_gap_km: Counter = Counter()
+    old_gap_ways: set[int] = set()
+    for road, line in lines:
+        outside = line.difference(old_poly).length / 1000.0
+        if outside > 0.001:
+            old_gap_km[road["class"]] += outside
+            old_gap_ways.add(road["osmId"])
+
+    # -------- auditoria de cobertura (buffer 0.01 deg) ---------------------
+    audit = None
+    if RAW_AUDIT.exists() and not args.no_audit:
+        audit_payload = json.loads(RAW_AUDIT.read_text(encoding="utf-8"))
+        audit_els = {el["id"]: el for el in audit_payload.get("elements", [])}
+        main_ids = {el["id"] for el in elements}
+        only_audit = sorted(set(audit_els) - main_ids)
+        missing = []
+        for mid in only_audit:
+            el = audit_els[mid]
+            pts = [to_world(p["lon"], p["lat"]) for p in el.get("geometry", [])]
+            if len(pts) < 2:
+                continue
+            ln = LineString(pts).intersection(WIN)
+            if ln.length > 0:
+                missing.append({"way": mid,
+                                "highway": el.get("tags", {}).get("highway"),
+                                "km": round(ln.length / 1000, 3)})
+        audit = {
+            "file": str(RAW_AUDIT.relative_to(ROOT)),
+            "buffer_deg": 0.01,
+            "ways": len(audit_els),
+            "ways_only_in_audit": len(only_audit),
+            "ways_only_in_main": len(sorted(main_ids - set(audit_els))),
+            "ways_intersecting_window_missing_in_main": missing,
+            "coverage_ok": len(missing) == 0,
+            "criterion": ("toda way que intersecta la ventana con longitud > 0 "
+                          "debe estar en la descarga principal"),
+        }
+
+    # -------- agregados ----------------------------------------------------
+    km_by_class = {c: round(total_km[c], 3) for c in ("ROAD", "TRACK", "PATH")}
+    km_by_kind: Counter = Counter()
+    segs_by_kind: Counter = Counter()
+    ways_by_kind: dict[int, str] = {}
+    for road in roads:
+        km_by_kind[road["kind"]] += road["length"] / 1000.0
+        segs_by_kind[road["kind"]] += 1
+        ways_by_kind[road["osmId"]] = road["kind"]
+    km_by_tracktype: Counter = Counter()
+    segs_by_tracktype: Counter = Counter()
+    for road in roads:
+        if road["class"] == "TRACK":
+            key = road["tracktype"] or "sin_tracktype"
+            km_by_tracktype[key] += road["length"] / 1000.0
+            segs_by_tracktype[key] += 1
+    km_by_surface: Counter = Counter()
+    for road in roads:
+        if road["surface"]:
+            km_by_surface[road["surface"]] += road["length"] / 1000.0
+
+    excl: dict[str, dict] = {}
+    for rec in records:
+        if rec["class"] is not None and rec["exclude_reason"] is None:
+            continue
+        reason = rec["exclude_reason"] or "sin-clase"
+        d = excl.setdefault(reason, {"ways": set(), "km": 0.0, "km_by_class": Counter()})
+        d["ways"].add(rec["osm_id"])
+        part_km = polyline_length(rec["pts"]) / 1000.0
+        d["km"] += part_km
+        d["km_by_class"][rec["class"] or "sin_clase"] += part_km
+    excl_out = {
+        k: {"ways": len(v["ways"]), "km": round(v["km"], 3),
+            "km_by_class": {c: round(km, 3) for c, km in sorted(v["km_by_class"].items())}}
+        for k, v in sorted(excl.items())
+    }
+
+    tiny = [r["id"] for r in roads if r["length"] < TINY_SEG_M]
+
+    # -------- stats.json ---------------------------------------------------
+    stats = {
+        "meta": {
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "script": "scripts/roads/build_roads.py",
+            "coordinate_system": "EPSG:25830 (UTM 30N) -> worldX = E - 471500, worldZ = N - 4689000",
+            "world_scale": 1.0,
+            "window_m": {"e": [E_MIN, E_MAX], "n": [N_MIN, N_MAX], "size": [WORLD_SIZE, WORLD_SIZE]},
+            "spawn_world": list(SPAWN),
+            "license": "ODbL-1.0 — OpenStreetMap contributors",
+            "caveats": [
+                "Tags OSM = metadatos mapeados, no mediciones.",
+                "width y speedFactor son estimaciones de DISENO de gameplay.",
+                "grade = tag layer (compatibilidad con Road del motor de referencia); "
+                "la calidad de la pista esta en tracktype.",
+            ],
+        },
+        "source": {
+            "file": str(raw_path.relative_to(ROOT)),
+            "bytes": raw_path.stat().st_size,
+            "sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+            "endpoint": manifest.get("endpoint"),
+            "user_agent": manifest.get("user_agent"),
+            "query": manifest.get("query"),
+            "bbox_wgs84_s_w_n_e": manifest.get("bbox_wgs84_s_w_n_e"),
+            "buffer_deg": manifest.get("buffer_deg"),
+            "overpass_timestamp_osm_base": manifest.get("overpass_timestamp_osm_base"),
+            "fetched_at_utc": manifest.get("fetched_at_utc"),
+            "elements": manifest.get("elements"),
+        },
+        "counts": {
+            "ways_downloaded": len(elements),
+            "ways_kept": len({r["osmId"] for r in roads}),
+            "segments_kept": len(roads),
+            "segments_shorter_than_2m": len(tiny),
+            "ways_excluded": len({r["osm_id"] for r in records
+                                  if r["class"] is None or r["exclude_reason"] is not None}),
+            "ways_fully_outside_window": ways_outside,
+            "by_class_segments": {c: sum(1 for r in roads if r["class"] == c)
+                                  for c in ("ROAD", "TRACK", "PATH")},
+            "by_kind_segments": dict(sorted(segs_by_kind.items())),
+            "by_kind_ways": dict(sorted(Counter(ways_by_kind.values()).items())),
+        },
+        "length_km": {
+            "by_class": km_by_class,
+            "total": round(sum(km_by_class.values()), 3),
+            "by_kind": {k: round(v, 3) for k, v in sorted(km_by_kind.items(), key=lambda kv: -kv[1])},
+            "by_tracktype": {k: round(v, 3) for k, v in sorted(km_by_tracktype.items())},
+            "by_surface": {k: round(v, 3) for k, v in sorted(km_by_surface.items(), key=lambda kv: -kv[1])},
+        },
+        "segments_by_tracktype": dict(sorted(segs_by_tracktype.items())),
+        "excluded": {
+            "by_reason": excl_out,
+            "total_km": round(sum(v["km"] for v in excl.values()), 3),
+            "total_ways": len({r["osm_id"] for r in records
+                               if r["class"] is None or r["exclude_reason"] is not None}),
+            "note": "access=agricultural/forestry NO se descartan (terreno forestal jugable).",
+        },
+        "design_tables": {
+            "note": "DISENO de gameplay, NO medicion. OSM no trae ancho fiable salvo el tag width.",
+            "width_m": {
+                "by_road_kind": ROAD_WIDTH_M,
+                "by_tracktype": TRACK_WIDTH_M,
+                "tracktype_default": TRACK_WIDTH_DEFAULT_M,
+                "path": PATH_WIDTH_M,
+                "precedence": "tag width/est_width de OSM > tabla de diseno",
+            },
+            "speed_factor": {
+                "road": ROAD_SPEED_FACTOR,
+                "by_tracktype": TRACK_SPEED_FACTOR,
+                "tracktype_default": TRACK_SPEED_FACTOR_DEFAULT,
+                "path": PATH_SPEED_FACTOR,
+                "meaning": "multiplicador sobre la velocidad maxima en asfalto; lo aplica el runtime",
+            },
+        },
+        "simplification": {
+            "tolerance_m": SIMPLIFY_TOL_M,
+            "protected_vertices": "vertices compartidos entre ways (cruces) nunca se eliminan",
+            "vertices_before": vertices_before,
+            "vertices_after": vertices_after,
+            "vertices_removed_pct": round(100.0 * (vertices_before - vertices_after) / max(1, vertices_before), 1),
+            "km_before": round(km_before_simplify / 1000.0, 3),
+            "km_after": round(km_after_simplify / 1000.0, 3),
+            "km_shaved_by_simplify": round((km_before_simplify - km_after_simplify) / 1000.0, 3),
+            "note": ("las cifras de length_km de este archivo se miden SOBRE la geometria "
+                     "simplificada; la simplificacion recorta la curvatura y acorta un "
+                     "0.03% aprox."),
+        },
+        "graph": {
+            "nodes": len(graph["nodes"]),
+            "edges": len(graph["edges"]),
+            "duplicate_edges_same_pair": {
+                "count": len(graph["duplicate_edges"]),
+                "detail": graph["duplicate_edges"],
+                "note": ("dos ways con el mismo tramo de geometria; el Map del "
+                         "RoadGraph solo conserva uno, aqui se registra cual"),
+            },
+            "components": len(comp_sizes),
+            "largest_component_nodes": comp_sizes[0] if comp_sizes else 0,
+            "largest_component_pct_nodes": round(
+                100.0 * (comp_sizes[0] if comp_sizes else 0) / max(1, len(graph["nodes"])), 1),
+            "components_le_2_nodes": sum(1 for s in comp_sizes if s <= 2),
+            "format": "{nodes:[[x,z]...], edges:[[a,b]...], edgeMeta:[{length,class,roadId,kind,tracktype,speedFactor}]}",
+            "compatible_with": "rama `noded` de RoadGraph (src/navigation.ts del motor de referencia)",
+            "quantization": (
+                "Sin cuantizar /3: el motor de referencia cuantiza porque deriva los nodos "
+                "de listas de puntos; aca los nodos vienen explicitos y en coordenadas OSM "
+                "exactas (cm), la cuantizacion solo introduciria error. La estructura "
+                "{nodes, edges en pares} es la misma y entra tal cual al constructor."
+            ),
+        },
+        "connectivity": {
+            "spawn_world": list(SPAWN),
+            "spawn_nearest_edge": {
+                "distance_m": spawn_dist,
+                "class": spawn_meta.get("class"),
+                "roadId": spawn_meta.get("roadId"),
+                "road_name": next((r["name"] for r in roads if r["id"] == spawn_meta.get("roadId")), ""),
+                "note": "el arranque se proyecta al arista mas cercana y se siembran ambos extremos",
+            },
+            "variants": {
+                "todas_las_clases": conn_all,
+                "solo_rodables_ROAD_TRACK": conn_drive,
+                "diagnostico_incluyendo_access_excluido": conn_diag,
+            },
+            "unreachable": unreachable,
+        },
+        "coverage": {
+            "audit_buffer": audit,
+            "query_bbox_complete": None if audit is None else audit["coverage_ok"],
+            "ways_touching_window_border": len(border_ways),
+            "ways_crossing_border": len(crossing_ways),
+            "ways_fully_inside_window": len(inside_ways),
+            "border_endpoints": border_endpoints,
+            "interior_endpoints": interior_endpoints,
+            "interior_endpoints_not_original_vertex": len(clip_errors),
+            "clip_errors": clip_errors[:20],
+            "max_vertex_outside_window_m": round(max_deviation, 9),
+            "km_outside_window": round(km_outside, 3),
+            "ways_fully_outside_window": ways_outside,
+            "snap": {
+                "tolerance_m": SNAP_TOL_M,
+                "applied": len(snap_log),
+                "max_distance_m": max((s["dist_m"] for s in snap_log), default=0.0),
+                "detail": snap_log[:40],
+            },
+            "quadrant_km_northeast_x>=3000_z>=3000": {
+                c: round(quadrant_km[c], 3) for c in ("ROAD", "TRACK", "PATH")},
+            "grid_1km_km": grid,
+            "old_bbox_gap": {
+                "old_bbox_wgs84_s_w_n_e": list(OLD_BBOX_WGS84),
+                "km_outside_old_bbox_by_class": {k: round(v, 3) for k, v in sorted(old_gap_km.items())},
+                "ways_affected": len(old_gap_ways),
+                "note": "km de la ventana que el bbox viejo NO cubria",
+            },
+        },
+    }
+
+    # -------- escritura ----------------------------------------------------
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    roads_doc = {
+        "meta": {
+            **stats["meta"],
+            "source_sha256": stats["source"]["sha256"],
+            "overpass_timestamp_osm_base": stats["source"]["overpass_timestamp_osm_base"],
+            "length_km": km_by_class,
+            "grade_semantics": (
+                "'grade' conserva el significado del motor de referencia (tag layer: '0' = "
+                "rasante, '1' = puente/viado). La calidad de la pista esta en 'tracktype'."
+            ),
+            "points_precision_m": 10 ** -PRECISION_M,
+            "schema": {
+                "id": "string unico por segmento; 'id.N' si el recorte partio la way",
+                "class": "ROAD | TRACK | PATH",
+                "kind": "highway crudo de OSM (compat Road.kind)",
+                "width": "metros; widthSource indica si es tag OSM o estimacion de diseno",
+                "speedFactor": "multiplicador de velocidad (diseno de gameplay)",
+                "points": "[[worldX, worldZ], ...] metros, origen sudoeste",
+                "tags": "tags OSM crudos completos",
+            },
+        },
+        "roads": roads,
+    }
+    nav_doc = {
+        "meta": {
+            "generated_at_utc": stats["meta"]["generated_at_utc"],
+            "coordinate_system": stats["meta"]["coordinate_system"],
+            "window_m": stats["meta"]["window_m"],
+            "source_sha256": stats["source"]["sha256"],
+            "nodes_semantics": "un nodo por vertex de via; [worldX, worldZ] en metros",
+            "edges_semantics": "[i, j] indices sobre nodes; grafo NO dirigido",
+            "edgeMeta_semantics": "arreglo paralelo: edgeMeta[k] describe a edges[k]",
+            "distance_semantics": (
+                "edgeMeta[k].length (metros) coincide con hypot(nodes[i], nodes[j]) porque "
+                "hay un nodo por vertice; el RoadGraph del motor de referencia calcula "
+                "exactamente lo mismo."
+            ),
+            "road_graph_compatible": True,
+            "dijkstra_hint": (
+                "el peso es length/speedFactor si se quiere ruteo rapido; "
+                "sin speedFactor el grafo rutea por distancia"
+            ),
+        },
+        "nodes": graph["nodes"],
+        "edges": graph["edges"],
+        "edgeMeta": graph["edge_meta"],
+    }
+
+    (OUT_DIR / "roads.json").write_text(
+        json.dumps(roads_doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (OUT_DIR / "navigation.json").write_text(
+        json.dumps(nav_doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (OUT_DIR / "stats.json").write_text(
+        json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # -------- consola ------------------------------------------------------
+    print(f"ways bajados       : {len(elements)}")
+    print(f"ways conservados   : {stats['counts']['ways_kept']}  segmentos: {len(roads)}")
+    print(f"km por clase       : {km_by_class}  total {stats['length_km']['total']} km")
+    print(f"km por tracktype   : {stats['length_km']['by_tracktype']}")
+    print(f"excluidos          : {stats['excluded']['total_km']} km -> {list(excl_out)}")
+    print(f"grafo              : {graph_stats_line(graph, comp_sizes)}")
+    print(f"borde              : {len(border_ways)} ways / {border_endpoints} endpoints en borde / "
+          f"{interior_endpoints} interiores / {len(clip_errors)} erroneos")
+    print(f"desvio max fuera   : {max_deviation} m")
+    print(f"NE (km)            : {dict(quadrant_km)}")
+    print(f"desde Villafranca  : TODAS {conn_all['track_reached_km']} km TRACK "
+          f"({conn_all['track_pct_reached']}%) | SOLO RODABLES {conn_drive['track_reached_km']} km "
+          f"({conn_drive['track_pct_reached']}%)")
+    print(f"TRACK inalcanzable : {unreachable['track_km_unreachable_by_cause']}")
+    if audit is not None:
+        print(f"auditoria buffer   : coverage_ok={audit['coverage_ok']} "
+              f"(solo_en_audit={audit['ways_only_in_audit']}, "
+              f"faltantes_que_intersectan={len(audit['ways_intersecting_window_missing_in_main'])})")
+    for name in ("roads.json", "navigation.json", "stats.json"):
+        p = OUT_DIR / name
+        print(f"-> {p.relative_to(ROOT)}  {p.stat().st_size} bytes")
+
+
+def graph_stats_line(graph: dict, comp_sizes: list[int]) -> str:
+    return (f"{len(graph['nodes'])} nodos / {len(graph['edges'])} aristas / "
+            f"{len(comp_sizes)} componentes / mayor={comp_sizes[0] if comp_sizes else 0}")
+
+
+if __name__ == "__main__":
+    main()
