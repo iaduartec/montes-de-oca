@@ -1,0 +1,33 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-24T22:09:04Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 492410655,
+  "lat": 42.3883784,
+  "lon": -3.3086147,
+  "tags": {
+    "capital": "8",
+    "ele": "951",
+    "name": "Villafranca Montes de Oca",
+    "place": "village",
+    "population": "110",
+    "population:date": "2025",
+    "ref:ine": "09431000201",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q959000",
+    "wikipedia": "es:Villafranca Montes de Oca"
+  }
+}
+
+  ]
+}

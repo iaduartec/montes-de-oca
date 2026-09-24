@@ -1,0 +1,428 @@
+{
+  "metodo": {
+    "proyeccion": "EPSG:25830 (ETRS89 / UTM 30N) vía pyproj.Transformer",
+    "distancia": "punto→segmento en metros sobre la proyección UTM",
+    "area": "shapely Polygon en EPSG:25830, dividido por 10000 → ha",
+    "advertencia": "los tags OSM (surface, tracktype, access) son metadatos mapeados por humanos, NO mediciones"
+  },
+  "pueblo": {
+    "lat": 42.3883784,
+    "lon": -3.3086147,
+    "utm30_e": 474597.258,
+    "utm30_n": 4692945.02
+  },
+  "bbox_wgs84_S_W_N_E": [
+    42.350651,
+    -3.350784,
+    42.404549,
+    -3.277816
+  ],
+  "viales_3km": [
+    {
+      "osm_id": 34075414,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Calle Mayor",
+      "distance_m": 8.5,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 166855239,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Calle Mayor",
+      "distance_m": 74.84,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 477509404,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Nacional Logroño a Vigo",
+      "distance_m": 250.21,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 477509405,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 354.66,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 1376736790,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 378.73,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 433199350,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Calle Mayor",
+      "distance_m": 391.52,
+      "maxspeed": "50",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 136917084,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 403.7,
+      "maxspeed": "80",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 475495937,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 429.46,
+      "maxspeed": "40",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 475495936,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 431.05,
+      "maxspeed": "40",
+      "lanes": "2",
+      "surface": "asphalt"
+    },
+    {
+      "osm_id": 121899251,
+      "ref": "N-120",
+      "highway": "trunk",
+      "name": "Carretera Logroño-Vigo",
+      "distance_m": 434.95,
+      "maxspeed": "40",
+      "lanes": "2",
+      "surface": "asphalt"
+    }
+  ],
+  "n120_way_mas_cercano": {
+    "osm_id": 34075414,
+    "ref": "N-120",
+    "highway": "trunk",
+    "name": "Calle Mayor",
+    "distance_m": 8.5,
+    "maxspeed": "50",
+    "lanes": "2",
+    "surface": "asphalt"
+  },
+  "a12_por_estado": {
+    "proposed": {
+      "distance_m": 592.25,
+      "distance_km": 0.592,
+      "osm_id": 306374282,
+      "name": "Autovía del Camino de Santiago",
+      "n_ways": 8
+    },
+    "construction": {
+      "distance_m": 16374.82,
+      "distance_km": 16.375,
+      "osm_id": 764020347,
+      "name": null,
+      "n_ways": 13
+    },
+    "motorway_link": {
+      "distance_m": 29190.43,
+      "distance_km": 29.19,
+      "osm_id": 188536200,
+      "name": "Autovía del Camino de Santiago",
+      "n_ways": 2
+    },
+    "motorway": {
+      "distance_m": 29452.96,
+      "distance_km": 29.453,
+      "osm_id": 686254670,
+      "name": "Autovía del Camino de Santiago",
+      "n_ways": 10
+    }
+  },
+  "cumbres_dentro_del_bbox": [
+    {
+      "osm_id": 1888844387,
+      "name": "Peñalta",
+      "ele_tag_m": "1096",
+      "dist_al_pueblo_m": 2341.2
+    },
+    {
+      "osm_id": 13096825594,
+      "name": "Somoro",
+      "ele_tag_m": "1112",
+      "dist_al_pueblo_m": 2696.8
+    },
+    {
+      "osm_id": 3306174952,
+      "name": "Valbuena",
+      "ele_tag_m": "1168",
+      "dist_al_pueblo_m": 2874.2
+    },
+    {
+      "osm_id": 6221861345,
+      "name": "Castillo de Alba",
+      "ele_tag_m": "1083",
+      "dist_al_pueblo_m": 2968.2
+    },
+    {
+      "osm_id": 6221864769,
+      "name": "Somoro",
+      "ele_tag_m": "1109",
+      "dist_al_pueblo_m": 3013.5
+    }
+  ],
+  "relaciones_camino_40km": [
+    {
+      "osm_id": 341886,
+      "name": "Espinosa del Camino",
+      "network": null,
+      "type": "boundary",
+      "dist_centro_km": 2.84
+    },
+    {
+      "osm_id": 15922406,
+      "name": "Mancomunidad de Camino natural vía verde Sierra de la Demanda",
+      "network": null,
+      "type": "boundary",
+      "dist_centro_km": 14.76
+    },
+    {
+      "osm_id": 15906029,
+      "name": "Mancomunidad de Encuentro de Caminos: Sierra de Atapuerca, Camino de Santiago y vía romana",
+      "network": null,
+      "type": "boundary",
+      "dist_centro_km": 15.58
+    },
+    {
+      "osm_id": 21016892,
+      "name": "Camino de Santiago Vasco del Interior (Armiñón-Burgos)",
+      "network": "nwn",
+      "type": "route",
+      "dist_centro_km": 17.31
+    },
+    {
+      "osm_id": 2163558,
+      "name": "Camino Francés - 03 Logroño a Burgos",
+      "network": "iwn",
+      "type": "route",
+      "dist_centro_km": 18.6
+    },
+    {
+      "osm_id": 346892,
+      "name": "Redecilla del Camino",
+      "network": null,
+      "type": "boundary",
+      "dist_centro_km": 20.3
+    },
+    {
+      "osm_id": 3853368,
+      "name": "Redecilla del Camino",
+      "network": null,
+      "type": "public_transport",
+      "dist_centro_km": 20.79
+    },
+    {
+      "osm_id": 9062741,
+      "name": "Camino de San Olav",
+      "network": "rwn",
+      "type": "route",
+      "dist_centro_km": 30.84
+    },
+    {
+      "osm_id": 2188986,
+      "name": "Camino del Destierro del Cid alternativa Castillo",
+      "network": "rcn",
+      "type": "route",
+      "dist_centro_km": 33.11
+    },
+    {
+      "osm_id": 8039114,
+      "name": "Paseo Plaza de los Hospitales del Camino",
+      "network": null,
+      "type": "multipolygon",
+      "dist_centro_km": 35.39
+    },
+    {
+      "osm_id": 15335404,
+      "name": "Camino de los Molinos",
+      "network": "rwn",
+      "type": "route",
+      "dist_centro_km": 36.69
+    },
+    {
+      "osm_id": 3559043,
+      "name": "Caminos de Oña",
+      "network": "rwn",
+      "type": "route",
+      "dist_centro_km": 38.02
+    },
+    {
+      "osm_id": 19431907,
+      "name": "Sendero del Camino de Castrillo",
+      "network": "lwn",
+      "type": "route",
+      "dist_centro_km": 38.34
+    },
+    {
+      "osm_id": 17583713,
+      "name": "Camino de Las Merindades",
+      "network": "nwn",
+      "type": "route",
+      "dist_centro_km": 43.37
+    },
+    {
+      "osm_id": 6621567,
+      "name": "Camino de Santiago Vasco del Interior",
+      "network": "nwn",
+      "type": "route",
+      "dist_centro_km": 95.64
+    },
+    {
+      "osm_id": 2163560,
+      "name": "Camino Francés - 04 Burgos a León",
+      "network": "iwn",
+      "type": "route",
+      "dist_centro_km": 108.29
+    },
+    {
+      "osm_id": 4071980,
+      "name": "Autovía del Camino de Santiago",
+      "network": "ES:CL:Autovía Autonómica",
+      "type": "route",
+      "dist_centro_km": 113.54
+    },
+    {
+      "osm_id": 4062882,
+      "name": "Camino de Santiago de la Lana.BTT",
+      "network": "ncn",
+      "type": "route",
+      "dist_centro_km": 152.1
+    },
+    {
+      "osm_id": 7361206,
+      "name": "Camino de Santiago de la Lana.Senderista",
+      "network": "nwn",
+      "type": "route",
+      "dist_centro_km": 152.1
+    },
+    {
+      "osm_id": 2188235,
+      "name": "GR 160 - Camino del Cid BTT",
+      "network": "ncn",
+      "type": "route",
+      "dist_centro_km": 204.96
+    },
+    {
+      "osm_id": 6594270,
+      "name": "Camino del Cid (Senderista)",
+      "network": "nwn",
+      "type": "route",
+      "dist_centro_km": 254.08
+    }
+  ],
+  "camino_frances_rel_2163558": {
+    "name": "Camino Francés - 03 Logroño a Burgos",
+    "ways_totales": 523,
+    "ways_con_vertice_dentro_del_bbox": 22,
+    "ways_mas_cercanos_al_pueblo": [
+      {
+        "osm_id": 741760074,
+        "name": "La Plaza",
+        "dist_m": 66.6
+      },
+      {
+        "osm_id": 266152553,
+        "name": "Cuesta del Hospital",
+        "dist_m": 66.8
+      },
+      {
+        "osm_id": 719482689,
+        "name": null,
+        "dist_m": 74.4
+      },
+      {
+        "osm_id": 168459118,
+        "name": null,
+        "dist_m": 108.3
+      },
+      {
+        "osm_id": 310458318,
+        "name": null,
+        "dist_m": 137.5
+      }
+    ],
+    "metodo": "distancia mínima punto→segmento en EPSG:25830 sobre los 523 ways de la relación (data/geo/raw/osm_camino_frances_rel2163558_ways.json)"
+  },
+  "ways_tag_network_camino_15km": {
+    "elements": 0,
+    "nota": "0 elementos: el tag network=Camino sólo está en las relaciones, no en los ways sueltos. No sirve como filtro espacial."
+  },
+  "bosque_bbox": {
+    "por_tipo": {
+      "forest": {
+        "ways": 4,
+        "ha": 10.91
+      },
+      "wood": {
+        "ways": 3,
+        "ha": 1.5
+      },
+      "sin_tag": {
+        "ways": 44,
+        "ha": 26.29
+      },
+      "cliff": {
+        "ways": 1,
+        "ha": 0.05
+      },
+      "grassland": {
+        "ways": 1,
+        "ha": 0.39
+      }
+    },
+    "ways_unicos": 55,
+    "ha_suma_simple_recortada": 39.14,
+    "ha_union_bosque_sin_solapes": 38.17,
+    "pct_del_bbox_union": 1.06,
+    "caveat": "recortado al bbox. OSM infraestaña el bosque acá: para la máscara de vegetación del juego usar CORINE Land Cover / ESA WorldCover y tratar OSM sólo como referencia de pistas."
+  },
+  "landcover_bbox": {
+    "farmland": {
+      "ways": 65,
+      "ha": 76.02
+    },
+    "forest": {
+      "ways": 4,
+      "ha": 10.91
+    },
+    "wood": {
+      "ways": 3,
+      "ha": 1.5
+    },
+    "meadow": {
+      "ways": 1,
+      "ha": 3.87
+    }
+  },
+  "bbox_ha": 3595.13
+}

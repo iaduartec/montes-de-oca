@@ -1,0 +1,305 @@
+{
+  "proyeccion": {
+    "crs_recomendado": "EPSG:25830 (ETRS89 / UTM zona 30N)",
+    "unidades": "metre",
+    "pueblo_epsg25830": {
+      "easting": 474597.258,
+      "northing": 4692945.02
+    },
+    "punto_erroneo_del_packet_epsg25830": {
+      "easting": 465921.739,
+      "northing": 4692773.326
+    },
+    "desvio_packet_vs_real_m": 8677.2,
+    "bbox_esquinas_epsg25830": [
+      [
+        471108.924,
+        4688769.377
+      ],
+      [
+        477118.679,
+        4688747.168
+      ],
+      [
+        477138.238,
+        4694731.803
+      ],
+      [
+        471133.621,
+        4694754.016
+      ]
+    ],
+    "ancho_bbox_utm_m": 6009.8,
+    "alto_bbox_utm_m": 5984.69,
+    "metros_por_grado_lon_lat": {
+      "lon": 82234.2,
+      "lat": 111320.0
+    },
+    "error_equirect_local_vs_utm_en_esquinas_m": [
+      24.961,
+      7.004,
+      22.367,
+      9.886
+    ],
+    "error_equirect_local_vs_utm_max_m": 24.961,
+    "error_reusar_factor_lon_de_shenzhen_pct": 20.04,
+    "factor_lon_correcto_para_espana": 82234.2,
+    "convencion_referencia": {
+      "origen_wgs84": [
+        114.025,
+        22.536
+      ],
+      "factor_lon": 102850.0,
+      "factor_lat": 111320.0,
+      "escala": 0.6,
+      "formula": "east=(lon-114.025)*102850*0.60 ; north=(lat-22.536)*111320*0.60"
+    },
+    "epsg32649_para_burgos": {
+      "easting": -4711544.413,
+      "northing": 12700050.513,
+      "area_of_use": "108.0, 0.0, 114.0, 84.0",
+      "distancia_al_centro_de_huso_grados": 114.309
+    }
+  },
+  "tiling": {
+    "lado_declarado_m": 6000.0,
+    "eje_512_en_6000m": {
+      "tiles_por_lado": 12.0,
+      "tile_ultimo_parcial_m": 368.0,
+      "cobertura_total_m": 6144.0
+    },
+    "eje_1024_en_6000m": {
+      "tiles_por_lado": 6.0,
+      "tile_ultimo_parcial_m": 880.0,
+      "cobertura_total_m": 6144.0
+    },
+    "eje_512_en_6144m_alineado": {
+      "tiles_por_lado": 12.0,
+      "tile_ultimo_parcial_m": 512.0,
+      "cobertura_total_m": 6144.0
+    },
+    "eje_1024_en_6144m_alineado": {
+      "tiles_por_lado": 6.0,
+      "tile_ultimo_parcial_m": 1024.0,
+      "cobertura_total_m": 6144.0
+    },
+    "presupuestos_existentes": {
+      "ground_relief_triangulos_max": 200000,
+      "ground_relief_tiles_max": 100,
+      "mountains_triangulos_max": 260000,
+      "mountains_tiles_max": 180,
+      "grilla_bloques_unidades_juego": 640,
+      "grilla_bloques_m_reales_a_escala_0_6": 1066.7,
+      "radios_culling_unidades_juego": {
+        "detalle": 700,
+        "carreteras": 2500,
+        "bloques": 3300
+      },
+      "chunk_ground_relief_unidades_juego": 1280,
+      "chunk_ground_relief_m_reales": 2133.3,
+      "unica_capa_stream_existente": "CityFacadeStream, radios 700 (load) / 700 (visible) / 1500 (evict) en src/city-facade-stream.ts:10,21,33"
+    },
+    "opciones": [
+      {
+        "tile_m": 512.0,
+        "muestreo_m": 2.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 256,
+        "vertices_por_tile": 66049,
+        "triangulos_por_tile": 131072,
+        "indices_u16_caben": false,
+        "bytes_alturas_f32_por_tile": 264196,
+        "bytes_indices_por_tile": 1572864,
+        "bytes_malla_por_tile": 1837060,
+        "pixels_texture_height_por_tile": 257,
+        "tiles_totales_6000m": 144,
+        "tiles_totales_6144m_alineado": 144,
+        "vertices_totales_6000m": 9511056,
+        "triangulos_totales_6000m": 18874368,
+        "mib_totales_malla_6000m": 252.28,
+        "tiles_en_vista_radio_1000m": 25,
+        "triangulos_en_vista_radio_1000m": 3276800
+      },
+      {
+        "tile_m": 512.0,
+        "muestreo_m": 4.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 128,
+        "vertices_por_tile": 16641,
+        "triangulos_por_tile": 32768,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 66564,
+        "bytes_indices_por_tile": 196608,
+        "bytes_malla_por_tile": 263172,
+        "pixels_texture_height_por_tile": 129,
+        "tiles_totales_6000m": 144,
+        "tiles_totales_6144m_alineado": 144,
+        "vertices_totales_6000m": 2396304,
+        "triangulos_totales_6000m": 4718592,
+        "mib_totales_malla_6000m": 36.14,
+        "tiles_en_vista_radio_1000m": 25,
+        "triangulos_en_vista_radio_1000m": 819200
+      },
+      {
+        "tile_m": 512.0,
+        "muestreo_m": 5.0,
+        "celdas_por_lado_entero": false,
+        "celdas_por_lado": 102,
+        "vertices_por_tile": 10609,
+        "triangulos_por_tile": 20808,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 42436,
+        "bytes_indices_por_tile": 124848,
+        "bytes_malla_por_tile": 167284,
+        "pixels_texture_height_por_tile": 103,
+        "tiles_totales_6000m": 144,
+        "tiles_totales_6144m_alineado": 144,
+        "vertices_totales_6000m": 1527696,
+        "triangulos_totales_6000m": 2996352,
+        "mib_totales_malla_6000m": 22.97,
+        "tiles_en_vista_radio_1000m": 25,
+        "triangulos_en_vista_radio_1000m": 520200
+      },
+      {
+        "tile_m": 512.0,
+        "muestreo_m": 8.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 64,
+        "vertices_por_tile": 4225,
+        "triangulos_por_tile": 8192,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 16900,
+        "bytes_indices_por_tile": 49152,
+        "bytes_malla_por_tile": 66052,
+        "pixels_texture_height_por_tile": 65,
+        "tiles_totales_6000m": 144,
+        "tiles_totales_6144m_alineado": 144,
+        "vertices_totales_6000m": 608400,
+        "triangulos_totales_6000m": 1179648,
+        "mib_totales_malla_6000m": 9.07,
+        "tiles_en_vista_radio_1000m": 25,
+        "triangulos_en_vista_radio_1000m": 204800
+      },
+      {
+        "tile_m": 512.0,
+        "muestreo_m": 10.0,
+        "celdas_por_lado_entero": false,
+        "celdas_por_lado": 51,
+        "vertices_por_tile": 2704,
+        "triangulos_por_tile": 5202,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 10816,
+        "bytes_indices_por_tile": 31212,
+        "bytes_malla_por_tile": 42028,
+        "pixels_texture_height_por_tile": 52,
+        "tiles_totales_6000m": 144,
+        "tiles_totales_6144m_alineado": 144,
+        "vertices_totales_6000m": 389376,
+        "triangulos_totales_6000m": 749088,
+        "mib_totales_malla_6000m": 5.77,
+        "tiles_en_vista_radio_1000m": 25,
+        "triangulos_en_vista_radio_1000m": 130050
+      },
+      {
+        "tile_m": 1024.0,
+        "muestreo_m": 2.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 512,
+        "vertices_por_tile": 263169,
+        "triangulos_por_tile": 524288,
+        "indices_u16_caben": false,
+        "bytes_alturas_f32_por_tile": 1052676,
+        "bytes_indices_por_tile": 6291456,
+        "bytes_malla_por_tile": 7344132,
+        "pixels_texture_height_por_tile": 513,
+        "tiles_totales_6000m": 36,
+        "tiles_totales_6144m_alineado": 36,
+        "vertices_totales_6000m": 9474084,
+        "triangulos_totales_6000m": 18874368,
+        "mib_totales_malla_6000m": 252.14,
+        "tiles_en_vista_radio_1000m": 9,
+        "triangulos_en_vista_radio_1000m": 4718592
+      },
+      {
+        "tile_m": 1024.0,
+        "muestreo_m": 4.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 256,
+        "vertices_por_tile": 66049,
+        "triangulos_por_tile": 131072,
+        "indices_u16_caben": false,
+        "bytes_alturas_f32_por_tile": 264196,
+        "bytes_indices_por_tile": 1572864,
+        "bytes_malla_por_tile": 1837060,
+        "pixels_texture_height_por_tile": 257,
+        "tiles_totales_6000m": 36,
+        "tiles_totales_6144m_alineado": 36,
+        "vertices_totales_6000m": 2377764,
+        "triangulos_totales_6000m": 4718592,
+        "mib_totales_malla_6000m": 63.07,
+        "tiles_en_vista_radio_1000m": 9,
+        "triangulos_en_vista_radio_1000m": 1179648
+      },
+      {
+        "tile_m": 1024.0,
+        "muestreo_m": 5.0,
+        "celdas_por_lado_entero": false,
+        "celdas_por_lado": 205,
+        "vertices_por_tile": 42436,
+        "triangulos_por_tile": 84050,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 169744,
+        "bytes_indices_por_tile": 504300,
+        "bytes_malla_por_tile": 674044,
+        "pixels_texture_height_por_tile": 206,
+        "tiles_totales_6000m": 36,
+        "tiles_totales_6144m_alineado": 36,
+        "vertices_totales_6000m": 1527696,
+        "triangulos_totales_6000m": 3025800,
+        "mib_totales_malla_6000m": 23.14,
+        "tiles_en_vista_radio_1000m": 9,
+        "triangulos_en_vista_radio_1000m": 756450
+      },
+      {
+        "tile_m": 1024.0,
+        "muestreo_m": 8.0,
+        "celdas_por_lado_entero": true,
+        "celdas_por_lado": 128,
+        "vertices_por_tile": 16641,
+        "triangulos_por_tile": 32768,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 66564,
+        "bytes_indices_por_tile": 196608,
+        "bytes_malla_por_tile": 263172,
+        "pixels_texture_height_por_tile": 129,
+        "tiles_totales_6000m": 36,
+        "tiles_totales_6144m_alineado": 36,
+        "vertices_totales_6000m": 599076,
+        "triangulos_totales_6000m": 1179648,
+        "mib_totales_malla_6000m": 9.04,
+        "tiles_en_vista_radio_1000m": 9,
+        "triangulos_en_vista_radio_1000m": 294912
+      },
+      {
+        "tile_m": 1024.0,
+        "muestreo_m": 10.0,
+        "celdas_por_lado_entero": false,
+        "celdas_por_lado": 102,
+        "vertices_por_tile": 10609,
+        "triangulos_por_tile": 20808,
+        "indices_u16_caben": true,
+        "bytes_alturas_f32_por_tile": 42436,
+        "bytes_indices_por_tile": 124848,
+        "bytes_malla_por_tile": 167284,
+        "pixels_texture_height_por_tile": 103,
+        "tiles_totales_6000m": 36,
+        "tiles_totales_6144m_alineado": 36,
+        "vertices_totales_6000m": 381924,
+        "triangulos_totales_6000m": 749088,
+        "mib_totales_malla_6000m": 5.74,
+        "tiles_en_vista_radio_1000m": 9,
+        "triangulos_en_vista_radio_1000m": 187272
+      }
+    ]
+  }
+}

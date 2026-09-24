@@ -1,0 +1,2191 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-24T21:44:45Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 309349226,
+  "lat": 42.3302553,
+  "lon": -3.2920168,
+  "tags": {
+    "ele": "1129",
+    "name": "Villamudria",
+    "place": "hamlet",
+    "population": "26",
+    "population:date": "2025",
+    "ref:ine": "09303000301",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q54854642",
+    "wikipedia": "es:Villamudria"
+  }
+},
+{
+  "type": "node",
+  "id": 492404823,
+  "lat": 42.3783273,
+  "lon": -3.2427428,
+  "tags": {
+    "ele": "908",
+    "name": "Puras de Villafranca",
+    "place": "hamlet",
+    "population": "32",
+    "population:date": "2025",
+    "ref:ine": "09048000501",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6093333",
+    "wikipedia": "es:Puras de Villafranca"
+  }
+},
+{
+  "type": "node",
+  "id": 492404860,
+  "lat": 42.4054048,
+  "lon": -3.3143649,
+  "tags": {
+    "ele": "961",
+    "name": "Ocón de Villafranca",
+    "place": "hamlet",
+    "population": "7",
+    "population:date": "2025",
+    "ref:ine": "09431000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6048800",
+    "wikipedia": "es:Ocón de Villafranca"
+  }
+},
+{
+  "type": "node",
+  "id": 492404870,
+  "lat": 42.4118891,
+  "lon": -3.3317516,
+  "tags": {
+    "ele": "979",
+    "name": "Mozoncillo de Oca",
+    "place": "hamlet",
+    "population": "12",
+    "population:date": "2025",
+    "ref:ine": "09411000201",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6025516",
+    "wikipedia": "es:Mozoncillo de Oca"
+  }
+},
+{
+  "type": "node",
+  "id": 492404883,
+  "lat": 42.4055584,
+  "lon": -3.2796725,
+  "tags": {
+    "capital": "8",
+    "ele": "898",
+    "name": "Espinosa del Camino",
+    "place": "village",
+    "population": "43",
+    "population:date": "2025",
+    "ref:ine": "09123000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q946759",
+    "wikipedia": "es:Espinosa del Camino"
+  }
+},
+{
+  "type": "node",
+  "id": 492404979,
+  "lat": 42.4449915,
+  "lon": -3.3297741,
+  "tags": {
+    "ele": "852",
+    "name": "Villalbos",
+    "place": "hamlet",
+    "population": "15",
+    "population:date": "2025",
+    "ref:ine": "09411000301",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q1020503",
+    "wikipedia": "es:Villalbos"
+  }
+},
+{
+  "type": "node",
+  "id": 492410080,
+  "lat": 42.4369520,
+  "lon": -3.3797281,
+  "tags": {
+    "ele": "955",
+    "name": "San Otero",
+    "place": "isolated_dwelling",
+    "population": "0",
+    "population:date": "2025",
+    "ref:ine": "09100000201",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q54812357",
+    "wikipedia": "es:San Otero"
+  }
+},
+{
+  "type": "node",
+  "id": 492410200,
+  "lat": 42.4523953,
+  "lon": -3.3356841,
+  "tags": {
+    "ele": "838",
+    "name": "Villalmondar",
+    "place": "hamlet",
+    "population": "9",
+    "population:date": "2025",
+    "ref:ine": "09411000401",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6162676",
+    "wikipedia": "es:Villalmóndar"
+  }
+},
+{
+  "type": "node",
+  "id": 492410214,
+  "lat": 42.4365497,
+  "lon": -3.3207916,
+  "tags": {
+    "capital": "8",
+    "ele": "863",
+    "name": "Villanasur Río de Oca",
+    "place": "village",
+    "population": "39",
+    "population:date": "2025",
+    "ref:ine": "09411000601",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6162728",
+    "wikipedia": "es:Villanasur Río de Oca"
+  }
+},
+{
+  "type": "node",
+  "id": 492410277,
+  "lat": 42.4182378,
+  "lon": -3.3610686,
+  "tags": {
+    "ele": "942",
+    "name": "Turrientes",
+    "place": "hamlet",
+    "population": "9",
+    "population:date": "2025",
+    "ref:ine": "09100000301",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q54812400",
+    "wikipedia": "es:Turrientes"
+  }
+},
+{
+  "type": "node",
+  "id": 492410311,
+  "lat": 42.4294196,
+  "lon": -3.3127225,
+  "tags": {
+    "ele": "876",
+    "name": "Villalómez",
+    "place": "hamlet",
+    "population": "62",
+    "population:date": "2025",
+    "ref:ine": "09411000501",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q54854662",
+    "wikipedia": "es:Villalómez"
+  }
+},
+{
+  "type": "node",
+  "id": 492410338,
+  "lat": 42.4236317,
+  "lon": -3.3744439,
+  "tags": {
+    "capital": "8",
+    "ele": "957",
+    "name": "Cerratón de Juarros",
+    "place": "village",
+    "population": "33",
+    "population:date": "2025",
+    "ref:ine": "09100000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q1644231",
+    "wikipedia": "es:Cerratón de Juarros"
+  }
+},
+{
+  "type": "node",
+  "id": 492410412,
+  "lat": 42.4145422,
+  "lon": -3.3973407,
+  "tags": {
+    "capital": "8",
+    "ele": "931",
+    "name": "Arraya de Oca",
+    "place": "village",
+    "population": "49",
+    "population:date": "2025",
+    "ref:ine": "09027000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q384380",
+    "wikipedia": "es:Arraya de Oca"
+  }
+},
+{
+  "type": "node",
+  "id": 492410611,
+  "lat": 42.3953373,
+  "lon": -3.2147034,
+  "tags": {
+    "ele": "807",
+    "name": "San Miguel de Pedroso",
+    "place": "hamlet",
+    "population": "29",
+    "population:date": "2025",
+    "ref:ine": "09048000701",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q6119465",
+    "wikipedia": "es:San Miguel de Pedroso"
+  }
+},
+{
+  "type": "node",
+  "id": 492410655,
+  "lat": 42.3883784,
+  "lon": -3.3086147,
+  "tags": {
+    "capital": "8",
+    "ele": "951",
+    "name": "Villafranca Montes de Oca",
+    "place": "village",
+    "population": "110",
+    "population:date": "2025",
+    "ref:ine": "09431000201",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q959000",
+    "wikipedia": "es:Villafranca Montes de Oca"
+  }
+},
+{
+  "type": "node",
+  "id": 492410664,
+  "lat": 42.4141088,
+  "lon": -3.2424229,
+  "tags": {
+    "capital": "8",
+    "ele": "818",
+    "name": "Tosantos",
+    "place": "village",
+    "population": "47",
+    "population:date": "2025",
+    "ref:ine": "09392000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q958974",
+    "wikipedia": "es:Tosantos"
+  }
+},
+{
+  "type": "node",
+  "id": 492410673,
+  "lat": 42.4051648,
+  "lon": -3.2618040,
+  "tags": {
+    "capital": "8",
+    "ele": "864",
+    "name": "Villambistia",
+    "place": "village",
+    "population": "44",
+    "population:date": "2025",
+    "ref:ine": "09445000101",
+    "source": "Instituto Geográfico Nacional",
+    "source:date": "2011-06",
+    "source:ele": "MDT5",
+    "source:name": "Nomenclátor Geográfico de Municipios y Entidades de Población",
+    "wikidata": "Q958629",
+    "wikipedia": "es:Villambistia"
+  }
+},
+{
+  "type": "node",
+  "id": 1242342061,
+  "lat": 42.4457968,
+  "lon": -3.3400815,
+  "tags": {
+    "name": "Cuesta Ancha",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242344120,
+  "lat": 42.3964298,
+  "lon": -3.2819062,
+  "tags": {
+    "name": "La Lámpara",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242346370,
+  "lat": 42.4248472,
+  "lon": -3.2805988,
+  "tags": {
+    "name": "Los Hoyos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242346851,
+  "lat": 42.3757151,
+  "lon": -3.2510831,
+  "tags": {
+    "name": "La Cuesta",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242347268,
+  "lat": 42.4064118,
+  "lon": -3.3525318,
+  "tags": {
+    "name": "Los Vallejillos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242347288,
+  "lat": 42.3906062,
+  "lon": -3.3405614,
+  "tags": {
+    "name": "Fuente Ancha",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242348457,
+  "lat": 42.3976017,
+  "lon": -3.2739892,
+  "tags": {
+    "name": "El Cerro",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242348703,
+  "lat": 42.4389405,
+  "lon": -3.3317523,
+  "tags": {
+    "name": "El Caminillo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242348855,
+  "lat": 42.3917776,
+  "lon": -3.2316591,
+  "tags": {
+    "name": "Barranco del Corral",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242349647,
+  "lat": 42.4015224,
+  "lon": -3.3049924,
+  "tags": {
+    "name": "Casillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242349794,
+  "lat": 42.3989506,
+  "lon": -3.2250146,
+  "tags": {
+    "name": "Cabeza de la Encina",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242350395,
+  "lat": 42.3500659,
+  "lon": -3.3066744,
+  "tags": {
+    "name": "Cruz de Pajares",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242350676,
+  "lat": 42.3693288,
+  "lon": -3.3003188,
+  "tags": {
+    "name": "El Carrascal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242351292,
+  "lat": 42.3669637,
+  "lon": -3.3470650,
+  "tags": {
+    "name": "Vallejo Lobero",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242351407,
+  "lat": 42.4012623,
+  "lon": -3.2264810,
+  "tags": {
+    "name": "Palorco",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242352286,
+  "lat": 42.4464222,
+  "lon": -3.2629654,
+  "tags": {
+    "name": "El Fosque",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242352433,
+  "lat": 42.4156784,
+  "lon": -3.3155620,
+  "tags": {
+    "name": "El Matorrín",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242352672,
+  "lat": 42.4005650,
+  "lon": -3.3973008,
+  "tags": {
+    "name": "Las Mangadas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242352901,
+  "lat": 42.3565454,
+  "lon": -3.2803682,
+  "tags": {
+    "name": "Vallejo de los Carriones",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242353081,
+  "lat": 42.3725213,
+  "lon": -3.2277990,
+  "tags": {
+    "name": "La Modorra",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242354936,
+  "lat": 42.4413473,
+  "lon": -3.2726473,
+  "tags": {
+    "name": "La Rierta",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242355770,
+  "lat": 42.3942289,
+  "lon": -3.3605070,
+  "tags": {
+    "name": "Cárcava Ociosa",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242355881,
+  "lat": 42.3593092,
+  "lon": -3.3021655,
+  "tags": {
+    "name": "Valliciruelas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242356382,
+  "lat": 42.4196712,
+  "lon": -3.2563510,
+  "tags": {
+    "name": "Chumina",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242356512,
+  "lat": 42.3872647,
+  "lon": -3.2574950,
+  "tags": {
+    "name": "La Campada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242357076,
+  "lat": 42.3732955,
+  "lon": -3.2368505,
+  "tags": {
+    "name": "El Pico",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242357115,
+  "lat": 42.3992351,
+  "lon": -3.3462339,
+  "tags": {
+    "name": "Cárcava del Corral",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242357603,
+  "lat": 42.3769131,
+  "lon": -3.3846044,
+  "tags": {
+    "name": "Los Hornos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242357810,
+  "lat": 42.3748500,
+  "lon": -3.2711454,
+  "tags": {
+    "name": "Vallejo Morales",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242357855,
+  "lat": 42.4482053,
+  "lon": -3.3231307,
+  "tags": {
+    "name": "Cerro Antiguo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242358374,
+  "lat": 42.3554193,
+  "lon": -3.2574016,
+  "tags": {
+    "name": "La Salidilla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242358690,
+  "lat": 42.3641885,
+  "lon": -3.3949223,
+  "tags": {
+    "name": "Mataterrazos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242359012,
+  "lat": 42.3840859,
+  "lon": -3.3095135,
+  "tags": {
+    "name": "Valdoña",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "node",
+  "id": 1242359414,
+  "lat": 42.3657189,
+  "lon": -3.4003241,
+  "tags": {
+    "name": "Monte de Santillán",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242359837,
+  "lat": 42.4260110,
+  "lon": -3.2942067,
+  "tags": {
+    "name": "La Endileja",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242359964,
+  "lat": 42.4042899,
+  "lon": -3.2517801,
+  "tags": {
+    "name": "La Piedra",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242360268,
+  "lat": 42.4205237,
+  "lon": -3.3836670,
+  "tags": {
+    "name": "Escontrillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242360443,
+  "lat": 42.3646338,
+  "lon": -3.3013895,
+  "tags": {
+    "name": "Prado Llano",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242360514,
+  "lat": 42.3626263,
+  "lon": -3.2683362,
+  "tags": {
+    "name": "Cerro de la Cabaña",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242361354,
+  "lat": 42.4128848,
+  "lon": -3.2958835,
+  "tags": {
+    "name": "Valdevesga",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242361991,
+  "lat": 42.3657464,
+  "lon": -3.3354359,
+  "tags": {
+    "name": "Los Caleros",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242362242,
+  "lat": 42.3998609,
+  "lon": -3.2782762,
+  "tags": {
+    "name": "Matacanes",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242362324,
+  "lat": 42.3924242,
+  "lon": -3.2413448,
+  "tags": {
+    "name": "Bustillo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242362497,
+  "lat": 42.4190539,
+  "lon": -3.3474124,
+  "tags": {
+    "name": "Pedrero",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242362614,
+  "lat": 42.4473714,
+  "lon": -3.3612246,
+  "tags": {
+    "name": "Picón del Cubo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242363456,
+  "lat": 42.4011507,
+  "lon": -3.3471436,
+  "tags": {
+    "name": "Campo Merino",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242364219,
+  "lat": 42.4298503,
+  "lon": -3.3035369,
+  "tags": {
+    "name": "Los Cerritos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242364591,
+  "lat": 42.3810401,
+  "lon": -3.2457715,
+  "tags": {
+    "name": "Las Majadillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242364978,
+  "lat": 42.3436475,
+  "lon": -3.2367516,
+  "tags": {
+    "name": "Fuenteorillo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242365033,
+  "lat": 42.4009522,
+  "lon": -3.2373674,
+  "tags": {
+    "name": "La Dehesilla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242365896,
+  "lat": 42.3700318,
+  "lon": -3.4006186,
+  "tags": {
+    "name": "Campo del Viso",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242366265,
+  "lat": 42.3909147,
+  "lon": -3.2868871,
+  "tags": {
+    "name": "Campo Llano",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242366405,
+  "lat": 42.4452927,
+  "lon": -3.2977745,
+  "tags": {
+    "name": "Conde",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242367330,
+  "lat": 42.3727661,
+  "lon": -3.3102028,
+  "tags": {
+    "name": "La Mázcarra",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242368228,
+  "lat": 42.3968428,
+  "lon": -3.3266584,
+  "tags": {
+    "name": "El Gramal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242368889,
+  "lat": 42.3698545,
+  "lon": -3.3919700,
+  "tags": {
+    "name": "El Prado",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369267,
+  "lat": 42.4443257,
+  "lon": -3.2699364,
+  "tags": {
+    "name": "La Santiguada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369326,
+  "lat": 42.3766723,
+  "lon": -3.2188862,
+  "tags": {
+    "name": "La Asomadilla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369448,
+  "lat": 42.3340200,
+  "lon": -3.3377317,
+  "tags": {
+    "name": "Mata del Gamonal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369531,
+  "lat": 42.3846801,
+  "lon": -3.3344554,
+  "tags": {
+    "name": "La Cabezada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369581,
+  "lat": 42.3800799,
+  "lon": -3.2525096,
+  "tags": {
+    "name": "Solanicos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242369998,
+  "lat": 42.3880338,
+  "lon": -3.2434662,
+  "tags": {
+    "name": "Valjubí Grande",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242370327,
+  "lat": 42.4492952,
+  "lon": -3.2745058,
+  "tags": {
+    "name": "La Varga",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242370852,
+  "lat": 42.3964001,
+  "lon": -3.3852578,
+  "tags": {
+    "name": "El Rebollar",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242371139,
+  "lat": 42.4083250,
+  "lon": -3.2752024,
+  "tags": {
+    "name": "Remendoza",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242371538,
+  "lat": 42.4486853,
+  "lon": -3.3528413,
+  "tags": {
+    "name": "Valdelafuente",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242371961,
+  "lat": 42.3625114,
+  "lon": -3.3451582,
+  "tags": {
+    "name": "Carros",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242372092,
+  "lat": 42.4237183,
+  "lon": -3.3844158,
+  "tags": {
+    "name": "Paredilla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242372323,
+  "lat": 42.3502071,
+  "lon": -3.2975082,
+  "tags": {
+    "name": "Poldaca",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242372517,
+  "lat": 42.3841510,
+  "lon": -3.3987160,
+  "tags": {
+    "name": "Monte Olmillos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242373051,
+  "lat": 42.3901327,
+  "lon": -3.2752081,
+  "tags": {
+    "name": "La Dehesa",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242374038,
+  "lat": 42.3562953,
+  "lon": -3.2215963,
+  "tags": {
+    "name": "Chivillarana",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242375059,
+  "lat": 42.3489165,
+  "lon": -3.2276411,
+  "tags": {
+    "name": "Valle La Puente",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242376061,
+  "lat": 42.3797147,
+  "lon": -3.3030649,
+  "tags": {
+    "name": "La Remendada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242376210,
+  "lat": 42.3322326,
+  "lon": -3.2555472,
+  "tags": {
+    "name": "Los Llanos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242376565,
+  "lat": 42.3512102,
+  "lon": -3.3651061,
+  "tags": {
+    "name": "La Solana",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242376970,
+  "lat": 42.4103992,
+  "lon": -3.3128741,
+  "tags": {
+    "name": "Carracollado",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242377081,
+  "lat": 42.4087741,
+  "lon": -3.2562459,
+  "tags": {
+    "name": "Chamuñón",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242378373,
+  "lat": 42.4393352,
+  "lon": -3.3415057,
+  "tags": {
+    "name": "El Cerro",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242378448,
+  "lat": 42.3394133,
+  "lon": -3.3094270,
+  "tags": {
+    "name": "La Paúl",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242379093,
+  "lat": 42.3682197,
+  "lon": -3.2794241,
+  "tags": {
+    "name": "Las Cuestas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242379241,
+  "lat": 42.3528647,
+  "lon": -3.2559706,
+  "tags": {
+    "name": "Arñico",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242380021,
+  "lat": 42.3892821,
+  "lon": -3.2320509,
+  "tags": {
+    "name": "Balza",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242381107,
+  "lat": 42.3323041,
+  "lon": -3.3106424,
+  "tags": {
+    "name": "Vecedillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242381782,
+  "lat": 42.3904210,
+  "lon": -3.2933847,
+  "tags": {
+    "name": "Las Fuentes",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242382511,
+  "lat": 42.3255857,
+  "lon": -3.2675601,
+  "tags": {
+    "name": "El Cerro",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242383840,
+  "lat": 42.3672642,
+  "lon": -3.2483777,
+  "tags": {
+    "name": "Langruña",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242384790,
+  "lat": 42.4121496,
+  "lon": -3.3522479,
+  "tags": {
+    "name": "Mingo Velasco",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242384804,
+  "lat": 42.3878740,
+  "lon": -3.2927047,
+  "tags": {
+    "name": "Rengallo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242385634,
+  "lat": 42.3877690,
+  "lon": -3.2806526,
+  "tags": {
+    "name": "Fuente Rihuela",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242385771,
+  "lat": 42.4259199,
+  "lon": -3.2270071,
+  "tags": {
+    "name": "Trampoesmonte",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242386155,
+  "lat": 42.4339457,
+  "lon": -3.3367228,
+  "tags": {
+    "name": "Vallejondo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242386531,
+  "lat": 42.3634316,
+  "lon": -3.2465167,
+  "tags": {
+    "name": "Chozo Hayejuela",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242387717,
+  "lat": 42.3915707,
+  "lon": -3.3015424,
+  "tags": {
+    "name": "Corneta",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242388845,
+  "lat": 42.3399247,
+  "lon": -3.3653322,
+  "tags": {
+    "name": "Campillo de los Carreteros",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242389228,
+  "lat": 42.3458899,
+  "lon": -3.3123239,
+  "tags": {
+    "name": "Las Hazas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242390533,
+  "lat": 42.4023171,
+  "lon": -3.2937803,
+  "tags": {
+    "name": "Riafría",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242390844,
+  "lat": 42.3195194,
+  "lon": -3.3286496,
+  "tags": {
+    "name": "Campo Zalduero",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242392055,
+  "lat": 42.4038359,
+  "lon": -3.3835290,
+  "tags": {
+    "name": "Cavada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242392223,
+  "lat": 42.3524044,
+  "lon": -3.2975914,
+  "tags": {
+    "name": "Vallejo de la Calera",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242392807,
+  "lat": 42.3708304,
+  "lon": -3.2907431,
+  "tags": {
+    "name": "Juan Villida",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242392997,
+  "lat": 42.3817298,
+  "lon": -3.2256213,
+  "tags": {
+    "name": "Camposueño",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242393264,
+  "lat": 42.3324420,
+  "lon": -3.2993910,
+  "tags": {
+    "name": "Avecillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242394049,
+  "lat": 42.4169865,
+  "lon": -3.3962982,
+  "tags": {
+    "name": "Cillatorre",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242394348,
+  "lat": 42.3254360,
+  "lon": -3.2848908,
+  "tags": {
+    "name": "Carrábanos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242394729,
+  "lat": 42.3659397,
+  "lon": -3.2358028,
+  "tags": {
+    "name": "Valdosio",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242395143,
+  "lat": 42.4373683,
+  "lon": -3.2642408,
+  "tags": {
+    "name": "Vallejo Pesebre",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242396036,
+  "lat": 42.3874699,
+  "lon": -3.3590592,
+  "tags": {
+    "name": "El Picón",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242396665,
+  "lat": 42.3431834,
+  "lon": -3.2753436,
+  "tags": {
+    "name": "Las Cencerradas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242397229,
+  "lat": 42.4276673,
+  "lon": -3.2609057,
+  "tags": {
+    "name": "Las Paúles",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242397278,
+  "lat": 42.3639591,
+  "lon": -3.2870318,
+  "tags": {
+    "name": "La Cava",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242397735,
+  "lat": 42.3697010,
+  "lon": -3.2416952,
+  "tags": {
+    "name": "Laisa",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242397819,
+  "lat": 42.4096193,
+  "lon": -3.3014099,
+  "tags": {
+    "name": "Escobillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242398688,
+  "lat": 42.3806491,
+  "lon": -3.3850644,
+  "tags": {
+    "name": "Las Aguas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242399117,
+  "lat": 42.4004457,
+  "lon": -3.3135416,
+  "tags": {
+    "name": "La Cruz de Ocón",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242399336,
+  "lat": 42.4548823,
+  "lon": -3.3218514,
+  "tags": {
+    "name": "Braguillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242399806,
+  "lat": 42.4530908,
+  "lon": -3.3050839,
+  "tags": {
+    "name": "Torquillas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242400204,
+  "lat": 42.3359665,
+  "lon": -3.2611583,
+  "tags": {
+    "name": "Mata Loma",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242400513,
+  "lat": 42.4288126,
+  "lon": -3.3880331,
+  "tags": {
+    "name": "El Dardo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242400991,
+  "lat": 42.3819409,
+  "lon": -3.3223175,
+  "tags": {
+    "name": "Vallejonte",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242401108,
+  "lat": 42.4114980,
+  "lon": -3.2193472,
+  "tags": {
+    "name": "Cerro de la Horca",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242402421,
+  "lat": 42.4326351,
+  "lon": -3.2419485,
+  "tags": {
+    "name": "Fuente del Caño",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242402933,
+  "lat": 42.3686135,
+  "lon": -3.3158107,
+  "tags": {
+    "name": "La Caldera",
+    "place": "locality",
+    "tourism": "viewpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 1242403187,
+  "lat": 42.4043028,
+  "lon": -3.2415360,
+  "tags": {
+    "name": "La Varga",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242403957,
+  "lat": 42.3988246,
+  "lon": -3.3168265,
+  "tags": {
+    "name": "Grajal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242404295,
+  "lat": 42.4092981,
+  "lon": -3.2430257,
+  "tags": {
+    "name": "Santa Pallones",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242404723,
+  "lat": 42.3672497,
+  "lon": -3.2856744,
+  "tags": {
+    "name": "El Escortuño",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242404767,
+  "lat": 42.3826034,
+  "lon": -3.2390113,
+  "tags": {
+    "name": "Valdeotero",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405002,
+  "lat": 42.4381561,
+  "lon": -3.3532079,
+  "tags": {
+    "name": "El Horcajo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405003,
+  "lat": 42.3311080,
+  "lon": -3.2707757,
+  "tags": {
+    "name": "Uzquiza",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405352,
+  "lat": 42.4177902,
+  "lon": -3.3005009,
+  "tags": {
+    "name": "Las Olmayas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405589,
+  "lat": 42.3987628,
+  "lon": -3.3354413,
+  "tags": {
+    "name": "La Peligrosa",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405620,
+  "lat": 42.3709817,
+  "lon": -3.2182470,
+  "tags": {
+    "name": "El Collado",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405818,
+  "lat": 42.4246176,
+  "lon": -3.3234473,
+  "tags": {
+    "name": "Hontaya",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242405861,
+  "lat": 42.3843421,
+  "lon": -3.2555515,
+  "tags": {
+    "name": "Cabeza del Hormigal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242406218,
+  "lat": 42.3528215,
+  "lon": -3.2510650,
+  "tags": {
+    "name": "Cantidueñas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242406237,
+  "lat": 42.3493567,
+  "lon": -3.3158134,
+  "tags": {
+    "name": "Zarzosa",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242406679,
+  "lat": 42.3876883,
+  "lon": -3.4018970,
+  "tags": {
+    "name": "Monte Mayor",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242406843,
+  "lat": 42.3873098,
+  "lon": -3.2878790,
+  "tags": {
+    "name": "El Vallejillo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242406860,
+  "lat": 42.4390598,
+  "lon": -3.3116667,
+  "tags": {
+    "name": "Bajatienza",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242407219,
+  "lat": 42.3655892,
+  "lon": -3.2482861,
+  "tags": {
+    "name": "Vallejo del Ojo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242407746,
+  "lat": 42.4000654,
+  "lon": -3.3271855,
+  "tags": {
+    "name": "El Matorro",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242407883,
+  "lat": 42.3807056,
+  "lon": -3.2148915,
+  "tags": {
+    "name": "El Soto",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242408191,
+  "lat": 42.3855300,
+  "lon": -3.3851914,
+  "tags": {
+    "name": "Mata Redonda",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242408970,
+  "lat": 42.3483519,
+  "lon": -3.3273061,
+  "tags": {
+    "name": "La Majada",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242409000,
+  "lat": 42.3655904,
+  "lon": -3.2559979,
+  "tags": {
+    "name": "Cerro Manzano",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242409743,
+  "lat": 42.4057359,
+  "lon": -3.3283694,
+  "tags": {
+    "name": "Cebolla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242410759,
+  "lat": 42.4125711,
+  "lon": -3.3837401,
+  "tags": {
+    "name": "Cabanzo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242411553,
+  "lat": 42.3889056,
+  "lon": -3.3720303,
+  "tags": {
+    "name": "La Carravilla",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242411788,
+  "lat": 42.4155646,
+  "lon": -3.2757445,
+  "tags": {
+    "name": "Los Izquierdos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242412087,
+  "lat": 42.3936530,
+  "lon": -3.2214236,
+  "tags": {
+    "name": "Los Nogalillos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242412252,
+  "lat": 42.4431658,
+  "lon": -3.3374287,
+  "tags": {
+    "name": "Fuensanta",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242412656,
+  "lat": 42.4324348,
+  "lon": -3.3329094,
+  "tags": {
+    "name": "Nogalejo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242412924,
+  "lat": 42.3561084,
+  "lon": -3.2966375,
+  "tags": {
+    "name": "Corral del Hospital",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242413375,
+  "lat": 42.3546222,
+  "lon": -3.3103150,
+  "tags": {
+    "alt_name": "Rozquemada",
+    "name": "Mata de Arroz Quemado",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242413635,
+  "lat": 42.3779991,
+  "lon": -3.4015195,
+  "tags": {
+    "name": "El Monte",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242413829,
+  "lat": 42.3398004,
+  "lon": -3.2623760,
+  "tags": {
+    "name": "Campo Varinde",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242414121,
+  "lat": 42.4457829,
+  "lon": -3.2549372,
+  "tags": {
+    "name": "Cuevas del Sastre",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242414426,
+  "lat": 42.4570934,
+  "lon": -3.3036073,
+  "tags": {
+    "name": "Los Valles",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242414716,
+  "lat": 42.3900775,
+  "lon": -3.2641764,
+  "tags": {
+    "name": "Corral de los Bueyes",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242415062,
+  "lat": 42.3466724,
+  "lon": -3.3618261,
+  "tags": {
+    "name": "Robles Gordos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242416387,
+  "lat": 42.3891625,
+  "lon": -3.3896358,
+  "tags": {
+    "name": "Revillalta",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242416799,
+  "lat": 42.3483968,
+  "lon": -3.2439570,
+  "tags": {
+    "name": "Solana de Villamudria",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242416977,
+  "lat": 42.4439093,
+  "lon": -3.3133809,
+  "tags": {
+    "name": "El Verde",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242417619,
+  "lat": 42.3783715,
+  "lon": -3.3168939,
+  "tags": {
+    "name": "El Calvario",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242417895,
+  "lat": 42.3348924,
+  "lon": -3.3730840,
+  "tags": {
+    "name": "Bajero de Costorrio",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242418172,
+  "lat": 42.3981427,
+  "lon": -3.3126067,
+  "tags": {
+    "name": "Prado de la Hila",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242418326,
+  "lat": 42.4056395,
+  "lon": -3.2683004,
+  "tags": {
+    "name": "Rodaño",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242420466,
+  "lat": 42.3620814,
+  "lon": -3.2194428,
+  "tags": {
+    "name": "Cabeza del Buitre",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242421503,
+  "lat": 42.3751035,
+  "lon": -3.2891109,
+  "tags": {
+    "name": "Pasada del Royal",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242421948,
+  "lat": 42.3565989,
+  "lon": -3.2534114,
+  "tags": {
+    "name": "Cabezo Medio",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242423089,
+  "lat": 42.3204213,
+  "lon": -3.3120039,
+  "tags": {
+    "name": "Las Roblizas",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242423456,
+  "lat": 42.3773712,
+  "lon": -3.2254114,
+  "tags": {
+    "name": "La Solana",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242424292,
+  "lat": 42.4393020,
+  "lon": -3.3724859,
+  "tags": {
+    "name": "Mojón de la Zarza",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242424925,
+  "lat": 42.3289265,
+  "lon": -3.2716039,
+  "tags": {
+    "name": "El Hoyo",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242425621,
+  "lat": 42.3839598,
+  "lon": -3.2805020,
+  "tags": {
+    "name": "Cimamonte",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242426717,
+  "lat": 42.3768207,
+  "lon": -3.3008039,
+  "tags": {
+    "name": "Las Machorras",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242427948,
+  "lat": 42.3913790,
+  "lon": -3.3530796,
+  "tags": {
+    "name": "Cárcava del Moro",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242428746,
+  "lat": 42.4234084,
+  "lon": -3.2440768,
+  "tags": {
+    "name": "Los Caminillos",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242428891,
+  "lat": 42.4478403,
+  "lon": -3.3311182,
+  "tags": {
+    "name": "Los Arenales",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242429026,
+  "lat": 42.3674072,
+  "lon": -3.2403748,
+  "tags": {
+    "name": "Curceraña",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242429368,
+  "lat": 42.3970725,
+  "lon": -3.3017203,
+  "tags": {
+    "name": "La Serna",
+    "place": "locality"
+  }
+},
+{
+  "type": "node",
+  "id": 1242429846,
+  "lat": 42.4182209,
+  "lon": -3.2482744,
+  "tags": {
+    "name": "Los Caños",
+    "place": "locality"
+  }
+}
+
+  ]
+}

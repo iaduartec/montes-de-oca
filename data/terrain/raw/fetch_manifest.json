@@ -1,0 +1,52 @@
+{
+  "generador": "scripts/terrain/fetch_dem_mdt05.py",
+  "fecha_utc": "2026-09-24T22:15:46.294428+00:00",
+  "producto": "IGN/CNIG MDT05 (PNOA-LiDAR), paso 5 m",
+  "licencia": "CC BY 4.0 (scne.es)",
+  "coverage_id": "Elevacion25830_5",
+  "url_getcoverage": "https://servicios.idee.es/wcs-inspire/mdt?service=WCS&version=2.0.0&request=GetCoverage&coverageId=Elevacion25830_5&format=image%2Ftiff&subset=x%28471500%2C477505%29&subset=y%284688995%2C4695000%29",
+  "user_agent": "montes-de-oca-offroad/0.1 (terrain pipeline; contacto: proyecto local) Python-urllib",
+  "ventana_mundo": {
+    "crs": "EPSG:25830",
+    "e_min": 471500.0,
+    "n_min": 4689000.0,
+    "lado_m": 6000.0,
+    "sampling_m": 5.0,
+    "nodos": 1201
+  },
+  "ventana_wcs_pedida": {
+    "x": [
+      471500.0,
+      477505.0
+    ],
+    "y": [
+      4688995.0,
+      4695000.0
+    ],
+    "nota": "una celda extendida al E y al S por la semántica [min,max) del WCS"
+  },
+  "archivo": "mdt05_villafranca_6000m_5m.tif",
+  "sha256": "d6c64e647b9c899aa02fb28ad8cbcb8eb22d56911b5d2896252d1c9a01a6fd02",
+  "bytes": 2888466,
+  "width": 1201,
+  "height": 1201,
+  "crs": "EPSG:25830",
+  "dtype": "int16",
+  "nodata": null,
+  "transform": [
+    5.0,
+    0.0,
+    471500.0,
+    0.0,
+    -5.0,
+    4695000.0
+  ],
+  "bounds": [
+    471500.0,
+    4688995.0,
+    477505.0,
+    4695000.0
+  ],
+  "min_m": 870.0,
+  "max_m": 1194.0
+}

@@ -1,0 +1,61 @@
+{
+  "descripcion": "DEM original (interp. SW->NE) vs tile publicado (interp. SW->NE). Diferencia debe ser ~0: valida orden de filas, recorte y no-resta de datum en el grid.",
+  "diff_max_abs_m": 0.0,
+  "puntos": [
+    {
+      "nombre": "pueblo_villafranca",
+      "e": 474597.258,
+      "n": 4692945.02,
+      "world_x": 3097.2579999999725,
+      "world_z": 3945.019999999553,
+      "dem_m": 944.5484,
+      "tile_m": 944.5484,
+      "diff_m": 0.0,
+      "tile": "tile_3_3"
+    },
+    {
+      "nombre": "cumbre_max",
+      "e": 471665.0,
+      "n": 4689000.0,
+      "world_x": 165.0,
+      "world_z": 0.0,
+      "dem_m": 1194.0,
+      "tile_m": 1194.0,
+      "diff_m": 0.0,
+      "tile": "tile_0_0"
+    },
+    {
+      "nombre": "cumbre_secundaria",
+      "e": 473170.0,
+      "n": 4692840.0,
+      "world_x": 1670.0,
+      "world_z": 3840.0,
+      "dem_m": 1126.0,
+      "tile_m": 1126.0,
+      "diff_m": 0.0,
+      "tile": "tile_1_3"
+    },
+    {
+      "nombre": "punto_bajo_min",
+      "e": 477490.0,
+      "n": 4695000.0,
+      "world_x": 5990.0,
+      "world_z": 6000.0,
+      "dem_m": 870.0,
+      "tile_m": 870.0,
+      "diff_m": 0.0,
+      "tile": "tile_5_5"
+    },
+    {
+      "nombre": "punto_bajo_secundario",
+      "e": 474820.0,
+      "n": 4693495.0,
+      "world_x": 3320.0,
+      "world_z": 4495.0,
+      "dem_m": 927.0,
+      "tile_m": 927.0,
+      "diff_m": 0.0,
+      "tile": "tile_3_4"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "_doc": "Terreno real Villafranca (IGN MDT05). Origen = esquina SW del mundo en WGS84; worldX=E-471500, worldZ=N-4689000; heights en metros ABSOLUTOS; el verticalDatum se resta al construir la malla y al devolver heightAt.",
+  "origin": {
+    "lon": -3.34604719,
+    "lat": 42.35274241
+  },
+  "projection": {
+    "metersPerDegreeLon": 82355.71,
+    "metersPerDegreeLat": 111090.4
+  },
+  "worldScale": 1,
+  "verticalDatum": 870.0,
+  "viewRadius": 900,
+  "crs": "EPSG:25830",
+  "bounds": {
+    "e": [
+      471500.0,
+      477500.0
+    ],
+    "n": [
+      4689000.0,
+      4695000.0
+    ],
+    "sampling": 5.0
+  },
+  "spawn": {
+    "lon": -3.3086147,
+    "lat": 42.3883784
+  },
+  "tiles": [
+    {
+      "id": "tile_0_0",
+      "url": "/terrain/tiles/tile_0_0.json"
+    },
+    {
+      "id": "tile_1_0",
+      "url": "/terrain/tiles/tile_1_0.json"
+    },
+    {
+      "id": "tile_2_0",
+      "url": "/terrain/tiles/tile_2_0.json"
+    },
+    {
+      "id": "tile_3_0",
+      "url": "/terrain/tiles/tile_3_0.json"
+    },
+    {
+      "id": "tile_4_0",
+      "url": "/terrain/tiles/tile_4_0.json"
+    },
+    {
+      "id": "tile_5_0",
+      "url": "/terrain/tiles/tile_5_0.json"
+    },
+    {
+      "id": "tile_0_1",
+      "url": "/terrain/tiles/tile_0_1.json"
+    },
+    {
+      "id": "tile_1_1",
+      "url": "/terrain/tiles/tile_1_1.json"
+    },
+    {
+      "id": "tile_2_1",
+      "url": "/terrain/tiles/tile_2_1.json"
+    },
+    {
+      "id": "tile_3_1",
+      "url": "/terrain/tiles/tile_3_1.json"
+    },
+    {
+      "id": "tile_4_1",
+      "url": "/terrain/tiles/tile_4_1.json"
+    },
+    {
+      "id": "tile_5_1",
+      "url": "/terrain/tiles/tile_5_1.json"
+    },
+    {
+      "id": "tile_0_2",
+      "url": "/terrain/tiles/tile_0_2.json"
+    },
+    {
+      "id": "tile_1_2",
+      "url": "/terrain/tiles/tile_1_2.json"
+    },
+    {
+      "id": "tile_2_2",
+      "url": "/terrain/tiles/tile_2_2.json"
+    },
+    {
+      "id": "tile_3_2",
+      "url": "/terrain/tiles/tile_3_2.json"
+    },
+    {
+      "id": "tile_4_2",
+      "url": "/terrain/tiles/tile_4_2.json"
+    },
+    {
+      "id": "tile_5_2",
+      "url": "/terrain/tiles/tile_5_2.json"
+    },
+    {
+      "id": "tile_0_3",
+      "url": "/terrain/tiles/tile_0_3.json"
+    },
+    {
+      "id": "tile_1_3",
+      "url": "/terrain/tiles/tile_1_3.json"
+    },
+    {
+      "id": "tile_2_3",
+      "url": "/terrain/tiles/tile_2_3.json"
+    },
+    {
+      "id": "tile_3_3",
+      "url": "/terrain/tiles/tile_3_3.json"
+    },
+    {
+      "id": "tile_4_3",
+      "url": "/terrain/tiles/tile_4_3.json"
+    },
+    {
+      "id": "tile_5_3",
+      "url": "/terrain/tiles/tile_5_3.json"
+    },
+    {
+      "id": "tile_0_4",
+      "url": "/terrain/tiles/tile_0_4.json"
+    },
+    {
+      "id": "tile_1_4",
+      "url": "/terrain/tiles/tile_1_4.json"
+    },
+    {
+      "id": "tile_2_4",
+      "url": "/terrain/tiles/tile_2_4.json"
+    },
+    {
+      "id": "tile_3_4",
+      "url": "/terrain/tiles/tile_3_4.json"
+    },
+    {
+      "id": "tile_4_4",
+      "url": "/terrain/tiles/tile_4_4.json"
+    },
+    {
+      "id": "tile_5_4",
+      "url": "/terrain/tiles/tile_5_4.json"
+    },
+    {
+      "id": "tile_0_5",
+      "url": "/terrain/tiles/tile_0_5.json"
+    },
+    {
+      "id": "tile_1_5",
+      "url": "/terrain/tiles/tile_1_5.json"
+    },
+    {
+      "id": "tile_2_5",
+      "url": "/terrain/tiles/tile_2_5.json"
+    },
+    {
+      "id": "tile_3_5",
+      "url": "/terrain/tiles/tile_3_5.json"
+    },
+    {
+      "id": "tile_4_5",
+      "url": "/terrain/tiles/tile_4_5.json"
+    },
+    {
+      "id": "tile_5_5",
+      "url": "/terrain/tiles/tile_5_5.json"
+    }
+  ]
+}

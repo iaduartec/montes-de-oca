@@ -1,0 +1,38 @@
+[
+  {
+    "vista": "terrain_default",
+    "url": "http://127.0.0.1:4173/",
+    "tiles": "36",
+    "triangulos": "240000",
+    "triangulos_en_vista": "240000",
+    "camara": "x=3083 y=175 z=3919",
+    "png": "/home/kiri_/projects/montes-de-oca-offroad/output/terrain_default.png"
+  },
+  {
+    "vista": "terrain_pueblo",
+    "url": "http://127.0.0.1:4173/?px=2750&py=210&pz=3350&tx=3097&ty=80&tz=3950",
+    "tiles": "36",
+    "triangulos": "320000",
+    "triangulos_en_vista": "320000",
+    "camara": "x=2750 y=210 z=3350",
+    "png": "/home/kiri_/projects/montes-de-oca-offroad/output/terrain_pueblo.png"
+  },
+  {
+    "vista": "terrain_montes",
+    "url": "http://127.0.0.1:4173/?px=3097&py=190&pz=3450&tx=1900&ty=95&tz=4300",
+    "tiles": "36",
+    "triangulos": "240000",
+    "triangulos_en_vista": "240000",
+    "camara": "x=3097 y=190 z=3450",
+    "png": "/home/kiri_/projects/montes-de-oca-offroad/output/terrain_montes.png"
+  },
+  {
+    "vista": "terrain_sierra",
+    "url": "http://127.0.0.1:4173/?px=1150&py=600&pz=1150&tx=450&ty=320&tz=400",
+    "tiles": "36",
+    "triangulos": "240000",
+    "triangulos_en_vista": "240000",
+    "camara": "x=1150 y=600 z=1150",
+    "png": "/home/kiri_/projects/montes-de-oca-offroad/output/terrain_sierra.png"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "bbox_epsg25830": [
+    471108.9,
+    4688769.4,
+    477138.2,
+    4694731.8
+  ],
+  "grid_2m": {
+    "width": 3015,
+    "height": 2981,
+    "px": 8987715,
+    "cell_m": 2.0,
+    "crs": "EPSG:25830"
+  },
+  "hypsometria_mdt02_m": {
+    "min": 891.19,
+    "max": 1196.29,
+    "mean": 1065.94,
+    "std": 69.24,
+    "p05": 939.5,
+    "p50": 1074.7,
+    "p95": 1170.5
+  },
+  "mdt02_vs_mdt05_interp_2m": {
+    "n_px": 8987715,
+    "bias_m": -0.4,
+    "rmse_m": 0.835,
+    "mae_m": 0.551,
+    "p50_abs_m": 0.41,
+    "p95_abs_m": 1.43,
+    "max_abs_m": 28.182
+  },
+  "mdt02_vs_copernicus_interp_2m": {
+    "n_px": 8987715,
+    "bias_m": -4.989,
+    "rmse_m": 6.799,
+    "mae_m": 5.32,
+    "p50_abs_m": 5.088,
+    "p95_abs_m": 12.121,
+    "max_abs_m": 36.158
+  },
+  "media_30m_mdt02_vs_copernicus_nativo": {
+    "n_celdas": 39798,
+    "bias_m": -4.923,
+    "rmse_m": 6.937,
+    "max_abs_m": 28.523
+  },
+  "relieve_interno_por_celda_30m_desde_mdt02_2m": {
+    "descripcion": "desvío estándar de las 225 muestras de 2 m dentro de cada celda de 30 m; es el relieve que una grilla de 30 m NO puede representar",
+    "celdas": 39798,
+    "std_medio_m": 1.76,
+    "std_p95_m": 3.918,
+    "std_max_m": 20.441,
+    "std_medio_donde_relieve_alto_m": 3.37
+  },
+  "advertencia": "Reproyectar/interpolar a 2 m NO aumenta la resolución real de la fuente; sólo permite medir el detalle que la fuente gruesa no contiene."
+}

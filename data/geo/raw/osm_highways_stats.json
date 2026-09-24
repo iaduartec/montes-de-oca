@@ -1,0 +1,127 @@
+{
+  "source_file": "osm_highways_bbox.geojson.json",
+  "source_sha256": "25854c3cfa0787a44ef8e44702e6c023e0ccf64afee06e062b5d0ded55e2fe2d",
+  "source_bytes": 466800,
+  "overpass_timestamp": "2026-09-24T21:54:51Z",
+  "bbox": [
+    42.350651,
+    -3.350784,
+    42.404549,
+    -3.277816
+  ],
+  "caveat": "Tags OSM = metadatos mapeados, no mediciones.",
+  "total_ways_highway": 395,
+  "total_length_km": 150.355,
+  "ways_sin_nombre": 302,
+  "por_familia": {
+    "primary": {
+      "ways": 0,
+      "km": 0.0
+    },
+    "secondary": {
+      "ways": 0,
+      "km": 0.0
+    },
+    "tertiary": {
+      "ways": 6,
+      "km": 4.241
+    },
+    "unclassified": {
+      "ways": 2,
+      "km": 1.113
+    },
+    "residential": {
+      "ways": 48,
+      "km": 3.076
+    },
+    "service": {
+      "ways": 20,
+      "km": 3.118
+    },
+    "track": {
+      "ways": 191,
+      "km": 87.373
+    },
+    "path": {
+      "ways": 76,
+      "km": 26.21
+    },
+    "footway": {
+      "ways": 7,
+      "km": 0.341
+    },
+    "bridleway": {
+      "ways": 0,
+      "km": 0.0
+    }
+  },
+  "por_subclase": {
+    "path": 76,
+    "track/sin-tracktype": 64,
+    "residential": 48,
+    "track/grade4": 43,
+    "track/grade2": 33,
+    "track/grade5": 29,
+    "trunk": 24,
+    "service": 20,
+    "track/grade3": 15,
+    "pedestrian": 8,
+    "living_street": 7,
+    "track/grade1": 7,
+    "footway": 7,
+    "tertiary": 6,
+    "steps": 3,
+    "proposed": 3,
+    "unclassified": 2
+  },
+  "tracktype": {
+    "grade1": 7,
+    "grade4": 43,
+    "sin-tracktype": 64,
+    "grade2": 33,
+    "grade3": 15,
+    "grade5": 29
+  },
+  "cobertura_tags": {
+    "access": {
+      "ways": 14,
+      "pct": 3.5
+    },
+    "motor_vehicle/motorcar": {
+      "ways": 1,
+      "pct": 0.3
+    },
+    "smoothness": {
+      "ways": 9,
+      "pct": 2.3
+    },
+    "surface": {
+      "ways": 82,
+      "pct": 20.8
+    }
+  },
+  "valores_access": {
+    "no": 1,
+    "private": 12,
+    "yes": 1
+  },
+  "longitud_km_por_subclase": {
+    "path": 26.21,
+    "track/grade4": 24.399,
+    "track/grade2": 23.19,
+    "track/sin-tracktype": 18.366,
+    "proposed": 15.73,
+    "track/grade5": 15.632,
+    "trunk": 8.209,
+    "track/grade3": 4.524,
+    "tertiary": 4.241,
+    "service": 3.118,
+    "residential": 3.076,
+    "track/grade1": 1.262,
+    "unclassified": 1.113,
+    "pedestrian": 0.544,
+    "footway": 0.341,
+    "living_street": 0.302,
+    "steps": 0.097
+  }
+}

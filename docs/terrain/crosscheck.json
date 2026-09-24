@@ -1,0 +1,68 @@
+{
+  "descripcion": "Altura del DEM original MDT05 vs heightAt() real de src/heightfield.ts (transpilado con el typescript del proyecto). Máxima diferencia abs. requerida: submétrica (acá se exige < 1e-3 m).",
+  "verticalDatum_m": 870,
+  "diff_max_abs_m": 0,
+  "aprobado": true,
+  "puntos": [
+    {
+      "nombre": "pueblo_villafranca",
+      "e": 474597.258,
+      "n": 4692945.02,
+      "world_x": 3097.2579999999725,
+      "world_z": 3945.019999999553,
+      "tile": "tile_3_3",
+      "dem_abs_m": 944.5484,
+      "game_abs_m": 944.5484,
+      "game_world_y": 74.5484,
+      "diff_m": 0
+    },
+    {
+      "nombre": "cumbre_max",
+      "e": 471665,
+      "n": 4689000,
+      "world_x": 165,
+      "world_z": 0,
+      "tile": "tile_0_0",
+      "dem_abs_m": 1194,
+      "game_abs_m": 1194,
+      "game_world_y": 324,
+      "diff_m": 0
+    },
+    {
+      "nombre": "cumbre_secundaria",
+      "e": 473170,
+      "n": 4692840,
+      "world_x": 1670,
+      "world_z": 3840,
+      "tile": "tile_1_3",
+      "dem_abs_m": 1126,
+      "game_abs_m": 1126,
+      "game_world_y": 256,
+      "diff_m": 0
+    },
+    {
+      "nombre": "punto_bajo_min",
+      "e": 477490,
+      "n": 4695000,
+      "world_x": 5990,
+      "world_z": 6000,
+      "tile": "tile_5_5",
+      "dem_abs_m": 870,
+      "game_abs_m": 870,
+      "game_world_y": 0,
+      "diff_m": 0
+    },
+    {
+      "nombre": "punto_bajo_secundario",
+      "e": 474820,
+      "n": 4693495,
+      "world_x": 3320,
+      "world_z": 4495,
+      "tile": "tile_3_4",
+      "dem_abs_m": 927,
+      "game_abs_m": 927,
+      "game_world_y": 57,
+      "diff_m": 0
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-24T21:49:51Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 576322251,
+  "lat": 42.2423971,
+  "lon": -3.1833777,
+  "tags": {
+    "ele": "2029",
+    "name": "Cabeza Aguilez",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 948486940,
+  "lat": 42.3441894,
+  "lon": -3.0733958,
+  "tags": {
+    "ele": "1338.40",
+    "name": "Las Palomeras",
+    "natural": "peak",
+    "wikidata": "Q115505085"
+  }
+},
+{
+  "type": "node",
+  "id": 948549214,
+  "lat": 42.2775264,
+  "lon": -3.4657373,
+  "tags": {
+    "ele": "1139.10",
+    "name": "Sauce",
+    "natural": "peak",
+    "wikidata": "Q115509757"
+  }
+},
+{
+  "type": "node",
+  "id": 948559198,
+  "lat": 42.4501226,
+  "lon": -3.4974925,
+  "tags": {
+    "ele": "1042.60",
+    "name": "Hoyas",
+    "natural": "peak",
+    "wikidata": "Q115504200"
+  }
+},
+{
+  "type": "node",
+  "id": 948584531,
+  "lat": 42.3514607,
+  "lon": -3.5108854,
+  "tags": {
+    "ele": "1084.90",
+    "name": "San Vicente",
+    "natural": "peak",
+    "wikidata": "Q115509499"
+  }
+},
+{
+  "type": "node",
+  "id": 948591896,
+  "lat": 42.3782734,
+  "lon": -3.5312854,
+  "tags": {
+    "ele": "1082.40",
+    "name": "Matagrande",
+    "natural": "peak",
+    "wikidata": "Q115505908"
+  }
+},
+{
+  "type": "node",
+  "id": 948592536,
+  "lat": 42.2319040,
+  "lon": -3.2062781,
+  "tags": {
+    "alt_name": "El Torruco",
+    "ele": "2129",
+    "name": "San Millán",
+    "natural": "peak",
+    "wikidata": "Q48781639",
+    "wikipedia": "es:Pico San Millán"
+  }
+},
+{
+  "type": "node",
+  "id": 1242350184,
+  "lat": 42.3164035,
+  "lon": -3.2768759,
+  "tags": {
+    "ele": "1212",
+    "name": "Alto de las Mojoneras",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 1242434491,
+  "lat": 42.3197184,
+  "lon": -3.2776410,
+  "tags": {
+    "ele": "1206",
+    "name": "Alto de la Rózola o de las Peñas",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 1249945148,
+  "lat": 42.5563855,
+  "lon": -3.3947897,
+  "tags": {
+    "ele": "991",
+    "name": "Alto de la Varga",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 1249945445,
+  "lat": 42.2998791,
+  "lon": -3.1005424,
+  "tags": {
+    "ele": "1514",
+    "name": "Alto de Corcusa",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 1249957640,
+  "lat": 42.2985921,
+  "lon": -3.1371338,
+  "tags": {
+    "ele": "1461",
+    "name": "Picote las Cabezas",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 1888844387,
+  "lat": 42.3691825,
+  "lon": -3.3203793,
+  "tags": {
+    "ele": "1096",
+    "name": "Peñalta",
+    "natural": "peak",
+    "tourism": "viewpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 2789324930,
+  "lat": 42.2504697,
+  "lon": -3.3786382,
+  "tags": {
+    "ele": "1531",
+    "name": "Alto de la Cerca",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 3296968607,
+  "lat": 42.4338096,
+  "lon": -3.3751665,
+  "tags": {
+    "ele": "1120",
+    "name": "Cilla",
+    "natural": "peak",
+    "source": "IDEE"
+  }
+},
+{
+  "type": "node",
+  "id": 3306174949,
+  "lat": 42.3015391,
+  "lon": -3.2026957,
+  "tags": {
+    "ele": "1356",
+    "name": "Majada de los Ciervos",
+    "natural": "peak",
+    "source": "Instituto Geográfico Nacional"
+  }
+},
+{
+  "type": "node",
+  "id": 3306174950,
+  "lat": 42.3520342,
+  "lon": -3.2438782,
+  "tags": {
+    "ele": "1183",
+    "name": "Muladardo",
+    "natural": "peak",
+    "ref": "20181",
+    "source": "Instituto Geográfico Nacional"
+  }
+},
+{
+  "type": "node",
+  "id": 3306174952,
+  "lat": 42.3762169,
+  "lon": -3.3394355,
+  "tags": {
+    "ele": "1168",
+    "name": "Valbuena",
+    "natural": "peak",
+    "source": "Instituto Geográfico Nacional"
+  }
+},
+{
+  "type": "node",
+  "id": 3629561248,
+  "lat": 42.2562325,
+  "lon": -3.2450367,
+  "tags": {
+    "ele": "2035",
+    "name": "Trigaza Norte o La Zapatera",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 3898693370,
+  "lat": 42.3222909,
+  "lon": -3.1014784,
+  "tags": {
+    "ele": "1333",
+    "name": "Sumicia",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4215730276,
+  "lat": 42.2427518,
+  "lon": -3.4003827,
+  "tags": {
+    "ele": "1544",
+    "name": "Villaneda",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4215731744,
+  "lat": 42.2615127,
+  "lon": -3.4452795,
+  "tags": {
+    "ele": "1215",
+    "name": "Esculca",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4215736239,
+  "lat": 42.2955286,
+  "lon": -3.3483713,
+  "tags": {
+    "ele": "1302.40",
+    "name": "Merienda",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4215736298,
+  "lat": 42.3004090,
+  "lon": -3.2786394,
+  "tags": {
+    "ele": "1262",
+    "name": "Cabeza de San Medel",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4215739533,
+  "lat": 42.2734619,
+  "lon": -3.3210201,
+  "tags": {
+    "ele": "1374",
+    "name": "Cabeza Cepeda",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4263182967,
+  "lat": 42.4655308,
+  "lon": -3.4687185,
+  "tags": {
+    "ele": "1079",
+    "name": "Peña el Hurón",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4263184689,
+  "lat": 42.4357444,
+  "lon": -3.4948828,
+  "tags": {
+    "ele": "1031",
+    "name": "La Brújula",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4263186222,
+  "lat": 42.4528357,
+  "lon": -3.5097323,
+  "tags": {
+    "ele": "1022",
+    "name": "El Pradillo",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 4263186966,
+  "lat": 42.4684392,
+  "lon": -3.4788461,
+  "tags": {
+    "ele": "1071",
+    "name": "La Varga",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 5066671074,
+  "lat": 42.2489581,
+  "lon": -3.2373495,
+  "tags": {
+    "ele": "2085",
+    "name": "Trigaza Sur",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 5111798681,
+  "lat": 42.4998920,
+  "lon": -3.4289240,
+  "tags": {
+    "ele": "1095",
+    "name": "Pelado",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 5173209046,
+  "lat": 42.2977484,
+  "lon": -3.1949552,
+  "tags": {
+    "ele": "1421",
+    "name": "Cruz de Guirlando",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6208158645,
+  "lat": 42.2777476,
+  "lon": -3.4916890,
+  "tags": {
+    "ele": "1068",
+    "name": "San Llorente",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6208177964,
+  "lat": 42.2454912,
+  "lon": -3.3787027,
+  "tags": {
+    "ele": "1565",
+    "name": "La Cerca",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6221861345,
+  "lat": 42.3630627,
+  "lon": -3.3201943,
+  "tags": {
+    "ele": "1083",
+    "name": "Castillo de Alba",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6221864769,
+  "lat": 42.3612879,
+  "lon": -3.3064214,
+  "tags": {
+    "ele": "1109",
+    "name": "Somoro",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6221883100,
+  "lat": 42.3393499,
+  "lon": -3.3334139,
+  "tags": {
+    "ele": "1202",
+    "name": "Siete Hermanos",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6224964898,
+  "lat": 42.3176289,
+  "lon": -3.2482146,
+  "tags": {
+    "ele": "1214",
+    "name": "Cruces",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6224971522,
+  "lat": 42.3268853,
+  "lon": -3.2615474,
+  "tags": {
+    "ele": "1240",
+    "name": "Maceturri",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227022740,
+  "lat": 42.3384513,
+  "lon": -3.2204171,
+  "tags": {
+    "ele": "1114",
+    "name": "Peña Tejada",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227029017,
+  "lat": 42.3616897,
+  "lon": -3.1712067,
+  "tags": {
+    "ele": "1203",
+    "name": "Colodro",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227029410,
+  "lat": 42.3370297,
+  "lon": -3.1467184,
+  "tags": {
+    "ele": "1322",
+    "name": "Santa Brígida",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227030536,
+  "lat": 42.3230579,
+  "lon": -3.1258947,
+  "tags": {
+    "ele": "1265",
+    "name": "Cotero las Cuestas",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227042102,
+  "lat": 42.3319285,
+  "lon": -3.1085185,
+  "tags": {
+    "ele": "1273",
+    "name": "Lanuza",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227047821,
+  "lat": 42.3051385,
+  "lon": -3.1598554,
+  "tags": {
+    "ele": "1429",
+    "name": "Anyuela",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 6227059016,
+  "lat": 42.2699438,
+  "lon": -3.1693165,
+  "tags": {
+    "ele": "1856",
+    "name": "Remendia",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 10231042164,
+  "lat": 42.4733983,
+  "lon": -3.4638295,
+  "tags": {
+    "ele": "1038",
+    "name": "Peña Castillo",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 10231042177,
+  "lat": 42.4713047,
+  "lon": -3.5195631,
+  "tags": {
+    "ele": "1008",
+    "name": "Alto de Corralejos",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13009279355,
+  "lat": 42.2592777,
+  "lon": -3.1769812,
+  "tags": {
+    "ele": "1875",
+    "name": "Mojon Alto",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13034477821,
+  "lat": 42.2838532,
+  "lon": -3.1562441,
+  "tags": {
+    "ele": "1639",
+    "name": "Cerro Estrecho / Ticumbea",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13096825594,
+  "lat": 42.3644167,
+  "lon": -3.3139599,
+  "tags": {
+    "ele": "1112",
+    "name": "Somoro",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256696242,
+  "lat": 42.3044027,
+  "lon": -3.2356292,
+  "tags": {
+    "ele": "1105",
+    "name": "El Pico",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256696243,
+  "lat": 42.2938725,
+  "lon": -3.2919998,
+  "tags": {
+    "ele": "1325",
+    "name": "Peña Luenga",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256737566,
+  "lat": 42.2404546,
+  "lon": -3.1897434,
+  "tags": {
+    "ele": "1959",
+    "name": "Mojón Alto",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256737567,
+  "lat": 42.2362797,
+  "lon": -3.2110930,
+  "tags": {
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256737568,
+  "lat": 42.2437037,
+  "lon": -3.2159151,
+  "tags": {
+    "ele": "1973",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256737569,
+  "lat": 42.2686789,
+  "lon": -3.2328140,
+  "tags": {
+    "ele": "1721",
+    "name": "Cerro Idolén",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256738021,
+  "lat": 42.2448964,
+  "lon": -3.2943630,
+  "tags": {
+    "ele": "1468",
+    "name": "Alto de la Burra",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256738022,
+  "lat": 42.2737984,
+  "lon": -3.3547923,
+  "tags": {
+    "ele": "1294",
+    "name": "Cerro de la Viga",
+    "natural": "peak"
+  }
+},
+{
+  "type": "node",
+  "id": 13256738024,
+  "lat": 42.2670843,
+  "lon": -3.3489155,
+  "tags": {
+    "ele": "1256",
+    "name": "La Peñuela",
+    "natural": "peak"
+  }
+}
+
+  ]
+}

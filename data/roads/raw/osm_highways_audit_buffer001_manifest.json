@@ -1,0 +1,42 @@
+{
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "url": "https://overpass-api.de/api/interpreter",
+  "method": "POST application/x-www-form-urlencoded",
+  "user_agent": "MontesDeOcaOffroad-RoadsBot/1.0 (open-world driving game data; offline research)",
+  "query_file": "data/roads/raw/osm_highways_audit_buffer001_query.txt",
+  "query": "[out:json][timeout:180];\nway[\"highway\"](42.342742,-3.356344,42.416975,-3.263196);\nout tags geom qt;\n",
+  "bbox_wgs84_s_w_n_e": [
+    42.342742,
+    -3.356344,
+    42.416975,
+    -3.263196
+  ],
+  "buffer_deg": 0.01,
+  "window_utm30n": {
+    "e": [
+      471500.0,
+      477500.0
+    ],
+    "n": [
+      4689000.0,
+      4695000.0
+    ]
+  },
+  "requested_at_utc": "2026-09-24T22:35:05+00:00",
+  "http_status": 200,
+  "attempts": 2,
+  "overpass_timestamp_osm_base": "2026-09-24T22:33:36Z",
+  "overpass_generator": "Overpass API 0.7.62.11 87bfad18",
+  "fetched_at_utc": "2026-09-24T22:35:06+00:00",
+  "file": "data/roads/raw/osm_highways_audit_buffer001.json",
+  "bytes": 636079,
+  "sha256": "60a10b5341e82606aa7e6d44e12270eec672c221dc09a9b4f779689d1f6e0f4b",
+  "elements": {
+    "total": 524,
+    "by_type": {
+      "way": 524
+    }
+  },
+  "license": "ODbL-1.0 (OpenStreetMap contributors)",
+  "remark": null
+}

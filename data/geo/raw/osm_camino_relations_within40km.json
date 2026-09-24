@@ -1,0 +1,467 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-24T22:17:14Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "relation",
+  "id": 341886,
+  "center": {
+    "lat": 42.4045063,
+    "lon": -3.2818738
+  },
+  "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "idee:name": "Espinosa del Camino",
+    "ine:municipio": "09123",
+    "name": "Espinosa del Camino",
+    "population": "43",
+    "population:date": "2025",
+    "ref:ine": "09123000000",
+    "source": "BDLL25, EGRN, Instituto Geográfico Nacional",
+    "type": "boundary",
+    "wikidata": "Q946759",
+    "wikipedia": "es:Espinosa del Camino"
+  }
+},
+{
+  "type": "relation",
+  "id": 346892,
+  "center": {
+    "lat": 42.4135184,
+    "lon": -3.0643281
+  },
+  "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "idee:name": "Redecilla del Camino",
+    "ine:municipio": "09307",
+    "name": "Redecilla del Camino",
+    "population": "98",
+    "population:date": "2025",
+    "ref:ine": "09307000000",
+    "source": "BDLL25, EGRN, Instituto Geográfico Nacional",
+    "type": "boundary",
+    "wikidata": "Q1012965",
+    "wikipedia": "es:Redecilla del Camino"
+  }
+},
+{
+  "type": "relation",
+  "id": 2163558,
+  "center": {
+    "lat": 42.4010950,
+    "lon": -3.0832521
+  },
+  "tags": {
+    "denomination": "catholic",
+    "distance": "750",
+    "from": "Logroño, España",
+    "heritage": "1",
+    "heritage:operator": "whc-UNESCO",
+    "int_name": "Camino Francés - 03 Logroño to Burgos",
+    "name": "Camino Francés - 03 Logroño a Burgos",
+    "name:br": "Hent Gall - 03 Eus Logroño da vBurgos",
+    "name:es": "Camino Francés - 03 Logroño a Burgos",
+    "name:eu": "Donejakue bidea (Frantses Bidea) - 03 Logroño a Burgos",
+    "name:fr": "Camino Francés - 03 Logroño a Burgos",
+    "network": "iwn",
+    "note": "Be careful to not map the bicycle way here. See the wiki.",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "yes",
+    "religion": "christian",
+    "route": "hiking",
+    "section": "east (west)",
+    "symbol": "NNN",
+    "to": "Burgos, España",
+    "type": "route",
+    "wikidata": "Q1029584",
+    "wikipedia": "es:Camino de Santiago Francés"
+  }
+},
+{
+  "type": "relation",
+  "id": 2163560,
+  "center": {
+    "lat": 42.4182492,
+    "lon": -4.6238294
+  },
+  "tags": {
+    "denomination": "catholic",
+    "distance": "750",
+    "heritage": "1",
+    "heritage:operator": "whc-UNESCO",
+    "int_name": "Camino de Santiago",
+    "name": "Camino Francés - 04 Burgos a León",
+    "name:br": "Hent Gall - 04 Eus Burgos da León",
+    "name:es": "Camino Francés - 04 Burgos a León",
+    "name:eu": "Donejakue bidea (Frantses Bidea) - 04 Burgos a León",
+    "network": "iwn",
+    "note": "Be careful to not map the bicycle way here. See the wiki.",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "Camino_de_Santiago",
+    "ref": "66261",
+    "religion": "christian",
+    "route": "hiking",
+    "section": "middle (east)",
+    "symbol": "NNN",
+    "type": "route",
+    "wikidata": "Q1029584",
+    "wikipedia": "es:Camino de Santiago Francés"
+  }
+},
+{
+  "type": "relation",
+  "id": 2188235,
+  "center": {
+    "lat": 40.8053123,
+    "lon": -2.0432909
+  },
+  "tags": {
+    "description": "Trazado oficial del Camino del Cid para BTT. El itinerario coincide en la mayor parte de su trazado con el Camino del Cid senderista (GR 160) salvo aquellos tramos de ciclabilidad reducida donde se ha habilitado alternativas BTT señalizadas.",
+    "name": "GR 160 - Camino del Cid BTT",
+    "name:ca": "GR 160 - Camí del Cid BTT",
+    "network": "ncn",
+    "note": "Trazado mapeado por OpenStreetMap contributors, y UTM Desarrollos a instancias del Consorcio del Camino del Cid.",
+    "operator": "Consorcio Camino del Cid",
+    "operator:type": "consortium",
+    "phone": "+34 947256240",
+    "ref": "GR160",
+    "roundtrip": "no",
+    "route": "mtb",
+    "source": "GPS (Consorcio del Camino del Cid)",
+    "type": "route",
+    "website": "https://www.caminodelcid.org/",
+    "wikidata": "Q1227140",
+    "wikipedia": "es:Camino del Cid"
+  }
+},
+{
+  "type": "relation",
+  "id": 2188986,
+  "center": {
+    "lat": 42.3471028,
+    "lon": -3.7068109
+  },
+  "tags": {
+    "name": "Camino del Destierro del Cid alternativa Castillo",
+    "network": "rcn",
+    "roundtrip": "no",
+    "route": "bicycle",
+    "type": "route",
+    "website": "https://www.caminodelcid.org/"
+  }
+},
+{
+  "type": "relation",
+  "id": 3559043,
+  "center": {
+    "lat": 42.7225785,
+    "lon": -3.4095415
+  },
+  "tags": {
+    "name": "Caminos de Oña",
+    "network": "rwn",
+    "osmc:symbol": "yellow:white:yellow_lower:101:black",
+    "ref": "PRC-BU 101",
+    "route": "hiking",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 3853368,
+  "center": {
+    "lat": 42.4377422,
+    "lon": -3.0648746
+  },
+  "tags": {
+    "name": "Redecilla del Camino",
+    "public_transport": "stop_area",
+    "type": "public_transport"
+  }
+},
+{
+  "type": "relation",
+  "id": 4062882,
+  "center": {
+    "lat": 41.0720621,
+    "lon": -2.8017861
+  },
+  "tags": {
+    "denomination": "catholic",
+    "distance": "408",
+    "int_name": "Camino de Santiago",
+    "name": "Camino de Santiago de la Lana.BTT",
+    "network": "ncn",
+    "note": "This route is an alternative to pilgrims with bicycle",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "yes",
+    "religion": "christian",
+    "route": "mtb",
+    "type": "route",
+    "wikidata": "Q5742386",
+    "wikipedia": "es:Camino de Santiago de la Lana"
+  }
+},
+{
+  "type": "relation",
+  "id": 4071980,
+  "center": {
+    "lat": 42.4199356,
+    "lon": -4.6875203
+  },
+  "tags": {
+    "alt_name": "Autovía León-Burgos",
+    "distance": "157",
+    "from": "León",
+    "name": "Autovía del Camino de Santiago",
+    "network": "ES:CL:Autovía Autonómica",
+    "operator": "Junta de Castilla y León",
+    "ref": "A-231",
+    "ref:colour": "blue",
+    "ref:colour_tx": "white",
+    "route": "road",
+    "to": "Burgos",
+    "type": "route",
+    "wikidata": "Q2126890",
+    "wikipedia": "es:Autovía León-Burgos"
+  }
+},
+{
+  "type": "relation",
+  "id": 6594270,
+  "center": {
+    "lat": 40.2581900,
+    "lon": -2.1983151
+  },
+  "tags": {
+    "bicycle": "yes",
+    "description": "Trazado oficial del Camino del Cid para Senderistas. El itinerario se encuentra señalizado en su mayor parte como GR 160",
+    "name": "Camino del Cid (Senderista)",
+    "name:ca": "Camí del Cid",
+    "network": "nwn",
+    "note": "Trazado mapeado por UTM Desarrollos a instancias del Consorcio del Camino del Cid. Corregido y actualizado por OpenStreetMap contributors",
+    "operator": "Consorcio Camino del Cid",
+    "operator:type": "consortium",
+    "osmc:symbol": "red:white:red_lower:160:black",
+    "phone": "+34 947256240",
+    "ref": "GR 160",
+    "route": "hiking",
+    "source": "GPS",
+    "source:date": "2016",
+    "type": "route",
+    "website": "https://www.caminodelcid.org/",
+    "wikidata": "Q1227140",
+    "wikipedia": "es:Camino del Cid"
+  }
+},
+{
+  "type": "relation",
+  "id": 6621567,
+  "center": {
+    "lat": 42.8946201,
+    "lon": -2.3647941
+  },
+  "tags": {
+    "description": "This part of the route is mainly in the Basque Country and La Rioja.",
+    "name": "Camino de Santiago Vasco del Interior",
+    "name:es": "Camino de Santiago Vasco del Interior",
+    "name:eu": "Euskal Herriaren barnealdeko Donejakue bidea",
+    "name:fr": "Chemin de Saint-Jacques de Compostelle par le Pays Basque intérieur",
+    "network": "nwn",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "yes",
+    "religion": "christian",
+    "route": "hiking",
+    "symbol": "yellow shell on blue;yellow arrow",
+    "type": "route",
+    "wiki:symbol": "Symbol_Jakobsweg.png",
+    "wikidata": "Q5742377",
+    "wikipedia": "es:Camino de Santiago Vasco del Interior"
+  }
+},
+{
+  "type": "relation",
+  "id": 7361206,
+  "center": {
+    "lat": 41.0720621,
+    "lon": -2.8017861
+  },
+  "tags": {
+    "denomination": "catholic",
+    "distance": "408",
+    "int_name": "Camino de Santiago",
+    "name": "Camino de Santiago de la Lana.Senderista",
+    "network": "nwn",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "yes",
+    "religion": "christian",
+    "route": "hiking",
+    "type": "route",
+    "wikidata": "Q5742386",
+    "wikipedia": "es:Camino de Santiago de la Lana"
+  }
+},
+{
+  "type": "relation",
+  "id": 8039114,
+  "center": {
+    "lat": 42.3408000,
+    "lon": -3.7335187
+  },
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "name": "Paseo Plaza de los Hospitales del Camino",
+    "type": "multipolygon"
+  }
+},
+{
+  "type": "relation",
+  "id": 9062741,
+  "center": {
+    "lat": 42.1999230,
+    "lon": -3.5834318
+  },
+  "tags": {
+    "name": "Camino de San Olav",
+    "name:en": "The way of Saint Olav",
+    "name:es": "Camino de San Olav",
+    "name:no": "St. Olavs vei",
+    "network": "rwn",
+    "operator": "Asociación para el Desarrollo de la Tierra de Lara",
+    "osmc:symbol": "red:red_frame:red_cross",
+    "phone": "+34 947 40 64 61",
+    "roundtrip": "no",
+    "route": "hiking",
+    "source": "GPS Track",
+    "symbol": "red_cross",
+    "type": "route",
+    "website": "https://www.caminodesanolav.es/"
+  }
+},
+{
+  "type": "relation",
+  "id": 15335404,
+  "center": {
+    "lat": 42.6842936,
+    "lon": -3.5074562
+  },
+  "tags": {
+    "ascent": "400",
+    "distance": "11.9",
+    "name": "Camino de los Molinos",
+    "network": "rwn",
+    "operator": "FDMESCYL",
+    "osmc:symbol": "yellow:white:yellow_lower:68:black",
+    "ref": "PRC-BU 68",
+    "roundtrip": "yes",
+    "route": "hiking",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 15906029,
+  "center": {
+    "lat": 42.4227772,
+    "lon": -3.4922256
+  },
+  "tags": {
+    "boundary": "local_authority",
+    "name": "Mancomunidad de Encuentro de Caminos: Sierra de Atapuerca, Camino de Santiago y vía romana",
+    "type": "boundary"
+  }
+},
+{
+  "type": "relation",
+  "id": 15922406,
+  "center": {
+    "lat": 42.2557688,
+    "lon": -3.2957073
+  },
+  "tags": {
+    "boundary": "local_authority",
+    "name": "Mancomunidad de Camino natural vía verde Sierra de la Demanda",
+    "type": "boundary",
+    "wikidata": "Q107554043"
+  }
+},
+{
+  "type": "relation",
+  "id": 17583713,
+  "center": {
+    "lat": 42.7622636,
+    "lon": -3.4613845
+  },
+  "tags": {
+    "alt_name": "Camino del Valle de Mena",
+    "int_name": "Camino de Santiago",
+    "name": "Camino de Las Merindades",
+    "network": "nwn",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "camino_de_santiago",
+    "ref": "ES31a",
+    "religion": "christian",
+    "route": "hiking",
+    "source": "https://www.caminosantiago.org/cpperegrino/caminos/caminover.asp?kCamino=ES31a&CaminoId=66",
+    "symbol": "NNN",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 19431907,
+  "center": {
+    "lat": 42.5542960,
+    "lon": -3.7176764
+  },
+  "tags": {
+    "ascent": "270",
+    "distance": "9.7",
+    "name": "Sendero del Camino de Castrillo",
+    "network": "lwn",
+    "operator": "FDMESCYL",
+    "osmc:symbol": "yellow:white:yellow_lower:209:black",
+    "ref": "PR-BU 209",
+    "roundtrip": "yes",
+    "route": "hiking",
+    "symbol": "white strip on top of yellow strip",
+    "type": "route"
+  }
+},
+{
+  "type": "relation",
+  "id": 21016892,
+  "center": {
+    "lat": 42.5409748,
+    "lon": -3.2653941
+  },
+  "tags": {
+    "alt_name": "Vía de Bayona",
+    "description": "This part of the route is mainly in the Basque Country and Burgos",
+    "name": "Camino de Santiago Vasco del Interior (Armiñón-Burgos)",
+    "name:es": "Camino de Santiago Vasco del Interior (Armiñón-Burgos)",
+    "name:eu": "Euskal Herriaren barnealdeko Donejakue bidea (Armiñón-Burgos)",
+    "name:fr": "Chemin de Saint-Jacques de Compostelle par le Pays Basque intérieur (Armiñón-Burgos)",
+    "network": "nwn",
+    "osmc:symbol": "blue:blue:shell_modern",
+    "pilgrimage": "yes",
+    "religion": "christian",
+    "route": "hiking",
+    "symbol": "yellow shell on blue;yellow arrow",
+    "type": "route",
+    "wiki:symbol": "Symbol_Jakobsweg.png",
+    "wikidata": "Q5742377",
+    "wikipedia": "es:Camino de Santiago Vasco del Interior"
+  }
+}
+
+  ]
+}

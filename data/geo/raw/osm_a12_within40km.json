@@ -1,0 +1,2500 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-24T22:12:06Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 88580036,
+  "bounds": {
+    "minlat": 42.4569291,
+    "minlon": -2.9580749,
+    "maxlat": 42.4571437,
+    "maxlon": -2.9560521
+  },
+  "geometry": [
+    { "lat": 42.4571437, "lon": -2.9580749 },
+    { "lat": 42.4569291, "lon": -2.9560521 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 90927989,
+  "bounds": {
+    "minlat": 42.4571001,
+    "minlon": -2.9580264,
+    "maxlat": 42.4573168,
+    "maxlon": -2.9560088
+  },
+  "geometry": [
+    { "lat": 42.4571001, "lon": -2.9560088 },
+    { "lat": 42.4573168, "lon": -2.9580264 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 90927991,
+  "bounds": {
+    "minlat": 42.4573168,
+    "minlon": -2.9615280,
+    "maxlat": 42.4576583,
+    "maxlon": -2.9580264
+  },
+  "geometry": [
+    { "lat": 42.4573168, "lon": -2.9580264 },
+    { "lat": 42.4575004, "lon": -2.9597655 },
+    { "lat": 42.4575872, "lon": -2.9605667 },
+    { "lat": 42.4576350, "lon": -2.9610649 },
+    { "lat": 42.4576583, "lon": -2.9615280 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt",
+    "turn:lanes": "merge_to_right|through"
+  }
+},
+{
+  "type": "way",
+  "id": 119256872,
+  "bounds": {
+    "minlat": 42.4558160,
+    "minlon": -2.9516230,
+    "maxlat": 42.4564497,
+    "maxlon": -2.9487955
+  },
+  "geometry": [
+    { "lat": 42.4564497, "lon": -2.9516230 },
+    { "lat": 42.4564002, "lon": -2.9511890 },
+    { "lat": 42.4563515, "lon": -2.9508630 },
+    { "lat": 42.4562679, "lon": -2.9503874 },
+    { "lat": 42.4561520, "lon": -2.9498564 },
+    { "lat": 42.4560364, "lon": -2.9494459 },
+    { "lat": 42.4559206, "lon": -2.9490798 },
+    { "lat": 42.4558160, "lon": -2.9487955 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 119260286,
+  "bounds": {
+    "minlat": 42.4401553,
+    "minlon": -2.9037610,
+    "maxlat": 42.4402160,
+    "maxlon": -2.9006676
+  },
+  "geometry": [
+    { "lat": 42.4401553, "lon": -2.9037610 },
+    { "lat": 42.4402160, "lon": -2.9006676 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 150664794,
+  "bounds": {
+    "minlat": 42.4407750,
+    "minlon": -2.9326612,
+    "maxlat": 42.4433729,
+    "maxlon": -2.9185362
+  },
+  "geometry": [
+    { "lat": 42.4407750, "lon": -2.9185362 },
+    { "lat": 42.4409670, "lon": -2.9188957 },
+    { "lat": 42.4412827, "lon": -2.9194710 },
+    { "lat": 42.4415202, "lon": -2.9199216 },
+    { "lat": 42.4417211, "lon": -2.9203253 },
+    { "lat": 42.4419398, "lon": -2.9208242 },
+    { "lat": 42.4421160, "lon": -2.9213244 },
+    { "lat": 42.4422595, "lon": -2.9217428 },
+    { "lat": 42.4423822, "lon": -2.9222203 },
+    { "lat": 42.4424871, "lon": -2.9226561 },
+    { "lat": 42.4425901, "lon": -2.9232301 },
+    { "lat": 42.4426277, "lon": -2.9235278 },
+    { "lat": 42.4426771, "lon": -2.9239248 },
+    { "lat": 42.4426930, "lon": -2.9243633 },
+    { "lat": 42.4427078, "lon": -2.9246477 },
+    { "lat": 42.4426959, "lon": -2.9256414 },
+    { "lat": 42.4426504, "lon": -2.9264662 },
+    { "lat": 42.4426158, "lon": -2.9272253 },
+    { "lat": 42.4426079, "lon": -2.9279374 },
+    { "lat": 42.4426580, "lon": -2.9289717 },
+    { "lat": 42.4427268, "lon": -2.9296622 },
+    { "lat": 42.4428076, "lon": -2.9302603 },
+    { "lat": 42.4429150, "lon": -2.9309101 },
+    { "lat": 42.4430410, "lon": -2.9314864 },
+    { "lat": 42.4431923, "lon": -2.9320664 },
+    { "lat": 42.4433729, "lon": -2.9326612 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxheight": "5.57",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 150664795,
+  "bounds": {
+    "minlat": 42.4461938,
+    "minlon": -2.9470689,
+    "maxlat": 42.4551873,
+    "maxlon": -2.9374682
+  },
+  "geometry": [
+    { "lat": 42.4461938, "lon": -2.9374682 },
+    { "lat": 42.4466610, "lon": -2.9380082 },
+    { "lat": 42.4480347, "lon": -2.9395729 },
+    { "lat": 42.4497240, "lon": -2.9414663 },
+    { "lat": 42.4510137, "lon": -2.9428063 },
+    { "lat": 42.4521182, "lon": -2.9438691 },
+    { "lat": 42.4529866, "lon": -2.9446705 },
+    { "lat": 42.4543246, "lon": -2.9459004 },
+    { "lat": 42.4548042, "lon": -2.9464896 },
+    { "lat": 42.4550040, "lon": -2.9467727 },
+    { "lat": 42.4551873, "lon": -2.9470689 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 150664805,
+  "bounds": {
+    "minlat": 42.4393350,
+    "minlon": -2.9115343,
+    "maxlat": 42.4401553,
+    "maxlon": -2.9037610
+  },
+  "geometry": [
+    { "lat": 42.4393350, "lon": -2.9115343 },
+    { "lat": 42.4394749, "lon": -2.9104770 },
+    { "lat": 42.4398681, "lon": -2.9083172 },
+    { "lat": 42.4400098, "lon": -2.9073814 },
+    { "lat": 42.4400868, "lon": -2.9065456 },
+    { "lat": 42.4401181, "lon": -2.9055103 },
+    { "lat": 42.4401553, "lon": -2.9037610 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 150788426,
+  "bounds": {
+    "minlat": 42.4560039,
+    "minlon": -2.9560088,
+    "maxlat": 42.4571001,
+    "maxlon": -2.9487763
+  },
+  "geometry": [
+    { "lat": 42.4560039, "lon": -2.9487763 },
+    { "lat": 42.4561413, "lon": -2.9491838 },
+    { "lat": 42.4562488, "lon": -2.9495569 },
+    { "lat": 42.4563378, "lon": -2.9498962 },
+    { "lat": 42.4564267, "lon": -2.9502944 },
+    { "lat": 42.4565169, "lon": -2.9507759 },
+    { "lat": 42.4566040, "lon": -2.9514599 },
+    { "lat": 42.4567716, "lon": -2.9529835 },
+    { "lat": 42.4571001, "lon": -2.9560088 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 169436999,
+  "bounds": {
+    "minlat": 42.4501543,
+    "minlon": -2.9862193,
+    "maxlat": 42.4536248,
+    "maxlon": -2.9735776
+  },
+  "geometry": [
+    { "lat": 42.4536248, "lon": -2.9735776 },
+    { "lat": 42.4526946, "lon": -2.9757213 },
+    { "lat": 42.4517627, "lon": -2.9778580 },
+    { "lat": 42.4512767, "lon": -2.9789764 },
+    { "lat": 42.4511276, "lon": -2.9793385 },
+    { "lat": 42.4509674, "lon": -2.9797583 },
+    { "lat": 42.4508173, "lon": -2.9801797 },
+    { "lat": 42.4506815, "lon": -2.9806266 },
+    { "lat": 42.4505368, "lon": -2.9811715 },
+    { "lat": 42.4504112, "lon": -2.9817415 },
+    { "lat": 42.4503475, "lon": -2.9820911 },
+    { "lat": 42.4502471, "lon": -2.9827940 },
+    { "lat": 42.4502098, "lon": -2.9831769 },
+    { "lat": 42.4501767, "lon": -2.9835926 },
+    { "lat": 42.4501604, "lon": -2.9840575 },
+    { "lat": 42.4501543, "lon": -2.9844617 },
+    { "lat": 42.4501682, "lon": -2.9850490 },
+    { "lat": 42.4501851, "lon": -2.9853256 },
+    { "lat": 42.4502123, "lon": -2.9856601 },
+    { "lat": 42.4502729, "lon": -2.9862193 }
+  ],
+  "tags": {
+    "construction": "motorway",
+    "highway": "construction",
+    "lit": "no",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 169437003,
+  "bounds": {
+    "minlat": 42.4550306,
+    "minlon": -2.9487955,
+    "maxlat": 42.4558160,
+    "maxlon": -2.9471728
+  },
+  "geometry": [
+    { "lat": 42.4558160, "lon": -2.9487955 },
+    { "lat": 42.4556502, "lon": -2.9483686 },
+    { "lat": 42.4554600, "lon": -2.9479485 },
+    { "lat": 42.4552405, "lon": -2.9475331 },
+    { "lat": 42.4550306, "lon": -2.9471728 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 169437008,
+  "bounds": {
+    "minlat": 42.4537531,
+    "minlon": -2.9732881,
+    "maxlat": 42.4576527,
+    "maxlon": -2.9623130
+  },
+  "geometry": [
+    { "lat": 42.4576527, "lon": -2.9623130 },
+    { "lat": 42.4576454, "lon": -2.9625749 },
+    { "lat": 42.4576313, "lon": -2.9628029 },
+    { "lat": 42.4576022, "lon": -2.9631223 },
+    { "lat": 42.4575684, "lon": -2.9634223 },
+    { "lat": 42.4575194, "lon": -2.9637557 },
+    { "lat": 42.4574703, "lon": -2.9640391 },
+    { "lat": 42.4573924, "lon": -2.9644173 },
+    { "lat": 42.4573188, "lon": -2.9647290 },
+    { "lat": 42.4572583, "lon": -2.9649566 },
+    { "lat": 42.4571575, "lon": -2.9653042 },
+    { "lat": 42.4570146, "lon": -2.9657245 },
+    { "lat": 42.4568227, "lon": -2.9662161 },
+    { "lat": 42.4566455, "lon": -2.9666359 },
+    { "lat": 42.4562178, "lon": -2.9676150 },
+    { "lat": 42.4552569, "lon": -2.9698290 },
+    { "lat": 42.4537531, "lon": -2.9732881 }
+  ],
+  "tags": {
+    "construction": "motorway",
+    "highway": "construction",
+    "lit": "no",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 169437024,
+  "bounds": {
+    "minlat": 42.4460834,
+    "minlon": -2.9471728,
+    "maxlat": 42.4550306,
+    "maxlon": -2.9376467
+  },
+  "geometry": [
+    { "lat": 42.4550306, "lon": -2.9471728 },
+    { "lat": 42.4548170, "lon": -2.9468465 },
+    { "lat": 42.4546506, "lon": -2.9466235 },
+    { "lat": 42.4543668, "lon": -2.9462537 },
+    { "lat": 42.4539784, "lon": -2.9458333 },
+    { "lat": 42.4536475, "lon": -2.9455188 },
+    { "lat": 42.4518255, "lon": -2.9438984 },
+    { "lat": 42.4509680, "lon": -2.9430536 },
+    { "lat": 42.4495656, "lon": -2.9415838 },
+    { "lat": 42.4478725, "lon": -2.9396874 },
+    { "lat": 42.4465555, "lon": -2.9381879 },
+    { "lat": 42.4460834, "lon": -2.9376467 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 169730576,
+  "bounds": {
+    "minlat": 42.4551873,
+    "minlon": -2.9487763,
+    "maxlat": 42.4560039,
+    "maxlon": -2.9470689
+  },
+  "geometry": [
+    { "lat": 42.4551873, "lon": -2.9470689 },
+    { "lat": 42.4554256, "lon": -2.9474849 },
+    { "lat": 42.4556357, "lon": -2.9478922 },
+    { "lat": 42.4558194, "lon": -2.9483056 },
+    { "lat": 42.4560039, "lon": -2.9487763 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 170197151,
+  "bounds": {
+    "minlat": 42.4406560,
+    "minlon": -2.9315536,
+    "maxlat": 42.4428771,
+    "maxlon": -2.9186867
+  },
+  "geometry": [
+    { "lat": 42.4428771, "lon": -2.9315536 },
+    { "lat": 42.4427499, "lon": -2.9309605 },
+    { "lat": 42.4426468, "lon": -2.9303745 },
+    { "lat": 42.4425561, "lon": -2.9297099 },
+    { "lat": 42.4424713, "lon": -2.9288424 },
+    { "lat": 42.4424233, "lon": -2.9274086 },
+    { "lat": 42.4425111, "lon": -2.9257979 },
+    { "lat": 42.4425307, "lon": -2.9253719 },
+    { "lat": 42.4425336, "lon": -2.9246733 },
+    { "lat": 42.4425198, "lon": -2.9242326 },
+    { "lat": 42.4424931, "lon": -2.9239758 },
+    { "lat": 42.4424095, "lon": -2.9232476 },
+    { "lat": 42.4422446, "lon": -2.9223375 },
+    { "lat": 42.4419526, "lon": -2.9214050 },
+    { "lat": 42.4416017, "lon": -2.9205109 },
+    { "lat": 42.4406560, "lon": -2.9186867 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxheight": "5.6",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 188536200,
+  "bounds": {
+    "minlat": 42.4567290,
+    "minlon": -2.9659944,
+    "maxlat": 42.4574492,
+    "maxlon": -2.9629494
+  },
+  "geometry": [
+    { "lat": 42.4567290, "lon": -2.9659944 },
+    { "lat": 42.4569802, "lon": -2.9652723 },
+    { "lat": 42.4571118, "lon": -2.9648264 },
+    { "lat": 42.4571839, "lon": -2.9645403 },
+    { "lat": 42.4572461, "lon": -2.9642739 },
+    { "lat": 42.4573373, "lon": -2.9638184 },
+    { "lat": 42.4573995, "lon": -2.9633855 },
+    { "lat": 42.4574492, "lon": -2.9629494 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "highway": "motorway_link",
+    "horse": "no",
+    "lanes": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 188536203,
+  "bounds": {
+    "minlat": 42.4567290,
+    "minlon": -2.9659944,
+    "maxlat": 42.4576636,
+    "maxlon": -2.9615280
+  },
+  "geometry": [
+    { "lat": 42.4576583, "lon": -2.9615280 },
+    { "lat": 42.4576636, "lon": -2.9619501 },
+    { "lat": 42.4576527, "lon": -2.9623130 },
+    { "lat": 42.4576330, "lon": -2.9627144 },
+    { "lat": 42.4575767, "lon": -2.9632377 },
+    { "lat": 42.4575017, "lon": -2.9636771 },
+    { "lat": 42.4574253, "lon": -2.9640475 },
+    { "lat": 42.4573291, "lon": -2.9644147 },
+    { "lat": 42.4572308, "lon": -2.9647645 },
+    { "lat": 42.4571301, "lon": -2.9650476 },
+    { "lat": 42.4569681, "lon": -2.9654717 },
+    { "lat": 42.4567290, "lon": -2.9659944 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "highway": "motorway_link",
+    "horse": "no",
+    "lanes": "1",
+    "lit": "no",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 196260940,
+  "bounds": {
+    "minlat": 42.4401958,
+    "minlon": -2.9006676,
+    "maxlat": 42.4402331,
+    "maxlon": -2.8941613
+  },
+  "geometry": [
+    { "lat": 42.4402160, "lon": -2.9006676 },
+    { "lat": 42.4402331, "lon": -2.8989848 },
+    { "lat": 42.4402255, "lon": -2.8976856 },
+    { "lat": 42.4402037, "lon": -2.8963311 },
+    { "lat": 42.4401958, "lon": -2.8956673 },
+    { "lat": 42.4402007, "lon": -2.8948680 },
+    { "lat": 42.4402108, "lon": -2.8941613 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 196260946,
+  "bounds": {
+    "minlat": 42.4394710,
+    "minlon": -2.9123977,
+    "maxlat": 42.4403879,
+    "maxlon": -2.9005372
+  },
+  "geometry": [
+    { "lat": 42.4403879, "lon": -2.9005372 },
+    { "lat": 42.4403249, "lon": -2.9038281 },
+    { "lat": 42.4402885, "lon": -2.9056436 },
+    { "lat": 42.4402463, "lon": -2.9067237 },
+    { "lat": 42.4401505, "lon": -2.9076290 },
+    { "lat": 42.4396394, "lon": -2.9105172 },
+    { "lat": 42.4395794, "lon": -2.9109590 },
+    { "lat": 42.4395181, "lon": -2.9115203 },
+    { "lat": 42.4394710, "lon": -2.9123977 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 196261932,
+  "bounds": {
+    "minlat": 42.4536248,
+    "minlon": -2.9735776,
+    "maxlat": 42.4537531,
+    "maxlon": -2.9732881
+  },
+  "geometry": [
+    { "lat": 42.4537531, "lon": -2.9732881 },
+    { "lat": 42.4536248, "lon": -2.9735776 }
+  ],
+  "tags": {
+    "bridge": "yes",
+    "construction": "motorway",
+    "highway": "construction",
+    "layer": "1",
+    "lit": "no",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 220785007,
+  "bounds": {
+    "minlat": 42.4525190,
+    "minlon": -3.0056909,
+    "maxlat": 42.4525799,
+    "maxlon": -3.0049732
+  },
+  "geometry": [
+    { "lat": 42.4525190, "lon": -3.0049732 },
+    { "lat": 42.4525799, "lon": -3.0056909 }
+  ],
+  "tags": {
+    "bridge": "yes",
+    "construction": "motorway",
+    "highway": "construction",
+    "layer": "1",
+    "lit": "no",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 254702121,
+  "bounds": {
+    "minlat": 42.4350225,
+    "minlon": -2.8346510,
+    "maxlat": 42.4350779,
+    "maxlon": -2.8341738
+  },
+  "geometry": [
+    { "lat": 42.4350225, "lon": -2.8341738 },
+    { "lat": 42.4350779, "lon": -2.8346510 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702128,
+  "bounds": {
+    "minlat": 42.4350779,
+    "minlon": -2.8937620,
+    "maxlat": 42.4403977,
+    "maxlon": -2.8346510
+  },
+  "geometry": [
+    { "lat": 42.4350779, "lon": -2.8346510 },
+    { "lat": 42.4352378, "lon": -2.8357966 },
+    { "lat": 42.4354063, "lon": -2.8367969 },
+    { "lat": 42.4355361, "lon": -2.8374797 },
+    { "lat": 42.4357488, "lon": -2.8384477 },
+    { "lat": 42.4360991, "lon": -2.8398245 },
+    { "lat": 42.4362536, "lon": -2.8403682 },
+    { "lat": 42.4365397, "lon": -2.8413184 },
+    { "lat": 42.4379772, "lon": -2.8457529 },
+    { "lat": 42.4384441, "lon": -2.8476440 },
+    { "lat": 42.4386040, "lon": -2.8485305 },
+    { "lat": 42.4387831, "lon": -2.8500000 },
+    { "lat": 42.4390490, "lon": -2.8535099 },
+    { "lat": 42.4393330, "lon": -2.8564915 },
+    { "lat": 42.4397315, "lon": -2.8597019 },
+    { "lat": 42.4397885, "lon": -2.8605843 },
+    { "lat": 42.4398221, "lon": -2.8625895 },
+    { "lat": 42.4397559, "lon": -2.8641560 },
+    { "lat": 42.4395397, "lon": -2.8666897 },
+    { "lat": 42.4393333, "lon": -2.8698666 },
+    { "lat": 42.4392769, "lon": -2.8730029 },
+    { "lat": 42.4393146, "lon": -2.8752498 },
+    { "lat": 42.4394138, "lon": -2.8782820 },
+    { "lat": 42.4394555, "lon": -2.8789678 },
+    { "lat": 42.4395168, "lon": -2.8797349 },
+    { "lat": 42.4396207, "lon": -2.8808574 },
+    { "lat": 42.4397284, "lon": -2.8819229 },
+    { "lat": 42.4398963, "lon": -2.8833982 },
+    { "lat": 42.4400216, "lon": -2.8845938 },
+    { "lat": 42.4401315, "lon": -2.8858652 },
+    { "lat": 42.4402136, "lon": -2.8869984 },
+    { "lat": 42.4402719, "lon": -2.8879637 },
+    { "lat": 42.4403343, "lon": -2.8893104 },
+    { "lat": 42.4403601, "lon": -2.8900078 },
+    { "lat": 42.4403790, "lon": -2.8907675 },
+    { "lat": 42.4403906, "lon": -2.8914721 },
+    { "lat": 42.4403977, "lon": -2.8923534 },
+    { "lat": 42.4403922, "lon": -2.8937620 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702152,
+  "bounds": {
+    "minlat": 42.4336464,
+    "minlon": -2.8340348,
+    "maxlat": 42.4348250,
+    "maxlon": -2.8166270
+  },
+  "geometry": [
+    { "lat": 42.4348250, "lon": -2.8340348 },
+    { "lat": 42.4346795, "lon": -2.8324154 },
+    { "lat": 42.4344381, "lon": -2.8291252 },
+    { "lat": 42.4343685, "lon": -2.8281585 },
+    { "lat": 42.4339561, "lon": -2.8229528 },
+    { "lat": 42.4338052, "lon": -2.8208928 },
+    { "lat": 42.4336898, "lon": -2.8185853 },
+    { "lat": 42.4336464, "lon": -2.8166270 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702156,
+  "bounds": {
+    "minlat": 42.4348250,
+    "minlon": -2.8345120,
+    "maxlat": 42.4348845,
+    "maxlon": -2.8340348
+  },
+  "geometry": [
+    { "lat": 42.4348845, "lon": -2.8345120 },
+    { "lat": 42.4348250, "lon": -2.8340348 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702170,
+  "bounds": {
+    "minlat": 42.4402108,
+    "minlon": -2.8941613,
+    "maxlat": 42.4402172,
+    "maxlon": -2.8938312
+  },
+  "geometry": [
+    { "lat": 42.4402108, "lon": -2.8941613 },
+    { "lat": 42.4402172, "lon": -2.8938312 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702189,
+  "bounds": {
+    "minlat": 42.4348845,
+    "minlon": -2.8938312,
+    "maxlat": 42.4402245,
+    "maxlon": -2.8345120
+  },
+  "geometry": [
+    { "lat": 42.4402172, "lon": -2.8938312 },
+    { "lat": 42.4402245, "lon": -2.8923976 },
+    { "lat": 42.4402185, "lon": -2.8914200 },
+    { "lat": 42.4402069, "lon": -2.8908016 },
+    { "lat": 42.4401869, "lon": -2.8899059 },
+    { "lat": 42.4401516, "lon": -2.8889554 },
+    { "lat": 42.4401087, "lon": -2.8880927 },
+    { "lat": 42.4400420, "lon": -2.8869828 },
+    { "lat": 42.4399621, "lon": -2.8859180 },
+    { "lat": 42.4398503, "lon": -2.8846192 },
+    { "lat": 42.4397227, "lon": -2.8834100 },
+    { "lat": 42.4395673, "lon": -2.8820416 },
+    { "lat": 42.4394504, "lon": -2.8808945 },
+    { "lat": 42.4393387, "lon": -2.8796880 },
+    { "lat": 42.4392822, "lon": -2.8789625 },
+    { "lat": 42.4392444, "lon": -2.8782880 },
+    { "lat": 42.4391236, "lon": -2.8752938 },
+    { "lat": 42.4390992, "lon": -2.8730488 },
+    { "lat": 42.4391485, "lon": -2.8699188 },
+    { "lat": 42.4393593, "lon": -2.8666676 },
+    { "lat": 42.4395784, "lon": -2.8641667 },
+    { "lat": 42.4396490, "lon": -2.8625571 },
+    { "lat": 42.4396187, "lon": -2.8608053 },
+    { "lat": 42.4395199, "lon": -2.8595150 },
+    { "lat": 42.4391489, "lon": -2.8563780 },
+    { "lat": 42.4388699, "lon": -2.8534351 },
+    { "lat": 42.4386020, "lon": -2.8500424 },
+    { "lat": 42.4383056, "lon": -2.8477397 },
+    { "lat": 42.4378420, "lon": -2.8459005 },
+    { "lat": 42.4363600, "lon": -2.8413465 },
+    { "lat": 42.4358968, "lon": -2.8397710 },
+    { "lat": 42.4356186, "lon": -2.8387518 },
+    { "lat": 42.4353544, "lon": -2.8375791 },
+    { "lat": 42.4352263, "lon": -2.8368775 },
+    { "lat": 42.4350648, "lon": -2.8358207 },
+    { "lat": 42.4348845, "lon": -2.8345120 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source": "GPS",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702194,
+  "bounds": {
+    "minlat": 42.4403699,
+    "minlon": -2.9005372,
+    "maxlat": 42.4404038,
+    "maxlon": -2.8940589
+  },
+  "geometry": [
+    { "lat": 42.4403884, "lon": -2.8940589 },
+    { "lat": 42.4403729, "lon": -2.8948626 },
+    { "lat": 42.4403699, "lon": -2.8955466 },
+    { "lat": 42.4403779, "lon": -2.8964786 },
+    { "lat": 42.4403977, "lon": -2.8977165 },
+    { "lat": 42.4404038, "lon": -2.8990095 },
+    { "lat": 42.4403879, "lon": -2.9005372 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 254702215,
+  "bounds": {
+    "minlat": 42.4403884,
+    "minlon": -2.8940589,
+    "maxlat": 42.4403922,
+    "maxlon": -2.8937620
+  },
+  "geometry": [
+    { "lat": 42.4403922, "lon": -2.8937620 },
+    { "lat": 42.4403884, "lon": -2.8940589 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "bridge": "yes",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 288841269,
+  "bounds": {
+    "minlat": 42.4338353,
+    "minlon": -2.8341738,
+    "maxlat": 42.4350225,
+    "maxlon": -2.8164017
+  },
+  "geometry": [
+    { "lat": 42.4338353, "lon": -2.8164017 },
+    { "lat": 42.4338719, "lon": -2.8185419 },
+    { "lat": 42.4339637, "lon": -2.8208701 },
+    { "lat": 42.4341188, "lon": -2.8229409 },
+    { "lat": 42.4345304, "lon": -2.8281665 },
+    { "lat": 42.4346639, "lon": -2.8299578 },
+    { "lat": 42.4348460, "lon": -2.8324798 },
+    { "lat": 42.4350225, "lon": -2.8341738 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 306287777,
+  "bounds": {
+    "minlat": 42.4325622,
+    "minlon": -3.0921721,
+    "maxlat": 42.4522691,
+    "maxlon": -3.0402226
+  },
+  "geometry": [
+    { "lat": 42.4522691, "lon": -3.0402226 },
+    { "lat": 42.4518934, "lon": -3.0409048 },
+    { "lat": 42.4492369, "lon": -3.0455229 },
+    { "lat": 42.4484684, "lon": -3.0468506 },
+    { "lat": 42.4478377, "lon": -3.0478754 },
+    { "lat": 42.4469695, "lon": -3.0490726 },
+    { "lat": 42.4459552, "lon": -3.0503102 },
+    { "lat": 42.4450959, "lon": -3.0512529 },
+    { "lat": 42.4431730, "lon": -3.0532419 },
+    { "lat": 42.4419670, "lon": -3.0544416 },
+    { "lat": 42.4393630, "lon": -3.0571328 },
+    { "lat": 42.4377150, "lon": -3.0589841 },
+    { "lat": 42.4364963, "lon": -3.0605965 },
+    { "lat": 42.4356846, "lon": -3.0619696 },
+    { "lat": 42.4350590, "lon": -3.0631979 },
+    { "lat": 42.4344479, "lon": -3.0645760 },
+    { "lat": 42.4338422, "lon": -3.0660828 },
+    { "lat": 42.4333262, "lon": -3.0675474 },
+    { "lat": 42.4329844, "lon": -3.0694033 },
+    { "lat": 42.4326858, "lon": -3.0716320 },
+    { "lat": 42.4325622, "lon": -3.0739218 },
+    { "lat": 42.4325716, "lon": -3.0742930 },
+    { "lat": 42.4326479, "lon": -3.0784785 },
+    { "lat": 42.4326670, "lon": -3.0795085 },
+    { "lat": 42.4327013, "lon": -3.0813542 },
+    { "lat": 42.4327518, "lon": -3.0832615 },
+    { "lat": 42.4327685, "lon": -3.0838921 },
+    { "lat": 42.4328594, "lon": -3.0872066 },
+    { "lat": 42.4329080, "lon": -3.0903575 },
+    { "lat": 42.4329737, "lon": -3.0921721 }
+  ],
+  "tags": {
+    "check_date": "2026-08-08",
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 306287778,
+  "bounds": {
+    "minlat": 42.4323644,
+    "minlon": -3.0922296,
+    "maxlat": 42.4549465,
+    "maxlon": -3.0317781
+  },
+  "geometry": [
+    { "lat": 42.4327960, "lon": -3.0922296 },
+    { "lat": 42.4327483, "lon": -3.0904327 },
+    { "lat": 42.4326093, "lon": -3.0863889 },
+    { "lat": 42.4325782, "lon": -3.0857024 },
+    { "lat": 42.4325306, "lon": -3.0838464 },
+    { "lat": 42.4325205, "lon": -3.0832805 },
+    { "lat": 42.4324907, "lon": -3.0816137 },
+    { "lat": 42.4324144, "lon": -3.0783749 },
+    { "lat": 42.4324062, "lon": -3.0780261 },
+    { "lat": 42.4323644, "lon": -3.0741703 },
+    { "lat": 42.4324946, "lon": -3.0714639 },
+    { "lat": 42.4328310, "lon": -3.0693756 },
+    { "lat": 42.4331623, "lon": -3.0674633 },
+    { "lat": 42.4336547, "lon": -3.0658667 },
+    { "lat": 42.4342397, "lon": -3.0643868 },
+    { "lat": 42.4348892, "lon": -3.0629648 },
+    { "lat": 42.4356043, "lon": -3.0616006 },
+    { "lat": 42.4364918, "lon": -3.0601755 },
+    { "lat": 42.4378272, "lon": -3.0584653 },
+    { "lat": 42.4394801, "lon": -3.0566623 },
+    { "lat": 42.4418622, "lon": -3.0542592 },
+    { "lat": 42.4430646, "lon": -3.0530531 },
+    { "lat": 42.4449337, "lon": -3.0511091 },
+    { "lat": 42.4458520, "lon": -3.0501163 },
+    { "lat": 42.4468563, "lon": -3.0488914 },
+    { "lat": 42.4476423, "lon": -3.0477989 },
+    { "lat": 42.4482682, "lon": -3.0467564 },
+    { "lat": 42.4490952, "lon": -3.0453942 },
+    { "lat": 42.4517300, "lon": -3.0407808 },
+    { "lat": 42.4523886, "lon": -3.0396119 },
+    { "lat": 42.4528579, "lon": -3.0387284 },
+    { "lat": 42.4533308, "lon": -3.0377272 },
+    { "lat": 42.4540050, "lon": -3.0358868 },
+    { "lat": 42.4544293, "lon": -3.0345217 },
+    { "lat": 42.4548170, "lon": -3.0327348 },
+    { "lat": 42.4549465, "lon": -3.0317781 }
+  ],
+  "tags": {
+    "check_date": "2026-08-08",
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 306374282,
+  "bounds": {
+    "minlat": 42.3272289,
+    "minlon": -3.5510162,
+    "maxlat": 42.4415563,
+    "maxlon": -3.1354601
+  },
+  "geometry": [
+    { "lat": 42.4334894, "lon": -3.1354601 },
+    { "lat": 42.4354672, "lon": -3.1413741 },
+    { "lat": 42.4366875, "lon": -3.1474552 },
+    { "lat": 42.4377991, "lon": -3.1524239 },
+    { "lat": 42.4398226, "lon": -3.1579618 },
+    { "lat": 42.4414229, "lon": -3.1641099 },
+    { "lat": 42.4415563, "lon": -3.1698335 },
+    { "lat": 42.4400983, "lon": -3.1756610 },
+    { "lat": 42.4379243, "lon": -3.1802867 },
+    { "lat": 42.4342914, "lon": -3.1858135 },
+    { "lat": 42.4320281, "lon": -3.1934090 },
+    { "lat": 42.4311817, "lon": -3.2013041 },
+    { "lat": 42.4297234, "lon": -3.2085100 },
+    { "lat": 42.4267558, "lon": -3.2149621 },
+    { "lat": 42.4239465, "lon": -3.2188846 },
+    { "lat": 42.4167599, "lon": -3.2265860 },
+    { "lat": 42.4123100, "lon": -3.2309371 },
+    { "lat": 42.4098394, "lon": -3.2351653 },
+    { "lat": 42.4014134, "lon": -3.2551372 },
+    { "lat": 42.4005557, "lon": -3.2594102 },
+    { "lat": 42.4005254, "lon": -3.2642837 },
+    { "lat": 42.4011000, "lon": -3.2694849 },
+    { "lat": 42.4012210, "lon": -3.2753413 },
+    { "lat": 42.4006161, "lon": -3.2834912 },
+    { "lat": 42.3997896, "lon": -3.2889203 },
+    { "lat": 42.3979504, "lon": -3.2934669 },
+    { "lat": 42.3955888, "lon": -3.2964976 },
+    { "lat": 42.3921207, "lon": -3.2993722 },
+    { "lat": 42.3902083, "lon": -3.3004255 },
+    { "lat": 42.3846329, "lon": -3.3025760 },
+    { "lat": 42.3829148, "lon": -3.3036074 },
+    { "lat": 42.3806941, "lon": -3.3055603 },
+    { "lat": 42.3790245, "lon": -3.3074475 },
+    { "lat": 42.3776142, "lon": -3.3097077 },
+    { "lat": 42.3762201, "lon": -3.3125823 },
+    { "lat": 42.3751340, "lon": -3.3160275 },
+    { "lat": 42.3746477, "lon": -3.3197360 },
+    { "lat": 42.3745180, "lon": -3.3234444 },
+    { "lat": 42.3741614, "lon": -3.3280746 },
+    { "lat": 42.3732698, "lon": -3.3315417 },
+    { "lat": 42.3715675, "lon": -3.3350527 },
+    { "lat": 42.3697328, "lon": -3.3383593 },
+    { "lat": 42.3672388, "lon": -3.3422502 },
+    { "lat": 42.3650948, "lon": -3.3460888 },
+    { "lat": 42.3633465, "lon": -3.3501317 },
+    { "lat": 42.3621316, "lon": -3.3544728 },
+    { "lat": 42.3612398, "lon": -3.3585104 },
+    { "lat": 42.3606723, "lon": -3.3625700 },
+    { "lat": 42.3602507, "lon": -3.3677926 },
+    { "lat": 42.3597480, "lon": -3.3723130 },
+    { "lat": 42.3594075, "lon": -3.3768993 },
+    { "lat": 42.3586130, "lon": -3.3817488 },
+    { "lat": 42.3575428, "lon": -3.3857645 },
+    { "lat": 42.3563266, "lon": -3.3892097 },
+    { "lat": 42.3547537, "lon": -3.3928084 },
+    { "lat": 42.3526780, "lon": -3.3962316 },
+    { "lat": 42.3472776, "lon": -3.4028147 },
+    { "lat": 42.3449746, "lon": -3.4061282 },
+    { "lat": 42.3429959, "lon": -3.4101659 },
+    { "lat": 42.3418443, "lon": -3.4137427 },
+    { "lat": 42.3411469, "lon": -3.4167709 },
+    { "lat": 42.3409685, "lon": -3.4201064 },
+    { "lat": 42.3410171, "lon": -3.4233979 },
+    { "lat": 42.3420228, "lon": -3.4298274 },
+    { "lat": 42.3429148, "lon": -3.4349403 },
+    { "lat": 42.3432392, "lon": -3.4394826 },
+    { "lat": 42.3431905, "lon": -3.4450783 },
+    { "lat": 42.3428824, "lon": -3.4505642 },
+    { "lat": 42.3418930, "lon": -3.4555674 },
+    { "lat": 42.3404494, "lon": -3.4608997 },
+    { "lat": 42.3392005, "lon": -3.4644984 },
+    { "lat": 42.3376434, "lon": -3.4681630 },
+    { "lat": 42.3368328, "lon": -3.4698951 },
+    { "lat": 42.3366844, "lon": -3.4702121 },
+    { "lat": 42.3362159, "lon": -3.4712132 },
+    { "lat": 42.3359659, "lon": -3.4716171 },
+    { "lat": 42.3345452, "lon": -3.4739123 },
+    { "lat": 42.3300679, "lon": -3.4803198 },
+    { "lat": 42.3289972, "lon": -3.4824922 },
+    { "lat": 42.3279752, "lon": -3.4850597 },
+    { "lat": 42.3273912, "lon": -3.4875174 },
+    { "lat": 42.3272289, "lon": -3.4905895 },
+    { "lat": 42.3274074, "lon": -3.4942321 },
+    { "lat": 42.3278616, "lon": -3.4964704 },
+    { "lat": 42.3285105, "lon": -3.4983575 },
+    { "lat": 42.3306519, "lon": -3.5035362 },
+    { "lat": 42.3334908, "lon": -3.5102949 },
+    { "lat": 42.3345938, "lon": -3.5131695 },
+    { "lat": 42.3359402, "lon": -3.5175144 },
+    { "lat": 42.3385895, "lon": -3.5262776 },
+    { "lat": 42.3393191, "lon": -3.5289684 },
+    { "lat": 42.3398766, "lon": -3.5315219 },
+    { "lat": 42.3401875, "lon": -3.5335625 },
+    { "lat": 42.3402882, "lon": -3.5356417 },
+    { "lat": 42.3402224, "lon": -3.5379377 },
+    { "lat": 42.3399686, "lon": -3.5401886 },
+    { "lat": 42.3395356, "lon": -3.5426423 },
+    { "lat": 42.3388203, "lon": -3.5451454 },
+    { "lat": 42.3374982, "lon": -3.5485593 },
+    { "lat": 42.3365747, "lon": -3.5510162 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 306571751,
+  "bounds": {
+    "minlat": 42.3342376,
+    "minlon": -3.6055921,
+    "maxlat": 42.3382170,
+    "maxlon": -3.5510162
+  },
+  "geometry": [
+    { "lat": 42.3365747, "lon": -3.5510162 },
+    { "lat": 42.3361193, "lon": -3.5525429 },
+    { "lat": 42.3356924, "lon": -3.5540953 },
+    { "lat": 42.3352214, "lon": -3.5562463 },
+    { "lat": 42.3349411, "lon": -3.5575598 },
+    { "lat": 42.3346640, "lon": -3.5590467 },
+    { "lat": 42.3345063, "lon": -3.5602132 },
+    { "lat": 42.3343706, "lon": -3.5615839 },
+    { "lat": 42.3342595, "lon": -3.5629131 },
+    { "lat": 42.3342376, "lon": -3.5639309 },
+    { "lat": 42.3342491, "lon": -3.5649776 },
+    { "lat": 42.3343453, "lon": -3.5671900 },
+    { "lat": 42.3344878, "lon": -3.5687737 },
+    { "lat": 42.3347088, "lon": -3.5703203 },
+    { "lat": 42.3349365, "lon": -3.5714844 },
+    { "lat": 42.3353447, "lon": -3.5730600 },
+    { "lat": 42.3357178, "lon": -3.5743213 },
+    { "lat": 42.3362886, "lon": -3.5761622 },
+    { "lat": 42.3367538, "lon": -3.5776137 },
+    { "lat": 42.3372589, "lon": -3.5793798 },
+    { "lat": 42.3375661, "lon": -3.5808922 },
+    { "lat": 42.3377774, "lon": -3.5823130 },
+    { "lat": 42.3378832, "lon": -3.5837462 },
+    { "lat": 42.3379258, "lon": -3.5848864 },
+    { "lat": 42.3378996, "lon": -3.5861445 },
+    { "lat": 42.3378193, "lon": -3.5872938 },
+    { "lat": 42.3376748, "lon": -3.5885113 },
+    { "lat": 42.3373658, "lon": -3.5908990 },
+    { "lat": 42.3371603, "lon": -3.5925216 },
+    { "lat": 42.3370478, "lon": -3.5937012 },
+    { "lat": 42.3369709, "lon": -3.5952705 },
+    { "lat": 42.3369986, "lon": -3.5966420 },
+    { "lat": 42.3370951, "lon": -3.5978133 },
+    { "lat": 42.3375161, "lon": -3.6012230 },
+    { "lat": 42.3379077, "lon": -3.6038946 },
+    { "lat": 42.3382170, "lon": -3.6055921 }
+  ],
+  "tags": {
+    "check_date": "2022-03-20",
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 306571752,
+  "bounds": {
+    "minlat": 42.3269940,
+    "minlon": -3.5509089,
+    "maxlat": 42.3954351,
+    "maxlon": -3.2961213
+  },
+  "geometry": [
+    { "lat": 42.3362864, "lon": -3.5509089 },
+    { "lat": 42.3371533, "lon": -3.5485882 },
+    { "lat": 42.3383508, "lon": -3.5453288 },
+    { "lat": 42.3390677, "lon": -3.5427013 },
+    { "lat": 42.3396022, "lon": -3.5397187 },
+    { "lat": 42.3398216, "lon": -3.5372484 },
+    { "lat": 42.3398457, "lon": -3.5346976 },
+    { "lat": 42.3395435, "lon": -3.5318620 },
+    { "lat": 42.3390899, "lon": -3.5297066 },
+    { "lat": 42.3382445, "lon": -3.5266006 },
+    { "lat": 42.3356404, "lon": -3.5177086 },
+    { "lat": 42.3342940, "lon": -3.5133637 },
+    { "lat": 42.3332396, "lon": -3.5105110 },
+    { "lat": 42.3304495, "lon": -3.5037524 },
+    { "lat": 42.3282918, "lon": -3.4985517 },
+    { "lat": 42.3276267, "lon": -3.4965987 },
+    { "lat": 42.3271724, "lon": -3.4942727 },
+    { "lat": 42.3269940, "lon": -3.4906081 },
+    { "lat": 42.3271562, "lon": -3.4874263 },
+    { "lat": 42.3278052, "lon": -3.4848589 },
+    { "lat": 42.3287785, "lon": -3.4822037 },
+    { "lat": 42.3299141, "lon": -3.4800313 },
+    { "lat": 42.3343751, "lon": -3.4736018 },
+    { "lat": 42.3355352, "lon": -3.4716995 },
+    { "lat": 42.3359810, "lon": -3.4709685 },
+    { "lat": 42.3373436, "lon": -3.4679622 },
+    { "lat": 42.3389007, "lon": -3.4642976 },
+    { "lat": 42.3401497, "lon": -3.4608305 },
+    { "lat": 42.3415284, "lon": -3.4555202 },
+    { "lat": 42.3425988, "lon": -3.4504951 },
+    { "lat": 42.3429070, "lon": -3.4450969 },
+    { "lat": 42.3429394, "lon": -3.4395452 },
+    { "lat": 42.3426313, "lon": -3.4350248 },
+    { "lat": 42.3417392, "lon": -3.4299558 },
+    { "lat": 42.3407336, "lon": -3.4235043 },
+    { "lat": 42.3406849, "lon": -3.4200811 },
+    { "lat": 42.3408958, "lon": -3.4166579 },
+    { "lat": 42.3415770, "lon": -3.4135419 },
+    { "lat": 42.3427124, "lon": -3.4099431 },
+    { "lat": 42.3447884, "lon": -3.4057738 },
+    { "lat": 42.3471076, "lon": -3.4024384 },
+    { "lat": 42.3524594, "lon": -3.3960089 },
+    { "lat": 42.3545513, "lon": -3.3924979 },
+    { "lat": 42.3560756, "lon": -3.3890528 },
+    { "lat": 42.3572755, "lon": -3.3856076 },
+    { "lat": 42.3582809, "lon": -3.3816138 },
+    { "lat": 42.3591241, "lon": -3.3768740 },
+    { "lat": 42.3595295, "lon": -3.3722878 },
+    { "lat": 42.3599673, "lon": -3.3677235 },
+    { "lat": 42.3603888, "lon": -3.3624790 },
+    { "lat": 42.3610050, "lon": -3.3584413 },
+    { "lat": 42.3618644, "lon": -3.3543598 },
+    { "lat": 42.3631575, "lon": -3.3499529 },
+    { "lat": 42.3648505, "lon": -3.3458623 },
+    { "lat": 42.3669879, "lon": -3.3419177 },
+    { "lat": 42.3695210, "lon": -3.3380669 },
+    { "lat": 42.3713166, "lon": -3.3348080 },
+    { "lat": 42.3730026, "lon": -3.3313628 },
+    { "lat": 42.3738131, "lon": -3.3280054 },
+    { "lat": 42.3741860, "lon": -3.3234631 },
+    { "lat": 42.3743481, "lon": -3.3196888 },
+    { "lat": 42.3748993, "lon": -3.3159145 },
+    { "lat": 42.3759692, "lon": -3.3124474 },
+    { "lat": 42.3773795, "lon": -3.3093752 },
+    { "lat": 42.3788222, "lon": -3.3071809 },
+    { "lat": 42.3805404, "lon": -3.3051401 },
+    { "lat": 42.3828097, "lon": -3.3032310 },
+    { "lat": 42.3845927, "lon": -3.3021997 },
+    { "lat": 42.3901519, "lon": -3.2999614 },
+    { "lat": 42.3920157, "lon": -3.2989959 },
+    { "lat": 42.3954351, "lon": -3.2961213 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 306573231,
+  "bounds": {
+    "minlat": 42.3340441,
+    "minlon": -3.6059579,
+    "maxlat": 42.3379937,
+    "maxlon": -3.5509089
+  },
+  "geometry": [
+    { "lat": 42.3379937, "lon": -3.6059579 },
+    { "lat": 42.3377224, "lon": -3.6042508 },
+    { "lat": 42.3372775, "lon": -3.6012120 },
+    { "lat": 42.3368958, "lon": -3.5978459 },
+    { "lat": 42.3368046, "lon": -3.5965307 },
+    { "lat": 42.3367907, "lon": -3.5950630 },
+    { "lat": 42.3368562, "lon": -3.5938314 },
+    { "lat": 42.3369999, "lon": -3.5922154 },
+    { "lat": 42.3371595, "lon": -3.5908568 },
+    { "lat": 42.3374919, "lon": -3.5882239 },
+    { "lat": 42.3376187, "lon": -3.5870619 },
+    { "lat": 42.3376859, "lon": -3.5857075 },
+    { "lat": 42.3376908, "lon": -3.5845742 },
+    { "lat": 42.3376361, "lon": -3.5833106 },
+    { "lat": 42.3375060, "lon": -3.5820363 },
+    { "lat": 42.3373886, "lon": -3.5811810 },
+    { "lat": 42.3372068, "lon": -3.5801853 },
+    { "lat": 42.3369791, "lon": -3.5792207 },
+    { "lat": 42.3365045, "lon": -3.5776956 },
+    { "lat": 42.3360095, "lon": -3.5761072 },
+    { "lat": 42.3355070, "lon": -3.5745112 },
+    { "lat": 42.3350358, "lon": -3.5728833 },
+    { "lat": 42.3345835, "lon": -3.5709757 },
+    { "lat": 42.3343847, "lon": -3.5697224 },
+    { "lat": 42.3341732, "lon": -3.5678180 },
+    { "lat": 42.3341090, "lon": -3.5664945 },
+    { "lat": 42.3340539, "lon": -3.5651337 },
+    { "lat": 42.3340441, "lon": -3.5638218 },
+    { "lat": 42.3340710, "lon": -3.5627768 },
+    { "lat": 42.3341586, "lon": -3.5610739 },
+    { "lat": 42.3343009, "lon": -3.5596690 },
+    { "lat": 42.3346039, "lon": -3.5578075 },
+    { "lat": 42.3350433, "lon": -3.5557476 },
+    { "lat": 42.3353593, "lon": -3.5542187 },
+    { "lat": 42.3362864, "lon": -3.5509089 }
+  ],
+  "tags": {
+    "check_date": "2022-03-20",
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 315075656,
+  "bounds": {
+    "minlat": 42.3366370,
+    "minlon": -3.6193625,
+    "maxlat": 42.3395833,
+    "maxlon": -3.6055921
+  },
+  "geometry": [
+    { "lat": 42.3382170, "lon": -3.6055921 },
+    { "lat": 42.3384013, "lon": -3.6064221 },
+    { "lat": 42.3385757, "lon": -3.6070883 },
+    { "lat": 42.3388154, "lon": -3.6078785 },
+    { "lat": 42.3391767, "lon": -3.6089107 },
+    { "lat": 42.3393106, "lon": -3.6093345 },
+    { "lat": 42.3394243, "lon": -3.6097823 },
+    { "lat": 42.3395203, "lon": -3.6102753 },
+    { "lat": 42.3395758, "lon": -3.6108246 },
+    { "lat": 42.3395833, "lon": -3.6113334 },
+    { "lat": 42.3395478, "lon": -3.6117792 },
+    { "lat": 42.3394810, "lon": -3.6122875 },
+    { "lat": 42.3394094, "lon": -3.6127684 },
+    { "lat": 42.3392853, "lon": -3.6132327 },
+    { "lat": 42.3390871, "lon": -3.6137552 },
+    { "lat": 42.3387826, "lon": -3.6142543 },
+    { "lat": 42.3385832, "lon": -3.6145625 },
+    { "lat": 42.3382729, "lon": -3.6149598 },
+    { "lat": 42.3378492, "lon": -3.6156435 },
+    { "lat": 42.3375343, "lon": -3.6162735 },
+    { "lat": 42.3373232, "lon": -3.6168210 },
+    { "lat": 42.3370297, "lon": -3.6177257 },
+    { "lat": 42.3368059, "lon": -3.6185606 },
+    { "lat": 42.3366370, "lon": -3.6193625 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "oneway": "yes",
+    "proposed": "motorway_link",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 323232092,
+  "bounds": {
+    "minlat": 42.3350232,
+    "minlon": -3.6197125,
+    "maxlat": 42.3383281,
+    "maxlon": -3.6059579
+  },
+  "geometry": [
+    { "lat": 42.3350232, "lon": -3.6197125 },
+    { "lat": 42.3351666, "lon": -3.6191472 },
+    { "lat": 42.3353021, "lon": -3.6187135 },
+    { "lat": 42.3356185, "lon": -3.6179186 },
+    { "lat": 42.3360317, "lon": -3.6169804 },
+    { "lat": 42.3372947, "lon": -3.6143143 },
+    { "lat": 42.3375209, "lon": -3.6137958 },
+    { "lat": 42.3376352, "lon": -3.6135491 },
+    { "lat": 42.3377828, "lon": -3.6131688 },
+    { "lat": 42.3379412, "lon": -3.6126675 },
+    { "lat": 42.3380580, "lon": -3.6121280 },
+    { "lat": 42.3381706, "lon": -3.6114679 },
+    { "lat": 42.3382384, "lon": -3.6109207 },
+    { "lat": 42.3382935, "lon": -3.6102956 },
+    { "lat": 42.3383241, "lon": -3.6097581 },
+    { "lat": 42.3383281, "lon": -3.6092653 },
+    { "lat": 42.3383141, "lon": -3.6086897 },
+    { "lat": 42.3382655, "lon": -3.6080817 },
+    { "lat": 42.3381853, "lon": -3.6073253 },
+    { "lat": 42.3379937, "lon": -3.6059579 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 686254670,
+  "bounds": {
+    "minlat": 42.4571437,
+    "minlon": -2.9629494,
+    "maxlat": 42.4574954,
+    "maxlon": -2.9580749
+  },
+  "geometry": [
+    { "lat": 42.4574492, "lon": -2.9629494 },
+    { "lat": 42.4574771, "lon": -2.9625795 },
+    { "lat": 42.4574902, "lon": -2.9623091 },
+    { "lat": 42.4574954, "lon": -2.9618837 },
+    { "lat": 42.4574874, "lon": -2.9615106 },
+    { "lat": 42.4574562, "lon": -2.9609694 },
+    { "lat": 42.4574052, "lon": -2.9604625 },
+    { "lat": 42.4571437, "lon": -2.9580749 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 753567074,
+  "bounds": {
+    "minlat": 42.4502729,
+    "minlon": -3.0049732,
+    "maxlat": 42.4525190,
+    "maxlon": -2.9862193
+  },
+  "geometry": [
+    { "lat": 42.4502729, "lon": -2.9862193 },
+    { "lat": 42.4510441, "lon": -2.9916008 },
+    { "lat": 42.4515005, "lon": -2.9946955 },
+    { "lat": 42.4518653, "lon": -2.9972739 },
+    { "lat": 42.4521332, "lon": -3.0004293 },
+    { "lat": 42.4525190, "lon": -3.0049732 }
+  ],
+  "tags": {
+    "construction": "motorway",
+    "highway": "construction",
+    "lit": "no",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 764020346,
+  "bounds": {
+    "minlat": 42.4318178,
+    "minlon": -3.1354601,
+    "maxlat": 42.4334894,
+    "maxlon": -3.1172609
+  },
+  "geometry": [
+    { "lat": 42.4318178, "lon": -3.1172609 },
+    { "lat": 42.4318539, "lon": -3.1193555 },
+    { "lat": 42.4319206, "lon": -3.1216444 },
+    { "lat": 42.4320792, "lon": -3.1242582 },
+    { "lat": 42.4322740, "lon": -3.1268545 },
+    { "lat": 42.4325066, "lon": -3.1301908 },
+    { "lat": 42.4327739, "lon": -3.1328526 },
+    { "lat": 42.4334894, "lon": -3.1354601 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 764020347,
+  "bounds": {
+    "minlat": 42.4316503,
+    "minlon": -3.1183711,
+    "maxlat": 42.4318178,
+    "maxlon": -3.1172609
+  },
+  "geometry": [
+    { "lat": 42.4318178, "lon": -3.1172609 },
+    { "lat": 42.4317298, "lon": -3.1178923 },
+    { "lat": 42.4316503, "lon": -3.1183711 }
+  ],
+  "tags": {
+    "construction": "motorway_link",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 764020359,
+  "bounds": {
+    "minlat": 42.3954351,
+    "minlon": -3.2961213,
+    "maxlat": 42.4412578,
+    "maxlon": -3.1238479
+  },
+  "geometry": [
+    { "lat": 42.3954351, "lon": -3.2961213 },
+    { "lat": 42.3976358, "lon": -3.2932143 },
+    { "lat": 42.3995235, "lon": -3.2887453 },
+    { "lat": 42.4003513, "lon": -3.2834503 },
+    { "lat": 42.4009561, "lon": -3.2752545 },
+    { "lat": 42.4008226, "lon": -3.2695089 },
+    { "lat": 42.4002215, "lon": -3.2641290 },
+    { "lat": 42.4002945, "lon": -3.2594271 },
+    { "lat": 42.4011611, "lon": -3.2549921 },
+    { "lat": 42.4096351, "lon": -3.2349436 },
+    { "lat": 42.4120770, "lon": -3.2307423 },
+    { "lat": 42.4165608, "lon": -3.2263622 },
+    { "lat": 42.4237474, "lon": -3.2186198 },
+    { "lat": 42.4265167, "lon": -3.2147081 },
+    { "lat": 42.4294425, "lon": -3.2082593 },
+    { "lat": 42.4308514, "lon": -3.2012512 },
+    { "lat": 42.4317280, "lon": -3.1932283 },
+    { "lat": 42.4340038, "lon": -3.1856158 },
+    { "lat": 42.4377201, "lon": -3.1800820 },
+    { "lat": 42.4398034, "lon": -3.1755092 },
+    { "lat": 42.4412578, "lon": -3.1698455 },
+    { "lat": 42.4410676, "lon": -3.1642327 },
+    { "lat": 42.4395454, "lon": -3.1581835 },
+    { "lat": 42.4375012, "lon": -3.1525608 },
+    { "lat": 42.4364433, "lon": -3.1476053 },
+    { "lat": 42.4352416, "lon": -3.1414871 },
+    { "lat": 42.4332904, "lon": -3.1354473 },
+    { "lat": 42.4325512, "lon": -3.1329433 },
+    { "lat": 42.4323106, "lon": -3.1304138 },
+    { "lat": 42.4320509, "lon": -3.1269119 },
+    { "lat": 42.4318833, "lon": -3.1243158 },
+    { "lat": 42.4318549, "lon": -3.1238479 }
+  ],
+  "tags": {
+    "highway": "proposed",
+    "name": "Autovía del Camino de Santiago",
+    "oneway": "yes",
+    "proposed": "motorway",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 764020392,
+  "bounds": {
+    "minlat": 42.4549465,
+    "minlon": -3.0317781,
+    "maxlat": 42.4550484,
+    "maxlon": -3.0310391
+  },
+  "geometry": [
+    { "lat": 42.4549465, "lon": -3.0317781 },
+    { "lat": 42.4550484, "lon": -3.0310391 }
+  ],
+  "tags": {
+    "bridge": "yes",
+    "construction": "motorway",
+    "highway": "construction",
+    "layer": "1",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 764020394,
+  "bounds": {
+    "minlat": 42.4533245,
+    "minlon": -3.0310391,
+    "maxlat": 42.4552054,
+    "maxlon": -3.0171920
+  },
+  "geometry": [
+    { "lat": 42.4550484, "lon": -3.0310391 },
+    { "lat": 42.4550725, "lon": -3.0307996 },
+    { "lat": 42.4551216, "lon": -3.0303105 },
+    { "lat": 42.4551533, "lon": -3.0292495 },
+    { "lat": 42.4551817, "lon": -3.0282972 },
+    { "lat": 42.4552054, "lon": -3.0275032 },
+    { "lat": 42.4551631, "lon": -3.0268483 },
+    { "lat": 42.4551008, "lon": -3.0258832 },
+    { "lat": 42.4550409, "lon": -3.0249549 },
+    { "lat": 42.4549327, "lon": -3.0240585 },
+    { "lat": 42.4548257, "lon": -3.0235035 },
+    { "lat": 42.4547863, "lon": -3.0232244 },
+    { "lat": 42.4545840, "lon": -3.0223087 },
+    { "lat": 42.4544823, "lon": -3.0218466 },
+    { "lat": 42.4543023, "lon": -3.0211545 },
+    { "lat": 42.4540553, "lon": -3.0202957 },
+    { "lat": 42.4538441, "lon": -3.0195866 },
+    { "lat": 42.4536167, "lon": -3.0187190 },
+    { "lat": 42.4534477, "lon": -3.0179174 },
+    { "lat": 42.4533245, "lon": -3.0171920 }
+  ],
+  "tags": {
+    "check_date": "2026-08-08",
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 842636043,
+  "bounds": {
+    "minlat": 42.4564497,
+    "minlon": -2.9534951,
+    "maxlat": 42.4566499,
+    "maxlon": -2.9516230
+  },
+  "geometry": [
+    { "lat": 42.4566499, "lon": -2.9534951 },
+    { "lat": 42.4564497, "lon": -2.9516230 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "3",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "placement": "right_of:1",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt",
+    "turn:lanes": "through|through|right"
+  }
+},
+{
+  "type": "way",
+  "id": 842636044,
+  "bounds": {
+    "minlat": 42.4566499,
+    "minlon": -2.9560521,
+    "maxlat": 42.4569291,
+    "maxlon": -2.9534951
+  },
+  "geometry": [
+    { "lat": 42.4569291, "lon": -2.9560521 },
+    { "lat": 42.4566499, "lon": -2.9534951 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1075145072,
+  "bounds": {
+    "minlat": 42.4525799,
+    "minlon": -3.0209567,
+    "maxlat": 42.4544293,
+    "maxlon": -3.0056909
+  },
+  "geometry": [
+    { "lat": 42.4525799, "lon": -3.0056909 },
+    { "lat": 42.4529401, "lon": -3.0098816 },
+    { "lat": 42.4535017, "lon": -3.0170058 },
+    { "lat": 42.4535138, "lon": -3.0171084 },
+    { "lat": 42.4535542, "lon": -3.0174519 },
+    { "lat": 42.4536539, "lon": -3.0180698 },
+    { "lat": 42.4537875, "lon": -3.0187095 },
+    { "lat": 42.4539644, "lon": -3.0194001 },
+    { "lat": 42.4540706, "lon": -3.0197422 },
+    { "lat": 42.4542544, "lon": -3.0203555 },
+    { "lat": 42.4544293, "lon": -3.0209567 }
+  ],
+  "tags": {
+    "check_date": "2025-06-23",
+    "construction": "motorway",
+    "highway": "construction",
+    "name": "Autovía del Camino",
+    "name:es": "Autovía del Camino",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1187343469,
+  "bounds": {
+    "minlat": 42.4428771,
+    "minlon": -2.9375783,
+    "maxlat": 42.4460245,
+    "maxlon": -2.9315536
+  },
+  "geometry": [
+    { "lat": 42.4460245, "lon": -2.9375783 },
+    { "lat": 42.4454715, "lon": -2.9369435 },
+    { "lat": 42.4451472, "lon": -2.9365261 },
+    { "lat": 42.4449070, "lon": -2.9361951 },
+    { "lat": 42.4446986, "lon": -2.9358867 },
+    { "lat": 42.4444185, "lon": -2.9354324 },
+    { "lat": 42.4441068, "lon": -2.9348758 },
+    { "lat": 42.4438722, "lon": -2.9344025 },
+    { "lat": 42.4436328, "lon": -2.9338652 },
+    { "lat": 42.4434192, "lon": -2.9333334 },
+    { "lat": 42.4432048, "lon": -2.9327154 },
+    { "lat": 42.4430272, "lon": -2.9321313 },
+    { "lat": 42.4428771, "lon": -2.9315536 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1187343470,
+  "bounds": {
+    "minlat": 42.4460245,
+    "minlon": -2.9376467,
+    "maxlat": 42.4460834,
+    "maxlon": -2.9375783
+  },
+  "geometry": [
+    { "lat": 42.4460834, "lon": -2.9376467 },
+    { "lat": 42.4460245, "lon": -2.9375783 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "-1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt",
+    "tunnel": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1187343471,
+  "bounds": {
+    "minlat": 42.4433729,
+    "minlon": -2.9374063,
+    "maxlat": 42.4461369,
+    "maxlon": -2.9326612
+  },
+  "geometry": [
+    { "lat": 42.4433729, "lon": -2.9326612 },
+    { "lat": 42.4435851, "lon": -2.9332652 },
+    { "lat": 42.4437869, "lon": -2.9337616 },
+    { "lat": 42.4440282, "lon": -2.9342985 },
+    { "lat": 42.4442762, "lon": -2.9347956 },
+    { "lat": 42.4445621, "lon": -2.9353050 },
+    { "lat": 42.4448484, "lon": -2.9357661 },
+    { "lat": 42.4450308, "lon": -2.9360363 },
+    { "lat": 42.4452619, "lon": -2.9363528 },
+    { "lat": 42.4456123, "lon": -2.9367997 },
+    { "lat": 42.4461369, "lon": -2.9374063 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1187343472,
+  "bounds": {
+    "minlat": 42.4461369,
+    "minlon": -2.9374682,
+    "maxlat": 42.4461938,
+    "maxlon": -2.9374063
+  },
+  "geometry": [
+    { "lat": 42.4461369, "lon": -2.9374063 },
+    { "lat": 42.4461938, "lon": -2.9374682 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "layer": "-1",
+    "lit": "no",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt",
+    "tunnel": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1205919336,
+  "bounds": {
+    "minlat": 42.4326670,
+    "minlon": -3.0826901,
+    "maxlat": 42.4341958,
+    "maxlon": -3.0795085
+  },
+  "geometry": [
+    { "lat": 42.4326670, "lon": -3.0795085 },
+    { "lat": 42.4327717, "lon": -3.0803883 },
+    { "lat": 42.4328231, "lon": -3.0807048 },
+    { "lat": 42.4329102, "lon": -3.0810535 },
+    { "lat": 42.4330844, "lon": -3.0815522 },
+    { "lat": 42.4331696, "lon": -3.0817344 },
+    { "lat": 42.4332547, "lon": -3.0818796 },
+    { "lat": 42.4334527, "lon": -3.0821532 },
+    { "lat": 42.4336216, "lon": -3.0823480 },
+    { "lat": 42.4337731, "lon": -3.0824755 },
+    { "lat": 42.4339481, "lon": -3.0825887 },
+    { "lat": 42.4341224, "lon": -3.0826532 },
+    { "lat": 42.4341958, "lon": -3.0826901 }
+  ],
+  "tags": {
+    "construction": "motorway_link",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1205919337,
+  "bounds": {
+    "minlat": 42.4319493,
+    "minlon": -3.0822168,
+    "maxlat": 42.4324144,
+    "maxlon": -3.0783749
+  },
+  "geometry": [
+    { "lat": 42.4319493, "lon": -3.0822168 },
+    { "lat": 42.4320900, "lon": -3.0820136 },
+    { "lat": 42.4321361, "lon": -3.0818796 },
+    { "lat": 42.4321762, "lon": -3.0817334 },
+    { "lat": 42.4322154, "lon": -3.0815112 },
+    { "lat": 42.4322451, "lon": -3.0813224 },
+    { "lat": 42.4322865, "lon": -3.0808788 },
+    { "lat": 42.4323244, "lon": -3.0803090 },
+    { "lat": 42.4323589, "lon": -3.0796646 },
+    { "lat": 42.4324144, "lon": -3.0783749 }
+  ],
+  "tags": {
+    "construction": "motorway_link",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1205919338,
+  "bounds": {
+    "minlat": 42.4318604,
+    "minlon": -3.0863889,
+    "maxlat": 42.4326093,
+    "maxlon": -3.0829657
+  },
+  "geometry": [
+    { "lat": 42.4326093, "lon": -3.0863889 },
+    { "lat": 42.4325209, "lon": -3.0855441 },
+    { "lat": 42.4324209, "lon": -3.0846194 },
+    { "lat": 42.4323416, "lon": -3.0841258 },
+    { "lat": 42.4322925, "lon": -3.0839039 },
+    { "lat": 42.4322373, "lon": -3.0836840 },
+    { "lat": 42.4321017, "lon": -3.0833079 },
+    { "lat": 42.4320762, "lon": -3.0832371 },
+    { "lat": 42.4320289, "lon": -3.0831472 },
+    { "lat": 42.4319821, "lon": -3.0830873 },
+    { "lat": 42.4318604, "lon": -3.0829657 }
+  ],
+  "tags": {
+    "construction": "motorway_link",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1205919339,
+  "bounds": {
+    "minlat": 42.4328594,
+    "minlon": -3.0872066,
+    "maxlat": 42.4342569,
+    "maxlon": -3.0833319
+  },
+  "geometry": [
+    { "lat": 42.4342569, "lon": -3.0833319 },
+    { "lat": 42.4341831, "lon": -3.0833377 },
+    { "lat": 42.4341488, "lon": -3.0833425 },
+    { "lat": 42.4340840, "lon": -3.0833515 },
+    { "lat": 42.4340140, "lon": -3.0833618 },
+    { "lat": 42.4339202, "lon": -3.0833772 },
+    { "lat": 42.4338280, "lon": -3.0834076 },
+    { "lat": 42.4337496, "lon": -3.0834379 },
+    { "lat": 42.4336600, "lon": -3.0834916 },
+    { "lat": 42.4335893, "lon": -3.0835500 },
+    { "lat": 42.4334067, "lon": -3.0837462 },
+    { "lat": 42.4333240, "lon": -3.0838489 },
+    { "lat": 42.4332412, "lon": -3.0839656 },
+    { "lat": 42.4331723, "lon": -3.0840987 },
+    { "lat": 42.4331171, "lon": -3.0842412 },
+    { "lat": 42.4330585, "lon": -3.0844887 },
+    { "lat": 42.4330127, "lon": -3.0847942 },
+    { "lat": 42.4329807, "lon": -3.0850997 },
+    { "lat": 42.4329304, "lon": -3.0857021 },
+    { "lat": 42.4328594, "lon": -3.0872066 }
+  ],
+  "tags": {
+    "construction": "motorway_link",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1232519371,
+  "bounds": {
+    "minlat": 42.4392859,
+    "minlon": -2.9186867,
+    "maxlat": 42.4406560,
+    "maxlon": -2.9115343
+  },
+  "geometry": [
+    { "lat": 42.4406560, "lon": -2.9186867 },
+    { "lat": 42.4404328, "lon": -2.9182255 },
+    { "lat": 42.4401993, "lon": -2.9176718 },
+    { "lat": 42.4400177, "lon": -2.9171896 },
+    { "lat": 42.4398663, "lon": -2.9167335 },
+    { "lat": 42.4395903, "lon": -2.9155829 },
+    { "lat": 42.4394227, "lon": -2.9147291 },
+    { "lat": 42.4393073, "lon": -2.9136186 },
+    { "lat": 42.4392859, "lon": -2.9126477 },
+    { "lat": 42.4393350, "lon": -2.9115343 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxheight": "5.6",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1232519373,
+  "bounds": {
+    "minlat": 42.4394737,
+    "minlon": -2.9185362,
+    "maxlat": 42.4407750,
+    "maxlon": -2.9129647
+  },
+  "geometry": [
+    { "lat": 42.4394737, "lon": -2.9129647 },
+    { "lat": 42.4394784, "lon": -2.9132496 },
+    { "lat": 42.4394933, "lon": -2.9136560 },
+    { "lat": 42.4395339, "lon": -2.9141187 },
+    { "lat": 42.4395695, "lon": -2.9144499 },
+    { "lat": 42.4396200, "lon": -2.9148375 },
+    { "lat": 42.4396962, "lon": -2.9152787 },
+    { "lat": 42.4398367, "lon": -2.9159318 },
+    { "lat": 42.4399931, "lon": -2.9165179 },
+    { "lat": 42.4401811, "lon": -2.9171080 },
+    { "lat": 42.4403959, "lon": -2.9176873 },
+    { "lat": 42.4405962, "lon": -2.9181552 },
+    { "lat": 42.4407750, "lon": -2.9185362 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxheight": "5.57",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1417921727,
+  "bounds": {
+    "minlat": 42.4544293,
+    "minlon": -3.0235529,
+    "maxlat": 42.4550164,
+    "maxlon": -3.0209567
+  },
+  "geometry": [
+    { "lat": 42.4544293, "lon": -3.0209567 },
+    { "lat": 42.4549737, "lon": -3.0232702 },
+    { "lat": 42.4550164, "lon": -3.0235529 }
+  ],
+  "tags": {
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1477021569,
+  "bounds": {
+    "minlat": 42.4318178,
+    "minlon": -3.1172609,
+    "maxlat": 42.4330259,
+    "maxlon": -3.0931319
+  },
+  "geometry": [
+    { "lat": 42.4329991, "lon": -3.0931319 },
+    { "lat": 42.4330259, "lon": -3.0961587 },
+    { "lat": 42.4329386, "lon": -3.1005407 },
+    { "lat": 42.4328820, "lon": -3.1019876 },
+    { "lat": 42.4327996, "lon": -3.1035430 },
+    { "lat": 42.4325663, "lon": -3.1062053 },
+    { "lat": 42.4323992, "lon": -3.1076941 },
+    { "lat": 42.4320938, "lon": -3.1102338 },
+    { "lat": 42.4319425, "lon": -3.1123785 },
+    { "lat": 42.4318506, "lon": -3.1147194 },
+    { "lat": 42.4318178, "lon": -3.1172609 }
+  ],
+  "tags": {
+    "check_date": "2026-08-08",
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1477021570,
+  "bounds": {
+    "minlat": 42.4329737,
+    "minlon": -3.0931319,
+    "maxlat": 42.4329991,
+    "maxlon": -3.0921721
+  },
+  "geometry": [
+    { "lat": 42.4329737, "lon": -3.0921721 },
+    { "lat": 42.4329991, "lon": -3.0931319 }
+  ],
+  "tags": {
+    "bridge": "yes",
+    "construction": "motorway",
+    "highway": "construction",
+    "layer": "1",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1477021571,
+  "bounds": {
+    "minlat": 42.4316454,
+    "minlon": -3.1183711,
+    "maxlat": 42.4328355,
+    "maxlon": -3.0931940
+  },
+  "geometry": [
+    { "lat": 42.4316503, "lon": -3.1183711 },
+    { "lat": 42.4316454, "lon": -3.1173170 },
+    { "lat": 42.4316929, "lon": -3.1146872 },
+    { "lat": 42.4317756, "lon": -3.1123632 },
+    { "lat": 42.4319320, "lon": -3.1102333 },
+    { "lat": 42.4322046, "lon": -3.1076779 },
+    { "lat": 42.4323944, "lon": -3.1054660 },
+    { "lat": 42.4325612, "lon": -3.1035719 },
+    { "lat": 42.4326564, "lon": -3.1019747 },
+    { "lat": 42.4327860, "lon": -3.0984544 },
+    { "lat": 42.4328355, "lon": -3.0959743 },
+    { "lat": 42.4328137, "lon": -3.0931940 }
+  ],
+  "tags": {
+    "check_date": "2026-08-08",
+    "construction": "motorway",
+    "highway": "construction",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1477021572,
+  "bounds": {
+    "minlat": 42.4327960,
+    "minlon": -3.0931940,
+    "maxlat": 42.4328137,
+    "maxlon": -3.0922296
+  },
+  "geometry": [
+    { "lat": 42.4328137, "lon": -3.0931940 },
+    { "lat": 42.4327960, "lon": -3.0922296 }
+  ],
+  "tags": {
+    "bridge": "yes",
+    "construction": "motorway",
+    "highway": "construction",
+    "layer": "1",
+    "oneway": "yes",
+    "ref": "A-12"
+  }
+},
+{
+  "type": "way",
+  "id": 1492419489,
+  "bounds": {
+    "minlat": 42.4394710,
+    "minlon": -2.9129647,
+    "maxlat": 42.4394737,
+    "maxlon": -2.9123977
+  },
+  "geometry": [
+    { "lat": 42.4394710, "lon": -2.9123977 },
+    { "lat": 42.4394737, "lon": -2.9129647 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "no",
+    "hazmat": "designated",
+    "highway": "motorway",
+    "horse": "no",
+    "lanes": "2",
+    "lit": "no",
+    "maxheight": "5.57",
+    "maxspeed": "120",
+    "name": "Autovía del Camino de Santiago",
+    "name:es": "Autovía del Camino de Santiago",
+    "name:eu": "Donejakue Bidearen autobia",
+    "oneway": "yes",
+    "ref": "A-12",
+    "source:lanes": "Mapillary",
+    "surface": "asphalt"
+  }
+}
+
+  ]
+}

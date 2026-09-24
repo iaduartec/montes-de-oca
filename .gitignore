@@ -1,5 +1,15 @@
 node_modules/
 dist/
 .vite/
+.venv/
+output/
 *.log
 .env
+.DS_Store
+
+# Rasters crudos: pesados y REPRODUCIBLES por script. El manifiesto + SHA256 queda versionado
+# (data/*/raw/fetch_manifest.json, overpass_manifest.json), asi que se pueden regenerar.
+data/**/raw/*.tif
+data/**/raw/*.tiff
+data/**/raw/*.pbf
+data/**/raw/*.zip
