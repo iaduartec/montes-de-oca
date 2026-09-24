@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wcs:Capabilities xmlns:wcs="http://www.opengis.net/wcs/2.0" xmlns:ows="http://www.opengis.net/ows/2.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmlcov="http://www.opengis.net/gmlcov/1.0" xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:crs="http://www.opengis.net/wcs/crs/1.0" xmlns:int="http://www.opengis.net/wcs/interpolation/1.0" xmlns:inspire_dls="http://inspire.ec.europa.eu/schemas/inspire_dls/1.0" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" xsi:schemaLocation="http://www.opengis.net/wcs/2.0 http://schemas.opengis.net/wcs/2.0/wcsAll.xsd 
+http://inspire.ec.europa.eu/schemas/inspire_dls/1.0/inspire_dls.xsd" version="2.0.1">
+  <ows:ServiceIdentification>
+    <ows:Title>Modelos Digitales del Terreno de España</ows:Title>
+    <ows:Abstract>Modelos Digitales del Terreno de paso de malla de 1000, 500, 200, 25 y 5m procedentes de sensores LiDAR aerotransportados del proyecto PNOA-LiDAR del Sistema Cartográfico Nacional (http://www.scne.es/productos.html). Los datos origen se encuentran en los Sistemas de Referencia: ETRS89-UTM30 (EPSG:25830), REGCAN95-UTM28 (EPSG:4083), ETRS89-geo (EPSG:4258) y WGS84-geo (EPSG:4326), pudiéndose reproyectar a otros sistemas de referencia. Servicio de descarga WCS 2.0 conforme a la Guía Técnica para la implementación de Servicios de Descarga INSPIRE usando WCS del Reglamento de servicios en red.</ows:Abstract>
+	<ows:Keywords>
+      <ows:Keyword>IGN</ows:Keyword>
+	  <ows:Keyword>Instituto Geográfico Nacional</ows:Keyword>
+	  <ows:Keyword>Modelo Digital del Terreno</ows:Keyword>
+	  <ows:Keyword>MDT</ows:Keyword>
+	  <ows:Keyword>CNIG</ows:Keyword>
+	  <ows:Keyword>España</ows:Keyword>
+	  <ows:Keyword>Spain</ows:Keyword>
+      <ows:Keyword>Elevaciones</ows:Keyword>
+	  <ows:Keyword>WCS</ows:Keyword>
+	  <ows:Keyword>Descarga</ows:Keyword>
+	  <ows:Keyword>Download</ows:Keyword>
+	  <ows:Keyword>infoCoverageAccessService</ows:Keyword>
+	  <ows:Keyword>PNOA-LiDAR</ows:Keyword>
+    </ows:Keywords>
+    <ows:ServiceType codeSpace="OGC">OGC WCS</ows:ServiceType>
+    <ows:ServiceTypeVersion>2.0.1</ows:ServiceTypeVersion>
+    <ows:Profile>http://www.opengis.net/spec/WCS/2.0/conf/core</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf/post-xml</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/GMLCOV/1.0/conf/gml-coverage</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/GMLCOV/1.0/conf/multipart</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/GMLCOV/1.0/conf/special-format</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/GMLCOV_geotiff-coverages/1.0/conf/geotiff-coverage</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_geotiff-coverages/1.0/conf/geotiff-coverage</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_crs-predefined/1.0/conf/crs-predefined</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_scaling+interpolation/1.0/conf/scaling+interpolation</ows:Profile>
+    <ows:Profile>http://www.opengis.net/spec/WCS_service-model_band-subsetting/1.0/conf/band-subsetting</ows:Profile>
+    <ows:Fees>No se aplican condiciones</ows:Fees>
+    <ows:AccessConstraints>CC BY 4.0 scne.es</ows:AccessConstraints>
+  </ows:ServiceIdentification>
+  <ows:ServiceProvider>
+    <ows:ProviderName>Instituto Geográfico Nacional</ows:ProviderName>
+    <ows:ProviderSite xlink:type="simple" xlink:href="https://www.ign.es"/>
+    <ows:ServiceContact>
+      <ows:ContactInfo>
+        <ows:Address>
+          <ows:ElectronicMailAddress>ign@mitma.es</ows:ElectronicMailAddress>
+        </ows:Address>
+        <ows:OnlineResource xlink:type="simple" xlink:href="https://www.ign.es"/>
+      </ows:ContactInfo>
+      <ows:Role>pointOfContact</ows:Role>
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="DescribeCoverage">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetCoverage">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://servicios.idee.es/wcs-inspire/mdt?">
+            <ows:Constraint name="PostEncoding">
+              <ows:AllowedValues>
+                <ows:Value>XML</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Post>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+	<ows:ExtendedCapabilities>
+	<inspire_dls:ExtendedCapabilities>
+	<inspire_common:MetadataUrl> 
+	<inspire_common:URL>https://www.idee.es/csw-inspire-idee/srv/spa/csw?Service=CSW&amp;Request=GetRecordById&amp;Version=2.0.2&amp;outputSchema=http://www.isotc211.org/2005/gmd&amp;elementSetName=full&amp;id=spaignwcs_mdt</inspire_common:URL>
+	<inspire_common:MediaType>application/vnd.ogc.csw.GetRecordByIdResponse_xml</inspire_common:MediaType>
+	</inspire_common:MetadataUrl> 
+	<inspire_common:SupportedLanguages> 
+		<inspire_common:DefaultLanguage> 
+		<inspire_common:Language>spa</inspire_common:Language>
+		</inspire_common:DefaultLanguage> 
+	</inspire_common:SupportedLanguages> 
+	<inspire_common:ResponseLanguage> 
+		<inspire_common:Language>spa</inspire_common:Language> 
+	</inspire_common:ResponseLanguage> 
+	<inspire_dls:SpatialDataSetIdentifier> 
+		<inspire_common:Code>MDT05</inspire_common:Code> 
+		<inspire_common:Namespace>IGN</inspire_common:Namespace> 
+	</inspire_dls:SpatialDataSetIdentifier> 
+	<inspire_dls:SpatialDataSetIdentifier> 
+		<inspire_common:Code>MDT25</inspire_common:Code> 
+		<inspire_common:Namespace>IGN</inspire_common:Namespace> 
+	</inspire_dls:SpatialDataSetIdentifier> 
+	<inspire_dls:SpatialDataSetIdentifier> 
+		<inspire_common:Code>MDT200</inspire_common:Code> 
+		<inspire_common:Namespace>IGN</inspire_common:Namespace> 
+	</inspire_dls:SpatialDataSetIdentifier> 
+	<inspire_dls:SpatialDataSetIdentifier> 
+		<inspire_common:Code>MDT500</inspire_common:Code> 
+		<inspire_common:Namespace>IGN</inspire_common:Namespace> 
+	</inspire_dls:SpatialDataSetIdentifier> 
+	<inspire_dls:SpatialDataSetIdentifier> 
+		<inspire_common:Code>MDT1000</inspire_common:Code> 
+		<inspire_common:Namespace>IGN</inspire_common:Namespace> 
+	</inspire_dls:SpatialDataSetIdentifier> 
+	</inspire_dls:ExtendedCapabilities> 
+	</ows:ExtendedCapabilities> 
+  </ows:OperationsMetadata>
+  <wcs:ServiceMetadata>
+    <wcs:formatSupported>image/tiff</wcs:formatSupported>
+	<wcs:formatSupported>ArcGrid</wcs:formatSupported>											   
+    <wcs:formatSupported>application/asc</wcs:formatSupported>
+    <wcs:formatSupported>image/png</wcs:formatSupported>
+    <wcs:formatSupported>image/jpeg</wcs:formatSupported>
+    <wcs:formatSupported>image/gif</wcs:formatSupported>
+    <wcs:formatSupported>image/png; mode=8bit</wcs:formatSupported>
+	<wcs:formatSupported>image/png; mode=8bit</wcs:formatSupported>
+	<wcs:formatSupported>GEOTIFFINT16</wcs:formatSupported>
+	<wcs:formatSupported>GEOTIFF_RGB</wcs:formatSupported>
+	<wcs:Extension>
+		<crs:CrsMetadata>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/25828</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/25829</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/25830</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/25831</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4258</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/3857</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4326</crs:crsSupported>
+		<crs:crsSupported>http://www.opengis.net/def/crs/EPSG/0/4083</crs:crsSupported>
+		</crs:CrsMetadata>
+	</wcs:Extension>
+  </wcs:ServiceMetadata>
+  <wcs:Contents>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4258_1000</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4326_1000</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4258_500</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4326_500</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4258_200</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4258_25</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4258_5</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion25830_1000</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4083_1000</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion25830_500</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4083_500</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion25830_200</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4083_200</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion25830_25</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4083_25</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion25830_5</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+	<wcs:CoverageSummary>
+		<wcs:CoverageId>Elevacion4083_5</wcs:CoverageId>
+		<wcs:CoverageSubtype>RectifiedGridCoverage</wcs:CoverageSubtype>
+	</wcs:CoverageSummary>
+  </wcs:Contents>
+</wcs:Capabilities>
