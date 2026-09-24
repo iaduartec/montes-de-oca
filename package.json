@@ -10,8 +10,9 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "make:dev-terrain": "node scripts/make-dev-terrain.mjs",
-    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && python3 scripts/roads/validate_roads.py",
+    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py",
     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
+    "test:terrain": "node scripts/terrain/validate_terrain.mjs",
     "test:roads": "python3 scripts/roads/validate_roads.py"
   },
   "dependencies": {
