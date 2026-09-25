@@ -14,3 +14,6 @@ data/**/raw/*.tiff
 data/**/raw/*.pbf
 data/**/raw/*.zip
 orchestration/logs/*.exit
+
+# Config de agentes que NO se usa en este proyecto (Codex/GPT esta prohibido aca).
+.codex/
