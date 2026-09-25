@@ -1,0 +1,241 @@
+campo                                               publicado               reproducido             delta               
+------------------------------------------------------------------------------------------------------------------------
+audit_app.classes.PATH.bridge.count                 30                      30                      0.000000e+0         
+audit_app.classes.PATH.bridge.max                   0.3119351196288136      0.3119351196288136      0.000000e+0         
+audit_app.classes.PATH.bridge.mean                  0.08499676513672418     0.08499676513672418     0.000000e+0         
+audit_app.classes.PATH.bridge.p50                   0.026054077148458532    0.026054077148458532    0.000000e+0         
+audit_app.classes.PATH.bridge.p95                   0.3040026855468767      0.3040026855468767      0.000000e+0         
+audit_app.classes.PATH.bridge.worst.terrainY        83.08193359374991       83.08193359374991       0.000000e+0         
+audit_app.classes.PATH.bridge.worst.x               3116.256103515625       3116.256103515625       0.000000e+0         
+audit_app.classes.PATH.bridge.worst.y               82.8499984741211        82.8499984741211        0.000000e+0         
+audit_app.classes.PATH.bridge.worst.z               2729.59033203125        2729.59033203125        0.000000e+0         
+audit_app.classes.PATH.pavement.count               11896                   11896                   0.000000e+0         
+audit_app.classes.PATH.pavement.max                 0.00013854980463179345  0.00013854980463179345  0.000000e+0         
+audit_app.classes.PATH.pavement.mean                1.382885e-5             1.382885e-5             0.000000e+0         
+audit_app.classes.PATH.pavement.p50                 1.037598e-5             1.037598e-5             0.000000e+0         
+audit_app.classes.PATH.pavement.p95                 4.394531e-5             4.394531e-5             0.000000e+0         
+audit_app.classes.PATH.pavement.worst.terrainY      143.97197265624993      143.97197265624993      0.000000e+0         
+audit_app.classes.PATH.pavement.worst.x             2490.23974609375        2490.23974609375        0.000000e+0         
+audit_app.classes.PATH.pavement.worst.y             144.0518341064453       144.0518341064453       0.000000e+0         
+audit_app.classes.PATH.pavement.worst.z             1736.009765625          1736.009765625          0.000000e+0         
+audit_app.classes.ROAD.bridge.count                 54                      54                      0.000000e+0         
+audit_app.classes.ROAD.bridge.max                   1.708781127929683       1.708781127929683       0.000000e+0         
+audit_app.classes.ROAD.bridge.mean                  0.4878877343071782      0.4878877343071782      0.000000e+0         
+audit_app.classes.ROAD.bridge.p50                   0.2966145324706986      0.2966145324706986      0.000000e+0         
+audit_app.classes.ROAD.bridge.p95                   1.5719113159181006      1.5719113159181006      0.000000e+0         
+audit_app.classes.ROAD.bridge.worst.terrainY        64.126220703125         64.126220703125         0.000000e+0         
+audit_app.classes.ROAD.bridge.worst.x               3299.040771484375       3299.040771484375       0.000000e+0         
+audit_app.classes.ROAD.bridge.worst.y               65.95500183105469       65.95500183105469       0.000000e+0         
+audit_app.classes.ROAD.bridge.worst.z               4249.671875             4249.671875             0.000000e+0         
+audit_app.classes.ROAD.pavement.count               9066                    9066                    0.000000e+0         
+audit_app.classes.ROAD.pavement.max                 1.3235180664063364      1.3235180664063364      0.000000e+0         
+audit_app.classes.ROAD.pavement.mean                0.2271958447228508      0.2271958447228508      0.000000e+0         
+audit_app.classes.ROAD.pavement.p50                 0.18359863281250455     0.18359863281250455     0.000000e+0         
+audit_app.classes.ROAD.pavement.p95                 0.6748034667969023      0.6748034667969023      0.000000e+0         
+audit_app.classes.ROAD.pavement.worst.terrainY      186.6501708984374       186.6501708984374       0.000000e+0         
+audit_app.classes.ROAD.pavement.worst.x             1791.5289306640625      1791.5289306640625      0.000000e+0         
+audit_app.classes.ROAD.pavement.worst.y             188.09368896484375      188.09368896484375      0.000000e+0         
+audit_app.classes.ROAD.pavement.worst.z             2721.59326171875        2721.59326171875        0.000000e+0         
+audit_app.classes.ROAD.skirt.count                  9066                    9066                    0.000000e+0         
+audit_app.classes.ROAD.skirt.max                    0.0001177978515443101   0.0001177978515443101   0.000000e+0         
+audit_app.classes.ROAD.skirt.mean                   1.239348e-5             1.239348e-5             0.000000e+0         
+audit_app.classes.ROAD.skirt.p50                    5.798340e-6             5.798340e-6             0.000000e+0         
+audit_app.classes.ROAD.skirt.p95                    4.165649e-5             4.165649e-5             0.000000e+0         
+audit_app.classes.ROAD.skirt.worst.terrainY         104.74350585937498      104.74350585937498      0.000000e+0         
+audit_app.classes.ROAD.skirt.worst.x                2552.635986328125       2552.635986328125       0.000000e+0         
+audit_app.classes.ROAD.skirt.worst.y                104.86338806152344      104.86338806152344      0.000000e+0         
+audit_app.classes.ROAD.skirt.worst.z                5791.30615234375        5791.30615234375        0.000000e+0         
+audit_app.classes.TRACK.bridge.count                54                      54                      0.000000e+0         
+audit_app.classes.TRACK.bridge.max                  0.8513320922851548      0.8513320922851548      0.000000e+0         
+audit_app.classes.TRACK.bridge.mean                 0.1905929282859565      0.1905929282859565      0.000000e+0         
+audit_app.classes.TRACK.bridge.p50                  0.1337249755859773      0.1337249755859773      0.000000e+0         
+audit_app.classes.TRACK.bridge.p95                  0.6187606811523381      0.6187606811523381      0.000000e+0         
+audit_app.classes.TRACK.bridge.worst.terrainY       61                      61                      0.000000e+0         
+audit_app.classes.TRACK.bridge.worst.x              3277.92578125           3277.92578125           0.000000e+0         
+audit_app.classes.TRACK.bridge.worst.y              61.951332092285156      61.951332092285156      0.000000e+0         
+audit_app.classes.TRACK.bridge.worst.z              4270.837890625          4270.837890625          0.000000e+0         
+audit_app.classes.TRACK.pavement.count              39450                   39450                   0.000000e+0         
+audit_app.classes.TRACK.pavement.max                0.00012817382813068434  0.00012817382813068434  0.000000e+0         
+audit_app.classes.TRACK.pavement.mean               1.245931e-5             1.245931e-5             0.000000e+0         
+audit_app.classes.TRACK.pavement.p50                6.103516e-6             6.103516e-6             0.000000e+0         
+audit_app.classes.TRACK.pavement.p95                4.272461e-5             4.272461e-5             0.000000e+0         
+audit_app.classes.TRACK.pavement.worst.terrainY     202.3330078125          202.3330078125          0.000000e+0         
+audit_app.classes.TRACK.pavement.worst.x            738.189697265625        738.189697265625        0.000000e+0         
+audit_app.classes.TRACK.pavement.worst.y            202.43313598632812      202.43313598632812      0.000000e+0         
+audit_app.classes.TRACK.pavement.worst.z            4455.65185546875        4455.65185546875        0.000000e+0         
+audit_app.offsetM.PATH                              0.08                    0.08                    0.000000e+0         
+audit_app.offsetM.ROAD                              0.12                    0.12                    0.000000e+0         
+audit_app.offsetM.TRACK                             0.1                     0.1                     0.000000e+0         
+audit_app.toleranceM                                0.001                   0.001                   0.000000e+0         
+captura_caso_dificil.ground_y                       83.90880000000004       83.90880000000004       0.000000e+0         
+captura_caso_dificil.telemetry.contacts[0]          84.43690184406489       84.43690184406489       0.000000e+0         
+captura_caso_dificil.telemetry.contacts[1]          83.1010722498587        83.1010722498587        0.000000e+0         
+captura_caso_dificil.telemetry.contacts[2]          84.19624948856563       84.19624948856563       0.000000e+0         
+captura_caso_dificil.telemetry.contacts[3]          82.7789475151485        82.7789475151485        0.000000e+0         
+captura_caso_dificil.telemetry.distance             2.698459e-20            2.698459e-20            0.000000e+0         
+captura_caso_dificil.telemetry.gravityForceN        -875.5638414716728      -875.5638414716728      0.000000e+0         
+captura_caso_dificil.telemetry.lateral              0.3902239976258979      0.3902239976258979      0.000000e+0         
+captura_caso_dificil.telemetry.lateralAccel         0.000000e+0             0.000000e+0             0.000000e+0         
+captura_caso_dificil.telemetry.pitchDeg             -5.738723923102768      -5.738723923102768      0.000000e+0         
+captura_caso_dificil.telemetry.rollDeg              -40.3556197152949       -40.3556197152949       0.000000e+0         
+captura_caso_dificil.telemetry.slopeForwardDeg      4.807652588992093       4.807652588992093       0.000000e+0         
+captura_caso_dificil.telemetry.slopeMagnitudeDeg    39.913282222311274      39.913282222311274      0.000000e+0         
+captura_caso_dificil.telemetry.slopeRightDeg        -39.77009830121531      -39.77009830121531      0.000000e+0         
+captura_caso_dificil.telemetry.speed                0.000000e+0             0.000000e+0             0.000000e+0         
+captura_caso_dificil.telemetry.speedKmh             0.000000e+0             0.000000e+0             0.000000e+0         
+captura_caso_dificil.telemetry.tireForceN           875.5638414716728       875.5638414716728       0.000000e+0         
+captura_caso_dificil.telemetry.tractionLimitN       10835.18091517705       10835.18091517705       0.000000e+0         
+captura_caso_dificil.telemetry.wheelResidualMaxM    0.13647644042964657     0.13647644042964657     0.000000e+0         
+captura_caso_dificil.telemetry.x                    3319.7640774142737      3319.7640774142737      0.000000e+0         
+captura_caso_dificil.telemetry.y                    83.62829277440943       83.62829277440943       0.000000e+0         
+captura_caso_dificil.telemetry.yawDeg               -165.4361964421288      -165.4361964421288      0.000000e+0         
+captura_caso_dificil.telemetry.yawRate              0.000000e+0             0.000000e+0             0.000000e+0         
+captura_caso_dificil.telemetry.z                    3705.1582253533566      3705.1582253533566      0.000000e+0         
+captura_road.ground_y                               75                      75                      0.000000e+0         
+captura_road.telemetry.contacts[0]                  75                      75                      0.000000e+0         
+captura_road.telemetry.contacts[1]                  75                      75                      0.000000e+0         
+captura_road.telemetry.contacts[2]                  75                      75                      0.000000e+0         
+captura_road.telemetry.contacts[3]                  75                      75                      0.000000e+0         
+captura_road.telemetry.distance                     1.445603e-21            1.445603e-21            0.000000e+0         
+captura_road.telemetry.gravityForceN                -51.691131655632134     -51.691131655632134     0.000000e+0         
+captura_road.telemetry.lateral                      -0.013985840002966073   -0.013985840002966073   0.000000e+0         
+captura_road.telemetry.lateralAccel                 0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.pitchDeg                     0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.rollDeg                      0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.slopeForwardDeg              0.16789340547865278     0.16789340547865278     0.000000e+0         
+captura_road.telemetry.slopeMagnitudeDeg            1.8226981195063963      1.8226981195063963      0.000000e+0         
+captura_road.telemetry.slopeRightDeg                1.814959485529359       1.814959485529359       0.000000e+0         
+captura_road.telemetry.speed                        0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.speedKmh                     0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.tireForceN                   51.691131655632134      51.691131655632134      0.000000e+0         
+captura_road.telemetry.tractionLimitN               14119.252583277848      14119.252583277848      0.000000e+0         
+captura_road.telemetry.wheelResidualMaxM            2.746582e-6             2.746582e-6             0.000000e+0         
+captura_road.telemetry.x                            3088.4089750950498      3088.4089750950498      0.000000e+0         
+captura_road.telemetry.y                            75                      75                      0.000000e+0         
+captura_road.telemetry.yawDeg                       -174.71661959093146     -174.71661959093146     0.000000e+0         
+captura_road.telemetry.yawRate                      0.000000e+0             0.000000e+0             0.000000e+0         
+captura_road.telemetry.z                            3944.4692727809143      3944.4692727809143      0.000000e+0         
+captura_track.ground_y                              75.24399999999991       75.24399999999991       0.000000e+0         
+captura_track.telemetry.contacts[0]                 75.55285179843986       75.55285179843986       0.000000e+0         
+captura_track.telemetry.contacts[1]                 75.27664954407737       75.27664954407737       0.000000e+0         
+captura_track.telemetry.contacts[2]                 75.29635087645363       75.29635087645363       0.000000e+0         
+captura_track.telemetry.contacts[3]                 74.75658517848592       74.75658517848592       0.000000e+0         
+captura_track.telemetry.distance                    0.15435078675296243     0.15435078675296243     0.000000e+0         
+captura_track.telemetry.gravityForceN               -3187.6667336526825     -3187.6667336526825     0.000000e+0         
+captura_track.telemetry.lateral                     0.09074850279088294     0.09074850279088294     0.000000e+0         
+captura_track.telemetry.lateralAccel                0.000000e+0             0.000000e+0             0.000000e+0         
+captura_track.telemetry.pitchDeg                    -7.894991658946026      -7.894991658946026      0.000000e+0         
+captura_track.telemetry.rollDeg                     -14.135528872707264     -14.135528872707264     0.000000e+0         
+captura_track.telemetry.slopeForwardDeg             10.891146615526509      10.891146615526509      0.000000e+0         
+captura_track.telemetry.slopeMagnitudeDeg           16.21023660066833       16.21023660066833       0.000000e+0         
+captura_track.telemetry.slopeRightDeg               -12.294695629290159     -12.294695629290159     0.000000e+0         
+captura_track.telemetry.speed                       -0.510240121032047      -0.510240121032047      0.000000e+0         
+captura_track.telemetry.speedKmh                    -1.8368644357153692     -1.8368644357153692     0.000000e+0         
+captura_track.telemetry.tireForceN                  1623.8996366054746      1623.8996366054746      0.000000e+0         
+captura_track.telemetry.tractionLimitN              13564.788371375189      13564.788371375189      0.000000e+0         
+captura_track.telemetry.wheelResidualMaxM           0.0828677368164108      0.0828677368164108      0.000000e+0         
+captura_track.telemetry.x                           3074.9884985415392      3074.9884985415392      0.000000e+0         
+captura_track.telemetry.y                           75.2206093493642        75.2206093493642        0.000000e+0         
+captura_track.telemetry.yawDeg                      -88.05796543165022      -88.05796543165022      0.000000e+0         
+captura_track.telemetry.yawRate                     0.000000e+0             0.000000e+0             0.000000e+0         
+captura_track.telemetry.z                           4144.435978932472       4144.435978932472       0.000000e+0         
+caso_dificil.cross_slope_deg                        40.11638553842403       40.11638553842403       0.000000e+0         
+caso_dificil.fwd_slope_deg                          5.0665140541060065      5.0665140541060065      0.000000e+0         
+caso_dificil.x                                      3319.942                3319.942                0.000000e+0         
+caso_dificil.yaw                                    -2.887406329891276      -2.887406329891276      0.000000e+0         
+caso_dificil.z                                      3705.112                3705.112                0.000000e+0         
+costo_vias.draw_calls_antes                         13                      13                      0.000000e+0         
+costo_vias.draw_calls_delta                         3                       3                       0.000000e+0         
+costo_vias.draw_calls_despues                       16                      16                      0.000000e+0         
+costo_vias.triangulos_antes                         240360                  240360                  0.000000e+0         
+costo_vias.triangulos_delta                         77306                   77306                   0.000000e+0         
+costo_vias.triangulos_despues                       317666                  317666                  0.000000e+0         
+fecha                                               "2026-09-24T23:57:31.469Z""2026-09-25T00:04:21.934Z"DIFF                
+offset_m.PATH                                       0.08                    0.08                    0.000000e+0         
+offset_m.ROAD                                       0.12                    0.12                    0.000000e+0         
+offset_m.TRACK                                      0.1                     0.1                     0.000000e+0         
+perf_con_vias.activeMeshes                          16                      16                      0.000000e+0         
+perf_con_vias.drawCalls                             16                      16                      0.000000e+0         
+perf_con_vias.fps                                   8.745845723281441       8.982035928143711       0.23619020486226994 
+perf_con_vias.frameTimeMs                           34.40000000037253       122.5                   88.09999999962747   
+perf_con_vias.triangles                             317666                  317666                  0.000000e+0         
+perf_con_vias.vertices                              1524508                 1524508                 0.000000e+0         
+perf_sin_vias.activeMeshes                          13                      13                      0.000000e+0         
+perf_sin_vias.drawCalls                             13                      13                      0.000000e+0         
+perf_sin_vias.fps                                   9.086778736933912       9.04977375565611        -0.03700498127780172
+perf_sin_vias.frameTimeMs                           116.90000000037253      187.19999999925494      70.29999999888241   
+perf_sin_vias.triangles                             240360                  240360                  0.000000e+0         
+perf_sin_vias.vertices                              1454892                 1454892                 0.000000e+0         
+puntos_captura.road.dist_al_spawn_m                 8.87394955981365        8.87394955981365        0.000000e+0         
+puntos_captura.road.x                               3088.4011111111113      3088.4011111111113      0.000000e+0         
+puntos_captura.road.yaw                             -3.049380269816182      -3.049380269816182      0.000000e+0         
+puntos_captura.road.z                               3944.4700000000003      3944.4700000000003      0.000000e+0         
+puntos_captura.track.cross_deg                      12.338664746746366      12.338664746746366      0.000000e+0         
+puntos_captura.track.x                              3074.8325               3074.8325               0.000000e+0         
+puntos_captura.track.yaw                            -1.536901429389646      -1.536901429389646      0.000000e+0         
+puntos_captura.track.z                              4144.39                 4144.39                 0.000000e+0         
+residual_verificacion_independiente.clamp_nota      "Las coordenadas de muestreo se recortan a [0,6000] (mismo clamp que la app). Los vértices fuera de ventana (7 de 6000) reciben la cota del borde, no el \"0 absoluto\".""Las coordenadas de muestreo se recortan a [0,6000] (mismo clamp que la app). Los vértices fuera de ventana (6 de 6000) reciben la cota del borde, no el \"0 absoluto\"."DIFF                
+residual_verificacion_independiente.probe_count     6000                    6000                    0.000000e+0         
+residual_verificacion_independiente.summary.PATH/calzada.count1927                    2003                    76                  
+residual_verificacion_independiente.summary.PATH/calzada.max9.796143e-5             0.00012695312503296918  2.899170e-5         
+residual_verificacion_independiente.summary.PATH/calzada.mean1.342866e-5             1.371137e-5             2.827111e-7         
+residual_verificacion_independiente.summary.PATH/calzada.p501.037598e-5             1.037598e-5             0.000000e+0         
+residual_verificacion_independiente.summary.PATH/calzada.p954.150391e-5             4.150391e-5             1.136868e-13        
+residual_verificacion_independiente.summary.PATH/puente.count2                       5                       3                   
+residual_verificacion_independiente.summary.PATH/puente.max1.342773e-5             0.07111694335949892     0.07110351562513983 
+residual_verificacion_independiente.summary.PATH/puente.mean7.629395e-6             0.018644348144567856    0.01863671875004371 
+residual_verificacion_independiente.summary.PATH/puente.p501.342773e-5             0.009996337890626705    0.009982910156267621
+residual_verificacion_independiente.summary.PATH/puente.p951.342773e-5             0.07111694335949892     0.07110351562513983 
+residual_verificacion_independiente.summary.ROAD/calzada.count1051                    966                     -85                 
+residual_verificacion_independiente.summary.ROAD/calzada.max1.171525268554774       1.123735351562459       -0.04778991699231483
+residual_verificacion_independiente.summary.ROAD/calzada.mean0.22948927470097302     0.2343635190446438      0.004874244343670786
+residual_verificacion_independiente.summary.ROAD/calzada.p500.17516296386713748     0.1989620971679642      0.023799133300826725
+residual_verificacion_independiente.summary.ROAD/calzada.p950.6977658081056006      0.6898144531249955      -0.007951354980605174
+residual_verificacion_independiente.summary.ROAD/faldon.count1015                    1032                    17                  
+residual_verificacion_independiente.summary.ROAD/faldon.max9.490967e-5             9.735107e-5             2.441406e-6         
+residual_verificacion_independiente.summary.ROAD/faldon.mean1.235844e-5             1.301034e-5             6.519003e-7         
+residual_verificacion_independiente.summary.ROAD/faldon.p505.798340e-6             6.408691e-6             6.103515e-7         
+residual_verificacion_independiente.summary.ROAD/faldon.p954.241943e-5             4.531860e-5             2.899170e-6         
+residual_verificacion_independiente.summary.ROAD/puente.count7                       4                       -3                  
+residual_verificacion_independiente.summary.ROAD/puente.max1.4894253540038562      1.5719113159181006      0.0824859619142444  
+residual_verificacion_independiente.summary.ROAD/puente.mean0.6004996163504107      0.4590696716308571      -0.1414299447195536 
+residual_verificacion_independiente.summary.ROAD/puente.p500.5279919433594387      0.1905963134764761      -0.33739562988296257
+residual_verificacion_independiente.summary.ROAD/puente.p951.4894253540038562      1.5719113159181006      0.0824859619142444  
+residual_verificacion_independiente.summary.TRACK/calzada.count1997                    1987                    -10                 
+residual_verificacion_independiente.summary.TRACK/calzada.max0.00012817382813068434  0.00011138916025288381  -1.678467e-5        
+residual_verificacion_independiente.summary.TRACK/calzada.mean1.257016e-5             1.246976e-5             -1.004033e-7        
+residual_verificacion_independiente.summary.TRACK/calzada.p506.103516e-6             6.103516e-6             0.000000e+0         
+residual_verificacion_independiente.summary.TRACK/calzada.p954.196167e-5             4.119873e-5             -7.629395e-7        
+residual_verificacion_independiente.summary.TRACK/puente.count1                       3                       2                   
+residual_verificacion_independiente.summary.TRACK/puente.max1.525879e-6             0.25819091796883953     0.25818939208993896 
+residual_verificacion_independiente.summary.TRACK/puente.mean1.525879e-6             0.14787597656253362     0.14787445068363306 
+residual_verificacion_independiente.summary.TRACK/puente.p501.525879e-6             0.1854354858398608      0.18543395996096024 
+residual_verificacion_independiente.summary.TRACK/puente.p951.525879e-6             0.25819091796883953     0.25818939208993896 
+residual_verificacion_independiente.vertices_fuera_de_ventana7                       6                       -1                  
+stats.bridges                                       20                      20                      0.000000e+0         
+stats.byClass.PATH.roads                            94                      94                      0.000000e+0         
+stats.byClass.PATH.stations                         5963                    5963                    0.000000e+0         
+stats.byClass.PATH.triangles                        11738                   11738                   0.000000e+0         
+stats.byClass.PATH.vertices                         11926                   11926                   0.000000e+0         
+stats.byClass.ROAD.roads                            131                     131                     0.000000e+0         
+stats.byClass.ROAD.stations                         4560                    4560                    0.000000e+0         
+stats.byClass.ROAD.triangles                        26490                   26490                   0.000000e+0         
+stats.byClass.ROAD.vertices                         18186                   18186                   0.000000e+0         
+stats.byClass.TRACK.roads                           213                     213                     0.000000e+0         
+stats.byClass.TRACK.stations                        19752                   19752                   0.000000e+0         
+stats.byClass.TRACK.triangles                       39078                   39078                   0.000000e+0         
+stats.byClass.TRACK.vertices                        39504                   39504                   0.000000e+0         
+stats.constants.roadFlattenLerp                     0.6                     0.6                     0.000000e+0         
+stats.constants.skirtWidthM                         0.6                     0.6                     0.000000e+0         
+stats.constants.subdivisionM                        5                       5                       0.000000e+0         
+stats.constants.verticalOffsetM.PATH                0.08                    0.08                    0.000000e+0         
+stats.constants.verticalOffsetM.ROAD                0.12                    0.12                    0.000000e+0         
+stats.constants.verticalOffsetM.TRACK               0.1                     0.1                     0.000000e+0         
+stats.meshes                                        3                       3                       0.000000e+0         
+stats.roads                                         438                     438                     0.000000e+0         
+stats.triangles                                     77306                   77306                   0.000000e+0         
+stats.vertices                                      69616                   69616                   0.000000e+0         
+tolerancia_m                                        0.001                   0.001                   0.000000e+0         
+------------------------------------------------------------------------------------------------------------------------
+hojas numéricas: 234 · exactas: 196 · distintas: 38
+no-numéricas: 2 · iguales: 0 · distintas: 2
