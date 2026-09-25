@@ -71,7 +71,18 @@ guardas() {
 
   [ -f "$BUNDLE" ] || abortar "no existe el backup $BUNDLE. Hacelo: git bundle create <archivo> --all"
   git bundle verify "$BUNDLE" >/dev/null 2>&1 || abortar "el bundle $BUNDLE NO verifica. No lo uses."
-  verde "  OK  backup verificado ($(du -h "$BUNDLE" | cut -f1))"
+  # Que el bundle EXISTA y VERIFIQUE no alcanza: tiene que incluir el trabajo que
+  # estas por reescribir. El de esta misma operacion se creo 4 commits antes de
+  # usarse, no cubria la FASE 3b, y la guarda lo daba por bueno igual. Un backup
+  # que no incluye lo que vas a reescribir no es un backup.
+  local tip_bundle tip_head
+  tip_bundle=$(git bundle list-heads "$BUNDLE" | awk '{print $1}' | sort -u | head -1)
+  tip_head=$(git rev-parse HEAD)
+  if [ "$tip_bundle" != "$tip_head" ]; then
+    rojo "  bundle: ${tip_bundle:0:12}   head: ${tip_head:0:12}"
+    abortar "backup DESACTUALIZADO: no contiene el commit actual. Rehacelo: git bundle create <archivo> --all"
+  fi
+  verde "  OK  backup verificado y ACTUAL ($(du -h "$BUNDLE" | cut -f1))"
 
   command -v git-filter-repo >/dev/null || abortar "falta git-filter-repo"
   verde "  OK  git-filter-repo presente"
