@@ -524,6 +524,14 @@ async function bootstrap(): Promise<void> {
    * mundo que no avanzó y el arnés estaría midiendo otra cosa que el juego.
    */
   const stepSimulation = (dt: number): void => {
+    // La F se consume ACÁ. El personaje expone `toggleVehicle()` y el control expone
+    // `consumeToggle()`, pero si el loop no los une, nadie los une: la tecla levanta el
+    // flanco, queda pendiente para siempre y apretar F NO HACE NADA. Eso compila, pasa el
+    // typecheck y no rompe ningún test, porque el cable que falta no lo ve nadie.
+    // Se consume SIEMPRE (aunque no puedas entrar), para que un F apretado lejos no quede
+    // guardado y dispare solo cuando te acercás.
+    if (player && controlsForPlayer?.consumeToggle()) player.toggleVehicle();
+
     if (player) player.step(dt);
     else if (vehicle) vehicle.step(dt);
 
