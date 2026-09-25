@@ -79,6 +79,9 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
   // acelerando solo después de un Alt+Tab.
   const onBlur = (): void => {
     keys.clear();
+    // El flanco de F también se tira. Si no, apretás F, cambiás de ventana y al volver
+    // el F pendiente dispara solo: entrás o salís del 4x4 sin haber tocado nada.
+    togglePending = false;
   };
 
   window.addEventListener('keydown', onKeyDown);

@@ -58,7 +58,14 @@ export interface Mission {
 }
 
 export interface MissionOptions {
+  /** Radio (m) de las TRANSICIONES de estado: llegaste al claro, se te considera de vuelta. */
   readonly reachRadiusM?: number;
+  /**
+   * Radio (m) del INTERACTUABLE del objetivo: desde dónde se puede reparar. El
+   * llamador lo lee del propio repetidor (`interactable.radiusM`) para que el aviso
+   * de `E` y el progreso de la reparación no puedan divergir.
+   */
+  readonly repairRadiusM?: number;
   readonly repairSeconds?: number;
 }
 
@@ -67,6 +74,8 @@ export const MISSION_NAME = 'REPETIDOR SIN SEÑAL';
 const MISSION_OBJECTIVE = 'Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca';
 
 const DEFAULT_REACH_RADIUS_M = 25;
+/** Radio de reparación por defecto (m). El objetivo real declara el suyo y manda. */
+const DEFAULT_REPAIR_RADIUS_M = 6;
 const DEFAULT_REPAIR_SECONDS = 2;
 
 function planarDistance(ax: number, az: number, bx: number, bz: number): number {
@@ -80,6 +89,10 @@ function clamp01(value: number): number {
 
 export function createMission(route: FirstRoute, options: MissionOptions = {}): Mission {
   const reachRadiusM = options.reachRadiusM ?? DEFAULT_REACH_RADIUS_M;
+  // Dos radios, no uno. Llegar al claro del repetidor (25 m) NO es lo mismo que
+  // estar poniéndole la mano encima (el radio del interactuable). Fundidos en uno
+  // solo, el juego decía "mantené E" a 20 m y además te dejaba reparar desde ahí.
+  const repairRadiusM = options.repairRadiusM ?? DEFAULT_REPAIR_RADIUS_M;
   // Un `repairSeconds` no positivo haría que el primer frame repare: se cae al
   // default en vez de romper la regla "mantené E".
   const repairSeconds = options.repairSeconds && options.repairSeconds > 0 ? options.repairSeconds : DEFAULT_REPAIR_SECONDS;
@@ -108,7 +121,9 @@ export function createMission(route: FirstRoute, options: MissionOptions = {}): 
       case 'TARGET_REACHED':
         // Reparar desde el coche NO vale: si conduce, primero que baje.
         if (ctx.driving) return 'Bajá del 4x4 (F) y acercate';
-        if (!ctx.onFoot || distanceToTargetM > reachRadiusM) return 'Acercate al repetidor';
+        if (!ctx.onFoot) return 'Acercate al repetidor';
+        // El aviso de "mantené E" tiene que aparecer EXACTAMENTE donde E funciona.
+        if (distanceToTargetM > repairRadiusM) return 'Acercate al repetidor';
         return 'Mantené E para restablecer el enlace';
       case 'REPAIRED':
       case 'RETURNING':
@@ -149,7 +164,7 @@ export function createMission(route: FirstRoute, options: MissionOptions = {}): 
     if (state === 'TARGET_REACHED') {
       // Reparar exige ESTAR A PIE y DENTRO del radio. Si suelta E o se aleja, el
       // progreso se resetea (no se congela): no se puede "cocinar" la reparación.
-      const inRangeOnFoot = ctx.onFoot && distanceToTargetM <= reachRadiusM;
+      const inRangeOnFoot = ctx.onFoot && distanceToTargetM <= repairRadiusM;
       if (inRangeOnFoot && ctx.interact) {
         repairHeldS += dt;
         if (repairHeldS >= repairSeconds) state = 'REPAIRED';
