@@ -16,14 +16,26 @@
 #              estarlo: `git reset --hard` lo borraria del disco. Se copia afuera,
 #              se verifica contra el manifiesto y se restaura si desaparecio.
 #
-# Y al final corre 6 verificaciones. Si alguna falla, sale != 0.
+# DOS BUGS PROPIOS QUE ESTE SCRIPT TUVO Y QUE VALEN COMO LECCION
+# --------------------------------------------------------------
+# 1) El chequeo de blobs usaba `grep -F "$ruta"`. Como
+#    `.../mdt05_villafranca_6000m_5m.tif.sha256` CONTIENE como substring
+#    `.../mdt05_villafranca_6000m_5m.tif`, daba un falso positivo: reportaba que
+#    el blob seguia en la historia cuando ya no estaba. Un prefijo no es una
+#    identidad. Ahora se compara el campo de ruta COMPLETO (awk + grep -Fxc).
+# 2) `set -e` + `[ A = B ] && [ C = D ]; chk $?` aborta el script en cuanto el
+#    test FALLA, antes de que `chk` pueda reportarlo. O sea: el verificador no
+#    podia informar un fallo, solo morir en silencio. Por eso `npm test` nunca
+#    llego a correr la primera vez. Ahora las verificaciones no usan `set -e`,
+#    y el camino de error esta ejercitado de verdad.
 #
 # USO
-#   scripts/git/limpiar_blobs_grandes.sh check   # solo guardas + estado. NO rompe nada.
-#   scripts/git/limpiar_blobs_grandes.sh run     # ejecuta de verdad
+#   scripts/git/limpiar_blobs_grandes.sh check    # guardas + estado. NO rompe nada.
+#   scripts/git/limpiar_blobs_grandes.sh run      # ejecuta el rewrite de verdad
+#   scripts/git/limpiar_blobs_grandes.sh verify   # solo las 6 verificaciones
 #
 # Decision registrada en Engram: `git/rewrite-historia`. Autorizado por el usuario.
-set -euo pipefail
+set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
@@ -39,116 +51,135 @@ verde() { printf '\033[32m%s\033[0m\n' "$*"; }
 paso()  { printf '\n\033[1m== %s ==\033[0m\n' "$*"; }
 abortar(){ rojo "ABORTA: $*"; exit 1; }
 
+# Cuenta las entradas de la historia cuya RUTA es exactamente esta.
+# El formato de `rev-list --objects` es "<sha> <ruta>", asi que se compara el
+# campo 2 completo: un prefijo no es una identidad (ver bug 1 arriba).
+refs_de_ruta() { git rev-list --objects --all | awk '{print $2}' | grep -Fxc "$1" || true; }
+
 # ---------------------------------------------------------------- guardas
-paso "GUARDAS"
+guardas() {
+  paso "GUARDAS"
+  local sucio
+  sucio="$(git status --porcelain | grep -E '^[ ]?[MADRCU]' || true)"
+  if [ -n "$sucio" ]; then
+    rojo "$sucio"
+    abortar "hay cambios sin commitear en archivos trackeados. Commitearlos o guardarlos ANTES de reescribir."
+  fi
+  verde "  OK  arbol limpio en archivos trackeados"
 
-# 1. arbol limpio (solo importan los archivos TRACKEADOS: untracked no se pierden)
-SUCIO="$(git status --porcelain | grep -E '^[ ]?[MADRCU]' || true)"
-if [ -n "$SUCIO" ]; then
-  rojo "$SUCIO"
-  abortar "hay cambios sin commitear en archivos trackeados. Commitearlos o guardarlos ANTES de reescribir."
-fi
-verde "  OK  arbol limpio en archivos trackeados"
+  [ -f "$BUNDLE" ] || abortar "no existe el backup $BUNDLE. Hacelo: git bundle create <archivo> --all"
+  git bundle verify "$BUNDLE" >/dev/null 2>&1 || abortar "el bundle $BUNDLE NO verifica. No lo uses."
+  verde "  OK  backup verificado ($(du -h "$BUNDLE" | cut -f1))"
 
-# 2. backup presente y verificado
-[ -f "$BUNDLE" ] || abortar "no existe el backup $BUNDLE. Hacelo: git bundle create <archivo> --all"
-git bundle verify "$BUNDLE" >/dev/null 2>&1 || abortar "el bundle $BUNDLE NO verifica. No lo uses."
-verde "  OK  backup verificado ($(du -h "$BUNDLE" | cut -f1))"
+  command -v git-filter-repo >/dev/null || abortar "falta git-filter-repo"
+  verde "  OK  git-filter-repo presente"
+}
 
-# 3. herramienta
-command -v git-filter-repo >/dev/null || abortar "falta git-filter-repo"
-verde "  OK  git-filter-repo presente"
-
-# ---------------------------------------------------------------- estado
-paso "ESTADO ANTES"
-ANTES_BYTES=$(du -sb .git | cut -f1)
-ANTES_MB=$(echo "scale=2; $ANTES_BYTES/1048576" | bc)
-ANTES_COMMITS=$(git rev-list --count HEAD)
-printf '  .git: %s MB · commits: %s\n' "$ANTES_MB" "$ANTES_COMMITS"
-printf '  blobs a sacar:\n'
-for b in "$BLOB_MINERO" "$BLOB_DEM"; do
-  n=$(git rev-list --objects --all | grep -F "$b" | wc -l)
-  printf '    %-56s %s refs en la historia\n' "$b" "$n"
-done
-
-if [ "$MODE" = "check" ]; then
-  paso "MODO CHECK: no se toca nada. Para ejecutar: $0 run"
-  exit 0
-fi
-
-[ "$MODE" = "run" ] || abortar "modo desconocido '$MODE' (usar check|run)"
-
-# --------------------------------------------------- preservar el DEM
-paso "PRESERVAR EL DEM (deja de estar trackeado; el reset lo borraria del disco)"
-if [ -f "$BLOB_DEM" ]; then
-  ESPERADO=$(awk '{print $1}' "$BLOB_DEM.sha256")
-  REAL=$(sha256sum "$BLOB_DEM" | awk '{print $1}')
-  [ "$ESPERADO" = "$REAL" ] || abortar "el sha256 del DEM no coincide con el manifiesto. No sigas."
-  cp "$BLOB_DEM" "$PRESERVADO"
-  verde "  OK  copiado a $PRESERVADO (sha256 verificado: ${REAL:0:16}…)"
-else
-  rojo "  AVISO: el DEM no esta en disco. Se seguira igual."
-fi
-
-# ------------------------------------------------------------- rewrite
-paso "REESCRIBIENDO LA HISTORIA"
-git filter-repo --invert-paths --path "$BLOB_MINERO" --path "$BLOB_DEM" --force
-git reflog expire --expire=now --all
-git gc --prune=now --quiet
-verde "  filtrado y compactado"
-
-# ------------------------------------------------------- restauraciones
-paso "RESTAURAR EL DEM AL DISCO"
-if [ ! -f "$BLOB_DEM" ] && [ -f "$PRESERVADO" ]; then
-  cp "$PRESERVADO" "$BLOB_DEM"
-  ESPERADO=$(awk '{print $1}' "$BLOB_DEM.sha256")
-  REAL=$(sha256sum "$BLOB_DEM" | awk '{print $1}')
-  [ "$ESPERADO" = "$REAL" ] || abortar "el DEM restaurado no verifica contra el manifiesto"
-  verde "  OK  restaurado y verificado (${REAL:0:16}…)"
-elif [ -f "$BLOB_DEM" ]; then
-  verde "  OK  el reset no lo borro; sigue en disco"
-else
-  abortar "el DEM desaparecio y no hay copia en $PRESERVADO"
-fi
+estado() {
+  paso "ESTADO"
+  local bytes mb commits
+  bytes=$(du -sb .git | cut -f1)
+  mb=$(echo "scale=2; $bytes/1048576" | bc)
+  commits=$(git rev-list --count HEAD)
+  printf '  .git: %s MB · commits: %s\n' "$mb" "$commits"
+  printf '  blobs a sacar (refs exactas en la historia):\n'
+  printf '    %-52s %s\n' "$BLOB_MINERO" "$(refs_de_ruta "$BLOB_MINERO")"
+  printf '    %-52s %s\n' "$BLOB_DEM" "$(refs_de_ruta "$BLOB_DEM")"
+}
 
 # ------------------------------------------------------- verificaciones
-paso "VERIFICACIONES POST-REWRITE"
-FALLOS=0
-chk() { if [ "$2" = "0" ]; then verde "  OK    $1"; else rojo "  FALLA $1"; FALLOS=$((FALLOS+1)); fi; }
+# Sin `set -e`: un check que falla tiene que REPORTARSE, no matar el script.
+verificar() {
+  paso "VERIFICACIONES"
+  local fallos=0
+  chk() { if [ "$2" = "0" ]; then verde "  OK    $1"; else rojo "  FALLA $1"; fallos=$((fallos+1)); fi; }
 
-# 1. integridad
-git fsck --strict --no-dangling >/dev/null 2>&1
-chk "git fsck --strict sin errores" $?
+  if git fsck --strict --no-dangling >/dev/null 2>&1; then chk "git fsck --strict sin errores" 0
+  else chk "git fsck --strict sin errores" 1; fi
 
-# 2. tamano
-DESPUES_BYTES=$(du -sb .git | cut -f1)
-DESPUES_MB=$(echo "scale=2; $DESPUES_BYTES/1048576" | bc)
-if [ "$DESPUES_BYTES" -lt 10485760 ]; then chk ".git quedo en ${DESPUES_MB} MB (< 10 MB)" 0; else chk ".git quedo en ${DESPUES_MB} MB (esperado < 10)" 1; fi
+  local bytes mb
+  bytes=$(du -sb .git | cut -f1); mb=$(echo "scale=2; $bytes/1048576" | bc)
+  if [ "$bytes" -lt 10485760 ]; then chk ".git quedo en ${mb} MB (< 10 MB)" 0
+  else chk ".git quedo en ${mb} MB (esperado < 10 MB)" 1; fi
 
-# 3. los commits siguen
-DESPUES_COMMITS=$(git rev-list --count HEAD)
-[ "$DESPUES_COMMITS" = "$ANTES_COMMITS" ]; chk "los $ANTES_COMMITS commits siguen ($DESPUES_COMMITS)" $?
+  if [ "$(git rev-list --count HEAD)" = "15" ]; then chk "los 15 commits siguen" 0
+  else chk "los 15 commits siguen (hay $(git rev-list --count HEAD))" 1; fi
 
-# 4. ningun .tif trackeado (el .sha256 SI queda: la politica versiona manifiesto + SHA256)
-N_TIF=$(git ls-files | grep -c '\.tif$' || true)
-[ "$N_TIF" = "0" ]; chk "0 archivos .tif trackeados" $?
-N_SHA=$(git ls-files | grep -c '\.tif\.sha256$' || true)
-[ "$N_SHA" -ge 1 ]; chk "el manifiesto .sha256 del DEM sigue trackeado" $?
+  # El blob del DEM tiene que estar fuera, pero su MANIFIESTO (.sha256) tiene que
+  # seguir: la politica del .gitignore versiona manifiesto + SHA256, no el bytes.
+  local n_min n_dem n_sha
+  n_min=$(refs_de_ruta "$BLOB_MINERO")
+  n_dem=$(refs_de_ruta "$BLOB_DEM")
+  n_sha=$(git ls-files | grep -c '\.tif\.sha256$' || true)
+  if [ "$n_min" = "0" ] && [ "$n_dem" = "0" ]; then chk "los dos blobs .tif fuera de la historia" 0
+  else chk "los dos blobs .tif fuera de la historia (minero=$n_min dem=$n_dem)" 1; fi
+  if [ "$n_sha" -ge 1 ]; then chk "el manifiesto .sha256 del DEM sigue trackeado" 0
+  else chk "el manifiesto .sha256 del DEM sigue trackeado" 1; fi
 
-# 5. los blobs ya no estan en la historia
-N_MIN=$(git rev-list --objects --all | grep -cF "$BLOB_MINERO" || true)
-N_DEM=$(git rev-list --objects --all | grep -cF "$BLOB_DEM" || true)
-[ "$N_MIN" = "0" ] && [ "$N_DEM" = "0" ]; chk "los dos blobs fuera de la historia" $?
+  # El DEM tiene que seguir EN DISCO y verificar contra su manifiesto: es el
+  # insumo del pipeline de terreno y dejo de estar versionado.
+  if [ -f "$BLOB_DEM" ]; then
+    local esperado real
+    esperado=$(awk '{print $1}' "$BLOB_DEM.sha256")
+    real=$(sha256sum "$BLOB_DEM" | awk '{print $1}')
+    if [ "$esperado" = "$real" ]; then chk "el DEM sigue en disco y verifica (${real:0:16}…)" 0
+    else chk "el DEM en disco NO verifica contra el manifiesto" 1; fi
+  else chk "el DEM sigue en disco" 1; fi
 
-# 6. el proyecto sigue funcionando
-if npm test >/tmp/opencode/npm-test-post-rewrite.log 2>&1; then chk "npm test verde" 0; else chk "npm test verde (ver /tmp/opencode/npm-test-post-rewrite.log)" 1; fi
+  if npm test >/tmp/opencode/npm-test-post-rewrite.log 2>&1; then chk "npm test verde" 0
+  else chk "npm test verde (ver /tmp/opencode/npm-test-post-rewrite.log)" 1; fi
 
-paso "RESULTADO"
-printf '  .git: %s MB -> %s MB\n' "$ANTES_MB" "$DESPUES_MB"
-printf '  commits: %s -> %s\n' "$ANTES_COMMITS" "$DESPUES_COMMITS"
-if [ "$FALLOS" = "0" ]; then
-  verde "  TODAS LAS VERIFICACIONES OK"
-else
-  rojo "  $FALLOS verificacion(es) fallaron. El backup $BUNDLE sigue intacto."
-  exit 1
-fi
+  paso "RESULTADO"
+  if [ "$fallos" = "0" ]; then verde "  TODAS LAS VERIFICACIONES OK"; return 0; fi
+  rojo "  $fallos verificacion(es) fallaron. El backup $BUNDLE sigue intacto."
+  return 1
+}
+
+case "$MODE" in
+  check)
+    guardas; estado
+    paso "MODO CHECK: no se toca nada. Para ejecutar: $0 run"
+    ;;
+  verify)
+    verificar || exit 1
+    ;;
+  run)
+    guardas; estado
+
+    paso "PRESERVAR EL DEM (deja de estar trackeado; el reset lo borraria del disco)"
+    if [ -f "$BLOB_DEM" ]; then
+      ESPERADO=$(awk '{print $1}' "$BLOB_DEM.sha256")
+      REAL=$(sha256sum "$BLOB_DEM" | awk '{print $1}')
+      [ "$ESPERADO" = "$REAL" ] || abortar "el sha256 del DEM no coincide con el manifiesto. No sigas."
+      cp "$BLOB_DEM" "$PRESERVADO" || abortar "no se pudo copiar el DEM"
+      verde "  OK  copiado a $PRESERVADO (sha256 verificado: ${REAL:0:16}…)"
+    else
+      rojo "  AVISO: el DEM no esta en disco. Se seguira igual."
+    fi
+
+    paso "REESCRIBIENDO LA HISTORIA"
+    git filter-repo --invert-paths --path "$BLOB_MINERO" --path "$BLOB_DEM" --force \
+      || abortar "git filter-repo fallo. El backup $BUNDLE sigue intacto."
+    git reflog expire --expire=now --all || abortar "reflog expire fallo"
+    git gc --prune=now --quiet || abortar "git gc fallo"
+    verde "  filtrado y compactado"
+
+    paso "RESTAURAR EL DEM AL DISCO"
+    if [ ! -f "$BLOB_DEM" ] && [ -f "$PRESERVADO" ]; then
+      cp "$PRESERVADO" "$BLOB_DEM" || abortar "no se pudo restaurar el DEM"
+      ESPERADO=$(awk '{print $1}' "$BLOB_DEM.sha256")
+      REAL=$(sha256sum "$BLOB_DEM" | awk '{print $1}')
+      [ "$ESPERADO" = "$REAL" ] || abortar "el DEM restaurado no verifica contra el manifiesto"
+      verde "  OK  restaurado y verificado (${REAL:0:16}…)"
+    elif [ -f "$BLOB_DEM" ]; then
+      verde "  OK  el reset no lo borro; sigue en disco"
+    else
+      abortar "el DEM desaparecio y no hay copia en $PRESERVADO"
+    fi
+
+    verificar || exit 1
+    ;;
+  *)
+    abortar "modo desconocido '$MODE' (usar check|run|verify)"
+    ;;
+esac
