@@ -22,17 +22,23 @@ pendiente  p95 18,0° · máx 21,8° · 2 tramos de 5 m sobre 20° · PATH 0 m
 
 ## Fases
 
+`[~]` = código integrado y typecheck/build verdes, **verificación real pendiente**.
+
 - [x] **A** · ruta definida desde OSM + pendiente real, verificada en `npm test`
-- [ ] **B** · aparición jugable: 4x4 apoyado y orientado a la vía, con instrucción mínima
+- [~] **B** · aparición: 4x4 sobre el asfalto de la N-120 y jugador a pie al lado. Commit
+      `62c22f1`. Falta **verlo correr**
 - [ ] **C** · conducción de extremo a extremo **medida** (no mirada)
-- [ ] **D** · vegetación FOREST/GRASS/FIELDS con corredores y spawn/objetivo libres
-- [ ] **E** · Villafranca low-poly desde footprints OSM, sin casas flotando
-- [ ] **F** · personaje: caminar, correr, entrar/salir del 4x4
-- [ ] **G** · instalación ficticia de telecomunicaciones + interacción (E)
-- [ ] **H** · misión REPETIDOR SIN SEÑAL, 6 estados
+- [ ] **D** · vegetación FOREST/GRASS/FIELDS con corredores y spawn/objetivo libres — `v1` en vuelo
+- [ ] **E** · Villafranca low-poly desde footprints OSM, sin casas flotando — `v2` en vuelo
+- [~] **F** · personaje: caminar 3,4 / correr 6,8 m/s, entrar/salir. 20/20 checks propios.
+      Falta la captura
+- [~] **G** · objetivo de telecomunicaciones + interacción (E). La captura de v3 ya verifica
+      que la base apoya en el terreno (`floating: false`). Falta el ciclo completo
+- [~] **H** · misión REPETIDOR SIN SEÑAL, 6 estados. 48/48 checks con los caminos negativos
+      (soltar E resetea, alejarse resetea, 26 m no alcanza / 24 m sí). Falta recorrerla
 - [ ] **I** · atmósfera mínima: cielo, niebla, sol, sombras razonables
-- [ ] · integración en `src/main.ts` + HUD de misión (orquestador)
-- [ ] · arnés de validación punta a punta con capturas y camino de error probado
+- [x] · integración en `src/main.ts` + HUD de misión (orquestador) — commit `62c22f1`
+- [ ] · arnés de validación punta a punta con capturas y camino de error probado — `v5` en vuelo
 - [ ] · cross-review de cada packet por **otro** modelo
 - [ ] · evidencia en `output/milestone1/` + commits atómicos
 
@@ -66,6 +72,15 @@ Congelados para todos: `src/main.ts`, `index.html`, `package.json`, `src/terrain
   medio escribir de los otros tres. Está mitigado con dueños disjuntos, no eliminado.
 - `vite build` concurrente escribe el mismo `dist/`. No afecta a los tests; puede dar
   un error confuso dentro de un worker.
+- **Un worker que levanta un servidor puede morir por SIGINT si otro proceso pelea por el
+  mismo puerto.** `v4-jugador` terminó con exit 130 *después* de entregar todo su código y
+  sin llegar a la captura. Lección: un puerto por worker, y elegirlo libre antes de
+  levantarlo, en vez de asumir 5173.
+- `output/` está en `.gitignore`: la evidencia de las capturas vive en disco, no en git. Es
+  la convención del repo (coherente con la reescritura de historia que bajó `.git` a
+  3,7 MB), pero un `git clean -x` se la lleva.
+- **`objective_preview.html` quedó suelto en la raíz** del repo (herramienta de preview de
+  v3). Es inofensivo para el build, pero es basura en la raíz: hay que reubicarlo.
 - FASE C depende de que la física aguante 1,7 km de pista con p95 18°. Si se traba, es
   un **hallazgo** que hay que reportar, no un fracaso del arnés.
 - Las capturas pueden salir negras si la cámara no queda cableada en la integración.
