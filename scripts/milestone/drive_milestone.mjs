@@ -407,6 +407,8 @@ async function main() {
   let serverChild = null;
   let chrome = null;
   let exitCode = 1;
+  /** Se hoistea para que el `catch` pueda volcar los errores capturados al reporte. */
+  let cdp = null;
   try {
     serverChild = await ensureServer(log);
 
@@ -429,7 +431,7 @@ async function main() {
     }
     if (!version) throw new Error('Chrome no abrió el puerto de depuración');
     const tab = await fetchJson(`http://127.0.0.1:${cdpPort}/json/new?about:blank`, { method: 'PUT' });
-    const cdp = await connect(tab.webSocketDebuggerUrl);
+    cdp = await connect(tab.webSocketDebuggerUrl);
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
 
@@ -475,6 +477,12 @@ async function main() {
     const route = await cdp.evaluate('window.__game.route');
     check('api.route expone first-route', route && route.polyline && route.polyline.length > 100, { waypoints: route?.waypoints?.length, polyline: route?.polyline?.length }, 'polyline > 100 puntos');
     check('api.route.checkpoints incluye track-entry', Array.isArray(route?.checkpoints) && route.checkpoints.some((c) => c.id === 'track-entry'), route?.checkpoints?.map((c) => c.id), "incluye 'track-entry'");
+
+    // El pueblo (FASE E): que cargue Y que siga BATCHEADO. Si alguien vuelve al patrón
+    // "una malla por casa", 330 casas pasarían de 7 mallas a 330 y esto lo grita.
+    const village = await cdp.evaluate('window.__game.village ? window.__game.village.stats() : null');
+    report.pueblo = village;
+    check('pueblo cargado y batcheado (meshes <= 20 con > 300 casas)', !!village && village.buildings > 300 && village.meshes <= 20, village, 'buildings > 300 y meshes <= 20');
 
     // Instala el harness dentro de la página.
     await cdp.evaluate(HARNESS_SOURCE);
@@ -637,7 +645,12 @@ async function main() {
     exitCode = checks.every((c) => c.ok) ? 0 : 1;
   } catch (error) {
     report.error_fatal = error instanceof Error ? error.message : String(error);
+    // Los errores capturados se vuelcan TAMBIÉN acá. Sin esto, un fallo temprano (el
+    // bootstrap explota antes de publicar `window.__game`) se reportaba con
+    // `errores_consola: []` y el arnés no podía decir QUÉ explotó: no diagnosticaba.
+    report.errores_consola = cdp?.errors ?? [];
     console.error(`${LOG_PREFIX} ERROR FATAL: ${report.error_fatal}`);
+    for (const e of report.errores_consola) console.error(`${LOG_PREFIX}   ${e}`);
   } finally {
     try { writeFileSync(resolve(OUT_DIR, 'drive_report.json'), JSON.stringify(report, null, 2) + '\n'); } catch {}
     if (chrome) chrome.kill('SIGKILL');

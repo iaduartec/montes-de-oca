@@ -1,14 +1,14 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
-import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
-import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+import { Color4 } from '@babylonjs/core/Maths/math.color';
 import { loadTerrainConfig, wgs84ToWorld } from './config';
 import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
+import { loadVillage, type VillageStats } from './environment/village';
+import { createAtmosphere } from './environment/atmosphere';
 import {
   loadRoadNetwork,
   type RoadAuditReport,
@@ -103,14 +103,9 @@ const engine = new Engine(canvas, true, {
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.53, 0.68, 0.82, 1);
 
-// Iluminación mínima: ambiente + sol direccional desde el noroeste.
-const ambient = new HemisphericLight('luz-ambiente', new Vector3(0.25, 1, 0.2), scene);
-ambient.intensity = 0.65;
-ambient.groundColor = new Color3(0.28, 0.3, 0.26);
-
-const sun = new DirectionalLight('sol', new Vector3(-0.45, -1, -0.35), scene);
-sun.intensity = 0.95;
-sun.diffuse = new Color3(1, 0.97, 0.9);
+// Iluminación y atmósfera: las crea `createAtmosphere` al final del bootstrap, cuando
+// ya existen las mallas que proyectan sombra. Un solo dueño de las luces — si además
+// se crearan acá, habría dos juegos sumando intensidad.
 
 const camera = new UniversalCamera('camara-libre', new Vector3(0, 80, -160), scene);
 camera.attachControl(canvas, true);
@@ -177,6 +172,8 @@ interface DebugApi {
   } | null;
   /** La ruta de la milestone, para que los arneses no la dupliquen a mano. */
   route: FirstRoute | null;
+  /** El pueblo low-poly cargado (FASE E). `null` con `?pueblo=0`. */
+  village: { stats(): VillageStats } | null;
   player: {
     mode(): 'on-foot' | 'driving';
     telemetry(): PlayerTelemetry;
@@ -286,6 +283,8 @@ async function bootstrap(): Promise<void> {
   const drapeParam = params.get('drape');
   const roadsEnabled = drapeParam === null || !(drapeParam === '0' || drapeParam.toLowerCase() === 'false');
   let roads: RoadNetwork | null = null;
+  /** Stats del pueblo cargado (FASE E), para la API de depuración. */
+  let villageStats: VillageStats | null = null;
   if (roadsEnabled) {
     // Dominio real del terreno: evita que `heightAt` devuelva el "0 absoluto"
     // (−datum) para vértices laterales que asoman fuera de la ventana.
@@ -305,6 +304,20 @@ async function bootstrap(): Promise<void> {
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
     );
+  }
+
+  // ----- Pueblo low-poly (FASE E) -----
+  // `?pueblo=0` lo apaga, igual que `?drape=0`: permite medir draw calls y triángulos
+  // "con y sin" en la MISMA build, sin tocar una línea de código.
+  const puebloParam = params.get('pueblo');
+  const villageEnabled = puebloParam === null || !(puebloParam === '0' || puebloParam.toLowerCase() === 'false');
+  if (villageEnabled) {
+    const village = await loadVillage(scene, terrain, {
+      keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
+      keepClearRadiusM: 12,
+    });
+    villageStats = village.stats;
+    // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
   }
 
   const groundY = terrain.heightAt(spawnX, spawnZ);
@@ -341,6 +354,10 @@ async function bootstrap(): Promise<void> {
       vehicle?.setInput(null);
       vehicle?.teleport(startX, startZ, yaw);
       player?.teleport(salidaInicial.x, salidaInicial.z, yaw);
+      // La misión TAMBIÉN vuelve a cero. Sin esto, después de reparar podías apretar
+      // R — que te devuelve al punto de partida, que es el objetivo del regreso — y
+      // COMPLETAR sin conducir la vuelta: un atajo que se saltea media misión.
+      mission?.reset();
     };
     resetToStart = resetToStartFn;
 
@@ -411,12 +428,27 @@ async function bootstrap(): Promise<void> {
       clearRadiusM: FIRST_ROUTE.targetClearRadiusM,
     });
     interactor = createInteractor([objective.interactable]);
-    mission = createMission(FIRST_ROUTE);
+    // El radio de reparación sale del PROPIO repetidor (`radiusM`): el aviso de E y
+    // el progreso de la misión no pueden divergir porque son el mismo número.
+    mission = createMission(FIRST_ROUTE, { repairRadiusM: objective.interactable.radiusM });
 
     // Posición de cámara inicial detrás del vehículo.
     camera.position = new Vector3(startX - Math.sin(yaw) * 7.5, terrain.heightAt(startX, startZ) + 2.4, startZ - Math.cos(yaw) * 7.5);
     camera.minZ = 0.3;
   }
+
+  // ----- Atmósfera (FASE I): niebla exponencial + sombras -----
+  // Se crea ACÁ y no al principio porque necesita las mallas que proyectan (4x4,
+  // personaje, repetidor) y las que reciben (terreno, vías): antes de existir no hay
+  // nada que anclar al shadow map. El sol conserva la dirección que ya tenía la escena.
+  const atmosphere = createAtmosphere(scene, {
+    shadowCasters: [
+      ...(vehicle ? vehicle.root.getChildMeshes() : []),
+      ...(player ? player.root.getChildMeshes() : []),
+      ...(objective ? objective.root.getChildMeshes() : []),
+    ],
+    shadowReceivers: [...terrain.meshes, ...(roads ? roads.meshes : [])],
+  });
 
   window.addEventListener('resize', () => engine.resize());
 
@@ -496,7 +528,11 @@ async function bootstrap(): Promise<void> {
       if (t.mode === 'on-foot') {
         // El interactuable manda sobre el vehículo: si estás al lado del repetidor,
         // lo que querés es repararlo, no entrar al coche.
-        const alcance = interactor ? interactor.query(t.x, t.z) : null;
+        // El repetidor sólo se ofrece mientras la misión espera la reparación. Si no,
+        // el aviso de reparar (que gana sobre el de entrar) seguía tapando la "F"
+        // justo cuando ya habías reparado y lo que querías era volver al 4x4.
+        const alcance =
+          interactor && ultimaMision?.state === 'TARGET_REACHED' ? interactor.query(t.x, t.z) : null;
         if (alcance && alcance.available) aviso = AVISO_REPARAR;
         else if (t.canEnter) aviso = AVISO_ENTRAR;
       } else if (Math.abs(t.speedMps) < 4) {
@@ -512,8 +548,8 @@ async function bootstrap(): Promise<void> {
   };
 
   const TECLAS_CONDUCIENDO =
-    'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · F bajar del 4x4 · R reposicionar';
-  const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · R reposicionar';
+    'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · F bajar del 4x4 · R reiniciar misión';
+  const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · R reiniciar misión';
 
   /**
    * Un paso de simulación coherente: primero el mundo (personaje o vehículo) y después
@@ -532,8 +568,17 @@ async function bootstrap(): Promise<void> {
     // guardado y dispare solo cuando te acercás.
     if (player && controlsForPlayer?.consumeToggle()) player.toggleVehicle();
 
-    if (player) player.step(dt);
-    else if (vehicle) vehicle.step(dt);
+    if (player) {
+      player.step(dt);
+      // Bajarse con el 4x4 en movimiento NO lo congela: sigue rodando sin input y
+      // frena solo. Congelado, volver a subir devolvía intacta la velocidad guardada
+      // — o sea, salir del coche era un freno instantáneo y entrar, un teletransporte.
+      if (player.mode === 'on-foot' && vehicle && Math.abs(vehicle.telemetry().speed) > 0.05) {
+        vehicle.step(dt);
+      }
+    } else if (vehicle) {
+      vehicle.step(dt);
+    }
 
     if (!player || !mission) return;
     const t = player.telemetry();
@@ -543,7 +588,10 @@ async function bootstrap(): Promise<void> {
       onFoot: t.mode === 'on-foot',
       driving: t.mode === 'driving',
       interact: t.interact,
-      dt,
+      // El `dt` del navegador se dispara al volver de una pestaña en segundo plano.
+      // Sin tope, un frame de 5 s completaba la reparación de un solo golpe: el
+      // personaje mueve el mundo con el `dt` topado, la misión tiene que ver el mismo.
+      dt: Math.min(dt, 0.1),
     });
     objective?.setRepairProgress(ultimaMision.repairProgress);
   };
@@ -560,6 +608,10 @@ async function bootstrap(): Promise<void> {
       else if (player || vehicle) stepSimulation(dt);
     }
     updateChaseCamera(dt);
+    // El shadow map sigue al jugador: con el ancla fija en el origen, la sombra se
+    // cortaba a 100 m y el 4x4 dejaba de proyectar apenas te alejabas del spawn.
+    const anclaSombra = player ? player.root.position : vehicle?.root.position;
+    if (anclaSombra) atmosphere.follow(anclaSombra.x, anclaSombra.z);
     terrain.cull(camera);
     scene.render();
     hudTick++;
@@ -638,6 +690,7 @@ async function bootstrap(): Promise<void> {
         }
       : null,
     route: FIRST_ROUTE,
+    village: villageStats ? { stats: () => villageStats! } : null,
     player: player
       ? {
           mode: () => player!.mode,
