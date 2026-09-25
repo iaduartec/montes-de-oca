@@ -161,3 +161,75 @@ NUMBERS: tiempo simulado, distancia, pendiente máx, frames airborne, wheelResid
 FAIL PATH: <la salida real del --budget-s 3>
 RISKS: <lo que no está probado>
 ```
+
+---
+
+## API de depuración YA INTEGRADA (usá esto; no la inventes ni la modifiques)
+
+Todo cuelga de `window.__game`, con la página servida normal (el personaje está activo
+por defecto; `?player=0` lo apaga y es el camino legado de medición de la FASE 4).
+
+```js
+__game.route                   // { start, startYaw, polyline[], waypoints[], trackEntry,
+                               //   target, targetYaw, returnPoint, checkpoints[],
+                               //   targetClearRadiusM, ... }
+__game.player.mode()           // 'on-foot' | 'driving'
+__game.player.telemetry()      // { mode, x, y, z, yawDeg, speedMps, running, moving,
+                               //   interact, distanceToVehicleM, canEnter }
+__game.mission.name            // 'REPETIDOR SIN SEÑAL'
+__game.mission.snapshot()      // { name, state, objective, hint, distanceToTargetM,
+                               //   distanceToReturnM, repairProgress, repaired,
+                               //   elapsedS, completed }
+__game.terrainHeightAt(x, z)   // Y de mundo (no la cota absoluta)
+__game.vehicle?.telemetry()    // telemetría del 4x4 (ver src/vehicle/index.ts)
+
+// ENTRADA INYECTADA: no hace falta teclear nada. `null` devuelve el control al teclado.
+__game.player.inject({ toggle: true })               // pulsar F (se consume una vez)
+__game.player.inject({ throttle: 1, steer: 0.05 })   // conducir
+__game.player.inject({ handbrake: true })            // freno de mano
+__game.player.inject({ forward: 1, run: true })      // caminar / correr
+__game.player.inject({ interact: true })             // mantener E (NIVEL, no flanco)
+__game.player.inject({})                             // soltar todo
+__game.player.inject(null)                           // devolver el control al teclado
+
+// AVANCE DETERMINISTA: avanza MUNDO **y MISIÓN** con el mismo dt, igual que el render
+// loop. Llamalo en tramos chicos (0,25 s), no de un saque de 40 s.
+__game.player.step(seconds, dt = 1/60)
+
+__game.player.toggleVehicle()
+__game.player.teleport(x, z, yaw)
+__game.mission.reset()
+```
+
+`__game.vehicle.setInput` / `__game.vehicle.step` siguen existiendo pero **no avanzan la
+misión**: son el camino legado de medición. Para la milestone usá `player.inject` +
+`player.step`.
+
+### El bucle que tiene que funcionar
+
+Está implementado en `src/gameplay/mission.ts` (48/48 checks propios, ya verificado):
+
+```
+NOT_STARTED --(driving)--> ACTIVE --(distanceToTargetM <= reachRadiusM)--> TARGET_REACHED
+TARGET_REACHED --(onFoot && en alcance && E mantenida repairSeconds)--> REPAIRED
+REPAIRED --(driving)--> RETURNING --(distanceToReturnM <= reachRadiusM)--> COMPLETED
+```
+
+Los valores por defecto de `reachRadiusM` y `repairSeconds` son constantes al inicio de
+`src/gameplay/mission.ts`: leelos, no los adivines.
+
+- De `NOT_STARTED` se sale **conduciendo**. El primer gesto del juego es entrar al 4x4.
+- La reparación exige estar **A PIE** y con **E a nivel** (mantenida, no un toque).
+- Completar **no** exige bajarse: alcanza con volver conduciendo y acercarse al punto de
+  regreso. Pero en las capturas SÍ queremos el ciclo completo: bajarse en el objetivo,
+  reparar, volver a subir, volver, y recién ahí completar.
+
+### Reglas
+
+- `src/main.ts` está **CONGELADO** para vos. Si encontrás un bug de integración, **no lo
+  arregles**: reportalo con la reproducción exacta (llamada, estado esperado, estado real).
+- Medí y guardá NÚMEROS, no impresiones.
+- El camino de error se prueba a propósito (`--budget-s 3`): un arnés cuyo fallo no probaste
+  no está probado.
+- Elegí un puerto LIBRE y verificalo antes de levantarlo: hay otros procesos vivos en la
+  máquina y pelearse por el puerto hace que se maten entre ellos.
