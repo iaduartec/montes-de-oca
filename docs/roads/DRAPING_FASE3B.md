@@ -20,16 +20,26 @@ la superficie del terreno de Villafranca (DEM IGN MDT05, 36 tiles de 5 m).
 
 ---
 
+## Actualización de malla — 25 sep 2026
+
+La inspección visual encontró terreno atravesando la calzada en laderas. La
+malla ahora subdivide cada 2,5 m, usa secciones transversales de hasta 1,5 m y
+levanta localmente los triángulos que cortarían el DEM, dejando al menos 0,02 m
+de separación. `audit()` prueba vértices, puntos medios y centroides: 0
+penetraciones en 2.743.356 muestras. La red completa conserva 3 mallas y suma
+260.245 vértices / 392.260 triángulos. Las tablas de la sección 4 y las medidas
+antes/después de la sección 6 corresponden a la malla anterior de 5 m.
+
 ## 1. Qué se hizo
 
 Por cada segmento de `roads.json`:
 
-1. Se **subdivide la polilínea a 5 m** entre vértices OSM (los vértices
+1. Se **subdivide la polilínea a 2,5 m** entre vértices OSM (los vértices
    originales se preservan). El hueco máximo entre vértices OSM de la red es
    **538,6 m**, así que subdividir no es opcional.
 2. En cada estación se calcula el tangente por diferencia central y la **normal
    perpendicular** en el plano XZ.
-3. Se levantan los vértices de borde a ±ancho/2 y se **muestrea la cota del
+3. Se levantan los vértices de borde cada ≤1,5 m y se **muestrea la cota del
    terreno con `terrain.heightAt`** (nunca se reimplementa la interpolación).
 4. Se cierran los triángulos de la franja.
 5. **ROAD** recibe además faldones laterales y aplanado parcial (ver §3).
@@ -40,10 +50,10 @@ Por cada segmento de `roads.json`:
 
 | # | Decisión | Cómo quedó en el código |
 | --- | --- | --- |
-| 6.1 | La calzada sigue el terreno, vértice a vértice, sin aplanar | TRACK/PATH: `y = heightAt(vértice) + offset`. Residual = 0 por construcción |
-| 6.2 | ROAD: aplanado parcial `lerp 0,6` + faldones | `y = terrainY + 0,6·(cotaCentral − terrainY) + offset`; faldón de 0,6 m que cae al terreno |
+| 6.1 | La calzada sigue el terreno, vértice a vértice, sin aplanar | TRACK/PATH: `y = heightAt(vértice) + offset`; se triangula cada ≤1,5 m transversalmente |
+| 6.2 | ROAD: aplanado parcial `lerp 0,6` + faldones | `y = max(terrainY, lerp(terrainY, centerY, 0,6)) + offset`; faldón de 0,6 m |
 | 6.3 | Offset vertical 0,06–0,15 m | **ROAD 0,12 · TRACK 0,10 · PATH 0,08 m** (ver §3.4 por qué escalonado) |
-| 6.4 | Subdividir a 5 m | `DRAPING.subdivisionM = 5` |
+| 6.4 | Subdividir a 2,5 m y probar el despeje interior de triángulos | `DRAPING.subdivisionM = 2,5`, margen adaptativo 0,02 m |
 | 6.5 | No suavizar longitudinalmente | No hay ninguna pasada de suavizado |
 | 6.6 | La pendiente transversal la siente la física | No se toca: el vehículo sigue muestreando `terrain.normalAt` |
 
@@ -53,8 +63,8 @@ Por cada segmento de `roads.json`:
 
 - `meshes`: 3 mallas (una por clase).
 - `stats`: vías, estaciones, vértices, triángulos, puentes y las constantes.
-- `audit()`: residual de **todos** los vértices contra `terrain.heightAt`,
-  separado por rol (calzada / faldón / puente) y con el vértice peor.
+- `audit()`: residual de todos los vértices y separación en vértices, centros y
+  bordes de triángulo; distingue calzada, faldón y puente.
 - `probe(n)` / `stations()`: muestras y estaciones para la verificación externa.
 
 ---
@@ -82,10 +92,11 @@ fuera de ventana, todos recortados.
 
 ### 3.1 ROAD: aplanado parcial + faldones
 
-En el borde del asfalto, `y = terreno + 0,6·(cotaCentral − terreno)`. Es decir,
-la sección transversal conserva el 40 % de la inclinación del terreno. El faldón
-va del borde del asfalto a `borde + 0,6 m`, y **su borde libre se apoya en el
-terreno** (residual ~0, medido).
+En cada sección del asfalto se conserva el aplanado parcial mientras no quede
+bajo el DEM; si el terreno lateral está más alto se limita la cota a ese terreno.
+Los puntos medios se miden también y reciben una elevación local cuando una
+arista de la malla cortaría la superficie. El faldón de 0,6 m sigue cosiendo el
+borde libre al terreno.
 
 ### 3.2 Puentes: **no se drapean**
 

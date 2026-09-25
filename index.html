@@ -45,6 +45,9 @@
         pointer-events: none;
         backdrop-filter: blur(4px);
       }
+      #hud[hidden] {
+        display: none;
+      }
       #hud.hud-error,
       .hud-error {
         color: #ff8f8f;
@@ -57,13 +60,15 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 12;
-        padding: 9px 16px;
+        padding: 11px 18px;
         min-width: 280px;
         max-width: 62vw;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 8px;
-        background: rgba(8, 12, 18, 0.68);
-        color: #e8eef6;
+        border: 1px solid rgba(231, 195, 138, 0.4);
+        border-radius: 10px;
+        background: rgba(28, 32, 29, 0.82);
+        box-shadow: 0 8px 28px rgba(12, 17, 16, 0.24);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
         font-size: 13px;
         line-height: 1.55;
         text-align: center;
@@ -74,13 +79,13 @@
         display: none;
       }
       #mision .mision-titulo {
-        color: #9fb6cd;
+        color: #d8c3a2;
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
       #mision .mision-estado {
-        color: #ffd479;
+        color: #ffdc99;
         font-size: 11px;
         letter-spacing: 0.06em;
       }
@@ -115,10 +120,11 @@
         transform: translateX(-50%);
         z-index: 12;
         padding: 7px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 6px;
-        background: rgba(8, 12, 18, 0.74);
-        color: #e8eef6;
+        border: 1px solid rgba(231, 195, 138, 0.42);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
         font-size: 13px;
         pointer-events: none;
         backdrop-filter: blur(4px);
@@ -139,7 +145,7 @@
         left: 12px;
         z-index: 10;
         max-width: 60vw;
-        color: rgba(215, 226, 238, 0.72);
+        color: rgba(247, 239, 226, 0.83);
         font-size: 11px;
         line-height: 1.5;
         pointer-events: none;
@@ -148,11 +154,11 @@
   </head>
   <body>
     <canvas id="render-canvas" tabindex="0"></canvas>
-    <div id="hud" role="status" aria-live="polite">Cargando terreno…</div>
+    <div id="hud" role="status" aria-live="polite" hidden>Cargando terreno…</div>
     <div id="mision" role="status" aria-live="polite" hidden></div>
     <div id="accion" role="status" aria-live="polite" hidden></div>
     <div id="controls">
-      WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar
+      WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar · F3 diagnóstico
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

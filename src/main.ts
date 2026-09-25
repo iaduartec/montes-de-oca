@@ -3,7 +3,8 @@ import { Scene } from '@babylonjs/core/scene';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color4 } from '@babylonjs/core/Maths/math.color';
-import { loadTerrainConfig, wgs84ToWorld } from './config';
+import { loadTerrainConfig, TERRAIN_CONFIG_PATH, wgs84ToWorld } from './config';
+import { publicUrl } from './public-url';
 import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
@@ -271,16 +272,28 @@ declare global {
 function showError(message: string): void {
   console.error(message);
   if (hud) {
+    hud.hidden = false;
     hud.textContent = `ERROR\n${message}`;
     hud.classList.add('hud-error');
   }
 }
 
 async function bootstrap(): Promise<void> {
-  const config = await loadTerrainConfig();
-  const terrain = await loadTerrain(scene, config);
+  const config = await loadTerrainConfig(fetch, publicUrl(TERRAIN_CONFIG_PATH));
+  const terrain = await loadTerrain(scene, {
+    ...config,
+    tiles: config.tiles.map((tile) => ({ ...tile, url: publicUrl(tile.url) })),
+  });
 
   const params = new URLSearchParams(window.location.search);
+  if (hud) {
+    hud.hidden = params.get('debug') !== '1';
+    window.addEventListener('keydown', (event) => {
+      if (event.code !== 'F3') return;
+      event.preventDefault();
+      hud.hidden = !hud.hidden;
+    });
+  }
 
   // Punto de aparición: el config trae el pueblo en WGS84; si no, el centro.
   const center = terrain.center();
@@ -370,7 +383,12 @@ async function bootstrap(): Promise<void> {
       minZ = Math.min(minZ, extent.minZ);
       maxZ = Math.max(maxZ, extent.maxZ);
     }
-    roads = await loadRoadNetwork(scene, terrain, { bounds: { minX, maxX, minZ, maxZ } });
+    roads = await loadRoadNetwork(scene, terrain, {
+      url: publicUrl('/roads/roads.json'),
+      bounds: { minX, maxX, minZ, maxZ },
+      polishTrackAt: { ...FIRST_ROUTE.trackEntry, radiusM: 90 },
+      polishRoadAt: { ...FIRST_ROUTE.start, radiusM: 120 },
+    });
     console.info(
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
@@ -383,9 +401,19 @@ async function bootstrap(): Promise<void> {
   const puebloParam = params.get('pueblo');
   const villageEnabled = puebloParam === null || !(puebloParam === '0' || puebloParam.toLowerCase() === 'false');
   if (villageEnabled) {
+    const start = FIRST_ROUTE.start;
+    const roadClearance = roads?.stations()
+      .filter((station) => Math.hypot(station.x - start.x, station.z - start.z) <= 130)
+      .map((station) => ({
+        x: station.x,
+        z: station.z,
+        radiusM: station.class === 'ROAD' ? 5.2 : station.class === 'TRACK' ? 3.6 : 2.5,
+      })) ?? [];
     const village = await loadVillage(scene, terrain, {
+      url: publicUrl('/village/buildings.json'),
       keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
       keepClearRadiusM: 12,
+      roadClearance,
     });
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
@@ -405,6 +433,7 @@ async function bootstrap(): Promise<void> {
     // el try/catch envuelve SÓLO el await: un fallo de datos no puede tumbar el bootstrap.
     try {
       vegetation = await loadVegetation(scene, terrain, {
+        url: publicUrl('/vegetation/vegetation.json'),
         corridors: routeCorridors(FIRST_ROUTE),
         clearings: [
           { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z, radiusM: 30 },
@@ -722,7 +751,7 @@ async function bootstrap(): Promise<void> {
     if (hudTick % 5 === 0) {
       updateActionPrompt();
       if (ultimaMision) updateMissionHud(ultimaMision);
-      if (hud) {
+      if (hud && !hud.hidden) {
         const perf = formatSnapshot(diagnostics.snapshot(), terrain);
         const veh = vehicle ? formatVehicleHud(vehicle.telemetry()) : '';
         const jug = player ? formatPlayerHud(player.telemetry()) : '';
@@ -731,13 +760,13 @@ async function bootstrap(): Promise<void> {
       // Las teclas van en su propio bloque y NO dentro del diagnóstico: en modo cámara
       // libre son otras, y decir las teclas equivocadas es peor que no decir ninguna.
       if (controlsEl) {
-        controlsEl.textContent = player
+        controlsEl.textContent = (player
           ? player.mode === 'driving'
             ? TECLAS_CONDUCIENDO
             : TECLAS_A_PIE
           : vehicle
             ? TECLAS_CONDUCIENDO
-            : CONTROLES_LIBRE;
+            : CONTROLES_LIBRE) + ' · F3 diagnóstico';
       }
     }
   });

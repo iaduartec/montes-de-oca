@@ -15,11 +15,14 @@
  *     una polilinea lineal siempre esta en un vertice, asi que el faldon cubre todo
  *     el borde del footprint sin importar la pendiente.
  *  2. POCAS MALLAS: los cuerpos se agrupan por material (4) y los tejados por
- *     material de techo (3). ~330 casas entran en 7 draw calls; una malla por casa
- *     serian 330 y mataria el frame en SwiftShader y en GPU.
+ *     material de techo (3). ~330 casas entran en pocas draw calls; una malla por
+ *     casa serian 330 y mataria el frame en SwiftShader y en GPU.
  *  3. TEJADO SENCILLO: dos aguas si el footprint es alargado (PCA del poligono),
- *     plano si es casi cuadrado. Sin ventanas, sin puertas, sin monumentos: eso es
+ *     plano si es casi cuadrado. Los huecos se limitan al entorno jugable:
  *     LOD de presupuesto, no de calidad.
+ *  4. DETALLE SOLO CERCA DEL SPAWN: las casas a <=90 m del 4x4 suman puerta,
+ *     ventanas, contraventanas, zocalo de piedra y alero. Los detalles se agrupan
+ *     por material; el alero va al material del tejado. El resto queda como estaba.
  */
 
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -42,6 +45,10 @@ export interface VillageStats {
   readonly tallestM: number;
   /** Edificios descartados por invadir el punto de aparición. */
   readonly droppedAtSpawn: number;
+  /** Edificios que recibieron detalle de fachada (cerca del spawn). */
+  readonly detailedBuildings: number;
+  /** Tapias de patio generadas con despeje frente a edificios y vías. */
+  readonly courtyardWalls: number;
 }
 
 export interface Village {
@@ -56,6 +63,8 @@ export interface LoadVillageOptions {
   readonly keepClearAt?: { readonly x: number; readonly z: number } | null;
   /** Radio a despejar alrededor de `keepClearAt`, en metros. */
   readonly keepClearRadiusM?: number;
+  /** Centros de vía locales; cada muestra incluye el semiancho que debe quedar libre. */
+  readonly roadClearance?: readonly { readonly x: number; readonly z: number; readonly radiusM: number }[];
 }
 
 /* ------------------------------------------------------------------------- *
@@ -74,6 +83,31 @@ const GABLE_ELONGATION = 1.35;
 
 /** Radio por defecto a despejar alrededor del spawn (contrato: >= 8 m verificado). */
 const DEFAULT_KEEP_CLEAR_RADIUS_M = 12;
+
+/**
+ * Detalle de fachada: solo edificios a <= esta distancia del spawn. El resto del
+ * pueblo mantiene el LOD de presupuesto. Elegido para cubrir el casco visible
+ * desde la aparicion y la calle inicial sin inflar los triangulos.
+ */
+const DETAIL_RADIUS_M = 90;
+
+/* Medidas del detalle (m). Conservadoras: nada que invada calzada ni spawn. */
+const PLINTH_HEIGHT_M = 0.55;
+const PLINTH_OUT_M = 0.05;
+const OPENING_OUT_M = 0.1;
+const DOOR_WIDTH_M = 0.95;
+const DOOR_HEIGHT_M = 2.0;
+const WINDOW_WIDTH_M = 0.7;
+const WINDOW_HEIGHT_M = 0.95;
+const WINDOW_SILL_M = 1.15;
+const SHUTTER_WIDTH_M = 0.14;
+const SHUTTER_GAP_M = 0.055;
+const SHUTTER_OUT_M = 0.15;
+const EAVE_OVERHANG_M = 0.35;
+const EAVE_FASCIA_M = 0.16;
+const WINDOW_TRIM_OUT_M = OPENING_OUT_M + 0.025;
+/** Longitud minima de fachada para colgar un hueco. */
+const MIN_FACADE_M = 2.0;
 
 const DEFAULT_URL = '/village/buildings.json';
 
@@ -106,6 +140,15 @@ const ROOF_MATERIALS: Record<RoofKind, MaterialSpec> = {
   chapa: { name: 'pueblo:techo-chapa', diffuse: [0.56, 0.58, 0.59] },
   pizarra: { name: 'pueblo:techo-pizarra', diffuse: [0.32, 0.32, 0.36] },
 };
+
+/**
+ * Los DOS unicos lotes extra del detalle: huecos (puerta/ventana) y zocalo de
+ * piedra. El alero reutiliza el material del tejado, asi que el total pasa de 7 a
+ * 9 mallas (7 + 2) y no de mas.
+ */
+const DETAIL_MATERIAL: MaterialSpec = { name: 'pueblo:detalle', diffuse: [0.15, 0.14, 0.13] };
+const PLINTH_MATERIAL: MaterialSpec = { name: 'pueblo:zocalo', diffuse: [0.66, 0.6, 0.5] };
+const SHUTTER_MATERIAL: MaterialSpec = { name: 'pueblo:contraventanas', diffuse: [0.34, 0.25, 0.17] };
 
 /* ------------------------------------------------------------------------- *
  * Datos: parseo defensivo de buildings.json
@@ -439,14 +482,91 @@ function pushWallStrip(
   pushTri(g, b0, t1, t0);
 }
 
+/**
+ * Arista del footprint + su normal exterior unitaria. Misma convencion que
+ * `pushWallStrip`; `i`/`j` permiten consultar la altura de tejado por vertice.
+ */
+interface Facade {
+  readonly i: number;
+  readonly j: number;
+  readonly ax: number;
+  readonly az: number;
+  readonly bx: number;
+  readonly bz: number;
+  readonly ux: number;
+  readonly uz: number;
+  readonly len: number;
+}
+
+function facadeOf(a: V2, b: V2, ccw: boolean, i: number, j: number): Facade | null {
+  const dx = b[0] - a[0];
+  const dz = b[1] - a[1];
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-6) return null;
+  const nx = ccw ? dz : -dz;
+  const nz = ccw ? -dx : dx;
+  const norm = Math.hypot(nx, nz) || 1;
+  return { i, j, ax: a[0], az: a[1], bx: b[0], bz: b[1], ux: nx / norm, uz: nz / norm, len };
+}
+
+/**
+ * Quad vertical pegado a la arista A->B, desplazado `out` metros hacia afuera
+ * (normal `(ux, uz)`). `s0`/`s1` son distancias a lo largo de la arista desde A y
+ * `y0`/`y1` alturas absolutas. Se usa para zocalo, huecos y faja del alero.
+ */
+function pushFacadeQuad(
+  g: GroupBuffers,
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  ux: number,
+  uz: number,
+  out: number,
+  s0: number,
+  s1: number,
+  y0: number,
+  y1: number,
+  endY0: number = y0,
+  endY1: number = y1,
+): void {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-6 || s1 - s0 < 1e-3 || y1 - y0 < 1e-3 || endY1 - endY0 < 1e-3) return;
+  const ex = dx / len;
+  const ez = dz / len;
+  const xAt = (s: number): number => ax + ex * s + ux * out;
+  const zAt = (s: number): number => az + ez * s + uz * out;
+  const i0 = pushVertex(g, xAt(s0), y0, zAt(s0), ux, 0, uz);
+  const i1 = pushVertex(g, xAt(s1), endY0, zAt(s1), ux, 0, uz);
+  const i2 = pushVertex(g, xAt(s1), endY1, zAt(s1), ux, 0, uz);
+  const i3 = pushVertex(g, xAt(s0), y1, zAt(s0), ux, 0, uz);
+  pushTri(g, i0, i1, i2);
+  pushTri(g, i0, i2, i3);
+}
+
 interface BuildContext {
   readonly heightAt: (x: number, z: number) => number;
+  /** Muestras del eje viario cercanas al spawn, para orientar ventanas a la calle. */
+  readonly roadClearance: readonly { readonly x: number; readonly z: number; readonly radiusM: number }[];
   readonly bodies: Record<BodyKind, GroupBuffers>;
   readonly roofs: Record<RoofKind, GroupBuffers>;
+  /** Huecos (puerta/ventana) y zocalo: los dos lotes extra, solo cerca del spawn. */
+  readonly details: GroupBuffers;
+  readonly plinths: GroupBuffers;
+  readonly shutters: GroupBuffers;
+  /** Centro de detalle (spawn): radio de aplicacion y radio que no se invade. */
+  readonly detail: {
+    readonly x: number;
+    readonly z: number;
+    readonly radiusM: number;
+    readonly clearRadiusM: number;
+  } | null;
 }
 
 /** Construye muros + tejado de UN edificio dentro de los buffers de su grupo. */
-function buildBuilding(ctx: BuildContext, building: Building): void {
+function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean): void {
   const points = building.footprint;
   const n = points.length;
 
@@ -539,6 +659,350 @@ function buildBuilding(ctx: BuildContext, building: Building): void {
       );
     }
   }
+
+  if (detailed) {
+    buildFacadeDetails(ctx, points, {
+      ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof,
+      shutters: building.id % 2 === 0 ? ctx.shutters : null,
+    });
+    if (gable && n <= 6 && building.id % 2 === 0 && Math.abs(signedArea(points)) >= 35 && axis.halfU >= 2) {
+      // La chimenea solo aparece en cubiertas sencillas y cerca del spawn. Se
+      // hunde en la cumbrera para que no flote, sin sobresalir del footprint.
+      const along = Math.min(axis.halfU * 0.22, 1.3);
+      const cx = axis.c[0] + axis.u[0] * along;
+      const cz = axis.c[1] + axis.u[1] * along;
+      if (distanceToPolygon(points, cx, cz) > 0) return;
+      const v: V2 = [-axis.u[1], axis.u[0]];
+      const corners: V2[] = [
+        [cx - axis.u[0] * 0.28 - v[0] * 0.24, cz - axis.u[1] * 0.28 - v[1] * 0.24],
+        [cx + axis.u[0] * 0.28 - v[0] * 0.24, cz + axis.u[1] * 0.28 - v[1] * 0.24],
+        [cx + axis.u[0] * 0.28 + v[0] * 0.24, cz + axis.u[1] * 0.28 + v[1] * 0.24],
+        [cx - axis.u[0] * 0.28 + v[0] * 0.24, cz - axis.u[1] * 0.28 + v[1] * 0.24],
+      ];
+      if (corners.some((corner) => distanceToPolygon(points, corner[0], corner[1]) > 0)) return;
+      const bottom = topY + rise - 0.35;
+      const top = topY + rise + 0.75;
+      for (let i = 0; i < 4; i++) {
+        const a = corners[i]!;
+        const b = corners[(i + 1) % 4]!;
+        pushWallStrip(ctx.plinths, a[0], a[1], b[0], b[1], bottom, top, top, b[1] - a[1], a[0] - b[0]);
+      }
+      pushRoofTriangle(ctx.plinths, [corners[0]![0], top, corners[0]![1]], [corners[1]![0], top, corners[1]![1]], [corners[2]![0], top, corners[2]![1]], axis.c);
+      pushRoofTriangle(ctx.plinths, [corners[0]![0], top, corners[0]![1]], [corners[2]![0], top, corners[2]![1]], [corners[3]![0], top, corners[3]![1]], axis.c);
+    }
+  }
+}
+
+/** Contexto de detalle que `buildBuilding` ya calculo y no queremos repetir. */
+interface FacadeDetailContext {
+  readonly ccw: boolean;
+  readonly gable: boolean;
+  readonly ridgeSpan: number;
+  readonly roofY: readonly number[];
+  readonly projU: readonly number[];
+  readonly axis: { readonly c: V2; readonly u: V2; readonly halfU: number; readonly halfV: number };
+  readonly minY: number;
+  readonly baseY: number;
+  readonly roof: GroupBuffers;
+  readonly shutters: GroupBuffers | null;
+}
+
+/**
+ * Detalle de fachada de una casa cercana al spawn: zocalo, puerta, ventanas y
+ * alero. Determinista (solo geometria), sin invadir el despeje del spawn. Los
+ * huecos y el zocalo van a sus lotes; el alero reutiliza el material del techo.
+ */
+function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx: FacadeDetailContext): void {
+  const detail = ctx.detail;
+  if (!detail) return;
+  const { ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof, shutters } = detailCtx;
+  const n = points.length;
+  const plinthTop = minY + PLINTH_HEIGHT_M;
+
+  // 1. Zocalo de piedra: una banda por arista, de la base enterrada a `plinthTop`.
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const facade = facadeOf(points[i]!, points[j]!, ccw, i, j);
+    if (!facade) continue;
+    pushFacadeQuad(
+      ctx.plinths,
+      facade.ax,
+      facade.az,
+      facade.bx,
+      facade.bz,
+      facade.ux,
+      facade.uz,
+      PLINTH_OUT_M,
+      0,
+      facade.len,
+      baseY,
+      plinthTop,
+    );
+  }
+
+  // 2. Huecos: puerta en la fachada principal y ventanas en las dos primeras.
+  const facades: Facade[] = [];
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const facade = facadeOf(points[i]!, points[j]!, ccw, i, j);
+    if (facade && facade.len >= MIN_FACADE_M) facades.push(facade);
+  }
+  facades.sort((left, right) => right.len - left.len);
+
+  const clear = (x: number, z: number): boolean =>
+    Math.hypot(x - detail.x, z - detail.z) >= detail.clearRadiusM;
+  const pointOn = (facade: Facade, s: number, out: number): { x: number; z: number } => {
+    const ex = (facade.bx - facade.ax) / facade.len;
+    const ez = (facade.bz - facade.az) / facade.len;
+    return { x: facade.ax + ex * s + facade.ux * out, z: facade.az + ez * s + facade.uz * out };
+  };
+  const topAt = (facade: Facade, s: number): number => {
+    const t = facade.len > 0 ? s / facade.len : 0;
+    return roofY[facade.i]! + (roofY[facade.j]! - roofY[facade.i]!) * t;
+  };
+
+  // La fachada principal es la mas larga que MIRA al spawn (es la que se ve desde
+  // la aparicion); si ninguna mira, la mas larga. Determinista.
+  const facingSpawn = (facade: Facade): number => {
+    const mx = (facade.ax + facade.bx) / 2;
+    const mz = (facade.az + facade.bz) / 2;
+    const vx = detail.x - mx;
+    const vz = detail.z - mz;
+    const norm = Math.hypot(vx, vz) || 1;
+    return (facade.ux * vx + facade.uz * vz) / norm;
+  };
+  const roadFacing = (facade: Facade): number => {
+    const mx = (facade.ax + facade.bx) / 2;
+    const mz = (facade.az + facade.bz) / 2;
+    let best = 0;
+    for (const road of ctx.roadClearance) {
+      const vx = road.x - mx;
+      const vz = road.z - mz;
+      const distance = Math.hypot(vx, vz) || 1;
+      const facing = (facade.ux * vx + facade.uz * vz) / distance;
+      // La fachada debe mirar hacia un eje vial próximo. La atenuación por
+      // distancia evita decorar los patios interiores sólo por una carretera lejana.
+      const exposure = facing * Math.max(0, 1 - Math.max(0, distance - road.radiusM) / 24);
+      best = Math.max(best, exposure);
+    }
+    return best;
+  };
+  let doorInterval: readonly [number, number] | null = null;
+  const main = facades.find((facade) => facingSpawn(facade) > 0.3) ?? facades[0];
+  if (main) {
+    const s = main.len / 2;
+    const ground = pointOn(main, s, 0);
+    const out = pointOn(main, s, OPENING_OUT_M);
+    // La puerta tapa el zocalo desde el suelo local, con un umbral minimo.
+    const y0 = ctx.heightAt(ground.x, ground.z) + 0.03;
+    const y1 = y0 + DOOR_HEIGHT_M;
+    if (y1 <= topAt(main, s) - 0.1 && clear(out.x, out.z)) {
+      const s0 = s - DOOR_WIDTH_M / 2;
+      const s1 = s + DOOR_WIDTH_M / 2;
+      pushFacadeQuad(ctx.details, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, OPENING_OUT_M, s0, s1, y0, y1);
+      pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s0 - 0.1, s0 - 0.025, y0, y1 + 0.05);
+      pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s1 + 0.025, s1 + 0.1, y0, y1 + 0.05);
+      pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s0 - 0.1, s1 + 0.1, y0 - 0.05, y0 + 0.02);
+      if (y1 + 0.14 < topAt(main, s)) {
+        pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s0 - 0.12, s1 + 0.12, y1 + 0.04, y1 + 0.14);
+      }
+      doorInterval = [s0, s1];
+    }
+  }
+
+  const addWindow = (facade: Facade, s: number, floor: number): void => {
+    const s0 = s - WINDOW_WIDTH_M / 2;
+    const s1 = s + WINDOW_WIDTH_M / 2;
+    if (s0 < 0.15 || s1 > facade.len - 0.15) return;
+    if (floor === 0 && facade === main && doorInterval && s0 < doorInterval[1] && s1 > doorInterval[0]) return;
+    const out = pointOn(facade, s, OPENING_OUT_M);
+    if (!clear(out.x, out.z)) return;
+    const ground = pointOn(facade, s, 0);
+    // Alinear las ventanas del mismo piso sobre un datum común evita el efecto
+    // escalonado en fachadas que cruzan una ladera. Se omiten las enterradas.
+    const y0 = minY + WINDOW_SILL_M + floor * 3;
+    const y1 = y0 + WINDOW_HEIGHT_M;
+    if (ctx.heightAt(ground.x, ground.z) > y0 - 0.15) return;
+    if (y1 > topAt(facade, s) - 0.1) return;
+    pushFacadeQuad(ctx.details, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz, OPENING_OUT_M, s0, s1, y0, y1);
+    pushFacadeQuad(ctx.plinths, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz, WINDOW_TRIM_OUT_M, s0 - 0.09, s0 - 0.02, y0 - 0.04, y1 + 0.04);
+    pushFacadeQuad(ctx.plinths, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz, WINDOW_TRIM_OUT_M, s1 + 0.02, s1 + 0.09, y0 - 0.04, y1 + 0.04);
+    pushFacadeQuad(ctx.plinths, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz, WINDOW_TRIM_OUT_M, s0 - 0.09, s1 + 0.09, y0 - 0.11, y0 - 0.04);
+    if (y1 + 0.12 < topAt(facade, s)) {
+      pushFacadeQuad(ctx.plinths, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz, WINDOW_TRIM_OUT_M, s0 - 0.06, s1 + 0.06, y1 + 0.04, y1 + 0.12);
+    }
+    if (shutters && s0 >= SHUTTER_WIDTH_M + SHUTTER_GAP_M + 0.15 &&
+        s1 <= facade.len - SHUTTER_WIDTH_M - SHUTTER_GAP_M - 0.15) {
+      const shutterY0 = y0 - 0.015;
+      const shutterY1 = Math.min(y1 + 0.015, topAt(facade, s) - 0.12);
+      if (shutterY1 > shutterY0) {
+        pushFacadeQuad(
+          shutters, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz,
+          SHUTTER_OUT_M, s0 - SHUTTER_GAP_M - SHUTTER_WIDTH_M, s0 - SHUTTER_GAP_M,
+          shutterY0, shutterY1,
+        );
+        pushFacadeQuad(
+          shutters, facade.ax, facade.az, facade.bx, facade.bz, facade.ux, facade.uz,
+          SHUTTER_OUT_M, s1 + SHUTTER_GAP_M, s1 + SHUTTER_GAP_M + SHUTTER_WIDTH_M,
+          shutterY0, shutterY1,
+        );
+      }
+    }
+  };
+
+  // La puerta sigue orientada al spawn. Las ventanas priorizan además las
+  // fachadas expuestas a la calle, sin decorar paredes ciegas entre edificios.
+  const ordered = facades
+    .filter((facade) => facade !== main)
+    .sort((left, right) => roadFacing(right) - roadFacing(left) || right.len - left.len);
+  const windowFacades = main ? [main, ...ordered.slice(0, 2)] : ordered.slice(0, 3);
+  for (const facade of windowFacades) {
+    for (let floor = 0; floor < 3; floor++) {
+      if (facade.len >= 3.2) {
+        addWindow(facade, facade.len * 0.2, floor);
+        addWindow(facade, facade.len * 0.8, floor);
+      } else {
+        addWindow(facade, facade.len * 0.5, floor);
+      }
+    }
+  }
+
+  // 3. Alero: vuelo horizontal + faja de canto. No toca los hastiales y reutiliza
+  //    el material del tejado, asi que no suma lotes.
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const facade = facadeOf(points[i]!, points[j]!, ccw, i, j);
+    if (!facade || facade.len < 1) continue;
+    if (gable && Math.abs(projU[i]! - projU[j]!) <= 0.05 * ridgeSpan) continue;
+    const topA = roofY[i]!;
+    const topB = roofY[j]!;
+    const oax = facade.ax + facade.ux * EAVE_OVERHANG_M;
+    const oaz = facade.az + facade.uz * EAVE_OVERHANG_M;
+    const obx = facade.bx + facade.ux * EAVE_OVERHANG_M;
+    const obz = facade.bz + facade.uz * EAVE_OVERHANG_M;
+    pushRoofTriangle(roof, [facade.ax, topA, facade.az], [facade.bx, topB, facade.bz], [obx, topB, obz], axis.c);
+    pushRoofTriangle(roof, [facade.ax, topA, facade.az], [obx, topB, obz], [oax, topA, oaz], axis.c);
+    pushFacadeQuad(
+      roof, oax, oaz, obx, obz, facade.ux, facade.uz, 0, 0, facade.len,
+      topA - EAVE_FASCIA_M, topA, topB - EAVE_FASCIA_M, topB,
+    );
+  }
+}
+
+interface YardWallCandidate {
+  readonly building: Building;
+  readonly facade: Facade;
+  readonly centerS: number;
+  readonly offsetM: number;
+  readonly lengthM: number;
+  readonly score: number;
+  readonly center: V2;
+}
+
+/** Una tapia baja en patios con espacio libre; comparte el lote de piedra. */
+function buildYardWalls(
+  group: GroupBuffers,
+  buildings: readonly Building[],
+  keepClearAt: { readonly x: number; readonly z: number } | null,
+  clearRadiusM: number,
+  heightAt: (x: number, z: number) => number,
+  roadClearance: readonly { readonly x: number; readonly z: number; readonly radiusM: number }[],
+): number {
+  if (!keepClearAt) return 0;
+  const candidates: YardWallCandidate[] = [];
+  for (const building of buildings) {
+    if (distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) > DETAIL_RADIUS_M) continue;
+    const ccw = signedArea(building.footprint) > 0;
+    const facades = building.footprint.flatMap((a, i) => {
+      const j = (i + 1) % building.footprint.length;
+      const facade = facadeOf(a, building.footprint[j]!, ccw, i, j);
+      return facade && facade.len >= 5 ? [facade] : [];
+    });
+    for (const facade of facades) {
+      const mx = (facade.ax + facade.bx) / 2;
+      const mz = (facade.az + facade.bz) / 2;
+      const toSpawnX = keepClearAt.x - mx;
+      const toSpawnZ = keepClearAt.z - mz;
+      const spawnDistance = Math.hypot(toSpawnX, toSpawnZ) || 1;
+      const facing = (facade.ux * toSpawnX + facade.uz * toSpawnZ) / spawnDistance;
+      if (facing < -0.15) continue;
+
+      const lengthM = Math.min(4.2, facade.len * 0.62);
+      const side = (building.id & 1) === 0 ? 0.31 : 0.69;
+      const centerS = facade.len * side;
+      const offsetM = 2.15;
+      const centerX = facade.ax + ((facade.bx - facade.ax) / facade.len) * centerS + facade.ux * offsetM;
+      const centerZ = facade.az + ((facade.bz - facade.az) / facade.len) * centerS + facade.uz * offsetM;
+      const score = facing * 3 - spawnDistance / 80 + ((building.id >>> 3) % 17) * 0.001;
+      candidates.push({ building, facade, centerS, offsetM, lengthM, score, center: [centerX, centerZ] });
+    }
+  }
+
+  candidates.sort((a, b) => b.score - a.score || a.building.id - b.building.id);
+  const acceptedCenters: V2[] = [];
+  const acceptedBuildings = new Set<number>();
+  let built = 0;
+  for (const candidate of candidates) {
+    if (built >= 12) break;
+    if (acceptedBuildings.has(candidate.building.id)) continue;
+    if (acceptedCenters.some((center) => Math.hypot(center[0] - candidate.center[0], center[1] - candidate.center[1]) < 8)) continue;
+    const { building, facade, centerS, offsetM, lengthM } = candidate;
+    const startS = centerS - lengthM / 2;
+    const endS = centerS + lengthM / 2;
+    const ex = (facade.bx - facade.ax) / facade.len;
+    const ez = (facade.bz - facade.az) / facade.len;
+    const pointAt = (s: number): V2 => [facade.ax + ex * s + facade.ux * offsetM, facade.az + ez * s + facade.uz * offsetM];
+    const samples = Array.from({ length: 7 }, (_, i) => pointAt(startS + (endS - startS) * (i / 6)));
+    let clear = true;
+    for (const [x, z] of samples) {
+      if (Math.hypot(x - keepClearAt.x, z - keepClearAt.z) < clearRadiusM + 2) {
+        clear = false;
+        break;
+      }
+      if (roadClearance.some((road) => Math.hypot(x - road.x, z - road.z) < road.radiusM + 0.35)) {
+        clear = false;
+        break;
+      }
+      if (buildings.some((other) => other.id !== building.id && distanceToPolygon(other.footprint, x, z) < 0.4)) {
+        clear = false;
+        break;
+      }
+    }
+    if (!clear) continue;
+
+    const a = pointAt(startS);
+    const b = pointAt(endS);
+    const tangentX = (b[0] - a[0]) / lengthM;
+    const tangentZ = (b[1] - a[1]) / lengthM;
+    const normalX = -tangentZ * 0.12;
+    const normalZ = tangentX * 0.12;
+    const corners: V2[] = [
+      [a[0] - normalX, a[1] - normalZ],
+      [b[0] - normalX, b[1] - normalZ],
+      [b[0] + normalX, b[1] + normalZ],
+      [a[0] + normalX, a[1] + normalZ],
+    ];
+    const bases = corners.map(([x, z]) => heightAt(x, z) - 0.06);
+    const tops = bases.map((base) => base + 0.95);
+    for (let i = 0; i < 4; i++) {
+      const j = (i + 1) % 4;
+      const p = corners[i]!;
+      const q = corners[j]!;
+      pushWallStrip(group, p[0], p[1], q[0], q[1], bases[i]!, tops[i]!, tops[j]!, q[1] - p[1], p[0] - q[0]);
+    }
+    pushRoofTriangle(group,
+      [corners[0]![0], tops[0]!, corners[0]![1]],
+      [corners[1]![0], tops[1]!, corners[1]![1]],
+      [corners[2]![0], tops[2]!, corners[2]![1]], candidate.center);
+    pushRoofTriangle(group,
+      [corners[0]![0], tops[0]!, corners[0]![1]],
+      [corners[2]![0], tops[2]!, corners[2]![1]],
+      [corners[3]![0], tops[3]!, corners[3]![1]], candidate.center);
+    acceptedCenters.push(candidate.center);
+    acceptedBuildings.add(building.id);
+    built++;
+  }
+  return built;
 }
 
 /** Triangulo vertical (hastial) con la normal del muro. */
@@ -644,22 +1108,49 @@ export async function loadVillage(
 
   const bodies = emptyGroups(BODY_KINDS);
   const roofs = emptyGroups(ROOF_KINDS);
-  const ctx: BuildContext = { heightAt, bodies, roofs };
+  const details = emptyGroup();
+  const plinths = emptyGroup();
+  const shutters = emptyGroup();
+  const ctx: BuildContext = {
+    heightAt,
+    roadClearance: options.roadClearance ?? [],
+    bodies,
+    roofs,
+    details,
+    plinths,
+    shutters,
+    detail: keepClearAt
+      ? { x: keepClearAt.x, z: keepClearAt.z, radiusM: DETAIL_RADIUS_M, clearRadiusM: keepClearRadiusM }
+      : null,
+  };
 
   let droppedAtSpawn = 0;
   let footprintAreaM2 = 0;
   let tallestM = 0;
   let rendered = 0;
+  let detailedBuildings = 0;
   for (const building of buildings) {
     if (keepClearAt && distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) < keepClearRadiusM) {
       droppedAtSpawn++;
       continue;
     }
-    buildBuilding(ctx, building);
+    const detailed =
+      ctx.detail !== null && distanceToPolygon(building.footprint, ctx.detail.x, ctx.detail.z) <= ctx.detail.radiusM;
+    buildBuilding(ctx, building, detailed);
+    if (detailed) detailedBuildings++;
     footprintAreaM2 += Math.abs(signedArea(building.footprint));
     tallestM = Math.max(tallestM, building.heightM);
     rendered++;
   }
+
+  const courtyardWalls = buildYardWalls(
+    plinths,
+    buildings,
+    keepClearAt,
+    keepClearRadiusM,
+    heightAt,
+    options.roadClearance ?? [],
+  );
 
   const materials: StandardMaterial[] = [];
   const meshes: Mesh[] = [];
@@ -683,6 +1174,22 @@ export async function loadVillage(
     }
   }
 
+  // Lotes de detalle agrupados; no se crea ninguna malla por edificio.
+  const extra: readonly { readonly name: string; readonly group: GroupBuffers; readonly spec: MaterialSpec }[] = [
+    { name: 'pueblo:zocalo', group: plinths, spec: PLINTH_MATERIAL },
+    { name: 'pueblo:detalle', group: details, spec: DETAIL_MATERIAL },
+    { name: 'pueblo:contraventanas', group: shutters, spec: SHUTTER_MATERIAL },
+  ];
+  for (const entry of extra) {
+    const material = createMaterial(scene, entry.spec);
+    materials.push(material);
+    const mesh = createMesh(scene, entry.name, entry.group, material);
+    if (mesh) {
+      meshes.push(mesh);
+      triangles += entry.group.triangles;
+    }
+  }
+
   const stats: VillageStats = {
     buildings: rendered,
     meshes: meshes.length,
@@ -690,11 +1197,14 @@ export async function loadVillage(
     footprintAreaM2: Math.round(footprintAreaM2 * 10) / 10,
     tallestM,
     droppedAtSpawn,
+    detailedBuildings,
+    courtyardWalls,
   };
 
   console.info(
     `[pueblo] ${stats.buildings} edificios · ${stats.meshes} mallas · ${stats.triangles} triángulos · ` +
-      `${stats.footprintAreaM2} m² · más alto ${stats.tallestM} m · ${stats.droppedAtSpawn} descartados en el spawn`,
+      `${stats.footprintAreaM2} m² · más alto ${stats.tallestM} m · ${stats.droppedAtSpawn} descartados en el spawn · ` +
+      `${stats.detailedBuildings} con detalle · ${stats.courtyardWalls} tapias de patio`,
   );
 
   return {

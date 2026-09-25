@@ -1,10 +1,6 @@
 /**
- * 4x4 PROCEDURAL con primitivas de Babylon — PLACEHOLDER.
- *
- * Esto NO es el modelo final: es un bloque con cabina y cuatro ruedas armado con
- * `CreateBox`/`CreateCylinder` para poder conducir, medir la física y ver la
- * actitud sobre la pendiente. La versión definitiva es un GLB de Blender (con
- * manifiesto de ruedas y materiales), fuera del alcance de esta tarea.
+ * 4x4 procedural ligero con primitivas de Babylon. La carrocería, los cristales
+ * y el equipo exterior son visuales; la física usa la disposición de ruedas.
  *
  * Jerarquía:
  *   root (posición + yaw + pitch + roll del vehículo)
@@ -18,7 +14,7 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { WheelLayout } from './attitude';
 
 export interface VehicleModel {
@@ -51,9 +47,10 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   const root = new TransformNode('vehicle:root', scene);
 
   const bodyMat = material(scene, 'vehicle:body', new Color3(0.83, 0.36, 0.1));
-  const cabinMat = material(scene, 'vehicle:cabin', new Color3(0.08, 0.11, 0.14), 0.35);
+  const cabinMat = material(scene, 'vehicle:glass', new Color3(0.12, 0.23, 0.27), 0.35);
   const trimMat = material(scene, 'vehicle:trim', new Color3(0.16, 0.16, 0.18));
   const wheelMat = material(scene, 'vehicle:wheel', new Color3(0.16, 0.16, 0.18), 0.08);
+  const lampMat = material(scene, 'vehicle:lamp', new Color3(0.86, 0.78, 0.57), 0.25);
 
   const parts: Mesh[] = [];
   const wheelHubs: TransformNode[] = [];
@@ -62,14 +59,63 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   // chasis es MENOR que la trocha para que las ruedas queden a la vista.
   const chassisY = wheelRadius + 0.42;
   parts.push(box(scene, 'vehicle:chassis', bodyMat, 1.5, 0.5, 4.05, 0, chassisY, 0));
-  parts.push(box(scene, 'vehicle:cabin', cabinMat, 1.38, 0.62, 1.9, 0, chassisY + 0.55, -0.3));
+  parts.push(box(scene, 'vehicle:cabin', bodyMat, 1.38, 0.62, 1.9, 0, chassisY + 0.55, -0.3));
   parts.push(box(scene, 'vehicle:hood', bodyMat, 1.44, 0.16, 1.2, 0, chassisY + 0.33, 1.28));
-  parts.push(box(scene, 'vehicle:roof-rack', trimMat, 1.2, 0.1, 1.5, 0, chassisY + 0.9, -0.3));
+  // The sloping glass and painted surround give the cabin a more distinct profile.
+  const windshield = box(scene, 'vehicle:windshield', cabinMat, 1.08, 0.4, 0.035, 0, chassisY + 0.59, 0.67);
+  windshield.rotation.x = -0.18;
+  parts.push(windshield);
+  for (const side of [-1, 1] as const) {
+    const x = side * 0.71;
+    // Dos lunas laterales con un pilar visible dan escala y lectura de cabina.
+    parts.push(box(scene, `vehicle:side-glass-front-${side}`, cabinMat, 0.035, 0.34, 0.49, x, chassisY + 0.59, 0.12));
+    parts.push(box(scene, `vehicle:side-glass-rear-${side}`, cabinMat, 0.035, 0.34, 0.49, x, chassisY + 0.59, -0.72));
+    parts.push(box(scene, `vehicle:window-pillar-${side}`, trimMat, 0.045, 0.4, 0.07, side * 0.724, chassisY + 0.59, -0.3));
+    // Escalón, manilla y espejo exterior propios de un 4x4 de trabajo.
+    parts.push(box(scene, `vehicle:side-step-${side}`, trimMat, 0.2, 0.1, 1.35, side * 0.83, wheelRadius + 0.22, -0.25));
+    parts.push(box(scene, `vehicle:door-handle-${side}`, trimMat, 0.035, 0.055, 0.16, side * 0.755, chassisY + 0.28, -0.25));
+    parts.push(box(scene, `vehicle:mirror-arm-${side}`, trimMat, 0.035, 0.16, 0.055, side * 0.77, chassisY + 0.7, 0.53));
+    parts.push(box(scene, `vehicle:mirror-${side}`, bodyMat, 0.14, 0.12, 0.2, side * 0.85, chassisY + 0.76, 0.53));
+    // Baca abierta: deja ver la cubierta y rompe el perfil de caja maciza.
+    parts.push(box(scene, `vehicle:rack-rail-${side}`, trimMat, 0.07, 0.075, 1.48, side * 0.48, chassisY + 0.91, -0.3));
+    // Juntas verticales muy finas separan las puertas sin dibujar textura.
+    parts.push(box(scene, `vehicle:door-seam-front-${side}`, trimMat, 0.025, 0.52, 0.025, side * 0.746, chassisY + 0.28, 0.5));
+    parts.push(box(scene, `vehicle:door-seam-rear-${side}`, trimMat, 0.025, 0.52, 0.025, side * 0.746, chassisY + 0.28, -0.94));
+  }
+  for (const [bar, z] of [-0.88, -0.3, 0.28].entries()) {
+    parts.push(box(scene, `vehicle:rack-crossbar-${bar}`, trimMat, 0.98, 0.055, 0.07, 0, chassisY + 0.91, z));
+  }
+  parts.push(box(scene, 'vehicle:rear-glass', cabinMat, 0.94, 0.34, 0.035, 0, chassisY + 0.59, -1.27));
   parts.push(box(scene, 'vehicle:bumper-front', trimMat, 1.62, 0.2, 0.26, 0, wheelRadius + 0.1, 2.1));
   parts.push(box(scene, 'vehicle:bumper-rear', trimMat, 1.62, 0.2, 0.26, 0, wheelRadius + 0.1, -2.1));
+  parts.push(box(scene, 'vehicle:grille', trimMat, 0.82, 0.26, 0.035, 0, chassisY + 0.08, 2.044));
+  parts.push(box(scene, 'vehicle:headlamp-left', lampMat, 0.25, 0.2, 0.04, -0.57, chassisY + 0.1, 2.05));
+  parts.push(box(scene, 'vehicle:headlamp-right', lampMat, 0.25, 0.2, 0.04, 0.57, chassisY + 0.1, 2.05));
 
+  const spare = CreateCylinder('vehicle:spare-wheel', { height: 0.2, diameter: wheelRadius * 1.65, tessellation: 12 }, scene);
+  spare.material = wheelMat;
+  spare.rotation.x = Math.PI / 2;
+  spare.position.set(0.38, chassisY + 0.18, -2.16);
+  spare.isPickable = false;
+  spare.receiveShadows = true;
+  parts.push(spare);
+
+  // Agrupar las piezas estáticas por material: los nuevos rasgos no añaden
+  // llamadas de dibujo; las cuatro ruedas siguen separadas para girar.
+  const staticByMaterial = new Map<StandardMaterial, Mesh[]>();
   for (const part of parts) {
-    part.parent = root;
+    const group = staticByMaterial.get(part.material as StandardMaterial) ?? [];
+    group.push(part);
+    staticByMaterial.set(part.material as StandardMaterial, group);
+  }
+  let staticGroup = 0;
+  for (const group of staticByMaterial.values()) {
+    const merged = group.length === 1 ? group[0]! : Mesh.MergeMeshes(group, true, true, undefined, false, false);
+    if (!merged) throw new Error('No se pudieron agrupar los detalles estáticos del vehículo');
+    merged.name = `vehicle:static-${staticGroup++}`;
+    merged.parent = root;
+    merged.isPickable = false;
+    merged.receiveShadows = true;
   }
 
   const offsets: readonly (readonly [number, number])[] = [
@@ -78,6 +124,20 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
     [-layout.halfTrack, -layout.rear],
     [layout.halfTrack, -layout.rear],
   ];
+
+  // One merged body-colour mesh covers the upper edge of the four tyres. The
+  // wheel hubs remain free to steer and spin without extra per-frame work.
+  const wingPieces: Mesh[] = [];
+  for (let i = 0; i < offsets.length; i++) {
+    const [x, z] = offsets[i]!;
+    wingPieces.push(box(scene, `vehicle:wing-${i}`, bodyMat, 0.4, 0.12, wheelRadius * 2.15, x, wheelRadius * 2 + 0.035, z));
+  }
+  const wings = Mesh.MergeMeshes(wingPieces, true);
+  if (!wings) throw new Error('No se pudieron crear las aletas del vehículo');
+  wings.name = 'vehicle:wings';
+  wings.parent = root;
+  wings.isPickable = false;
+  wings.receiveShadows = true;
 
   for (let i = 0; i < offsets.length; i++) {
     const [x, z] = offsets[i]!;
@@ -113,6 +173,7 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
       cabinMat.dispose();
       trimMat.dispose();
       wheelMat.dispose();
+      lampMat.dispose();
     },
   };
 }

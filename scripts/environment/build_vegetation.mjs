@@ -62,6 +62,7 @@ const START_CLEAR_RADIUS_M = 30;
  */
 const PRIORITY = {
   'forest-trees': { d: 225, min: 0.01 },
+  'forest-understory': { d: 190, min: 0.003 },
   'field-trees': { d: 225, min: 0.015 },
   'grass-shrubs': { d: 225, min: 0.015 },
   'grass-tufts': { d: 150, min: 0 },
@@ -75,6 +76,7 @@ const PRIORITY = {
  */
 const SPACING = {
   'forest-trees': 7.8, // 1 arbol / ~61 m² de bosque
+  'forest-understory': 20.5, // arbusto bajo aislado / ~420 m² de bosque
   'field-trees': 25.8, // 1 arbol aislado / ~667 m² de cultivo
   'grass-shrubs': 12.9, // 1 arbusto / ~166 m²
   'grass-tufts': 4.7, // 1 mata / ~22 m²
@@ -425,14 +427,19 @@ const tierOf = (distance) => (distance <= TIER_NEAR_M ? 'near' : distance <= TIE
 function pickType(kind, tags, u) {
   if (kind === 'grass') return 'hierba';
   if (kind === 'shrub') return u < 0.6 ? 'jaral' : 'enebro';
+  const identity = [tags?.species, tags?.genus, tags?.name].filter((value) => typeof value === 'string').join(' ').toLowerCase();
+  if (/\bhayedo\b|\bfagus\b|\bbeech\b/.test(identity)) return 'haya';
   const leaf = tags?.leaf_type;
   if (leaf === 'needleleaved') return u < 0.85 ? 'pino' : 'roble';
-  if (leaf === 'broadleaved') return u < 0.6 ? 'roble' : 'abedul';
-  return u < 0.45 ? 'roble' : u < 0.8 ? 'pino' : 'abedul';
+  // OSM suele etiquetar el tipo de hoja, pero no cada especie. Mezclar haya en
+  // el conjunto caducifolio evita que todo ese dosel termine con la misma copa.
+  if (leaf === 'broadleaved') return u < 0.52 ? 'roble' : u < 0.78 ? 'haya' : 'abedul';
+  return u < 0.4 ? 'roble' : u < 0.68 ? 'pino' : u < 0.84 ? 'haya' : 'abedul';
 }
 
 const SEEDERS = [
   { id: 'forest-trees', classes: ['FOREST'], kind: 'tree' },
+  { id: 'forest-understory', classes: ['FOREST'], kind: 'shrub' },
   { id: 'field-trees', classes: ['FIELDS'], kind: 'tree' },
   { id: 'grass-shrubs', classes: ['GRASS'], kind: 'shrub' },
   { id: 'grass-tufts', classes: ['GRASS', 'FIELDS'], kind: 'grass' },
@@ -689,7 +696,7 @@ function buildHeightProbe() {
 // ----------------------------------------------------------------------- main
 const built = derive();
 const counts = built.meta.conteos;
-const trees = (counts.por_tipo.roble ?? 0) + (counts.por_tipo.pino ?? 0) + (counts.por_tipo.abedul ?? 0);
+const trees = (counts.por_tipo.roble ?? 0) + (counts.por_tipo.pino ?? 0) + (counts.por_tipo.abedul ?? 0) + (counts.por_tipo.haya ?? 0);
 const shrubs = (counts.por_tipo.jaral ?? 0) + (counts.por_tipo.enebro ?? 0);
 
 console.log(`vegetación: ${counts.total} instancias · ${trees} árboles · ${shrubs} arbustos · ${counts.por_tipo.hierba ?? 0} matas`);
@@ -746,9 +753,9 @@ for (const t of ['near', 'mid', 'far']) {
   const n = list.filter((i) => i.tier === t).length;
   check(`tier ${t} > 0`, n > 0, `${n}`);
 }
-const REQUIRED_TYPES = ['roble', 'pino', 'abedul', 'jaral', 'enebro', 'hierba'];
+const REQUIRED_TYPES = ['roble', 'pino', 'abedul', 'haya', 'jaral', 'enebro', 'hierba'];
 check(
-  'tipos: 3 árboles + 2 arbustos + hierba',
+  'tipos: 4 árboles + 2 arbustos + hierba',
   REQUIRED_TYPES.every((t) => list.some((i) => i.type === t)),
   `${new Set(list.map((i) => i.type)).size} tipos distintos`,
 );

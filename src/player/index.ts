@@ -8,14 +8,15 @@
  * No hay dos entidades (personaje + coche) sincronizadas a mano, que es de donde
  * salen los bugs de "el jugador quedó atrás".
  *
- * El modelo es procedural y barato: cuerpo, cabeza y dos piernas que oscilan con
- * la velocidad. Sin GLTF, sin texturas, sin huesos.
+ * El modelo es procedural y barato: cuerpo, cabeza, equipo de campo y dos
+ * piernas que oscilan con la velocidad. Sin GLTF, texturas ni huesos.
  *
  * LIMITACIÓN CONOCIDA: no hay colisión con edificios en esta milestone.
  */
 
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
+import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
@@ -107,25 +108,75 @@ function createCharacterModel(scene: Scene): {
   const torsoMat = makeMaterial(scene, 'player:torso', new Color3(0.2, 0.34, 0.5));
   const headMat = makeMaterial(scene, 'player:head', new Color3(0.82, 0.66, 0.52));
   const legMat = makeMaterial(scene, 'player:leg', new Color3(0.22, 0.23, 0.27), 0.08);
+  const vestMat = makeMaterial(scene, 'player:vest', new Color3(0.78, 0.63, 0.15));
+  const gearMat = makeMaterial(scene, 'player:gear', new Color3(0.25, 0.31, 0.22));
 
-  // Torso: caja parada (barata y legible de lejos).
-  const torso = CreateBox('player:torso', { width: 0.5, height: 0.8, depth: 0.3 }, scene);
+  const detail = (name: string, mat: StandardMaterial, width: number, height: number, depth: number, x: number, y: number, z: number): void => {
+    const mesh = CreateBox(name, { width, height, depth }, scene);
+    mesh.material = mat;
+    mesh.position.set(x, y, z);
+    mesh.parent = root;
+    mesh.isPickable = false;
+  };
+
+  // Hombros algo más anchos que la cintura, con una silueta angular sencilla.
+  const torso = CreateCylinder('player:torso', { height: 0.8, diameterTop: 0.54, diameterBottom: 0.44, tessellation: 6 }, scene);
   torso.material = torsoMat;
   torso.position.set(0, BODY_CENTER_Y_M, 0);
+  torso.scaling.z = 0.65;
   torso.parent = root;
   torso.isPickable = false;
+
+  // Front is +Z. The vest and field pack make the role legible from either side.
+  detail('player:vest-front', vestMat, 0.42, 0.58, 0.05, 0, BODY_CENTER_Y_M, 0.19);
+  detail('player:field-pack', gearMat, 0.38, 0.53, 0.17, 0, BODY_CENTER_Y_M + 0.02, -0.23);
+  detail('player:field-radio', gearMat, 0.11, 0.17, 0.07, 0.16, BODY_CENTER_Y_M + 0.26, 0.22);
+  for (const side of [-1, 1] as const) {
+    const sleeve = CreateCylinder(`player:sleeve-${side}`, { height: 0.58, diameterTop: 0.2, diameterBottom: 0.15, tessellation: 6 }, scene);
+    sleeve.material = torsoMat;
+    sleeve.position.set(side * 0.33, BODY_CENTER_Y_M + 0.02, 0);
+    sleeve.rotation.z = side * 0.12;
+    sleeve.parent = root;
+    sleeve.isPickable = false;
+
+    const hand = CreateSphere(`player:hand-${side}`, { diameter: 0.12, segments: 6 }, scene);
+    hand.material = headMat;
+    hand.position.set(side * 0.37, 0.64, 0);
+    hand.parent = root;
+    hand.isPickable = false;
+  }
 
   const head = CreateSphere('player:head', { diameter: 0.28, segments: 8 }, scene);
   head.material = headMat;
   head.position.set(0, 1.55, 0);
   head.parent = root;
   head.isPickable = false;
+  const capBrim = CreateCylinder('player:cap-brim', {
+    height: 0.035,
+    diameterTop: 0.39,
+    diameterBottom: 0.39,
+    tessellation: 10,
+  }, scene);
+  capBrim.material = gearMat;
+  capBrim.position.set(0, 1.68, 0.025);
+  capBrim.parent = root;
+  capBrim.isPickable = false;
+  const capCrown = CreateCylinder('player:field-cap', {
+    height: 0.14,
+    diameterTop: 0.27,
+    diameterBottom: 0.31,
+    tessellation: 8,
+  }, scene);
+  capCrown.material = gearMat;
+  capCrown.position.set(0, 1.755, 0.025);
+  capCrown.parent = root;
+  capCrown.isPickable = false;
 
-  // Piernas: la caja cuelga de la cadera. `rotation.x` la balancea. Babylon rota
+  // Piernas: cada pieza cuelga de la cadera. `rotation.x` la balancea. Babylon rota
   // alrededor del CENTRO del mesh, así que el centro va a media pierna bajo el
   // origen de la cadera (y = LEG/2) para que el pie quede a la altura del suelo.
   const makeLeg = (name: string, x: number): Mesh => {
-    const leg = CreateBox(name, { width: 0.16, height: LEG_LENGTH_M, depth: 0.18 }, scene);
+    const leg = CreateCylinder(name, { height: LEG_LENGTH_M, diameterTop: 0.18, diameterBottom: 0.15, tessellation: 6 }, scene);
     leg.material = legMat;
     leg.position.set(x, LEG_LENGTH_M / 2, 0);
     leg.parent = root;
@@ -156,6 +207,8 @@ function createCharacterModel(scene: Scene): {
       torsoMat.dispose();
       headMat.dispose();
       legMat.dispose();
+      vestMat.dispose();
+      gearMat.dispose();
     },
   };
 }

@@ -9,8 +9,8 @@
  *     pide este modulo a `terrain.heightAt`. Preguntarle a cualquier otra fuente
  *     (o reimplementar la interpolacion) deja arboles flotando el dia que cambie
  *     el DEM.
- *  2. THIN INSTANCES, 18 MALLAS para 30.000+ instancias. Un mesh por árbol serian
- *     30.000 draw calls y matarian el frame. Hay 6 tipos x 3 niveles de detalle.
+ *  2. THIN INSTANCES, hasta 21 MALLAS para 30.000+ instancias. Un mesh por árbol serian
+ *     30.000 draw calls y matarian el frame. Hay 7 tipos x 3 niveles de detalle.
  *  3. EL LOD SE RECALCULA POR DISTANCIA A LA CAMARA, no por el `tier` del JSON.
  *     El `tier` es la banda de distancia a la PRIMERA RUTA (prioridad del build y
  *     estadistica): con la camara sobre la ruta coincide, pero en cuanto la camara
@@ -85,7 +85,7 @@ export interface LoadVegetationOptions {
 
 const DEFAULT_URL = '/vegetation/vegetation.json';
 
-const TREE_TYPES = ['roble', 'pino', 'abedul'] as const;
+const TREE_TYPES = ['roble', 'pino', 'abedul', 'haya'] as const;
 const SHRUB_TYPES = ['jaral', 'enebro'] as const;
 const GRASS_TYPES = ['hierba'] as const;
 const ALL_TYPES = [...TREE_TYPES, ...SHRUB_TYPES, ...GRASS_TYPES] as const;
@@ -108,7 +108,7 @@ type Family = 'arbol' | 'arbusto' | 'hierba';
  * arboles paraban 250 m antes. Medido en la captura aerea y en un test a
  * 900 m de altura (cero arboles, o sea era el radio y no el landcover).
  * Coste: ~2x triangulos de vegetacion en vista aerea, 0 draw calls extra
- * (siguen siendo 18 mallas como tope).
+ * (siguen siendo 21 mallas como tope).
  */
 const LOD_RADII: Record<Family, readonly [number, number, number]> = {
   arbol: [110, 320, 1200],
@@ -122,6 +122,21 @@ const LOD_RADII: Record<Family, readonly [number, number, number]> = {
  * un disco volando: hundir 25 cm tapa eso sin que se note en el perfil.
  */
 const SINK_M: Record<Family, number> = { arbol: 0.25, arbusto: 0.15, hierba: 0.05 };
+
+/** Variación de silueta por ejemplar sin duplicar mallas ni bandas de LOD. */
+const TREE_PROFILES = [
+  [0.78, 1.08, 0.84, -0.045, 0.025],
+  [1.2, 0.9, 1.12, 0.035, -0.05],
+  [0.92, 1.2, 0.78, 0.055, 0.015],
+  [1.14, 0.84, 1.2, -0.02, 0.045],
+  [0.82, 0.96, 1.18, -0.04, -0.03],
+  [1.2, 1.08, 0.82, 0.025, 0.055],
+] as const;
+
+function treeProfileIndex(x: number, z: number): number {
+  const hash = Math.imul(Math.round(x * 10), 73856093) ^ Math.imul(Math.round(z * 10), 19349663);
+  return (hash >>> 0) % TREE_PROFILES.length;
+}
 
 /**
  * La reposicion de bandas solo se rehace cuando la camara se movio mas que esto.
@@ -146,9 +161,10 @@ interface Palette {
  * que el tronco sea marron y la copa verde en la misma malla.
  */
 const PALETTE: Record<VegType, Palette> = {
-  roble: { wood: [0.36, 0.29, 0.21], low: [0.27, 0.4, 0.19], high: [0.42, 0.56, 0.27] },
+  roble: { wood: [0.36, 0.29, 0.21], low: [0.23, 0.35, 0.17], high: [0.38, 0.52, 0.24] },
   pino: { wood: [0.33, 0.26, 0.19], low: [0.18, 0.31, 0.19], high: [0.28, 0.44, 0.26] },
-  abedul: { wood: [0.74, 0.72, 0.66], low: [0.4, 0.52, 0.25], high: [0.56, 0.67, 0.35] },
+  abedul: { wood: [0.78, 0.76, 0.69], low: [0.43, 0.53, 0.29], high: [0.64, 0.72, 0.4] },
+  haya: { wood: [0.43, 0.37, 0.29], low: [0.19, 0.31, 0.19], high: [0.32, 0.47, 0.27] },
   jaral: { wood: [0.36, 0.32, 0.22], low: [0.32, 0.39, 0.21], high: [0.45, 0.51, 0.29] },
   enebro: { wood: [0.34, 0.3, 0.24], low: [0.24, 0.36, 0.25], high: [0.33, 0.45, 0.3] },
   hierba: { wood: [0.3, 0.36, 0.18], low: [0.33, 0.45, 0.2], high: [0.5, 0.62, 0.29] },
@@ -305,12 +321,13 @@ function pushBlob(
   height: number,
   low: RGB,
   high: RGB,
+  lobeAmount = 0,
+  lobeCount = 4,
 ): void {
   const ringIndex: number[][] = [];
   const ringT: number[] = [];
   for (let j = 0; j <= rings; j++) {
     const t = j / rings;
-    const r = radius * Math.sin(Math.PI * t);
     const y = y0 + height * t;
     const color = lerpColor(low, high, t);
     const nY = -radius * Math.PI * Math.cos(Math.PI * t);
@@ -322,6 +339,10 @@ function pushBlob(
     const col: number[] = [];
     for (let j2 = 0; j2 < seg; j2++) {
       const angle = (j2 / seg) * Math.PI * 2;
+      // Broadleaf crowns break the perfect umbrella outline. This is a radial
+      // vertex displacement only, so it costs no triangles or draw calls.
+      const lobe = 1 + lobeAmount * Math.cos(angle * lobeCount) * Math.sin(Math.PI * t);
+      const r = radius * Math.sin(Math.PI * t) * lobe;
       const ux = Math.cos(-angle);
       const uz = Math.sin(-angle);
       col.push(addVertex(g, ux * r, y, uz * r, nr * ux, nny, nr * uz, color));
@@ -395,10 +416,21 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
     if (band === 2) {
       // Sin tronco (lo pide la tarea para `far`): la copa llega hasta el suelo
       // para que no se vea un hueco debajo a 500 m.
-      pushBlob(g, 5, 2, 2.5, 0, 6.8, p.low, p.high);
+      pushBlob(g, 5, 2, 3.0, 0, 6.2, p.low, p.high, 0.14, 2);
     } else {
       pushFrustum(g, near ? 7 : 5, 0.34, 0.24, 0, near ? 3 : 2.6, p.wood, p.wood, true, false);
-      pushBlob(g, near ? 10 : 6, near ? 4 : 3, 2.5, near ? 2.4 : 2.2, near ? 4.8 : 4.4, p.low, p.high);
+      pushBlob(
+        g,
+        near ? 10 : 6,
+        near ? 4 : 3,
+        near ? 3.0 : 2.6,
+        near ? 2.25 : 2.1,
+        near ? 4.45 : 4.0,
+        p.low,
+        p.high,
+        near ? 0.18 : 0.14,
+        near ? 5 : 3,
+      );
     }
     return g;
   }
@@ -421,10 +453,31 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
   }
   if (type === 'abedul') {
     if (band === 2) {
-      pushBlob(g, 5, 2, 1.9, 0, 7.0, p.low, p.high);
+      pushBlob(g, 5, 2, 1.5, 0, 7.4, p.low, p.high, 0.08, 2);
     } else {
-      pushFrustum(g, near ? 6 : 4, 0.2, 0.13, 0, near ? 4.2 : 3.8, p.wood, p.wood, true, false);
-      pushBlob(g, near ? 9 : 6, 3, 1.9, near ? 3.4 : 3.2, near ? 4 : 3.8, p.low, p.high);
+      pushFrustum(g, near ? 6 : 4, 0.2, 0.13, 0, near ? 4.6 : 4.0, p.wood, p.wood, true, false);
+      pushBlob(g, near ? 9 : 6, 3, near ? 1.7 : 1.6, near ? 3.8 : 3.45, near ? 4.55 : 4.25, p.low, p.high, near ? 0.1 : 0.08, 3);
+    }
+    return g;
+  }
+  if (type === 'haya') {
+    if (band === 2) {
+      // En el horizonte, copa ovalada y alta para distinguir el hayedo de los pinos.
+      pushBlob(g, 5, 2, 2.35, 0, 8.2, p.low, p.high, 0.1, 3);
+    } else {
+      pushFrustum(g, near ? 7 : 5, 0.29, 0.2, 0, near ? 5.2 : 4.5, p.wood, p.wood, true, false);
+      pushBlob(
+        g,
+        near ? 10 : 6,
+        near ? 4 : 3,
+        near ? 2.65 : 2.35,
+        near ? 4.35 : 3.9,
+        near ? 4.25 : 3.9,
+        p.low,
+        p.high,
+        near ? 0.12 : 0.1,
+        5,
+      );
     }
     return g;
   }
@@ -621,7 +674,7 @@ function createMesh(scene: Scene, type: VegType, band: Band, material: StandardM
  * ------------------------------------------------------------------------- */
 
 /**
- * Carga `vegetation.json`, arma las 18 mallas (6 tipos x 3 niveles) y devuelve
+ * Carga `vegetation.json`, arma hasta 21 mallas (7 tipos x 3 niveles) y devuelve
  * el control de LOD. No dibuja nada hasta el primer `update()`.
  */
 export async function loadVegetation(
@@ -712,10 +765,16 @@ export async function loadVegetation(
   for (const { raw, y } of kept) {
     const group = groups.get(raw.type)!;
     const sink = SINK_M[group.family];
-    scaleVec.setAll(raw.scale);
-    Quaternion.FromEulerAnglesToRef(0, raw.rotation, 0, rotQuat);
-    // El `y` de la instancia es el suelo MENOS el hundimiento. La escala es
-    // uniforme, asi que escalar y rotar conmuta: no cambia la forma final.
+    if (group.family === 'arbol') {
+      const profile = TREE_PROFILES[treeProfileIndex(raw.x, raw.z)]!;
+      scaleVec.set(raw.scale * profile[0], raw.scale * profile[1], raw.scale * profile[2]);
+      Quaternion.FromEulerAnglesToRef(profile[3], raw.rotation, profile[4], rotQuat);
+    } else {
+      scaleVec.setAll(raw.scale);
+      Quaternion.FromEulerAnglesToRef(0, raw.rotation, 0, rotQuat);
+    }
+    // El `y` de la instancia es el suelo MENOS el hundimiento. La escala no
+    // uniforme solo cambia la silueta; la base sigue apoyada en ese punto.
     posVec.set(raw.x, y - sink, raw.z);
     Matrix.ComposeToRef(scaleVec, rotQuat, posVec, composed);
     const o = group.count * 16;
@@ -725,7 +784,7 @@ export async function loadVegetation(
     familyCounts[group.family]++;
   }
 
-  // 3) Materiales + 18 mallas. Solo se crea una malla para un tipo que exista.
+  // 3) Materiales + hasta 21 mallas. Solo se crea una malla para un tipo que exista.
   const solidMaterial = createMaterial(scene, 'vegetacion:solido', 0.3);
   const grassMaterial = createMaterial(scene, 'vegetacion:hierba', 0.36);
   const buckets = new Map<VegType, Bucket[]>();

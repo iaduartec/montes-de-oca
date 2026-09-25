@@ -42,7 +42,6 @@ const WINDOW_M = 6000;
  * Punto de aparicion del 4x4 (FASE 5 / first-route). Tiene que quedar libre:
  * el jugador no puede nacer dentro de una casa.
  */
-const SPAWN = { x: 3088, z: 3935 };
 /** Radio a despejar alrededor del spawn. La verificacion exige >= 8 m. */
 const SPAWN_RADIUS_M = 12;
 /** Area minima de un footprint (m^2). Menos que esto es ruido de digitalizacion. */
@@ -295,6 +294,9 @@ function isRecord(value) {
  * silencioso se comio medio pueblo.
  */
 function derive(payload, config, wgs84ToWorld) {
+  if (!config.spawn) throw new Error('config: falta spawn para derivar los edificios');
+  const [spawnX, spawnZ] = wgs84ToWorld(config, config.spawn.lon, config.spawn.lat);
+  const spawn = { x: spawnX, z: spawnZ };
   const elements = Array.isArray(payload?.elements) ? payload.elements : [];
   const buildings = [];
   const discarded = {
@@ -365,7 +367,7 @@ function derive(payload, config, wgs84ToWorld) {
       continue;
     }
 
-    if (distanceToPolygon(points, SPAWN.x, SPAWN.z) < SPAWN_RADIUS_M) {
+    if (distanceToPolygon(points, spawn.x, spawn.z) < SPAWN_RADIUS_M) {
       discarded.despeje_spawn++;
       continue;
     }
@@ -402,7 +404,7 @@ function derive(payload, config, wgs84ToWorld) {
 
   // Orden numerico por id: la salida tiene que ser byte-identica entre corridas.
   buildings.sort((a, b) => a.id - b.id);
-  return { buildings, discarded, byHeightSource, byMaterial, byRoof, byType, heightsClamped, ways: elements.length };
+  return { buildings, spawn, discarded, byHeightSource, byMaterial, byRoof, byType, heightsClamped, ways: elements.length };
 }
 
 function footprintAreaM2(buildings) {
@@ -417,7 +419,7 @@ function serialize(buildings, meta) {
 }
 
 function buildMeta(derived, manifest, sourceSha) {
-  const { buildings, discarded, byHeightSource, byMaterial, byRoof, byType, heightsClamped, ways } = derived;
+  const { buildings, spawn, discarded, byHeightSource, byMaterial, byRoof, byType, heightsClamped, ways } = derived;
   return {
     schemaVersion: 1,
     // `fecha` NO es la hora de la corrida: sale del manifiesto de descarga para
@@ -425,9 +427,9 @@ function buildMeta(derived, manifest, sourceSha) {
     fecha: manifest.fetched_at_utc ?? null,
     script: 'scripts/environment/build_village.mjs',
     license: 'ODbL-1.0 (OpenStreetMap contributors)',
-    coordinate_system: 'wgs84ToWorld(config) -> worldX = E - 471500, worldZ = N - 4689000 (y = altura absoluta - 870 en runtime)',
+    coordinate_system: 'WGS84 -> EPSG:25830 UTM 30N -> worldX = E - bounds.e[0], worldZ = N - bounds.n[0] (y = altura absoluta - verticalDatum)',
     ventana_m: [0, WINDOW_M, 0, WINDOW_M],
-    spawn: { x: SPAWN.x, z: SPAWN.z, radio_despeje_m: SPAWN_RADIUS_M },
+    spawn: { x: Math.round(spawn.x * 100) / 100, z: Math.round(spawn.z * 100) / 100, radio_despeje_m: SPAWN_RADIUS_M },
     fuente: {
       file: 'data/gameplay/raw/osm_buildings_villafranca.json',
       query_file: manifest.query_file ?? null,
@@ -601,13 +603,13 @@ async function runCheck(derived, serialized, sourceSha, manifest) {
   let nearest = Infinity;
   let nearestId = null;
   for (const b of buildings) {
-    const d = distanceToPolygon(b.footprint, SPAWN.x, SPAWN.z);
+    const d = distanceToPolygon(b.footprint, derived.spawn.x, derived.spawn.z);
     if (d < nearest) {
       nearest = d;
       nearestId = b.id;
     }
   }
-  report(`spawn (${SPAWN.x}, ${SPAWN.z}) libre con radio >= 8 m`, nearest >= 8,
+  report(`spawn (${derived.spawn.x.toFixed(2)}, ${derived.spawn.z.toFixed(2)}) libre con radio >= 8 m`, nearest >= 8,
     `edificio mas cercano #${nearestId} a ${nearest.toFixed(1)} m`);
 
   console.log('\n=== 5. ninguna base flotante (muestreo con semilla fija) ===');

@@ -32,8 +32,41 @@ def check(name: str, ok: bool, detail: str = "") -> None:
         FAILS.append(name)
 
 
+def orient(a: list[float], b: list[float], c: list[float]) -> float:
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
+def point_strictly_inside(point: list[float], ring: list[list[float]]) -> bool:
+    x, y = point
+    inside = False
+    for a, b in zip(ring, ring[1:] + ring[:1]):
+        if (a[1] > y) != (b[1] > y):
+            cross_x = a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1])
+            if x < cross_x:
+                inside = not inside
+    return inside
+
+
+def proper_segments_cross(a: list[float], b: list[float], c: list[float], d: list[float]) -> bool:
+    eps = 1e-8
+    ab_c, ab_d = orient(a, b, c), orient(a, b, d)
+    cd_a, cd_b = orient(c, d, a), orient(c, d, b)
+    return ((ab_c > eps and ab_d < -eps) or (ab_c < -eps and ab_d > eps)) and (
+        (cd_a > eps and cd_b < -eps) or (cd_a < -eps and cd_b > eps)
+    )
+
+
+def segment_crosses_footprint(a: list[float], b: list[float], ring: list[list[float]]) -> bool:
+    midpoint = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    if point_strictly_inside(a, ring) or point_strictly_inside(b, ring) or point_strictly_inside(midpoint, ring):
+        return True
+    return any(proper_segments_cross(a, b, c, d)
+               for c, d in zip(ring, ring[1:] + ring[:1]))
+
+
 def main() -> int:
     roads_doc = json.loads((OUT / "roads.json").read_text(encoding="utf-8"))
+    buildings_doc = json.loads((ROOT / "public" / "village" / "buildings.json").read_text(encoding="utf-8"))
     nav = json.loads((OUT / "navigation.json").read_text(encoding="utf-8"))
     stats = json.loads((OUT / "stats.json").read_text(encoding="utf-8"))
     roads = roads_doc["roads"]
@@ -65,9 +98,43 @@ def main() -> int:
     check("roads: speedFactor en (0,1]", all(0 < r["speedFactor"] <= 1 for r in roads))
     check("roads: tags crudos preservados", all(isinstance(r["tags"], dict) and r["tags"]
                                                 for r in roads))
+    polygonal_walkways = [r["id"] for r in roads
+                          if len(r["points"]) >= 4
+                          and r["points"][0] == r["points"][-1]
+                          and (r["tags"].get("area") == "yes"
+                               or "area:highway" in r["tags"]
+                               or (r["tags"].get("highway") in {"path", "footway", "bridleway",
+                                                                  "cycleway", "steps", "pedestrian"}
+                                   and r["tags"].get("place") == "square"))]
+    check("roads: areas peatonales no se dibujan como lineas", not polygonal_walkways,
+          f"{len(polygonal_walkways)} areas incluidas como vias")
+    check("stats: areas peatonales excluidas quedan trazadas",
+          "area_feature" in stats["excluded"]["by_reason"],
+          str(stats["excluded"]["by_reason"].get("area_feature", {})))
     check("roads: TRACK conserva tracktype", all(r["tracktype"] for r in roads
                                                  if r["class"] == "TRACK" and
                                                  r["tags"].get("tracktype")))
+
+    road_building_crossings = []
+    footprints = []
+    for building in buildings_doc["buildings"]:
+        ring = building["footprint"]
+        footprints.append((building["id"], ring,
+                           min(point[0] for point in ring), min(point[1] for point in ring),
+                           max(point[0] for point in ring), max(point[1] for point in ring)))
+    for road in roads:
+        for a, b in zip(road["points"], road["points"][1:]):
+            seg_min_x, seg_max_x = min(a[0], b[0]), max(a[0], b[0])
+            seg_min_y, seg_max_y = min(a[1], b[1]), max(a[1], b[1])
+            for building_id, ring, min_x, min_y, max_x, max_y in footprints:
+                if seg_max_x < min_x or seg_min_x > max_x or seg_max_y < min_y or seg_min_y > max_y:
+                    continue
+                if segment_crosses_footprint(a, b, ring):
+                    road_building_crossings.append((road["id"], building_id))
+                    break
+    check("roads: polilineas no atraviesan huellas de edificios",
+          not road_building_crossings,
+          f"{len(road_building_crossings)} tramos; muestra={road_building_crossings[:5]}")
 
     # --- 2. esquema de navigation.json ------------------------------------
     check("nav: nodes/edges/edgeMeta paralelos",

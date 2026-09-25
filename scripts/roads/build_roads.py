@@ -45,6 +45,7 @@ from shapely.geometry import LineString, Polygon, box
 ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = ROOT / "data" / "roads" / "raw"
 OUT_DIR = ROOT / "public" / "roads"
+BUILDINGS_PATH = ROOT / "public" / "village" / "buildings.json"
 
 RAW_MAIN = RAW_DIR / "osm_highways_window.json"
 RAW_MANIFEST = RAW_DIR / "osm_highways_window_manifest.json"
@@ -575,6 +576,11 @@ def main() -> None:
     raw_path = Path(args.raw)
     manifest = json.loads(RAW_MANIFEST.read_text(encoding="utf-8")) if RAW_MANIFEST.exists() else {}
     payload = json.loads(raw_path.read_text(encoding="utf-8"))
+    buildings_doc = json.loads(BUILDINGS_PATH.read_text(encoding="utf-8"))
+    building_footprints = [
+        (building["id"], Polygon(building["footprint"]))
+        for building in buildings_doc["buildings"]
+    ]
     elements = payload.get("elements", [])
     to_world = make_projector()
 
@@ -611,6 +617,19 @@ def main() -> None:
         km_outside += lost
 
         cls, reason = classify(tags)
+        # Los polígonos peatonales se sirven como áreas, no como líneas. En
+        # particular OSM marca La Plaza como un anillo `highway=pedestrian` +
+        # `place=square`; dibujar ese contorno como pista crea una cinta que
+        # atraviesa varias huellas de edificios. El renderer de vías no consume
+        # superficies, así que las excluimos de la red lineal.
+        closed = len(proj) >= 4 and proj[0] == proj[-1]
+        is_pedestrian_area = closed and (
+            tags.get("area") == "yes"
+            or "area:highway" in tags
+            or (tags.get("highway") in PATH_KINDS and tags.get("place") == "square")
+        )
+        if is_pedestrian_area:
+            cls, reason = None, "area_feature"
         for pts in parts:
             for end in (pts[0], pts[-1]):
                 on_border = (end[0] <= 0.01 or end[0] >= WORLD_SIZE - 0.01
@@ -642,13 +661,30 @@ def main() -> None:
     kept = [r for r in class_ok if r["exclude_reason"] is None]
     km_before_simplify = sum(polyline_length(r["pts"]) for r in kept)
     vertices_before = sum(len(r["pts"]) for r in kept)
+    building_guard_reverted: list[int] = []
     vertex_count: Counter = Counter()
     for rec in kept:
         for p in rec["pts"]:
             vertex_count[p] += 1
     for rec in kept:
         prot = {i for i, p in enumerate(rec["pts"]) if vertex_count[p] >= 2}
-        rec["pts"] = simplify_protected(rec["pts"], prot, SIMPLIFY_TOL_M)
+        source_pts = rec["pts"]
+        simplified_pts = simplify_protected(source_pts, prot, SIMPLIFY_TOL_M)
+        simplified_line = LineString(simplified_pts)
+        source_line = LineString(source_pts)
+        created_building_crossing = any(
+            simplified_line.relate_pattern(footprint, "T********")
+            and not source_line.relate_pattern(footprint, "T********")
+            for _, footprint in building_footprints
+        )
+        if created_building_crossing:
+            # Mantiene los vertices OSM de esa way cuando el atajo Douglas-Peucker
+            # entra en una huella. Asi el trazado sigue la calle real junto a las
+            # fachadas en vez de dibujar una recta a traves de los edificios.
+            building_guard_reverted.append(rec["osm_id"])
+            rec["pts"] = source_pts
+        else:
+            rec["pts"] = simplified_pts
     km_after_simplify = sum(polyline_length(r["pts"]) for r in kept)
     vertices_after = sum(len(r["pts"]) for r in kept)
 
@@ -927,6 +963,8 @@ def main() -> None:
         "simplification": {
             "tolerance_m": SIMPLIFY_TOL_M,
             "protected_vertices": "vertices compartidos entre ways (cruces) nunca se eliminan",
+            "building_guard_reverted_ways": sorted(set(building_guard_reverted)),
+            "building_guard_note": "si simplificar una way crea un cruce con una huella, se conserva su geometria original",
             "vertices_before": vertices_before,
             "vertices_after": vertices_after,
             "vertices_removed_pct": round(100.0 * (vertices_before - vertices_after) / max(1, vertices_before), 1),
