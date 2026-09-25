@@ -53,16 +53,20 @@ kill <preview>                                  # server abajo, HTTP 000 confirm
   exactamente al contenido commiteado.
   > **Nota del orquestador.** Este informe citaba el hash `7a6a380`. Después de
   > escribirlo se reescribió la historia de git (para sacar dos blobs grandes), así
-  > que **ese commit es ahora `bff7ea6`**: el hash cambió, y también el árbol, por
-  > una única entrada — el `.tif` del MDT que estaba trackeado y dejó de estarlo
-  > (era el objetivo del rewrite). Ni una línea de código, documentación o evidencia
-  > cambió. La comprobación de que nada más se movió es que `npm test` pasa sobre
-  > el árbol actual y que `output/roads_draping.json` y los PNG publicados siguen
-  > con el mismo sha256 que tenían antes del rewrite.
+  > que **ese commit es ahora `bff7ea6`**. La tabla completa viejo→nuevo está en
+  > `docs/git/REWRITE_HISTORIA.md`.
   >
-  > (No pude comparar los árboles directamente: el bundle de seguridad se creó 4
-  > commits antes y no contiene `7a6a380`. Es un agujero que tenía la guarda de
-  > backup, ya corregido en `scripts/git/limpiar_blobs_grandes.sh`.)
+  > El hash cambió, y también el árbol, por una única entrada: el `.tif` del MDT que
+  > estaba trackeado y dejó de estarlo (era el objetivo del rewrite). Ni una línea
+  > de código, documentación o evidencia cambió. La comprobación de que nada más se
+  > movió es que `npm test` pasa sobre el árbol actual y que `output/roads_draping.json`
+  > y los PNG publicados siguen con el mismo sha256 que tenían antes del rewrite.
+  >
+  > Dos matices: `git filter-repo` deja `refs/replace/*`, así que el hash viejo
+  > **completo** (`7a6a380627df…`) todavía resuelve, pero la abreviatura `7a6a380`
+  > no. Y el mapa autoritativo vive en `.git/filter-repo/commit-map`, que **no está
+  > versionado y se pierde en un clon limpio** — por eso quedó transcrito en
+  > `docs/git/REWRITE_HISTORIA.md`.
 - No modifiqué `src/**`, `public/**`, `data/**`, `scripts/roads/**` ni
   `docs/roads/DRAPING_FASE3B.md`. No agregué dependencias. No commiteé.
 

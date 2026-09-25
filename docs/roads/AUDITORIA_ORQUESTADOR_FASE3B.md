@@ -4,7 +4,8 @@ Validación **independiente** del trabajo de `d1-drapeado`
 (`opencode-go/deepseek-v4.1-flash`). No repite su informe: verifica qué de lo que
 declaró se sostiene, qué no, y qué consecuencias tiene.
 
-- Implementación auditada: commit `7a6a380`
+- Implementación auditada: commit `bff7ea6` (era `7a6a380` antes del rewrite de
+  historia; ver `docs/git/REWRITE_HISTORIA.md`)
 - Informe del worker: `docs/roads/DRAPING_FASE3B.md`
 - Mediciones crudas: `output/roads_draping.json`
 - Reproducción por otro modelo: `docs/roads/VERIFICACION_FASE3B.md`
