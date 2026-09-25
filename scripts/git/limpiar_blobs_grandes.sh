@@ -48,6 +48,8 @@ MODE="${1:-check}"
 
 rojo()  { printf '\033[31m%s\033[0m\n' "$*"; }
 verde() { printf '\033[32m%s\033[0m\n' "$*"; }
+ambar() { printf '\033[33m%s\033[0m\n' "$*"; }
+info()  { printf '\033[36m%s\033[0m\n' "$*"; }
 paso()  { printf '\n\033[1m== %s ==\033[0m\n' "$*"; }
 abortar(){ rojo "ABORTA: $*"; exit 1; }
 
@@ -102,8 +104,17 @@ verificar() {
   if [ "$bytes" -lt 10485760 ]; then chk ".git quedo en ${mb} MB (< 10 MB)" 0
   else chk ".git quedo en ${mb} MB (esperado < 10 MB)" 1; fi
 
-  if [ "$(git rev-list --count HEAD)" = "15" ]; then chk "los 15 commits siguen" 0
-  else chk "los 15 commits siguen (hay $(git rev-list --count HEAD))" 1; fi
+  # "El rewrite no perdio commits" SOLO es una afirmacion valida en el contexto
+  # del rewrite: despues, que haya mas commits es normal y correcto. Un `verify`
+  # suelto no puede afirmar eso sin una referencia, asi que sin ella solo informa.
+  local n_commits
+  n_commits=$(git rev-list --count HEAD)
+  if [ -n "${COMMITS_ANTES:-}" ]; then
+    if [ "$n_commits" = "$COMMITS_ANTES" ]; then chk "los $COMMITS_ANTES commits sobrevivieron al rewrite" 0
+    else chk "los $COMMITS_ANTES commits sobrevivieron al rewrite (hay $n_commits)" 1; fi
+  else
+    info "  INFO  commits actuales: $n_commits (sin referencia no se afirma nada)"
+  fi
 
   # El blob del DEM tiene que estar fuera, pero su MANIFIESTO (.sha256) tiene que
   # seguir: la politica del .gitignore versiona manifiesto + SHA256, no el bytes.
@@ -111,10 +122,28 @@ verificar() {
   n_min=$(refs_de_ruta "$BLOB_MINERO")
   n_dem=$(refs_de_ruta "$BLOB_DEM")
   n_sha=$(git ls-files | grep -c '\.tif\.sha256$' || true)
-  if [ "$n_min" = "0" ] && [ "$n_dem" = "0" ]; then chk "los dos blobs .tif fuera de la historia" 0
-  else chk "los dos blobs .tif fuera de la historia (minero=$n_min dem=$n_dem)" 1; fi
+  if [ "$n_min" = "0" ] && [ "$n_dem" = "0" ]; then chk "los dos blobs .tif objetivo fuera de la historia" 0
+  else chk "los dos blobs .tif objetivo fuera de la historia (minero=$n_min dem=$n_dem)" 1; fi
   if [ "$n_sha" -ge 1 ]; then chk "el manifiesto .sha256 del DEM sigue trackeado" 0
   else chk "el manifiesto .sha256 del DEM sigue trackeado" 1; fi
+
+  # Que los dos objetivos esten fuera NO significa que la historia este libre de
+  # .tif, y un check con ese nombre se puede leer como si lo significara. Se
+  # declara explicitamente lo que queda en vez de dejarlo implicito.
+  local restantes
+  restantes=$(git rev-list --objects --all | awk '{print $2}' | grep -E '\.tif$' | sort -u || true)
+  if [ -n "$restantes" ]; then
+    ambar "  NOTA  .tif que AUN quedan en la historia (no objetivo, se declaran):"
+    local r o b
+    while read -r r; do
+      [ -z "$r" ] && continue
+      o=$(git rev-list --objects --all | grep -F "$r" | awk '{print $1}' | head -1)
+      b=$(git cat-file -s "$o" 2>/dev/null || echo 0)
+      ambar "          $r — $(echo "scale=2; $b/1048576" | bc) MB"
+    done <<< "$restantes"
+    ambar "        No se sacan: otro rewrite vuelve a reescribir TODOS los commits, y"
+    ambar "        ninguno de estos llega a 0,1 MB. El costo supera la ganancia."
+  fi
 
   # El DEM tiene que seguir EN DISCO y verificar contra su manifiesto: es el
   # insumo del pipeline de terreno y dejo de estar versionado.
@@ -158,6 +187,7 @@ case "$MODE" in
     fi
 
     paso "REESCRIBIENDO LA HISTORIA"
+    COMMITS_ANTES=$(git rev-list --count HEAD)
     git filter-repo --invert-paths --path "$BLOB_MINERO" --path "$BLOB_DEM" --force \
       || abortar "git filter-repo fallo. El backup $BUNDLE sigue intacto."
     git reflog expire --expire=now --all || abortar "reflog expire fallo"
