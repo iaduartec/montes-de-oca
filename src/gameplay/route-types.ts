@@ -69,6 +69,13 @@ export interface FirstRoute {
   /** Aparición: sobre asfalto, dentro del pueblo. */
   readonly start: RoutePoint;
   readonly startYaw: number;
+  /**
+   * Trazado denso (~10 m entre puntos), para conducir o seguir la ruta.
+   * Los `waypoints` son la guía con significado (pocos, con rol); esto es la
+   * geometría. Un seguidor de ruta necesita ésta: con los waypoints cada ~150 m,
+   * un pure-pursuit se come las curvas.
+   */
+  readonly polyline: readonly RoutePoint[];
   readonly waypoints: readonly RouteWaypoint[];
   /** Punto donde se abandona el asfalto: el jugador "entra en la pista". */
   readonly trackEntry: RoutePoint;

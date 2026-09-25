@@ -409,6 +409,38 @@ const entryPoint = { x: NODES[best.entry][0], z: NODES[best.entry][1] };
 // La instalación mira hacia el valle: hacia el pueblo, que es de donde se viene.
 const targetYaw = Math.atan2(start.x - target.x, start.z - target.z);
 
+// Trazado denso a paso fijo: es la geometría que sigue un seguidor de ruta (o el
+// jugador con la guía puesta). Se remuestrea el recorrido real cada 10 m.
+const round2 = (v) => Math.round(v * 100) / 100;
+const POLYLINE_STEP_M = 10;
+const polyline = [];
+{
+  let px = best.pts[0][0];
+  let pz = best.pts[0][1];
+  polyline.push({ x: round2(px), z: round2(pz) });
+  let sinceEmit = 0; // metros recorridos desde el último punto emitido
+  for (let i = 1; i < best.pts.length; i++) {
+    const x1 = best.pts[i][0];
+    const z1 = best.pts[i][1];
+    const seg = Math.hypot(x1 - px, z1 - pz);
+    if (seg <= 1e-9) continue;
+    let travelled = 0; // metros consumidos del segmento actual
+    while (sinceEmit + (seg - travelled) >= POLYLINE_STEP_M) {
+      travelled += POLYLINE_STEP_M - sinceEmit;
+      const t = travelled / seg;
+      polyline.push({ x: round2(px + (x1 - px) * t), z: round2(pz + (z1 - pz) * t) });
+      sinceEmit = 0;
+    }
+    sinceEmit += seg - travelled;
+    px = x1;
+    pz = z1;
+  }
+  const last = best.pts[best.pts.length - 1];
+  if (round2(last[0]) !== polyline[polyline.length - 1].x || round2(last[1]) !== polyline[polyline.length - 1].z) {
+    polyline.push({ x: round2(last[0]), z: round2(last[1]) });
+  }
+}
+
 const sourceSha256 = createHash('sha256').update(readFileSync(resolve(root, 'public/roads/navigation.json'))).digest('hex');
 
 const route = {
@@ -418,6 +450,7 @@ const route = {
   sourceSha256,
   start: { x: Math.round(start.x * 100) / 100, z: Math.round(start.z * 100) / 100 },
   startYaw: Math.round(startYaw * 1e6) / 1e6,
+  polyline,
   waypoints,
   trackEntry: { x: Math.round(entryPoint.x * 100) / 100, z: Math.round(entryPoint.z * 100) / 100 },
   target: { x: Math.round(target.x * 100) / 100, z: Math.round(target.z * 100) / 100 },
@@ -502,6 +535,24 @@ if (CHECK) {
     console.error('\nFALLA --check: no existe src/gameplay/first-route.ts');
     process.exit(1);
   }
+  // La polilínea densa es lo que va a seguir el arnés de conducción. Un remuestreo
+  // roto (huecos grandes, un salto al final) no se ve en el archivo pero rompe el
+  // seguimiento. Se comprueba el paso, no la cantidad de puntos.
+  let maxGap = 0;
+  for (let i = 1; i < polyline.length; i++) {
+    maxGap = Math.max(maxGap, Math.hypot(polyline[i].x - polyline[i - 1].x, polyline[i].z - polyline[i - 1].z));
+  }
+  const gapOk = maxGap <= POLYLINE_STEP_M * 1.5 && maxGap > 0;
+  const endsOk =
+    Math.hypot(polyline[0].x - route.start.x, polyline[0].z - route.start.z) < 1 &&
+    Math.hypot(polyline[polyline.length - 1].x - route.target.x, polyline[polyline.length - 1].z - route.target.z) < 1;
+  if (!gapOk || !endsOk) {
+    console.error(
+      `\nFALLA --check: polilínea inválida (hueco máx ${maxGap.toFixed(1)} m, ` +
+        `extremos ${endsOk ? 'ok' : 'NO coinciden con inicio/objetivo'})`,
+    );
+    process.exit(1);
+  }
   if (previous !== body) {
     console.error('\nFALLA --check: el archivo commiteado NO coincide con la ruta derivada.');
     console.error('  Regeneralo con: node scripts/gameplay/build_first_route.mjs');
@@ -511,6 +562,7 @@ if (CHECK) {
     console.error('\nFALLA --check: el trazado dejó de ser conducente.');
     process.exit(1);
   }
+  console.log(`  OK  polilínea: ${polyline.length} puntos, hueco máx ${maxGap.toFixed(1)} m, extremos correctos`);
   console.log('  OK  el archivo coincide con la derivación y el trazado es conducente');
 } else {
   writeFileSync(outPath, body);

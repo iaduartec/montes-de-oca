@@ -27,6 +27,7 @@
         touch-action: none;
         outline: none;
       }
+      /* Panel de diagnóstico. No es la interfaz del juego: es instrumentación. */
       #hud {
         position: fixed;
         top: 12px;
@@ -44,14 +45,100 @@
         pointer-events: none;
         backdrop-filter: blur(4px);
       }
-      #hud .hud-error {
+      #hud.hud-error,
+      .hud-error {
         color: #ff8f8f;
+      }
+      /* Misión: lo único que el jugador tiene que leer. Arriba y centrado, para no
+         competir con el panel de diagnóstico ni con el aviso de acción. */
+      #mision {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 9px 16px;
+        min-width: 280px;
+        max-width: 62vw;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        background: rgba(8, 12, 18, 0.68);
+        color: #e8eef6;
+        font-size: 13px;
+        line-height: 1.55;
+        text-align: center;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #mision[hidden] {
+        display: none;
+      }
+      #mision .mision-titulo {
+        color: #9fb6cd;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      #mision .mision-estado {
+        color: #ffd479;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+      }
+      #mision .mision-pista {
+        margin-top: 3px;
+      }
+      #mision.mision-completada .mision-estado {
+        color: #86e08a;
+      }
+      /* Barra de progreso de la reparación: sólo aparece mientras se mantiene E. */
+      #mision .mision-progreso {
+        margin-top: 7px;
+        height: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      #mision .mision-progreso[hidden] {
+        display: none;
+      }
+      #mision .mision-progreso > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: #86e08a;
+      }
+      /* Aviso de acción disponible: abajo y centrado, donde mira el jugador. */
+      #accion {
+        position: fixed;
+        bottom: 56px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 7px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        background: rgba(8, 12, 18, 0.74);
+        color: #e8eef6;
+        font-size: 13px;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #accion[hidden] {
+        display: none;
+      }
+      #accion kbd {
+        padding: 1px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        font: inherit;
       }
       #controls {
         position: fixed;
         bottom: 12px;
         left: 12px;
         z-index: 10;
+        max-width: 60vw;
         color: rgba(215, 226, 238, 0.72);
         font-size: 11px;
         line-height: 1.5;
@@ -62,6 +149,8 @@
   <body>
     <canvas id="render-canvas" tabindex="0"></canvas>
     <div id="hud" role="status" aria-live="polite">Cargando terreno…</div>
+    <div id="mision" role="status" aria-live="polite" hidden></div>
+    <div id="accion" role="status" aria-live="polite" hidden></div>
     <div id="controls">
       WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar
     </div>
