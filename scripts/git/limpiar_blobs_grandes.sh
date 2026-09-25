@@ -75,9 +75,18 @@ guardas() {
   # estas por reescribir. El de esta misma operacion se creo 4 commits antes de
   # usarse, no cubria la FASE 3b, y la guarda lo daba por bueno igual. Un backup
   # que no incluye lo que vas a reescribir no es un backup.
-  local tip_bundle tip_head
-  tip_bundle=$(git bundle list-heads "$BUNDLE" | awk '{print $1}' | sort -u | head -1)
+  #
+  # CUIDADO con `list-heads`: ademas de las ramas lista `refs/replace/*` (que
+  # filter-repo deja para que los hashes viejos sigan resolviendo). Ordenar por SHA
+  # y tomar el primero elige uno de esos al azar, no HEAD. Hay que buscar la rama
+  # por NOMBRE.
+  local rama tip_bundle tip_head
+  rama=$(git rev-parse --abbrev-ref HEAD)
+  tip_bundle=$(git bundle list-heads "$BUNDLE" | awk -v r="refs/heads/$rama" '$2==r {print $1}')
   tip_head=$(git rev-parse HEAD)
+  if [ -z "$tip_bundle" ]; then
+    abortar "el bundle no tiene la rama 'refs/heads/$rama'. Rehacelo: git bundle create <archivo> --all"
+  fi
   if [ "$tip_bundle" != "$tip_head" ]; then
     rojo "  bundle: ${tip_bundle:0:12}   head: ${tip_head:0:12}"
     abortar "backup DESACTUALIZADO: no contiene el commit actual. Rehacelo: git bundle create <archivo> --all"
