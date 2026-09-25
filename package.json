@@ -10,11 +10,13 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "make:dev-terrain": "node scripts/make-dev-terrain.mjs",
-    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs",
+    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check",
     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
     "test:terrain": "node scripts/terrain/validate_terrain.mjs",
     "test:roads": "python3 scripts/roads/validate_roads.py",
-    "test:mission": "node scripts/gameplay/validate_mission.mjs"
+    "test:mission": "node scripts/gameplay/validate_mission.mjs",
+    "test:atmosphere": "node scripts/environment/verify_atmosphere.mjs",
+    "test:village": "node scripts/environment/build_village.mjs --check"
   },
   "dependencies": {
     "@babylonjs/core": "^8.0.0"
