@@ -8,6 +8,15 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { loadTerrainConfig, wgs84ToWorld } from './config';
 import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
+import { gridExtent } from './heightfield';
+import {
+  loadRoadNetwork,
+  type RoadAuditReport,
+  type RoadDrapingStats,
+  type RoadNetwork,
+  type RoadProbe,
+  type RoadStation,
+} from './road-draping';
 import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/index';
 import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
@@ -84,6 +93,12 @@ interface DebugApi {
     step(seconds: number, dt?: number): void;
     reset(): void;
   } | null;
+  roads: {
+    stats(): RoadDrapingStats;
+    audit(): RoadAuditReport;
+    probe(count: number): RoadProbe[];
+    stations(): RoadStation[];
+  } | null;
 }
 
 declare global {
@@ -148,6 +163,33 @@ async function bootstrap(): Promise<void> {
   let vehicle: Vehicle | null = null;
   let controls: ReturnType<typeof createVehicleControls> | null = null;
   let manualStep = false;
+
+  // ----- Capa vial drapeada (FASE 3b) -----
+  // `?drape=0` desactiva la red: sirve para medir draw calls/triángulos
+  // "antes y después" en la MISMA build (ver scripts/roads/draping).
+  const drapeParam = params.get('drape');
+  const roadsEnabled = drapeParam === null || !(drapeParam === '0' || drapeParam.toLowerCase() === 'false');
+  let roads: RoadNetwork | null = null;
+  if (roadsEnabled) {
+    // Dominio real del terreno: evita que `heightAt` devuelva el "0 absoluto"
+    // (−datum) para vértices laterales que asoman fuera de la ventana.
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (const sampler of terrain.samplers) {
+      const extent = gridExtent(sampler.grid);
+      minX = Math.min(minX, extent.minX);
+      maxX = Math.max(maxX, extent.maxX);
+      minZ = Math.min(minZ, extent.minZ);
+      maxZ = Math.max(maxZ, extent.maxZ);
+    }
+    roads = await loadRoadNetwork(scene, terrain, { bounds: { minX, maxX, minZ, maxZ } });
+    console.info(
+      `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
+        `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
+    );
+  }
 
   const groundY = terrain.heightAt(spawnX, spawnZ);
 
@@ -246,11 +288,20 @@ async function bootstrap(): Promise<void> {
       samples: datumAudit.samples,
     }),
     vehicle: debugVehicle,
+    roads: roads
+      ? {
+          stats: () => roads!.stats,
+          audit: () => roads!.audit(),
+          probe: (count: number) => roads!.probe(count),
+          stations: () => roads!.stations(),
+        }
+      : null,
   };
 
   window.addEventListener('beforeunload', () => {
     controls?.dispose();
     vehicle?.dispose();
+    roads?.dispose();
     diagnostics.dispose();
     terrain.dispose();
     engine.dispose();

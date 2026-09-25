@@ -13,3 +13,4 @@ data/**/raw/*.tif
 data/**/raw/*.tiff
 data/**/raw/*.pbf
 data/**/raw/*.zip
+orchestration/logs/*.exit

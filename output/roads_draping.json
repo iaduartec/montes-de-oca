@@ -1,0 +1,368 @@
+{
+  "generado_por": "scripts/roads/draping/capture_draping.mjs",
+  "base": "http://127.0.0.1:4173",
+  "fecha": "2026-09-24T23:57:31.469Z",
+  "perf_sin_vias": {
+    "fps": 9.086778736933912,
+    "frameTimeMs": 116.90000000037253,
+    "drawCalls": 13,
+    "triangles": 240360,
+    "vertices": 1454892,
+    "activeMeshes": 13
+  },
+  "stats": {
+    "roads": 438,
+    "vertices": 69616,
+    "triangles": 77306,
+    "meshes": 3,
+    "byClass": {
+      "ROAD": {
+        "roads": 131,
+        "stations": 4560,
+        "vertices": 18186,
+        "triangles": 26490
+      },
+      "TRACK": {
+        "roads": 213,
+        "stations": 19752,
+        "vertices": 39504,
+        "triangles": 39078
+      },
+      "PATH": {
+        "roads": 94,
+        "stations": 5963,
+        "vertices": 11926,
+        "triangles": 11738
+      }
+    },
+    "constants": {
+      "subdivisionM": 5,
+      "roadFlattenLerp": 0.6,
+      "skirtWidthM": 0.6,
+      "verticalOffsetM": {
+        "ROAD": 0.12,
+        "TRACK": 0.1,
+        "PATH": 0.08
+      }
+    },
+    "bridges": 20
+  },
+  "perf_con_vias": {
+    "fps": 8.745845723281441,
+    "frameTimeMs": 34.40000000037253,
+    "drawCalls": 16,
+    "triangles": 317666,
+    "vertices": 1524508,
+    "activeMeshes": 16
+  },
+  "perf_nota": "FPS y frame time en Chrome headless con SwiftShader (CPU). NO representan el rendimiento en GPU. draw calls y triángulos sí son válidos.",
+  "costo_vias": {
+    "draw_calls_antes": 13,
+    "draw_calls_despues": 16,
+    "draw_calls_delta": 3,
+    "triangulos_antes": 240360,
+    "triangulos_despues": 317666,
+    "triangulos_delta": 77306
+  },
+  "audit_app": {
+    "offsetM": {
+      "ROAD": 0.12,
+      "TRACK": 0.1,
+      "PATH": 0.08
+    },
+    "toleranceM": 0.001,
+    "classes": {
+      "ROAD": {
+        "pavement": {
+          "count": 9066,
+          "p50": 0.18359863281250455,
+          "p95": 0.6748034667969023,
+          "max": 1.3235180664063364,
+          "mean": 0.2271958447228508,
+          "worst": {
+            "x": 1791.5289306640625,
+            "y": 188.09368896484375,
+            "z": 2721.59326171875,
+            "terrainY": 186.6501708984374
+          }
+        },
+        "skirt": {
+          "count": 9066,
+          "p50": 0.000005798339891782689,
+          "p95": 0.00004165649409770822,
+          "max": 0.0001177978515443101,
+          "mean": 0.000012393483730620694,
+          "worst": {
+            "x": 2552.635986328125,
+            "y": 104.86338806152344,
+            "z": 5791.30615234375,
+            "terrainY": 104.74350585937498
+          }
+        },
+        "bridge": {
+          "count": 54,
+          "p50": 0.2966145324706986,
+          "p95": 1.5719113159181006,
+          "max": 1.708781127929683,
+          "mean": 0.4878877343071782,
+          "worst": {
+            "x": 3299.040771484375,
+            "y": 65.95500183105469,
+            "z": 4249.671875,
+            "terrainY": 64.126220703125
+          }
+        }
+      },
+      "TRACK": {
+        "pavement": {
+          "count": 39450,
+          "p50": 0.000006103515630684342,
+          "p95": 0.00004272460918741672,
+          "max": 0.00012817382813068434,
+          "mean": 0.000012459307720690369,
+          "worst": {
+            "x": 738.189697265625,
+            "y": 202.43313598632812,
+            "z": 4455.65185546875,
+            "terrainY": 202.3330078125
+          }
+        },
+        "skirt": null,
+        "bridge": {
+          "count": 54,
+          "p50": 0.1337249755859773,
+          "p95": 0.6187606811523381,
+          "max": 0.8513320922851548,
+          "mean": 0.1905929282859565,
+          "worst": {
+            "x": 3277.92578125,
+            "y": 61.951332092285156,
+            "z": 4270.837890625,
+            "terrainY": 61
+          }
+        }
+      },
+      "PATH": {
+        "pavement": {
+          "count": 11896,
+          "p50": 0.000010375976529530817,
+          "p95": 0.00004394531248408384,
+          "max": 0.00013854980463179345,
+          "mean": 0.000013828849781626789,
+          "worst": {
+            "x": 2490.23974609375,
+            "y": 144.0518341064453,
+            "z": 1736.009765625,
+            "terrainY": 143.97197265624993
+          }
+        },
+        "skirt": null,
+        "bridge": {
+          "count": 30,
+          "p50": 0.026054077148458532,
+          "p95": 0.3040026855468767,
+          "max": 0.3119351196288136,
+          "mean": 0.08499676513672418,
+          "worst": {
+            "x": 3116.256103515625,
+            "y": 82.8499984741211,
+            "z": 2729.59033203125,
+            "terrainY": 83.08193359374991
+          }
+        }
+      }
+    }
+  },
+  "offset_m": {
+    "ROAD": 0.12,
+    "TRACK": 0.1,
+    "PATH": 0.08
+  },
+  "tolerancia_m": 0.001,
+  "residual_verificacion_independiente": {
+    "summary": {
+      "ROAD/calzada": {
+        "count": 1051,
+        "p50": 0.17516296386713748,
+        "p95": 0.6977658081056006,
+        "max": 1.171525268554774,
+        "mean": 0.22948927470097302
+      },
+      "TRACK/calzada": {
+        "count": 1997,
+        "p50": 0.000006103515630684342,
+        "p95": 0.00004196167005687812,
+        "max": 0.00012817382813068434,
+        "mean": 0.000012570162923811855
+      },
+      "ROAD/faldon": {
+        "count": 1015,
+        "p50": 0.000005798339884677262,
+        "p95": 0.000042419433611939894,
+        "max": 0.00009490966794345468,
+        "mean": 0.000012358435267414392
+      },
+      "PATH/calzada": {
+        "count": 1927,
+        "p50": 0.000010375976529530817,
+        "p95": 0.00004150390614654498,
+        "max": 0.00009796142573748057,
+        "mean": 0.000013428659217673832
+      },
+      "PATH/puente": {
+        "count": 2,
+        "p50": 0.000013427734359083843,
+        "p95": 0.000013427734359083843,
+        "max": 0.000013427734359083843,
+        "mean": 0.000007629394524144573
+      },
+      "ROAD/puente": {
+        "count": 7,
+        "p50": 0.5279919433594387,
+        "p95": 1.4894253540038562,
+        "max": 1.4894253540038562,
+        "mean": 0.6004996163504107
+      },
+      "TRACK/puente": {
+        "count": 1,
+        "p50": 0.0000015258789005656581,
+        "p95": 0.0000015258789005656581,
+        "max": 0.0000015258789005656581,
+        "mean": 0.0000015258789005656581
+      }
+    },
+    "probe_count": 6000,
+    "vertices_fuera_de_ventana": 7,
+    "clamp_nota": "Las coordenadas de muestreo se recortan a [0,6000] (mismo clamp que la app). Los vértices fuera de ventana (7 de 6000) reciben la cota del borde, no el \"0 absoluto\"."
+  },
+  "caso_dificil": {
+    "descripcion": "Estación TRACK de mayor pendiente transversal (gradiente del terreno proyectado sobre la normal de la vía).",
+    "x": 3319.942,
+    "z": 3705.112,
+    "cross_slope_deg": 40.11638553842403,
+    "fwd_slope_deg": 5.0665140541060065,
+    "yaw": -2.887406329891276
+  },
+  "puntos_captura": {
+    "road": {
+      "x": 3088.4011111111113,
+      "z": 3944.4700000000003,
+      "dist_al_spawn_m": 8.87394955981365,
+      "yaw": -3.049380269816182
+    },
+    "track": {
+      "x": 3074.8325,
+      "z": 4144.39,
+      "cross_deg": 12.338664746746366,
+      "yaw": -1.536901429389646
+    }
+  },
+  "captura_track": {
+    "telemetry": {
+      "x": 3074.9884985415392,
+      "z": 4144.435978932472,
+      "y": 75.2206093493642,
+      "yawDeg": -88.05796543165022,
+      "speed": -0.510240121032047,
+      "speedKmh": -1.8368644357153692,
+      "lateral": 0.09074850279088294,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 0.15435078675296243,
+      "slopeForwardDeg": 10.891146615526509,
+      "slopeRightDeg": -12.294695629290159,
+      "slopeMagnitudeDeg": 16.21023660066833,
+      "pitchDeg": -7.894991658946026,
+      "rollDeg": -14.135528872707264,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 13564.788371375189,
+      "tireForceN": 1623.8996366054746,
+      "gravityForceN": -3187.6667336526825,
+      "wheelResidualMaxM": 0.0828677368164108,
+      "airborne": false,
+      "contacts": [
+        75.55285179843986,
+        75.27664954407737,
+        75.29635087645363,
+        74.75658517848592
+      ]
+    },
+    "ground_y": 75.24399999999991
+  },
+  "captura_road": {
+    "telemetry": {
+      "x": 3088.4089750950498,
+      "z": 3944.4692727809143,
+      "y": 75,
+      "yawDeg": -174.71661959093146,
+      "speed": 0,
+      "speedKmh": 0,
+      "lateral": -0.013985840002966073,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 1.4456028966473393e-21,
+      "slopeForwardDeg": 0.16789340547865278,
+      "slopeRightDeg": 1.814959485529359,
+      "slopeMagnitudeDeg": 1.8226981195063963,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 14119.252583277848,
+      "tireForceN": 51.691131655632134,
+      "gravityForceN": -51.691131655632134,
+      "wheelResidualMaxM": 0.0000027465820267025265,
+      "airborne": false,
+      "contacts": [
+        75,
+        75,
+        75,
+        75
+      ]
+    },
+    "ground_y": 75
+  },
+  "captura_caso_dificil": {
+    "telemetry": {
+      "x": 3319.7640774142737,
+      "z": 3705.1582253533566,
+      "y": 83.62829277440943,
+      "yawDeg": -165.4361964421288,
+      "speed": 0,
+      "speedKmh": 0,
+      "lateral": 0.3902239976258979,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 2.6984587404083668e-20,
+      "slopeForwardDeg": 4.807652588992093,
+      "slopeRightDeg": -39.77009830121531,
+      "slopeMagnitudeDeg": 39.913282222311274,
+      "pitchDeg": -5.738723923102768,
+      "rollDeg": -40.3556197152949,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 10835.18091517705,
+      "tireForceN": 875.5638414716728,
+      "gravityForceN": -875.5638414716728,
+      "wheelResidualMaxM": 0.13647644042964657,
+      "airborne": false,
+      "contacts": [
+        84.43690184406489,
+        83.1010722498587,
+        84.19624948856563,
+        82.7789475151485
+      ]
+    },
+    "ground_y": 83.90880000000004
+  }
+}
