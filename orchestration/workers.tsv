@@ -13,3 +13,7 @@ t2-rutas	opencode/mimo-v2.6-flash-free	orchestration/phase3/t2-rutas.md	FASE 3a
 v1-vehiculo	opencode-go/deepseek-v4.1-flash	orchestration/phase4/v1-vehiculo.md	FASE 4
 d1-drapeado	opencode-go/deepseek-v4.1-flash	orchestration/phase5/d1-drapeado.md	FASE 3b
 v2-drapeado-repro	opencode/mimo-v2.6-flash-free	orchestration/phase5/v2-drapeado-repro.md	FASE 3b
+v1-vegetacion	opencode/mimo-v2.6-flash-free	orchestration/phase6/v1-vegetacion.md	milestone1
+v2-pueblo	opencode/mimo-v2.6-flash-free	orchestration/phase6/v2-pueblo.md	milestone1
+v3-mision	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v3-mision.md	milestone1
+v4-jugador	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v4-jugador.md	milestone1
