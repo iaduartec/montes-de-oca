@@ -24,6 +24,7 @@ import { FIRST_ROUTE } from './gameplay/first-route';
 import type { FirstRoute } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
 import { createPlayerControls, type PlayerControls } from './player/controls';
+import { exitPosition } from './player/movement';
 import {
   MISSION_NAME,
   createMission,
@@ -38,6 +39,11 @@ const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
 const misionEl = document.getElementById('mision');
 const accionEl = document.getElementById('accion');
+const controlsEl = document.getElementById('controls');
+
+/** Teclas del modo cámara libre: es el texto que ya trae `index.html`. */
+const CONTROLES_LIBRE =
+  'WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar';
 
 /**
  * Avisos de acción. Son constantes cerradas a propósito: se escriben con
@@ -323,12 +329,18 @@ async function bootstrap(): Promise<void> {
     // los guiones de medición, que manejan el vehículo con la API de depuración.
     const playerEnabled = params.get('player') !== '0';
 
+    // Punto de aparición a pie: AL COSTADO del 4x4, no encima. Si el personaje nace en
+    // la misma posición que el auto queda dentro del chasis, y como la cámara a pie va
+    // 4,2 m detrás del personaje, el primer plano del juego es el interior del coche.
+    // `exitPosition` es la misma función que usa bajarse del vehículo.
+    const salidaInicial = exitPosition(startX, startZ, yaw, terrain);
+
     const resetToStartFn = (): void => {
       manualInput = false;
       manualStep = false;
       vehicle?.setInput(null);
       vehicle?.teleport(startX, startZ, yaw);
-      player?.teleport(startX, startZ, yaw);
+      player?.teleport(salidaInicial.x, salidaInicial.z, yaw);
     };
     resetToStart = resetToStartFn;
 
@@ -379,14 +391,14 @@ async function bootstrap(): Promise<void> {
     });
 
     if (playerEnabled) {
-      // Arranca A PIE y al lado del 4x4: el guion de la misión pide entrar al coche.
+      // Arranca A PIE, al costado del 4x4: el guion de la misión pide entrar al coche.
       // `controls` se OMITE si no hay: con `exactOptionalPropertyTypes` no se puede
       // pasar `undefined` a una propiedad opcional, hay que no ponerla.
       player = createPlayer({
         scene,
         terrain,
         vehicle,
-        spawn: { x: startX, z: startZ, yaw },
+        spawn: { x: salidaInicial.x, z: salidaInicial.z, yaw },
         ...(controlsForPlayer ? { controls: controlsForPlayer } : {}),
       });
     }
@@ -550,8 +562,18 @@ async function bootstrap(): Promise<void> {
         const perf = formatSnapshot(diagnostics.snapshot(), terrain);
         const veh = vehicle ? formatVehicleHud(vehicle.telemetry()) : '';
         const jug = player ? formatPlayerHud(player.telemetry()) : '';
-        const keys = player ? (player.mode === 'driving' ? TECLAS_CONDUCIENDO : TECLAS_A_PIE) : vehicle ? TECLAS_CONDUCIENDO : '';
-        hud.textContent = [perf, veh, jug, keys].filter((block) => block.length > 0).join('\n\n');
+        hud.textContent = [perf, veh, jug].filter((block) => block.length > 0).join('\n\n');
+      }
+      // Las teclas van en su propio bloque y NO dentro del diagnóstico: en modo cámara
+      // libre son otras, y decir las teclas equivocadas es peor que no decir ninguna.
+      if (controlsEl) {
+        controlsEl.textContent = player
+          ? player.mode === 'driving'
+            ? TECLAS_CONDUCIENDO
+            : TECLAS_A_PIE
+          : vehicle
+            ? TECLAS_CONDUCIENDO
+            : CONTROLES_LIBRE;
       }
     }
   });
