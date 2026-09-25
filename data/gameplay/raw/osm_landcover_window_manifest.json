@@ -1,0 +1,54 @@
+{
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "url": "https://overpass-api.de/api/interpreter",
+  "method": "POST application/x-www-form-urlencoded",
+  "user_agent": "MontesDeOcaOffroad-VegetationBot/1.0 (open-world driving game data; offline research)",
+  "query_file": "data/gameplay/raw/osm_landcover_window_query.txt",
+  "query": "[out:json][timeout:180];\n(\n  way[\"landuse\"~\"^(forest|farmland|meadow)$\"](42.351242,-3.347844,42.408475,-3.271696);\n  way[\"natural\"~\"^(wood|grassland|scrub)$\"](42.351242,-3.347844,42.408475,-3.271696);\n  relation[\"landuse\"~\"^(forest|farmland|meadow)$\"](42.351242,-3.347844,42.408475,-3.271696);\n  relation[\"natural\"~\"^(wood|grassland|scrub)$\"](42.351242,-3.347844,42.408475,-3.271696);\n);\nout body geom qt;\n",
+  "bbox_wgs84_s_w_n_e": [
+    42.351242,
+    -3.347844,
+    42.408475,
+    -3.271696
+  ],
+  "buffer_deg": 0.0015,
+  "window_utm30n": {
+    "e": [
+      471500,
+      477500
+    ],
+    "n": [
+      4689000,
+      4695000
+    ]
+  },
+  "window_world": {
+    "x": [
+      0,
+      6000
+    ],
+    "z": [
+      0,
+      6000
+    ],
+    "convencion": "x = E-471500, z = N-4689000"
+  },
+  "requested_at_utc": "2026-09-25T00:46:00+00:00",
+  "http_status": 200,
+  "attempts": 1,
+  "overpass_timestamp_osm_base": "2026-09-25T00:46:27Z",
+  "overpass_generator": "Overpass API 0.7.62.11 87bfad18",
+  "fetched_at_utc": "2026-09-25T00:47:00+00:00",
+  "file": "data/gameplay/raw/osm_landcover_window.json",
+  "bytes": 2041032,
+  "sha256": "2538620787f94ff51c3209219307ab4b6f5c8e9c9e35f904d396e8b14c1c6ea9",
+  "elements": {
+    "total": 152,
+    "by_type": {
+      "way": 96,
+      "relation": 56
+    }
+  },
+  "license": "ODbL-1.0 (OpenStreetMap contributors)",
+  "remark": null
+}

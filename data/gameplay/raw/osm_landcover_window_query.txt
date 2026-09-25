@@ -1,0 +1,8 @@
+[out:json][timeout:180];
+(
+  way["landuse"~"^(forest|farmland|meadow)$"](42.351242,-3.347844,42.408475,-3.271696);
+  way["natural"~"^(wood|grassland|scrub)$"](42.351242,-3.347844,42.408475,-3.271696);
+  relation["landuse"~"^(forest|farmland|meadow)$"](42.351242,-3.347844,42.408475,-3.271696);
+  relation["natural"~"^(wood|grassland|scrub)$"](42.351242,-3.347844,42.408475,-3.271696);
+);
+out body geom qt;

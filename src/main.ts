@@ -8,6 +8,12 @@ import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from '.
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
 import { loadVillage, type VillageStats } from './environment/village';
+import {
+  loadVegetation,
+  type Vegetation,
+  type VegetationCorridor,
+  type VegetationStats,
+} from './environment/vegetation';
 import { createAtmosphere } from './environment/atmosphere';
 import {
   loadRoadNetwork,
@@ -21,7 +27,7 @@ import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/in
 import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
 import { FIRST_ROUTE } from './gameplay/first-route';
-import type { FirstRoute } from './gameplay/route-types';
+import type { FirstRoute, RouteLeg, RoutePoint } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
 import { createPlayerControls, type PlayerControls } from './player/controls';
 import { exitPosition } from './player/movement';
@@ -123,6 +129,69 @@ function queryNumber(params: URLSearchParams, key: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+/** Semiancho de despeje por clase de vía: MISMO criterio que el generador. */
+const CORRIDOR_HALF_WIDTH: Record<RouteLeg, number> = { ROAD: 12, TRACK: 8, PATH: 4 };
+
+/**
+ * Divide la polilínea densa de la ruta en corredores por clase de vía, con la misma
+ * semántica que `buildRouteCorridors` de `scripts/environment/build_vegetation.mjs`:
+ * un corte por cada cambio de `leg`, ubicado en el `atM` del último waypoint del tramo
+ * anterior. Sin esto, los 12 m del asfalto se aplicaban a TODA la pista y la vegetación
+ * decorativa quedaba excluida de más (`excludedByCorridor` inflado).
+ */
+function routeCorridors(route: FirstRoute): VegetationCorridor[] {
+  const poly = route.polyline;
+  if (poly.length < 2) return [];
+
+  const cum: number[] = [0];
+  for (let i = 1; i < poly.length; i++) {
+    const a = poly[i - 1]!;
+    const b = poly[i]!;
+    cum.push(cum[i - 1]! + Math.hypot(b.x - a.x, b.z - a.z));
+  }
+  const total = cum[cum.length - 1]!;
+
+  const pointAt = (d: number): RoutePoint => {
+    const first = poly[0]!;
+    const last = poly[poly.length - 1]!;
+    if (d <= 0) return { x: first.x, z: first.z };
+    if (d >= total) return { x: last.x, z: last.z };
+    let k = 0;
+    while (k < cum.length - 2 && cum[k + 1]! < d) k++;
+    const span = cum[k + 1]! - cum[k]!;
+    const t = span > 0 ? (d - cum[k]!) / span : 0;
+    const a = poly[k]!;
+    const b = poly[k + 1]!;
+    return { x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t };
+  };
+
+  const cuts: { atM: number; leg: RouteLeg }[] = [];
+  for (let i = 1; i < route.waypoints.length; i++) {
+    const prev = route.waypoints[i - 1]!;
+    const cur = route.waypoints[i]!;
+    if (cur.leg !== prev.leg) cuts.push({ atM: prev.atM, leg: cur.leg });
+  }
+  const bounds = [0, ...cuts.map((c) => c.atM), total];
+  const legs: RouteLeg[] = [route.waypoints[0]?.leg ?? 'ROAD', ...cuts.map((c) => c.leg)];
+
+  const corridors: VegetationCorridor[] = [];
+  for (let k = 0; k < legs.length; k++) {
+    const from = bounds[k]!;
+    const to = bounds[k + 1]!;
+    if (!(to > from)) continue;
+    const points: RoutePoint[] = [pointAt(from)];
+    for (let i = 0; i < poly.length; i++) {
+      if (cum[i]! <= from || cum[i]! >= to) continue;
+      const prev = points[points.length - 1]!;
+      const p = poly[i]!;
+      if (Math.hypot(p.x - prev.x, p.z - prev.z) > 0.05) points.push(p);
+    }
+    points.push(pointAt(to));
+    if (points.length >= 2) corridors.push({ points, halfWidthM: CORRIDOR_HALF_WIDTH[legs[k]!] });
+  }
+  return corridors;
+}
+
 function formatSnapshot(snapshot: DiagnosticsSnapshot, terrain: WorldTerrain): string {
   const center = terrain.center();
   return [
@@ -174,6 +243,8 @@ interface DebugApi {
   route: FirstRoute | null;
   /** El pueblo low-poly cargado (FASE E). `null` con `?pueblo=0`. */
   village: { stats(): VillageStats } | null;
+  /** La vegetación procedural cargada (FASE D). `null` con `?vegetation=0`. */
+  vegetation: { stats(): VegetationStats } | null;
   player: {
     mode(): 'on-foot' | 'driving';
     telemetry(): PlayerTelemetry;
@@ -318,6 +389,36 @@ async function bootstrap(): Promise<void> {
     });
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
+  }
+
+  // ----- Vegetación procedural (FASE D) -----
+  // `?vegetation=0` la apaga, mismo patrón que `?pueblo=0` y `?drape=0`: permite
+  // medir draw calls y triángulos "con y sin" en la MISMA build. El corredor y los
+  // claros salen de la ruta para que ningún árbol tape la calzada ni el repetidor:
+  // es la MISMA red de seguridad que el build ya verifica.
+  const vegetacionParam = params.get('vegetation');
+  const vegetationEnabled =
+    vegetacionParam === null || !(vegetacionParam === '0' || vegetacionParam.toLowerCase() === 'false');
+  let vegetation: Vegetation | null = null;
+  if (vegetationEnabled) {
+    // La vegetación es DECORATIVA: si su carga falla, el juego arranca igual. Por eso
+    // el try/catch envuelve SÓLO el await: un fallo de datos no puede tumbar el bootstrap.
+    try {
+      vegetation = await loadVegetation(scene, terrain, {
+        corridors: routeCorridors(FIRST_ROUTE),
+        clearings: [
+          { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z, radiusM: 30 },
+          { x: FIRST_ROUTE.target.x, z: FIRST_ROUTE.target.z, radiusM: FIRST_ROUTE.targetClearRadiusM },
+        ],
+      });
+    } catch (error: unknown) {
+      vegetation = null;
+      console.warn(
+        `[vegetacion] no se pudo cargar la capa decorativa; se continúa sin ella: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   const groundY = terrain.heightAt(spawnX, spawnZ);
@@ -613,6 +714,9 @@ async function bootstrap(): Promise<void> {
     const anclaSombra = player ? player.root.position : vehicle?.root.position;
     if (anclaSombra) atmosphere.follow(anclaSombra.x, anclaSombra.z);
     terrain.cull(camera);
+    // El LOD se recalcula con la cámara YA movida por la persecución y antes de
+    // dibujar: al revés, la vegetación vería la pose del frame anterior.
+    vegetation?.update(camera.position);
     scene.render();
     hudTick++;
     if (hudTick % 5 === 0) {
@@ -691,6 +795,7 @@ async function bootstrap(): Promise<void> {
       : null,
     route: FIRST_ROUTE,
     village: villageStats ? { stats: () => villageStats! } : null,
+    vegetation: vegetation ? { stats: () => vegetation!.stats } : null,
     player: player
       ? {
           mode: () => player!.mode,
@@ -737,6 +842,7 @@ async function bootstrap(): Promise<void> {
     controls?.dispose();
     vehicle?.dispose();
     roads?.dispose();
+    vegetation?.dispose();
     diagnostics.dispose();
     terrain.dispose();
     engine.dispose();
