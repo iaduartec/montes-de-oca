@@ -1,0 +1,33 @@
+{
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "url": "https://overpass-api.de/api/interpreter",
+  "method": "POST application/x-www-form-urlencoded",
+  "user_agent": "MontesDeOcaOffroad-GeoBot/1.0 (offline game geo research)",
+  "query_file": "data/gameplay/raw/osm_buildings_villafranca_query.txt",
+  "query": "[out:json][timeout:180];\nway[\"building\"](42.380277,-3.319543,42.396480,-3.297687);\nout tags geom qt;\n",
+  "centro_wgs84": {
+    "lat": 42.3883784,
+    "lon": -3.3086147
+  },
+  "radio_m": 900,
+  "bbox_wgs84_s_w_n_e": [
+    42.3802768,
+    -3.3195429,
+    42.396480000000004,
+    -3.2976865
+  ],
+  "overpass_timestamp_osm_base": "2026-09-25T00:43:35Z",
+  "overpass_generator": "Overpass API 0.7.62.11 87bfad18",
+  "fetched_at_utc": "2026-09-25T00:44:24Z",
+  "file": "data/gameplay/raw/osm_buildings_villafranca.json",
+  "bytes": 215242,
+  "sha256": "0b75fb00768d4ae567717f3b059439cce7979d5a15ca89690411bf1e7f9a7889",
+  "elements": {
+    "total": 335,
+    "by_type": {
+      "way": 335
+    }
+  },
+  "license": "ODbL-1.0 (OpenStreetMap contributors)",
+  "remark": null
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview — pueblo (FASE E)</title>
+    <!--
+      Harness de VERIFICACION de la capa de pueblo, no una pagina del juego.
+      Existe porque src/main.ts esta congelado para este worker (lo integra el
+      orquestador): sin este HTML no habria forma de MIRAR las casas con los
+      ojos ni de medir los draw calls del pueblo. Arranca el MISMO terreno, las
+      MISMAS vias y el MISMO modulo src/environment/village.ts que usara el juego.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0b0f14;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      #render-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        outline: none;
+      }
+      #hud {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        padding: 10px 12px;
+        min-width: 208px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(8, 12, 18, 0.72);
+        color: #d7e2ee;
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre;
+        pointer-events: none;
+      }
+      #hud .hud-error {
+        color: #ff8f8f;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="render-canvas" tabindex="0"></canvas>
+    <div id="hud" role="status" aria-live="polite">Cargando…</div>
+    <script type="module" src="/scripts/environment/village_preview.ts"></script>
+  </body>
+</html>
