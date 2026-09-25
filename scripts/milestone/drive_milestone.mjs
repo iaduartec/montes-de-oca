@@ -12,7 +12,8 @@
 // Uso:
 //   node scripts/milestone/drive_milestone.mjs \
 //     [--out-dir output/milestone1] [--port 4183] [--base http://127.0.0.1:4183] \
-//     [--budget-s 300] [--cdp-port <libre>] [--chrome google-chrome] [--no-build]
+//     [--budget-s 300] [--cdp-port <libre>] [--chrome google-chrome] [--no-build] \
+//     [--block-vegetation]
 //
 // Falla ruidosamente: si no llega al objetivo dentro de --budget-s reporta la
 // distancia restante y la última pose; si queda atascado (>5 s simulados por
@@ -39,6 +40,7 @@ const BASE = arg('--base', `http://127.0.0.1:${PORT}`);
 const BUDGET_S = Number(arg('--budget-s', '300'));
 const CHROME = arg('--chrome', 'google-chrome');
 const DO_BUILD = !flag('--no-build');
+const BLOCK_VEGETATION = flag('--block-vegetation');
 const LOG_PREFIX = '[milestone]';
 
 // Los valores de diseño del bucle salen de src/gameplay/mission.ts (no se
@@ -457,6 +459,12 @@ async function main() {
     };
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
 
+    if (BLOCK_VEGETATION) {
+      log('modo fallo de red: bloquea *vegetation/vegetation.json*');
+      await cdp.send('Network.enable');
+      await cdp.send('Network.setBlockedURLs', { urls: ['*vegetation/vegetation.json*'] });
+    }
+
     log(`navegando a ${BASE}/ (personaje + misión)`);
     await cdp.send('Page.navigate', { url: `${BASE}/` });
 
@@ -483,6 +491,24 @@ async function main() {
     const village = await cdp.evaluate('window.__game.village ? window.__game.village.stats() : null');
     report.pueblo = village;
     check('pueblo cargado y batcheado (meshes <= 20 con > 300 casas)', !!village && village.buildings > 300 && village.meshes <= 20, village, 'buildings > 300 y meshes <= 20');
+
+    // La vegetación (FASE D): que cargue Y que siga BATCHEADA. Si alguien vuelve al
+    // patrón "una malla por instancia", 30.000 instancias pasarían de 18 mallas a
+    // miles y esto lo grita. TDD: este check corre en RED hasta que main.ts exponga
+    // window.__game.vegetation con stats() (mismo envoltorio que village).
+    const vegetation = await cdp.evaluate('window.__game.vegetation ? window.__game.vegetation.stats() : null');
+    report.vegetacion = vegetation;
+    if (BLOCK_VEGETATION) {
+      check('vegetacion bloqueada no tumba el juego (vegetation === null)', vegetation === null, vegetation, '=== null');
+      const core = await cdp.evaluate('!!(window.__game && window.__game.route && window.__game.player && window.__game.mission && window.__game.vehicle)');
+      check('nucleo jugable disponible sin decoracion (route/player/mission/vehicle)', core === true, core, 'true');
+    } else {
+      check('vegetacion cargada y batcheada (meshes <= 18 con arboles/arbustos/hierba > 0)', !!vegetation && vegetation.trees > 0 && vegetation.shrubs > 0 && vegetation.grassTufts > 0 && vegetation.meshes <= 18, vegetation, 'trees/shrubs/grassTufts > 0 y meshes <= 18');
+      // El corredor runtime debe coincidir con el builder (ROAD 12 m / TRACK 8 m):
+      // cualquier exclusión acá significa que el runtime ensanchó el corredor y
+      // removió instancias aprobadas por la fuente.
+      check('vegetacion sin exclusiones por corredor (excludedByCorridor === 0)', vegetation?.excludedByCorridor === 0, vegetation?.excludedByCorridor, '=== 0');
+    }
 
     // Instala el harness dentro de la página.
     await cdp.evaluate(HARNESS_SOURCE);
