@@ -25,8 +25,15 @@ pendiente  p95 18,0° · máx 21,8° · 2 tramos de 5 m sobre 20° · PATH 0 m
 `[~]` = código integrado y typecheck/build verdes, **verificación real pendiente**.
 
 - [x] **A** · ruta definida desde OSM + pendiente real, verificada en `npm test`
-- [~] **B** · aparición: 4x4 sobre el asfalto de la N-120 y jugador a pie al lado. Commit
-      `62c22f1`. Falta **verlo correr**
+- [x] **B** · aparición. Commit `f468819`. Verificado en Chrome headless con `--dump-dom` y
+      `--screenshot`: el HUD se llena (⇒ el render loop corre), el 4x4 aparece en
+      `x=3087.5 z=3935.1 yaw=-174°` sobre `Y mundo 75.000` con `ruedas residual máx 0.000`,
+      el jugador queda **a pie al costado**, `#accion` muestra "F — entrar al 4x4" y la
+      misión arranca en `SIN EMPEZAR`. Captura `output/milestone1/00_boot_spawn.png`.
+      **Los dos bugs de esta fase salieron de MIRAR la captura**, no del código: el jugador
+      nacía dentro del chasis (79% del cuadro casi negro → 2,8%) y `#controls` mostraba las
+      teclas de la cámara libre mientras conducías. Typecheck y build estaban verdes en los
+      dos casos
 - [ ] **C** · conducción de extremo a extremo **medida** (no mirada)
 - [ ] **D** · vegetación FOREST/GRASS/FIELDS con corredores y spawn/objetivo libres — `v1` en vuelo
 - [ ] **E** · Villafranca low-poly desde footprints OSM, sin casas flotando — `v2` en vuelo
