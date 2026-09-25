@@ -18,3 +18,6 @@ v2-pueblo	opencode/mimo-v2.6-flash-free	orchestration/phase6/v2-pueblo.md	milest
 v3-mision	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v3-mision.md	milestone1
 v4-jugador	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v4-jugador.md	milestone1
 v5-arnes	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v5-arnes.md	milestone1
+d6-atmosfera	opencode-go/deepseek-v4.1-flash	orchestration/phase6/d6-atmosfera.md	milestone1
+r1-revision-critica	openai/gpt-6-sol (codex exec)	orchestration/phase6/r1-revision-critica.md	milestone1
+d7-test-mision	opencode-go/deepseek-v4.1-flash	orchestration/phase6/d7-test-mision.md	milestone1
