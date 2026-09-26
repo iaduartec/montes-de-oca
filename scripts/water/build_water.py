@@ -457,16 +457,20 @@ def slug(name: str, fallback: str) -> str:
 
 def build_sheets(
     raw: dict, proj: dict, origin: dict, index: dict, pool: float, reservoir: list
-) -> tuple[list[dict], list[dict]]:
+) -> tuple[list[dict], list[dict], int]:
     """Láminas: embalse (anillo del crudo versionado) + laguna/charcas/pilón.
 
-    Devuelve (sheets, descartadas). Un anillo degenerado tras el recorte
-    (<3 vértices) se descarta y se cuenta, nunca se silencia.
+    Devuelve (sheets, descartadas, parciales). Un anillo degenerado tras el
+    recorte (<3 vértices) se descarta y se cuenta, nunca se silencia; una
+    triangulación parcial de ear-clip (ver abajo) se conserva pero se cuenta
+    en `parciales`, nunca se acepta en silencio.
     """
     sheets: list[dict] = []
     dropped: list[dict] = []
+    parciales = 0
 
     def add_sheet(sid: str, kind: str, name: str, ring_world: list, level: float):
+        nonlocal parciales
         clipped = [[round(v, 2) for v in p] for p in clip_ring_to_window(ring_world)]
         if len(clipped) < 3:
             dropped.append(
@@ -483,6 +487,13 @@ def build_sheets(
                 {"id": sid, "motivo": "triangulación vacía", "vertices": len(clipped)}
             )
             return
+        # ear-clip no avisa si deja un polígono con auto-intersección a
+        # medias: el área de los triángulos delata la triangulación parcial
+        # (el validador exige error < 0,5 % por lámina).
+        poly = polygon_area(clipped)
+        tris = sheet_triangles_area(clipped, indices)
+        if poly > 0 and abs(tris - poly) / poly > 0.005:
+            parciales += 1
         sheets.append(
             {
                 "id": sid,
@@ -536,14 +547,24 @@ def build_sheets(
             )
             continue
         kind = tags.get("water") if tags.get("water") in ("lake", "pond") else "pond"
+        # Criterio: la lámina debe quedar POR ENCIMA de todo su anillo
+        # (invariante AGUA.md §6: cota ≥ terreno debajo). Se parte de la
+        # mediana del terreno de los vértices + 0,15 m y, si algún vértice
+        # queda por encima (p. ej. el pilón: mediana 897 con un vértice a
+        # 898), se sube a máx(vértices) + 0,15 m. Las láminas menores son
+        # diminutas; subir es inocuo. El embalse NO usa este camino: su cota
+        # sigue siendo moda del DEM + 0,15 m.
+        nivel = shore[len(shore) // 2] + 0.15
+        if shore[-1] > nivel:
+            nivel = shore[-1] + 0.15
         add_sheet(
             slug(tags.get("name", ""), f"water-{el.get('id')}"),
             kind,
             tags.get("name", f"water-{el.get('id')}"),
             ring,
-            shore[len(shore) // 2] + 0.15,
+            nivel,
         )
-    return sheets, dropped
+    return sheets, dropped, parciales
 
 
 def build_dam(
@@ -574,6 +595,23 @@ def build_dam(
     )
 
 
+def fecha_crudo(window_raw: dict) -> str:
+    """Fecha del crudo OSM, DETERMINISTA: sale del propio snapshot, nunca now().
+
+    Se toma de `osm3s.timestamp_osm_base` del crudo de la ventana; si no
+    estuviera, del `timestamp_osm_base` del crudo del anillo. Si ninguno lo
+    trae, el build falla en vez de inventar una fecha (eso rompería --check).
+    """
+    ts = (window_raw.get("osm3s") or {}).get("timestamp_osm_base")
+    if ts:
+        return ts
+    ring_raw = json.loads(RING_FILE.read_text())
+    ts = (ring_raw.get("osm3s") or {}).get("timestamp_osm_base")
+    if ts:
+        return ts
+    raise ValueError("el crudo no trae osm3s.timestamp_osm_base")
+
+
 def derive() -> tuple[dict, dict]:
     """Deriva (water.json, stats.json) como dicts listos para serializar."""
     proj, origin = load_projection()
@@ -593,15 +631,16 @@ def derive() -> tuple[dict, dict]:
     pool = pool_level(index, clipped_reservoir, FALLBACK_LEVEL_M)
     level = round(pool + 0.15, 2)
 
-    dam, dam_pts = build_dam(raw, proj, origin, index, level)
+    dam, _ = build_dam(raw, proj, origin, index, level)
     global DAM_LINE
     DAM_LINE = [(dam["a"][0], dam["a"][1]), (dam["b"][0], dam["b"][1])]
 
     res_ring = [[round(p[0], 2), round(p[1], 2)] for p in clipped_reservoir]
     grid = depth_grid(index, res_ring, level)
 
-    sheets, dropped = build_sheets(raw, proj, origin, index, pool, reservoir_world)
-    reservoir = next(s for s in sheets if s["id"] == "embalse-alba")
+    sheets, dropped, parciales = build_sheets(
+        raw, proj, origin, index, pool, reservoir_world
+    )
 
     payload = {
         "schemaVersion": 1,
@@ -609,6 +648,8 @@ def derive() -> tuple[dict, dict]:
             "generadoPor": "scripts/water/build_water.py",
             "sourceSha256": manifest["sha256"],
             "scriptSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "fuente": "OSM Overpass + IGN/CNIG MDT05",
+            "fechaCrudo": fecha_crudo(raw),
         },
         "levelM": level,
         "sheets": sheets,
@@ -632,6 +673,7 @@ def derive() -> tuple[dict, dict]:
             for s in sheets
         ],
         "descartadas": dropped,
+        "laminasParciales": parciales,
         "depthGrid": {
             "cols": grid["cols"],
             "rows": grid["rows"],
@@ -647,7 +689,6 @@ def derive() -> tuple[dict, dict]:
         },
         "sourceSha256": manifest["sha256"],
     }
-    _ = reservoir, dam_pts
     return payload, stats
 
 

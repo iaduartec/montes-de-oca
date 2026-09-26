@@ -19,6 +19,7 @@ ENDPOINT = "https://overpass-api.de/api/interpreter"
 MIRROR = "https://overpass.kumi.systems/api/interpreter"
 RING_RELATION_ID = 18149353  # Embalse de Alba (verificado en OSM)
 RING_QUERY = f"[out:json][timeout:60]; rel({RING_RELATION_ID}); >; out geom;"
+RING_QUERY_FILE = OUT_DIR / "osm_reservoir_alba_ring_query.txt"
 RING_FILE = OUT_DIR / "osm_reservoir_alba_ring.json"
 RING_MANIFEST = OUT_DIR / "osm_reservoir_alba_ring_manifest.json"
 UA = "montes-de-oca/1.0 (water fetch)"
@@ -137,6 +138,8 @@ def assemble_ring(ways: list[dict]) -> tuple[list[tuple[float, float]], list[int
 
 def fetch_ring() -> int:
     """Descarga la relation del embalse y versiona su anillo como crudo propio."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    RING_QUERY_FILE.write_text(RING_QUERY + "\n")
     raw, used_endpoint = post_query(RING_QUERY)
     payload = json.loads(raw)
     ways = [e for e in payload.get("elements", []) if e.get("type") == "way"]

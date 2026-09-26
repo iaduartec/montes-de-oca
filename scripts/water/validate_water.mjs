@@ -7,7 +7,7 @@
 //
 // Uso: node scripts/water/validate_water.mjs
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -197,6 +197,61 @@ check('extremos dentro de la ventana', [water.dam.a, water.dam.b]
   .every(([x, z]) => x >= 0 && x <= 6000 && z >= 0 && z <= 6000),
   `a ${water.dam.a} b ${water.dam.b}`);
 check('ancho positivo', water.dam.widthM > 0, `${water.dam.widthM} m`);
+
+// --------------------------------- 7. cota sobre el terreno (AGUA.md §6)
+// Invariante: cota de lámina ≥ nivel del terreno debajo, para cada celda con
+// profundidad > 0. Se lee el DEM de los tiles (mismo esquema
+// `grid{x0,z0,dx,dz,columns,rows,heights}` que usa el constructor, indexado
+// por celda de 1000 m, vecino más cercano) y se exige terreno ≤ cota + 1 mm.
+// El check no puede pasar en vacío: exige haber comprobado > 100 celdas
+// mojadas y publica el máximo de terreno medido en el detalle.
+console.log('\n=== 7. cota de lámina ≥ terreno bajo celdas mojadas ===');
+const tileGrids = readdirSync(resolve(root, 'public/terrain/tiles'))
+  .filter((f) => /^tile_.*\.json$/.test(f))
+  .sort()
+  .map((f) => JSON.parse(readFileSync(resolve(root, 'public/terrain/tiles', f), 'utf8')).grid);
+const tileIndex = new Map();
+for (const t of tileGrids) {
+  const x1 = t.x0 + (t.columns - 1) * t.dx;
+  const z1 = t.z0 + (t.rows - 1) * t.dz;
+  for (let ix = Math.floor((t.x0 - 1) / 1000); ix <= Math.floor((x1 + 1) / 1000); ix++) {
+    for (let iz = Math.floor((t.z0 - 1) / 1000); iz <= Math.floor((z1 + 1) / 1000); iz++) {
+      const k = ix + ',' + iz;
+      if (!tileIndex.has(k)) tileIndex.set(k, []);
+      tileIndex.get(k).push(t);
+    }
+  }
+}
+function heightAt(x, z) {
+  const cands = tileIndex.get(Math.floor(x / 1000) + ',' + Math.floor(z / 1000)) ?? [];
+  for (const t of cands) {
+    if (x >= t.x0 - 0.01 && x <= t.x0 + (t.columns - 1) * t.dx + 0.01 &&
+        z >= t.z0 - 0.01 && z <= t.z0 + (t.rows - 1) * t.dz + 0.01) {
+      return t.heights[Math.round((z - t.z0) / t.dz) * t.columns + Math.round((x - t.x0) / t.dx)];
+    }
+  }
+  return null;
+}
+let mojadas = 0;
+let sobreTerreno = 0;
+let sinDEM = 0;
+let maxTerreno = -Infinity;
+let maxTerrenoEn = null;
+for (let r = 0; r < g.rows; r++) {
+  for (let c = 0; c < g.cols; c++) {
+    if (g.depthsDm[r * g.cols + c] <= 0) continue;
+    const x = g.originX + c * g.cellM;
+    const z = g.originZ + r * g.cellM;
+    const h = heightAt(x, z);
+    if (h === null) { sinDEM++; continue; }
+    mojadas++;
+    if (h > maxTerreno) { maxTerreno = h; maxTerrenoEn = [x, z]; }
+    if (h > g.levelM + 0.001) sobreTerreno++;
+  }
+}
+check('cota ≥ terreno debajo en celdas mojadas (> 100 comprobadas, no vacío)',
+  mojadas > 100 && sinDEM === 0 && sobreTerreno === 0,
+  `${mojadas} celdas mojadas, máx terreno ${maxTerreno} m en ${maxTerrenoEn} vs cota ${g.levelM}, ${sinDEM} sin DEM, ${sobreTerreno} por encima`);
 
 // ------------------------------------------------------------------ resumen
 const total = pass + fails.length;

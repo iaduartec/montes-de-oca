@@ -13,8 +13,11 @@ fondo junto a la presa), no una batimetría medida.
 - Archivo derivado: `water.json` (láminas `sheets`, cintas `ribbons`).
 - El anillo del Embalse de Alba se ensambló desde sus 22 ways de contorno
   (`source=ITACyL`, relation 18149353) porque la consulta de ventana trae la
-  relation sin miembros; ver el comentario `RESERVOIR_RING` en
-  `scripts/water/build_water.py`.
+  relation sin miembros: crudo `data/water/raw/osm_reservoir_alba_ring.json`
+  + manifiesto `data/water/raw/osm_reservoir_alba_ring_manifest.json`,
+  consulta Overpass `rel(18149353); >; out geom;` (ver
+  `data/water/raw/osm_reservoir_alba_ring_query.txt`). El constructor
+  (`scripts/water/build_water.py`) lo carga de ese crudo y verifica su sha256.
 
 ## Cota del vaso y fondo
 
