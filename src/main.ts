@@ -29,6 +29,7 @@ import {
 import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/index';
 import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
+import { applyPreset, DEFAULT_PRESET_ID, presetById } from './vehicle/presets';
 import { FIRST_ROUTE } from './gameplay/first-route';
 import type { FirstRoute, RouteLeg, RoutePoint } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
@@ -162,6 +163,29 @@ function queryNumber(params: URLSearchParams, key: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Clave del parche original del selector de vehículos: se conserva para que la
+ * futura UI (fase 2) lea la misma selección. Accesos guardados con try/catch
+ * porque localStorage puede no estar disponible (modo privado, SSR).
+ */
+const SELECTED_VEHICLE_KEY = 'selectedVehicleId';
+
+function readStoredVehicleId(): string | null {
+  try {
+    return window.localStorage.getItem(SELECTED_VEHICLE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredVehicleId(id: string): void {
+  try {
+    window.localStorage.setItem(SELECTED_VEHICLE_KEY, id);
+  } catch {
+    // Sin almacenamiento: la selección vive sólo en memoria.
+  }
+}
+
 /** Semiancho de despeje por clase de vía: MISMO criterio que el generador. */
 const CORRIDOR_HALF_WIDTH: Record<RouteLeg, number> = { ROAD: 12, TRACK: 8, PATH: 4 };
 
@@ -263,6 +287,10 @@ interface DebugApi {
     setState(partial: Partial<{ x: number; z: number; yaw: number; speed: number; lateral: number }>): void;
     setParams(partial: Partial<VehicleParams>): void;
     params(): VehicleParams;
+    /** Id del preset aplicado (`estandar` por defecto). */
+    preset(): string;
+    /** Aplica un preset por id, lo persiste y devuelve false si no existe. */
+    setPreset(id: string): boolean;
     step(seconds: number, dt?: number): void;
     reset(): void;
   } | null;
@@ -393,6 +421,8 @@ async function bootstrap(): Promise<void> {
   let vehicle: Vehicle | null = null;
   let controls: ReturnType<typeof createVehicleControls> | null = null;
   let player: Player | null = null;
+  /** Preset aplicado al 4x4 (`estandar` por defecto; `?vehicle=` gana a localStorage). */
+  let currentPresetId = DEFAULT_PRESET_ID;
   let playerControls: PlayerControls | null = null;
   /** Envoltorio del control del personaje que admite entrada inyectada. */
   let controlsForPlayer: PlayerControls | null = null;
@@ -708,6 +738,16 @@ async function bootstrap(): Promise<void> {
       spawn: { x: startX, z: startZ, yaw },
       controls: controls ?? undefined,
     });
+
+    // ----- Preset del vehículo (FASE 1: sin UI) -----
+    // `?vehicle=<id>` gana sobre localStorage; id desconocido → default. El
+    // default reproduce exactamente DEFAULT_VEHICLE_PARAMS: la misión no cambia.
+    {
+      const wanted = params.get('vehicle') ?? readStoredVehicleId() ?? DEFAULT_PRESET_ID;
+      const preset = presetById(wanted) ?? presetById(DEFAULT_PRESET_ID)!;
+      applyPreset(vehicle.params, preset);
+      currentPresetId = preset.id;
+    }
 
     if (playerEnabled) {
       // Arranca A PIE, al costado del 4x4: el guion de la misión pide entrar al coche.
@@ -1103,6 +1143,15 @@ async function bootstrap(): Promise<void> {
         },
         setParams: (partial: Partial<VehicleParams>) => Object.assign(vehicle!.params, partial),
         params: () => ({ ...vehicle!.params }),
+        preset: () => currentPresetId,
+        setPreset: (id: string) => {
+          const preset = presetById(id);
+          if (!preset) return false;
+          applyPreset(vehicle!.params, preset);
+          currentPresetId = preset.id;
+          writeStoredVehicleId(preset.id);
+          return true;
+        },
         step: (seconds: number, dt = 1 / 60) => {
           manualStep = true;
           const steps = Math.max(1, Math.round(seconds / dt));
