@@ -3,7 +3,7 @@
   "base": "http://127.0.0.1:5173",
   "out_dir": "/home/ubuntu/.worktrees/montes-de-oca/output/milestone1",
   "budget_s": 300,
-  "fecha": "2026-09-26T23:20:39.755Z",
+  "fecha": "2026-09-26T23:39:54.362Z",
   "checks": [
     {
       "name": "api.route expone first-route",
@@ -308,8 +308,8 @@
     "excludedByCorridor": 0
   },
   "perf_antes": {
-    "fps": 1.1205486206061448,
-    "frameTimeMs": 14.099999994039536,
+    "fps": 1.1603620329542819,
+    "frameTimeMs": 20,
     "drawCalls": 138,
     "triangles": 707195,
     "vertices": 1853045,
@@ -1006,10 +1006,10 @@
     "delta": 0.03106936809777494
   },
   "perf_despues": {
-    "fps": 0.6350093346371389,
-    "frameTimeMs": 318.90000000596046,
+    "fps": 0.6486514536277406,
+    "frameTimeMs": 1050.5,
     "drawCalls": 79,
-    "triangles": 785963,
+    "triangles": 785941,
     "vertices": 1853045,
     "activeMeshes": 45
   },
