@@ -1,9 +1,9 @@
 {
   "generado_por": "scripts/milestone/drive_milestone.mjs",
-  "base": "http://127.0.0.1:4183",
-  "out_dir": "/home/kiri_/projects/montes-de-oca-offroad/output/milestone1",
+  "base": "http://127.0.0.1:5173",
+  "out_dir": "/home/ubuntu/.worktrees/montes-de-oca/output/milestone1",
   "budget_s": 300,
-  "fecha": "2026-09-25T03:04:02.452Z",
+  "fecha": "2026-09-26T22:51:52.524Z",
   "checks": [
     {
       "name": "api.route expone first-route",
@@ -31,29 +31,36 @@
       "ok": true,
       "value": {
         "buildings": 330,
-        "meshes": 7,
-        "triangles": 7721,
-        "footprintAreaM2": 28798.1,
-        "tallestM": 12.8,
-        "droppedAtSpawn": 0
+        "meshes": 10,
+        "triangles": 17434,
+        "footprintAreaM2": 28771.4,
+        "tallestM": 18,
+        "droppedAtSpawn": 0,
+        "detailedBuildings": 67,
+        "courtyardWalls": 12,
+        "lidarAdjustedBuildings": 265,
+        "lidarFallbackBuildings": 65,
+        "roofLiftedBuildings": 3,
+        "maxRoofLiftM": 0.8300000000001546,
+        "streetPoles": 54
       },
       "threshold": "buildings > 300 y meshes <= 20"
     },
     {
-      "name": "vegetacion cargada y batcheada (meshes <= 18 con arboles/arbustos/hierba > 0)",
+      "name": "vegetacion cargada y batcheada (meshes <= 21 con arboles/arbustos/hierba > 0)",
       "ok": true,
       "value": {
-        "trees": 24212,
-        "shrubs": 245,
-        "grassTufts": 6126,
-        "meshes": 18,
-        "instances": 30583,
-        "near": 14850,
-        "mid": 8950,
-        "far": 6783,
+        "trees": 24034,
+        "shrubs": 3019,
+        "grassTufts": 6310,
+        "meshes": 21,
+        "instances": 33363,
+        "near": 16304,
+        "mid": 9745,
+        "far": 7314,
         "excludedByCorridor": 0
       },
-      "threshold": "trees/shrubs/grassTufts > 0 y meshes <= 18"
+      "threshold": "trees/shrubs/grassTufts > 0 y meshes <= 21"
     },
     {
       "name": "vegetacion sin exclusiones por corredor (excludedByCorridor === 0)",
@@ -110,22 +117,22 @@
         "state": "TARGET_REACHED",
         "distancia_restante_m": 7.9,
         "ultima_pose": {
-          "x": 4175.221117014511,
-          "z": 2067.7960632138306,
-          "y": 239.05320941171084,
-          "speed": 7.663562890145336,
-          "yawDeg": -202.57031862979915,
-          "slopeForwardDeg": -4.913932539196521,
-          "wheelResidualMaxM": 0.05411804199218295,
+          "x": 4175.243527580048,
+          "z": 2067.742730238253,
+          "y": 239.05208750212756,
+          "speed": 7.63121435401288,
+          "yawDeg": -202.56870658984178,
+          "slopeForwardDeg": -4.82405076358204,
+          "wheelResidualMaxM": 0.05294311523437045,
           "airborne": false,
           "contacts": [
+            239.00000000000023,
             239,
             239,
-            239,
-            239.21283764684335
+            239.20835000851002
           ]
         },
-        "tiempo_sim_s": 207.2
+        "tiempo_sim_s": 207.9
       },
       "threshold": "TARGET_REACHED en <= 300 s"
     },
@@ -161,7 +168,7 @@
       "ok": true,
       "value": {
         "mode": "on-foot",
-        "distObj": 4.45009316960157,
+        "distObj": 4.4310282141218975,
         "canEnter": true
       },
       "threshold": "mode='on-foot'"
@@ -169,7 +176,7 @@
     {
       "name": "FASE F: caminando entra en el radio del objetivo",
       "ok": true,
-      "value": 3.45,
+      "value": 3.43,
       "threshold": "<= 25"
     },
     {
@@ -207,24 +214,24 @@
       "ok": true,
       "value": {
         "state": "COMPLETED",
-        "distancia_restante_m": 24.8,
+        "distancia_restante_m": 24.9,
         "ultima_pose": {
-          "x": 3084.9419152429787,
-          "z": 3910.3679118541672,
-          "y": 75.04698515454768,
-          "speed": 13.97369550657128,
-          "yawDeg": 6.002868182570263,
-          "slopeForwardDeg": -0.08853016468266212,
-          "wheelResidualMaxM": 0.04770935058593295,
+          "x": 3084.9283377676084,
+          "z": 3910.2390901274775,
+          "y": 75.0511829313937,
+          "speed": 13.97625970448282,
+          "yawDeg": 6.004110504117666,
+          "slopeForwardDeg": -0.10564549283500743,
+          "wheelResidualMaxM": 0.0520199584960892,
           "airborne": false,
           "contacts": [
             75,
-            75,
-            75.18794061819074,
+            75.00000000000011,
+            75.20473172557467,
             75
           ]
         },
-        "tiempo_sim_s": 176.4
+        "tiempo_sim_s": 177.9
       },
       "threshold": "COMPLETED en <= 300 s"
     },
@@ -243,7 +250,7 @@
     {
       "name": "FASE H: regreso sin derrape masivo",
       "ok": true,
-      "value": 0.006,
+      "value": 0.002,
       "threshold": "<= 0.5"
     },
     {
@@ -276,30 +283,37 @@
   ],
   "pueblo": {
     "buildings": 330,
-    "meshes": 7,
-    "triangles": 7721,
-    "footprintAreaM2": 28798.1,
-    "tallestM": 12.8,
-    "droppedAtSpawn": 0
+    "meshes": 10,
+    "triangles": 17434,
+    "footprintAreaM2": 28771.4,
+    "tallestM": 18,
+    "droppedAtSpawn": 0,
+    "detailedBuildings": 67,
+    "courtyardWalls": 12,
+    "lidarAdjustedBuildings": 265,
+    "lidarFallbackBuildings": 65,
+    "roofLiftedBuildings": 3,
+    "maxRoofLiftM": 0.8300000000001546,
+    "streetPoles": 54
   },
   "vegetacion": {
-    "trees": 24212,
-    "shrubs": 245,
-    "grassTufts": 6126,
-    "meshes": 18,
-    "instances": 30583,
-    "near": 14850,
-    "mid": 8950,
-    "far": 6783,
+    "trees": 24034,
+    "shrubs": 3019,
+    "grassTufts": 6310,
+    "meshes": 21,
+    "instances": 33363,
+    "near": 16304,
+    "mid": 9745,
+    "far": 7314,
     "excludedByCorridor": 0
   },
   "perf_antes": {
-    "fps": 5.520702634880802,
-    "frameTimeMs": 273.19999999995343,
-    "drawCalls": 84,
-    "triangles": 305564,
-    "vertices": 1544592,
-    "activeMeshes": 53
+    "fps": 0.8377103700158338,
+    "frameTimeMs": 68.80000001192093,
+    "drawCalls": 138,
+    "triangles": 707195,
+    "vertices": 1853045,
+    "activeMeshes": 86
   },
   "datum": {
     "verticalDatum": 870,
@@ -596,10 +610,10 @@
       },
       {
         "tile": "tile_3_3#21",
-        "x": 3082.7792910179037,
-        "z": 3958.8163834963275,
-        "absoluteM": 945.4441417964193,
-        "worldY": 75.44414179641933,
+        "x": 3097.2583703002892,
+        "z": 3945.020086259581,
+        "absoluteM": 944.5483259399422,
+        "worldY": 74.54832593994217,
         "diffM": 0
       }
     ]
@@ -679,63 +693,63 @@
     },
     "track_entry": {
       "reason": "stopS",
-      "simSeconds": 23.283333333333292,
-      "frames": 1397,
-      "projS": 666.1700129615247,
+      "simSeconds": 23.983333333333253,
+      "frames": 1439,
+      "projS": 666.0382693912043,
       "trackTotal": 2355.0537209972617,
       "missionState": "ACTIVE",
-      "distanceToTargetM": 1585.7111226912427,
-      "distanceToReturnM": 601.7240423421273,
+      "distanceToTargetM": 1585.8428573231763,
+      "distanceToReturnM": 601.6000517749768,
       "minDistToStopPoint": null,
       "final": {
-        "x": 3273.69525751098,
-        "z": 3362.84870672252,
-        "y": 86.73905150219599,
-        "speed": 13.735495816863361,
-        "yawDeg": -218.42404991813567,
-        "slopeForwardDeg": 7.088148975859156,
-        "wheelResidualMaxM": 0.008499450683643772,
+        "x": 3273.613994457573,
+        "z": 3362.9526574940514,
+        "y": 86.7227988915146,
+        "speed": 13.73630480623868,
+        "yawDeg": -218.44476045531323,
+        "slopeForwardDeg": 7.091418347959995,
+        "wheelResidualMaxM": 0.008505554199246035,
         "airborne": false,
         "contacts": [
-          87.03998106403719,
-          86.78614888175855,
-          86.69195412263343,
-          86.43812194035479
+          87.02377133330151,
+          86.77001195204969,
+          86.67558583097946,
+          86.42182644972775
         ]
       },
       "stats": {
-        "meanSpeed": 14.466191355738284,
+        "meanSpeed": 14.03361811426493,
         "maxSpeed": 15.224686902769836,
-        "p50SlopeDeg": 1.2825463072386458,
-        "p95SlopeDeg": 9.16382701409444,
-        "maxSlopeDeg": 11.161589901963277,
-        "meanResidualM": 0.028891254225720305,
-        "maxResidualM": 0.12874633789067502,
+        "p50SlopeDeg": 1.231522075136515,
+        "p95SlopeDeg": 9.064121915919333,
+        "maxSlopeDeg": 11.221561466495107,
+        "meanResidualM": 0.0291285670574122,
+        "maxResidualM": 0.1294528198242233,
         "airborneFrames": 0,
         "slippingFrames": 0,
         "skiddingFrames": 67,
         "maxLateralM": 5.176266468165763,
-        "meanLateralM": 1.2647957118681732,
-        "skiddingFraction": 0.047959914101646385
+        "meanLateralM": 1.2748937263479871,
+        "skiddingFraction": 0.046560111188325225
       }
     },
     "offroad": {
       "reason": "stopS",
-      "simSeconds": 71.66666666666389,
-      "frames": 4300,
-      "projS": 1510.126806768935,
+      "simSeconds": 71.68333333333055,
+      "frames": 4301,
+      "projS": 1510.1971600851139,
       "trackTotal": 2355.0537209972617,
       "missionState": "ACTIVE",
-      "distanceToTargetM": 791.7318114585918,
-      "distanceToReturnM": 1418.55998478727,
+      "distanceToTargetM": 791.6738263910023,
+      "distanceToReturnM": 1418.6290181224003,
       "minDistToStopPoint": null,
       "final": {
-        "x": 3617.234017961846,
-        "z": 2619.099361186091,
+        "x": 3617.2469195890567,
+        "z": 2619.0301383869596,
         "y": 185,
-        "speed": 12.496008741700388,
-        "yawDeg": -190.34884841892094,
-        "slopeForwardDeg": -0.12689544204339517,
+        "speed": 12.497706091790732,
+        "yawDeg": -190.3656416902058,
+        "slopeForwardDeg": -0.05057047831903618,
         "wheelResidualMaxM": 0.0000048828125045474735,
         "airborne": false,
         "contacts": [
@@ -746,18 +760,18 @@
         ]
       },
       "stats": {
-        "meanSpeed": 11.73123247980034,
-        "maxSpeed": 13.690222791248864,
-        "p50SlopeDeg": 7.010001001521958,
-        "p95SlopeDeg": 14.3711788299517,
-        "maxSlopeDeg": 16.729650862303366,
-        "meanResidualM": 0.0365284435183565,
-        "maxResidualM": 0.11142761230473752,
+        "meanSpeed": 11.731328847493801,
+        "maxSpeed": 13.691000175510558,
+        "p50SlopeDeg": 7.010499274757555,
+        "p95SlopeDeg": 14.37094156993917,
+        "maxSlopeDeg": 16.71820185207046,
+        "meanResidualM": 0.03652615520351077,
+        "maxResidualM": 0.11093933105473752,
         "airborneFrames": 0,
         "slippingFrames": 0,
         "skiddingFrames": 0,
-        "maxLateralM": 1.9153189098395693,
-        "meanLateralM": 0.5273741162343796,
+        "maxLateralM": 1.91792980879688,
+        "meanLateralM": 0.5274395235881836,
         "skiddingFraction": 0
       }
     },
@@ -765,84 +779,84 @@
       "reason": "stopPoint",
       "simSeconds": 89.13333333332956,
       "frames": 5348,
-      "projS": 2347.10392846287,
+      "projS": 2347.1617782480394,
       "trackTotal": 2355.0537209972617,
       "missionState": "TARGET_REACHED",
-      "distanceToTargetM": 7.949808459396603,
-      "distanceToReturnM": 2160.9510014055672,
-      "minDistToStopPoint": 7.949808459396603,
+      "distanceToTargetM": 7.891959211011176,
+      "distanceToReturnM": 2161.008365968467,
+      "minDistToStopPoint": 7.891959211011176,
       "final": {
-        "x": 4175.221117014511,
-        "z": 2067.7960632138306,
-        "y": 239.05320941171084,
-        "speed": 7.663562890145336,
-        "yawDeg": -202.57031862979915,
-        "slopeForwardDeg": -4.913932539196521,
-        "wheelResidualMaxM": 0.05411804199218295,
+        "x": 4175.243527580048,
+        "z": 2067.742730238253,
+        "y": 239.05208750212756,
+        "speed": 7.63121435401288,
+        "yawDeg": -202.56870658984178,
+        "slopeForwardDeg": -4.82405076358204,
+        "wheelResidualMaxM": 0.05294311523437045,
         "airborne": false,
         "contacts": [
+          239.00000000000023,
           239,
           239,
-          239,
-          239.21283764684335
+          239.20835000851002
         ]
       },
       "stats": {
-        "meanSpeed": 9.355689422218392,
-        "maxSpeed": 12.421537895084102,
-        "p50SlopeDeg": 3.389477931334475,
-        "p95SlopeDeg": 9.762683765118476,
-        "maxSlopeDeg": 14.0929835000147,
-        "meanResidualM": 0.02437528760021661,
-        "maxResidualM": 0.14778015136732847,
+        "meanSpeed": 9.355547431652113,
+        "maxSpeed": 12.422972419069563,
+        "p50SlopeDeg": 3.3862614735617163,
+        "p95SlopeDeg": 9.764757472688018,
+        "maxSlopeDeg": 14.005211539150316,
+        "meanResidualM": 0.02437948713395939,
+        "maxResidualM": 0.147761840820408,
         "airborneFrames": 0,
         "slippingFrames": 0,
         "skiddingFrames": 0,
-        "maxLateralM": 1.6291778979468285,
-        "meanLateralM": 0.4793478272792745,
+        "maxLateralM": 1.6358960339381894,
+        "meanLateralM": 0.4793166077270853,
         "skiddingFraction": 0
       }
     },
     "return": {
       "reason": "stopState",
-      "simSeconds": 176.36666666669916,
-      "frames": 10582,
-      "projS": 2330.2363115120406,
+      "simSeconds": 177.88333333336703,
+      "frames": 10673,
+      "projS": 2330.106776343936,
       "trackTotal": 2355.0537209972626,
       "missionState": "COMPLETED",
-      "distanceToTargetM": 2148.8463684162357,
-      "distanceToReturnM": 24.81740635014454,
-      "minDistToStopPoint": 24.81740635014454,
+      "distanceToTargetM": 2148.742376739121,
+      "distanceToReturnM": 24.946941597596602,
+      "minDistToStopPoint": 24.946941597596602,
       "final": {
-        "x": 3084.9419152429787,
-        "z": 3910.3679118541672,
-        "y": 75.04698515454768,
-        "speed": 13.97369550657128,
-        "yawDeg": 6.002868182570263,
-        "slopeForwardDeg": -0.08853016468266212,
-        "wheelResidualMaxM": 0.04770935058593295,
+        "x": 3084.9283377676084,
+        "z": 3910.2390901274775,
+        "y": 75.0511829313937,
+        "speed": 13.97625970448282,
+        "yawDeg": 6.004110504117666,
+        "slopeForwardDeg": -0.10564549283500743,
+        "wheelResidualMaxM": 0.0520199584960892,
         "airborne": false,
         "contacts": [
           75,
-          75,
-          75.18794061819074,
+          75.00000000000011,
+          75.20473172557467,
           75
         ]
       },
       "stats": {
-        "meanSpeed": 13.176867334947719,
-        "maxSpeed": 14.525061151316024,
-        "p50SlopeDeg": -3.607120571221215,
-        "p95SlopeDeg": 3.3396994569767866,
-        "maxSlopeDeg": 10.257102444731464,
-        "meanResidualM": 0.028161774171910445,
-        "maxResidualM": 0.12489807128906705,
+        "meanSpeed": 13.065664085749253,
+        "maxSpeed": 14.525021861270487,
+        "p50SlopeDeg": -3.5458374439121436,
+        "p95SlopeDeg": 3.387275826114715,
+        "maxSlopeDeg": 10.272048042076987,
+        "meanResidualM": 0.028035911975380502,
+        "maxResidualM": 0.12397796630853009,
         "airborneFrames": 0,
         "slippingFrames": 0,
-        "skiddingFrames": 62,
-        "maxLateralM": 8.957514690145544,
-        "meanLateralM": 0.8575230302572155,
-        "skiddingFraction": 0.005859005859005859
+        "skiddingFrames": 20,
+        "maxLateralM": 8.957655039628953,
+        "meanLateralM": 0.8562776608467445,
+        "skiddingFraction": 0.0018738873793685
       }
     }
   },
@@ -852,22 +866,22 @@
     "startProgress": 0,
     "endProgress": 0,
     "simSeconds": 3.016666666666661,
-    "distanceToTargetM": 4.021513547182949
+    "distanceToTargetM": 4.0003284023034515
   },
   "caminata": {
     "reason": "arrived",
     "simSeconds": 0.39999999999999997,
     "telemetry": {
       "mode": "on-foot",
-      "x": 4175.699061053931,
+      "x": 4175.708497606771,
       "y": 239,
-      "z": 2062.7618682041657,
-      "yawDeg": 132.07390564887245,
+      "z": 2062.7438592248527,
+      "yawDeg": 131.95626902710168,
       "speedMps": 4.800000000000002,
       "running": true,
       "moving": true,
       "interact": false,
-      "distanceToVehicleM": 1.8125282952487862,
+      "distanceToVehicleM": 1.810452916172001,
       "canEnter": true
     },
     "mission": {
@@ -875,11 +889,11 @@
       "state": "TARGET_REACHED",
       "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
       "hint": "Mantené E para restablecer el enlace",
-      "distanceToTargetM": 3.4500931696012946,
-      "distanceToReturnM": 2165.5426003425855,
+      "distanceToTargetM": 3.4310282141215334,
+      "distanceToReturnM": 2165.5629123712974,
       "repairProgress": 0,
       "repaired": false,
-      "elapsedS": 211.00000000006006,
+      "elapsedS": 211.7166666667273,
       "completed": false
     }
   },
@@ -890,11 +904,11 @@
       "state": "REPAIRED",
       "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
       "hint": "Volvé a Villafranca",
-      "distanceToTargetM": 2.913426502934745,
-      "distanceToReturnM": 2166.0536940451475,
+      "distanceToTargetM": 2.894361547455226,
+      "distanceToReturnM": 2166.073668889903,
       "repairProgress": 1,
       "repaired": true,
-      "elapsedS": 213.01666666672833,
+      "elapsedS": 213.73333333339556,
       "completed": false
     },
     "samples": [
@@ -955,15 +969,15 @@
     "simSeconds": 0,
     "telemetry": {
       "mode": "on-foot",
-      "x": 4176.0974185765135,
+      "x": 4176.107592629869,
       "y": 239,
-      "z": 2062.4022539729226,
-      "yawDeg": 132.07390564887245,
+      "z": 2062.3850636372977,
+      "yawDeg": 131.95626902710168,
       "speedMps": 0,
       "running": false,
       "moving": false,
       "interact": false,
-      "distanceToVehicleM": 1.9303778989708384,
+      "distanceToVehicleM": 1.9273828226087446,
       "canEnter": true
     },
     "mission": {
@@ -971,11 +985,11 @@
       "state": "REPAIRED",
       "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
       "hint": "Volvé a Villafranca",
-      "distanceToTargetM": 2.913426502934745,
-      "distanceToReturnM": 2166.0536940451475,
+      "distanceToTargetM": 2.894361547455226,
+      "distanceToReturnM": 2166.073668889903,
       "repairProgress": 1,
       "repaired": true,
-      "elapsedS": 213.01666666672833,
+      "elapsedS": 213.73333333339556,
       "completed": false
     }
   },
@@ -992,12 +1006,12 @@
     "delta": 0.03106936809777494
   },
   "perf_despues": {
-    "fps": 3.9344262295081966,
-    "frameTimeMs": 38,
-    "drawCalls": 65,
-    "triangles": 387565,
-    "vertices": 1544592,
-    "activeMeshes": 38
+    "fps": 0.6300032760168778,
+    "frameTimeMs": 1157,
+    "drawCalls": 79,
+    "triangles": 786021,
+    "vertices": 1853045,
+    "activeMeshes": 45
   },
   "mision_final": {
     "name": "REPETIDOR SIN SEÑAL",
@@ -1008,7 +1022,7 @@
     "distanceToReturnM": 1.7915054885466253,
     "repairProgress": 1,
     "repaired": true,
-    "elapsedS": 389.566666666641,
+    "elapsedS": 391.79999999997233,
     "completed": true
   },
   "inject_toggle": {
