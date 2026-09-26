@@ -582,6 +582,15 @@ async function bootstrap(): Promise<void> {
       // R — que te devuelve al punto de partida, que es el objetivo del regreso — y
       // COMPLETAR sin conducir la vuelta: un atajo que se saltea media misión.
       mission?.reset();
+      // La regla del agua vuelve a cero (ruling del gate de T6): si no, apretar R
+      // dentro de la banda de 0,35-1,1 m deja el calado restándose sobre tierra
+      // hasta que decae (~0,5-1,8 s).
+      estadoAgua = 'seco';
+      caladoAgua = 0;
+      hundimientoS = 0;
+      enfangadoS = 0;
+      velocidadMaximaAgua = Infinity;
+      ultimaPosicionSeca = { x: startX, z: startZ };
     };
     resetToStart = resetToStartFn;
 
@@ -935,8 +944,11 @@ async function bootstrap(): Promise<void> {
     else enfangadoS = 0;
 
     if (prof > AGUA_HUNDIMIENTO_M || enfangadoS > AGUA_ENFANGADO_S) {
-      // Secuencia de hundimiento (§5.3): se atenúa el control (solo el límite
-      // que ya venía), crece el calado visual y a los ~1,5 s vuelve a la orilla.
+      // Secuencia de hundimiento (§5.3): se atenúa el control (solo límite de
+      // velocidad, sin fuerzas nuevas) y crece el calado visual; a los ~1,5 s
+      // vuelve a la orilla. El tope se fija acá también para el caso de entrar
+      // directo a >1,1 m sin haber pasado por la banda de arrastre (gate T6).
+      velocidadMaximaAgua = AGUA_VELOCIDAD_ARRASTRE_MPS;
       estadoAgua = prof > AGUA_HUNDIMIENTO_M ? 'hundiendo' : 'enfangado';
       hundimientoS += dt;
       caladoAgua = Math.min(AGUA_CALADO_MAX_M, caladoAgua + dt * 1.2);

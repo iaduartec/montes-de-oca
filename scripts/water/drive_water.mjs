@@ -248,7 +248,7 @@ window.__harnessAgua = (function () {
       ok: sawHund, motivo: sawHund ? null : 'sin-hundimiento',
       maxD: maxD, maxCaladoHundiendo: maxCal, vioArrastre: sawArr, vioHundimiento: sawHund,
       rescatado: rescatado, avisoVisible: av2.visible, avisoTexto: av2.texto,
-      fin: { x: tf.x, z: tf.z, d: g.water.depthAt(tf.x, tf.z), v: tf.speedMps, e: g.water.estadoAgua() },
+      fin: { x: tf.x, z: tf.z, d: g.water.depthAt(tf.x, tf.z), v: tf.speedMps, e: g.water.estadoAgua(), calado: g.water.calado() },
       muestras: muestras, simS: sim
     };
   }
@@ -317,7 +317,7 @@ window.__harnessAgua = (function () {
     return {
       ok: sawEnf, vioEnfangado: sawEnf,
       avisoVisible: av2.visible, avisoTexto: av2.texto,
-      fin: { x: tf.x, z: tf.z, d: g.water.depthAt(tf.x, tf.z), v: tf.speedMps, e: g.water.estadoAgua() },
+      fin: { x: tf.x, z: tf.z, d: g.water.depthAt(tf.x, tf.z), v: tf.speedMps, e: g.water.estadoAgua(), calado: g.water.calado() },
       simS: sim
     };
   }
@@ -399,7 +399,8 @@ async function main() {
     if (hondo) {
       check('drive (a): depthAt supera 1,1 m al entrar', hondo.maxD > 1.1, `${hondo.maxD.toFixed(2)} m`);
       check("drive (b): aparece 'hundiendo' con calado visual", hondo.vioHundimiento && hondo.maxCaladoHundiendo > 0.3, `hundiendo=${hondo.vioHundimiento} calado=${hondo.maxCaladoHundiendo.toFixed(2)} m`);
-      check('drive (c): termina en tierra y detenido', hondo.fin.d === 0 && Math.abs(hondo.fin.v) < 0.05, `d=${hondo.fin.d} v=${hondo.fin.v.toFixed(3)} m/s estado=${hondo.fin.e}`);
+      check('drive (c): termina en tierra, detenido y en seco', hondo.fin.d === 0 && Math.abs(hondo.fin.v) < 0.05 && hondo.fin.e === 'seco', `d=${hondo.fin.d} v=${hondo.fin.v.toFixed(3)} m/s estado=${hondo.fin.e}`);
+      check('drive (c): calado visual a 0 tras el rescate', hondo.fin.calado === 0, `${hondo.fin.calado} m`);
       check('drive (d): #aviso visible con el texto exacto', hondo.avisoVisible === true && hondo.avisoTexto === AVISO_TEXTO, JSON.stringify(hondo.avisoTexto));
       report.hondo.muestras = hondo.muestras.filter((_, i) => i % 4 === 0);
     }
@@ -422,7 +423,7 @@ async function main() {
       const enf = await cdp.evaluate(`window.__harnessAgua.escenarioFango(${JSON.stringify(fango)})`);
       report.enfangado = enf;
       check("drive (f): aparece 'enfangado'", enf.vioEnfangado === true, `enfangado=${enf.vioEnfangado} (${enf.simS.toFixed(1)} s sim)`);
-      check('drive (f): vuelve a la orilla detenido', enf.fin.d === 0 && Math.abs(enf.fin.v) < 0.05, `d=${enf.fin.d} v=${enf.fin.v.toFixed(3)} m/s`);
+      check('drive (f): vuelve a la orilla detenido, en seco y con calado 0', enf.fin.d === 0 && Math.abs(enf.fin.v) < 0.05 && enf.fin.e === 'seco' && enf.fin.calado === 0, `d=${enf.fin.d} v=${enf.fin.v.toFixed(3)} m/s estado=${enf.fin.e} calado=${enf.fin.calado} m`);
       check('drive (f): aviso visible con el texto exacto', enf.avisoVisible === true && enf.avisoTexto === AVISO_TEXTO, JSON.stringify(enf.avisoTexto));
     }
 
