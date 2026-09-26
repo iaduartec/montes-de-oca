@@ -1,0 +1,10 @@
+{
+  "generado_por": "scripts/water/fetch_water.py",
+  "source": "https://overpass-api.de/api/interpreter",
+  "query": "[out:json][timeout:60]; rel(18149353); >; out geom;",
+  "relation": 18149353,
+  "sha256": "b8fadcce78b10f03a5e08970b559ed2463d832f4ae6cb6cc206a8b3610590324",
+  "bytes": 10735,
+  "members": 22,
+  "nodes": 462
+}

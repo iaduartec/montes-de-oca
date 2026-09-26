@@ -6,6 +6,7 @@
 // completo; no crear un segundo validador.
 //
 // Uso: node scripts/water/validate_water.mjs
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -88,6 +89,30 @@ check('meta.sourceSha256 coincide con el manifiesto del crudo',
   `water ${String(water.meta?.sourceSha256).slice(0, 12)} vs manifiesto ${String(manifest.sha256).slice(0, 12)}`);
 check('stats.levelM coincide con water.levelM', stats.levelM === water.levelM,
   `stats ${stats.levelM} vs water ${water.levelM}`);
+
+// Trazabilidad del anillo del embalse: debe salir del crudo versionado, no de un
+// literal pegado en el constructor. Se verifica el sha256 del crudo contra su
+// manifiesto y se reproyecta lon/lat -> mundo para compararlo con la lámina.
+const ringRawBytes = readFileSync(resolve(root, 'data/water/raw/osm_reservoir_alba_ring.json'));
+const ringRaw = JSON.parse(ringRawBytes.toString('utf8'));
+const ringManifest = JSON.parse(
+  readFileSync(resolve(root, 'data/water/raw/osm_reservoir_alba_ring_manifest.json'), 'utf8'),
+);
+const terrainCfg = JSON.parse(readFileSync(resolve(root, 'public/terrain/config.json'), 'utf8'));
+check('sha256 del crudo del anillo coincide con su manifiesto',
+  createHash('sha256').update(ringRawBytes).digest('hex') === ringManifest.sha256,
+  `${String(ringManifest.sha256).slice(0, 12)}… (${ringManifest.members} ways, ${ringManifest.nodes} nodos)`);
+const ringFromRaw = ringRaw.ring.map(([lon, lat]) => [
+  (lon - terrainCfg.origin.lon) * terrainCfg.projection.metersPerDegreeLon,
+  (lat - terrainCfg.origin.lat) * terrainCfg.projection.metersPerDegreeLat,
+]);
+const reservoirSheet = water.sheets.find((s) => s.id === 'embalse-alba');
+check('el anillo del embalse sale del crudo versionado (mismo orden, <5 cm)',
+  Boolean(reservoirSheet) && reservoirSheet.ring.length === ringFromRaw.length &&
+    reservoirSheet.ring.every((p, i) => Math.hypot(p[0] - ringFromRaw[i][0], p[1] - ringFromRaw[i][1]) < 0.05),
+  reservoirSheet
+    ? `${reservoirSheet.ring.length} puntos vs crudo ${ringFromRaw.length}`
+    : 'sin lámina embalse-alba');
 
 // ---------------------------------------------------------------- 2. láminas
 console.log('\n=== 2. láminas trianguladas ===');
