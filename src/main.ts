@@ -8,9 +8,8 @@ import { publicUrl } from './public-url';
 import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
-import { loadWater, type Water } from './environment/water';
+import { loadWater, type Water, type WaterStats } from './environment/water';
 import { loadVillage, type VillageStats } from './environment/village';
-import { type WaterStats } from './environment/water';
 import { VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M } from './environment/roof-clearance';
 import {
   loadVegetation,
