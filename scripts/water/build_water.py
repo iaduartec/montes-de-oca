@@ -294,6 +294,12 @@ def refine_axis(
         eje, cotas = fuera, fuera_cotas
         if viol == 0:
             break
+    else:
+        # Sin fallback silencioso: si no converge, el build falla con mensaje
+        # claro en vez de publicar cintas que el validador §11 va a rechazar.
+        raise RuntimeError(
+            f"refine_axis no convergió en 20 pasadas: quedan {viol} cruces con holgura < {HOLGURA_MIN_M} m"
+        )
     return eje, cotas, agregados
 
 

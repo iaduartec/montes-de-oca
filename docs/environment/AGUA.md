@@ -74,7 +74,8 @@ crudo + DEM → `public/water/water.json`, `public/water/stats.json`,
 - `sheets[]`: láminas (`reservoir | lake | pond`), con `levelM` (absoluta),
   `polygon` recortado a la ventana y triangulado en abanico.
 - `ribbons[]`: ríos/arroyos/zanjas, con `points[]` (eje remuestreado a 2,5 m),
-  `widthM`, `kind` y `depthM` de calado visual (0,15-0,25).
+  `widthM`, `kind` y `caladoM` de calado visual nominal (0,15-0,25; la holgura
+  real sobre el terreno sigue al DEM y puede enflaquecer en los lomos).
 - `dam`: línea del muro con `crestM`, `baseM` y ancho, para la malla del muro.
 - `depthGrid`: campo de profundidad del vaso, celdas de 25 m, `origin`, `cellM`,
   `cols`, `rows`, `depths[]` en decímetros (0 en la orilla, hasta ~18 m junto a

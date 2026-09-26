@@ -316,7 +316,7 @@ for (const c of cruces) {
       }
     }
   }
-  const terreno = heightAt(c.x, c.z);
+  const terreno = surfaceAt(c.x, c.z);
   if (mejor === null || terreno === null) continue;
   const desvio = Math.abs((mejor.superficie - terreno) - c.caladoM);
   crucesVerificados++;
