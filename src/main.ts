@@ -8,7 +8,9 @@ import { publicUrl } from './public-url';
 import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
+import { loadWater, type Water } from './environment/water';
 import { loadVillage, type VillageStats } from './environment/village';
+import { type WaterStats } from './environment/water';
 import { VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M } from './environment/roof-clearance';
 import {
   loadVegetation,
@@ -246,6 +248,13 @@ interface DebugApi {
   } | null;
   /** La ruta de la milestone, para que los arneses no la dupliquen a mano. */
   route: FirstRoute | null;
+  /** El agua decorativa cargada (AGUA T4). `null` con `?water=0` o si falló la carga. */
+  water: {
+    stats(): WaterStats;
+    depthAt(x: number, z: number): number;
+    isMuddy(x: number, z: number): boolean;
+    nearestSafeShore(x: number, z: number): { x: number; z: number } | null;
+  } | null;
   /** El pueblo low-poly cargado (FASE E). `null` con `?pueblo=0`. */
   village: { stats(): VillageStats } | null;
   /** La vegetación procedural cargada (FASE D). `null` con `?vegetation=0`. */
@@ -412,6 +421,25 @@ async function bootstrap(): Promise<void> {
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
     );
+  }
+
+  // ----- Agua decorativa (AGUA T4) -----
+  // `?water=0` la apaga, igual que `?drape=0` y `?pueblo=0`: permite medir draw
+  // calls y triángulos "con y sin" en la MISMA build, sin tocar código. Se carga
+  // DESPUÉS de las vías y es decorativa: si falla, el juego arranca igual.
+  const aguaParam = params.get('water');
+  const waterEnabled = aguaParam === null || !(aguaParam === '0' || aguaParam.toLowerCase() === 'false');
+  let water: Water | null = null;
+  if (waterEnabled) {
+    try {
+      water = await loadWater(scene, terrain, { url: publicUrl('/water/water.json') });
+      console.info(
+        `[agua] ${water.stats.sheets} láminas · ${water.stats.ribbons} cintas · ${water.stats.meshes} mallas`,
+      );
+    } catch (error) {
+      water = null; // decorativo: si falla, el juego arranca igual
+      console.warn('[agua] no se pudo cargar la capa decorativa', error);
+    }
   }
 
   // ----- Pueblo low-poly (FASE E) -----
@@ -936,6 +964,14 @@ async function bootstrap(): Promise<void> {
         }
       : null,
     route: FIRST_ROUTE,
+    water: water
+      ? {
+          stats: () => water!.stats,
+          depthAt: (x: number, z: number) => water!.depthAt(x, z),
+          isMuddy: (x: number, z: number) => water!.isMuddy(x, z),
+          nearestSafeShore: (x: number, z: number) => water!.nearestSafeShore(x, z),
+        }
+      : null,
     village: villageStats ? { stats: () => villageStats! } : null,
     vegetation: vegetation ? { stats: () => vegetation!.stats } : null,
     player: player
@@ -988,6 +1024,7 @@ async function bootstrap(): Promise<void> {
     controls?.dispose();
     vehicle?.dispose();
     roads?.dispose();
+    water?.dispose();
     vegetation?.dispose();
     diagnostics.dispose();
     terrain.dispose();
