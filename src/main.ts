@@ -48,6 +48,7 @@ const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
 const misionEl = document.getElementById('mision');
 const accionEl = document.getElementById('accion');
+const avisoEl = document.getElementById('aviso');
 const controlsEl = document.getElementById('controls');
 
 /** Teclas del modo cámara libre; sólo se muestran cuando la ayuda está activa (F3). */
@@ -65,6 +66,32 @@ const PISTA_AYUDA = 'F3: ayuda y diagnóstico';
 const AVISO_ENTRAR = '<kbd>F</kbd> — entrar al 4x4';
 const AVISO_BAJAR = '<kbd>F</kbd> — bajar del 4x4';
 const AVISO_REPARAR = '<kbd>E</kbd> — mantener para restablecer el enlace';
+
+/** Estado del 4x4 respecto del agua (AGUA §5.2/§5.3). Lo lee el arnés de T6. */
+export type EstadoAgua = 'seco' | 'vadeando' | 'arrastrando' | 'hundiendo' | 'enfangado';
+
+/**
+ * Texto fijo del aviso de rescate (§5.3.3). Vive también en `index.html#aviso`;
+ * se reescribe al mostrarlo para que el arnés lea siempre el mismo texto.
+ */
+const AVISO_HUNDIDO = 'El 4x4 se hundió — volvés a la orilla';
+/** Hasta acá el vado es pasable con arrastre leve (§5.2). */
+const AGUA_VADEO_M = 0.35;
+/** Por encima el agua dispara la secuencia de hundimiento (§5.2). */
+const AGUA_HUNDIMIENTO_M = 1.1;
+/** Velocidad objetivo con arrastre alto, dentro del agua (§5.2). */
+const AGUA_VELOCIDAD_ARRASTRE_MPS = 3.5;
+/** Velocidad objetivo vadeando: paso normal con arrastre leve (§5.2). */
+const AGUA_VELOCIDAD_VADEO_MPS = 9;
+/** La secuencia de hundimiento rescata a este tiempo (§5.3.3). */
+const AGUA_HUNDIMIENTO_S = 1.5;
+/** Tope del calado visual: la lámina tapa el modelo (§5.3.2). */
+const AGUA_CALADO_MAX_M = 1.5;
+/** Enfangado: sin avanzar con gas durante este tiempo (§5.2). */
+const AGUA_ENFANGADO_S = 3;
+const AGUA_ENFANGADO_VELOCIDAD_MPS = 0.4;
+/** El aviso se muestra este tiempo; el juego no se pausa (§5.3.3). */
+const AVISO_HUNDIDO_MS = 4000;
 
 const ETIQUETA_ESTADO: Record<MissionState, string> = {
   NOT_STARTED: 'SIN EMPEZAR',
@@ -253,6 +280,10 @@ interface DebugApi {
     depthAt(x: number, z: number): number;
     isMuddy(x: number, z: number): boolean;
     nearestSafeShore(x: number, z: number): { x: number; z: number } | null;
+    /** Estado de la regla del agua (AGUA T6): lo usa el arnés `drive_water.mjs`. */
+    estadoAgua(): EstadoAgua;
+    /** Calado visual actual del 4x4, en metros (cuánto baja el modelo). */
+    calado(): number;
   } | null;
   /** El pueblo low-poly cargado (FASE E). `null` con `?pueblo=0`. */
   village: { stats(): VillageStats } | null;
@@ -385,6 +416,19 @@ async function bootstrap(): Promise<void> {
   let injected: InjectedInput | null = null;
   /** Último estado de la misión, para que el HUD lo lea sin recalcularlo. */
   let ultimaMision: MissionSnapshot | null = null;
+  /** Reglas del agua (AGUA T6 §5.2/§5.3): viven acá, no en `vehicle/physics.ts`. */
+  let estadoAgua: EstadoAgua = 'seco';
+  /** Cuánto baja el modelo del 4x4 respecto de su pose (solo visual). */
+  let caladoAgua = 0;
+  /** Tiempo acumulado en la secuencia de hundimiento (§5.3.3). */
+  let hundimientoS = 0;
+  /** Tiempo sin avanzar con gas en el fango (§5.2). */
+  let enfangadoS = 0;
+  /** Límite de velocidad objetivo dentro del agua; `Infinity` en seco. */
+  let velocidadMaximaAgua = Infinity;
+  /** Última posición con profundidad 0: fallback si no hay orilla (§5.3.4). */
+  let ultimaPosicionSeca: { x: number; z: number } | null = null;
+  let avisoHundidoTimeout: number | undefined = undefined;
 
   // ----- Capa vial drapeada (FASE 3b) -----
   // `?drape=0` desactiva la red: sirve para medir draw calls/triángulos
@@ -815,6 +859,116 @@ async function bootstrap(): Promise<void> {
   const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · R reiniciar misión';
 
   /**
+   * Nivel de gas actual en conducción, para la regla de enfangado. Lee el mismo
+   * control que mueve al 4x4 (inyectado o teclado): es una lectura pura.
+   */
+  const leerGasConduciendo = (): number => {
+    if (controlsForPlayer) return controlsForPlayer.readVehicular().throttle;
+    if (controls) return controls.read().throttle;
+    return 0;
+  };
+
+  /** Muestra el aviso de rescate ~4 s. El juego no se pausa (§5.3.3). */
+  const mostrarAvisoHundido = (): void => {
+    if (!avisoEl) return;
+    avisoEl.textContent = AVISO_HUNDIDO;
+    avisoEl.hidden = false;
+    if (avisoHundidoTimeout !== undefined) window.clearTimeout(avisoHundidoTimeout);
+    avisoHundidoTimeout = window.setTimeout(() => {
+      if (avisoEl) avisoEl.hidden = true;
+      avisoHundidoTimeout = undefined;
+    }, AVISO_HUNDIDO_MS);
+  };
+
+  /** Teleport a la orilla segura, velocidad 0 y calado 0 (§5.3.3/§5.3.4). */
+  const volverALaOrilla = (): void => {
+    if (!water || !vehicle) return;
+    const destino = water.nearestSafeShore(vehicle.state.x, vehicle.state.z) ?? ultimaPosicionSeca;
+    if (destino) {
+      // En conducción el teleport pasa por el jugador para que personaje y 4x4
+      // sigan siendo una sola posición; si no, directo al vehículo.
+      if (player && player.mode === 'driving') player.teleport(destino.x, destino.z, vehicle.state.yaw);
+      else vehicle.teleport(destino.x, destino.z, vehicle.state.yaw);
+      ultimaPosicionSeca = { x: destino.x, z: destino.z };
+    } else {
+      // Sin punto seguro ni última posición seca: se detiene acá (§5.3.4 pide
+      // nunca bloquear; el próximo frame lo vuelve a intentar).
+      vehicle.state.speed = 0;
+      vehicle.state.lateral = 0;
+      vehicle.applyPose();
+    }
+    caladoAgua = 0;
+    hundimientoS = 0;
+    enfangadoS = 0;
+    velocidadMaximaAgua = Infinity;
+    estadoAgua = 'seco';
+    mostrarAvisoHundido();
+  };
+
+  /**
+   * Reglas del agua (AGUA §5.2/§5.3). Solo en conducción: a pie el agua es
+   * decorativa. No toca la física (`vehicle/physics.ts` intacto): limita la
+   * velocidad objetivo post-paso y aplica un offset visual al modelo.
+   * Con `?water=0` (o si falló la carga) no hay reglas ni aviso.
+   */
+  const reglasAgua = (dt: number): void => {
+    if (!water || !vehicle) {
+      estadoAgua = 'seco';
+      return;
+    }
+    if (player && player.mode !== 'driving') {
+      estadoAgua = 'seco';
+      hundimientoS = 0;
+      enfangadoS = 0;
+      velocidadMaximaAgua = Infinity;
+      caladoAgua = Math.max(0, caladoAgua - dt * 0.8);
+      return;
+    }
+    const x = vehicle.state.x;
+    const z = vehicle.state.z;
+    const prof = water.depthAt(x, z);
+    if (prof === 0) ultimaPosicionSeca = { x, z };
+    const velocidad = Math.abs(vehicle.state.speed);
+    const gas = leerGasConduciendo();
+
+    if (water.isMuddy(x, z) && velocidad < AGUA_ENFANGADO_VELOCIDAD_MPS && gas > 0) enfangadoS += dt;
+    else enfangadoS = 0;
+
+    if (prof > AGUA_HUNDIMIENTO_M || enfangadoS > AGUA_ENFANGADO_S) {
+      // Secuencia de hundimiento (§5.3): se atenúa el control (solo el límite
+      // que ya venía), crece el calado visual y a los ~1,5 s vuelve a la orilla.
+      estadoAgua = prof > AGUA_HUNDIMIENTO_M ? 'hundiendo' : 'enfangado';
+      hundimientoS += dt;
+      caladoAgua = Math.min(AGUA_CALADO_MAX_M, caladoAgua + dt * 1.2);
+      if (hundimientoS > AGUA_HUNDIMIENTO_S) volverALaOrilla();
+    } else {
+      hundimientoS = 0;
+      if (prof > AGUA_VADEO_M) {
+        estadoAgua = 'arrastrando';
+        velocidadMaximaAgua = AGUA_VELOCIDAD_ARRASTRE_MPS;
+      } else if (prof > 0) {
+        estadoAgua = 'vadeando';
+        velocidadMaximaAgua = AGUA_VELOCIDAD_VADEO_MPS;
+      } else {
+        estadoAgua = 'seco';
+        velocidadMaximaAgua = Infinity;
+      }
+      // El calado visual sigue a la profundidad con tope de 1,5 m (§5.2/§5.3.2).
+      const objetivo = Math.min(AGUA_CALADO_MAX_M, prof);
+      if (caladoAgua < objetivo) caladoAgua = Math.min(objetivo, caladoAgua + dt * 1.2);
+      else caladoAgua = Math.max(objetivo, caladoAgua - dt * 0.8);
+    }
+
+    // Límite de velocidad objetivo post-paso, sin tocar la física.
+    if (velocidadMaximaAgua < Infinity) {
+      if (vehicle.state.speed > velocidadMaximaAgua) vehicle.state.speed = velocidadMaximaAgua;
+      else if (vehicle.state.speed < -velocidadMaximaAgua) vehicle.state.speed = -velocidadMaximaAgua;
+    }
+    // Calado visual: el modelo baja respecto de su pose; la física no cambia.
+    if (caladoAgua > 0) vehicle.root.position.y -= caladoAgua;
+  };
+
+  /**
    * Un paso de simulación coherente: primero el mundo (personaje o vehículo) y después
    * la misión, con el estado YA actualizado.
    *
@@ -843,6 +997,10 @@ async function bootstrap(): Promise<void> {
       vehicle.step(dt);
     }
 
+    // Reglas del agua (AGUA §5): post-paso, con el mundo ya avanzado. El `dt` se
+    // topa como el de la misión: un frame largo no puede hundir de un golpe.
+    reglasAgua(Math.min(dt, 0.1));
+
     if (!player || !mission) return;
     const t = player.telemetry();
     ultimaMision = mission.update({
@@ -867,8 +1025,10 @@ async function bootstrap(): Promise<void> {
     //     debe pisarlo. La misión no avanza: ese camino es el legado de medición.
     //  3. El jugador, que resuelve a pie o conduciendo.
     if (!manualStep) {
-      if (manualInput && vehicle) vehicle.step(dt);
-      else if (player || vehicle) stepSimulation(dt);
+      if (manualInput && vehicle) {
+        vehicle.step(dt);
+        reglasAgua(Math.min(dt, 0.1));
+      } else if (player || vehicle) stepSimulation(dt);
     }
     // La cámara de persecución NO se toca en modo cámara libre: si se deja correr,
     // reencuadra al jugador en el primer frame y las capturas de medición salen con la
@@ -969,6 +1129,8 @@ async function bootstrap(): Promise<void> {
           depthAt: (x: number, z: number) => water!.depthAt(x, z),
           isMuddy: (x: number, z: number) => water!.isMuddy(x, z),
           nearestSafeShore: (x: number, z: number) => water!.nearestSafeShore(x, z),
+          estadoAgua: () => estadoAgua,
+          calado: () => caladoAgua,
         }
       : null,
     village: villageStats ? { stats: () => villageStats! } : null,

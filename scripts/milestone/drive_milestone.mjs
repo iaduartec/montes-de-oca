@@ -503,7 +503,10 @@ async function main() {
       const core = await cdp.evaluate('!!(window.__game && window.__game.route && window.__game.player && window.__game.mission && window.__game.vehicle)');
       check('nucleo jugable disponible sin decoracion (route/player/mission/vehicle)', core === true, core, 'true');
     } else {
-      check('vegetacion cargada y batcheada (meshes <= 18 con arboles/arbustos/hierba > 0)', !!vegetation && vegetation.trees > 0 && vegetation.shrubs > 0 && vegetation.grassTufts > 0 && vegetation.meshes <= 18, vegetation, 'trees/shrubs/grassTufts > 0 y meshes <= 18');
+      // 21 = 7 tipos (4 árboles + 2 arbustos + 1 hierba) × 3 bandas LOD (near/mid/far).
+      // El tope era 18 desde 6cef162 y quedó obsoleto al sumarse tipos de árbol en
+      // 1a9f0bc (pasos visuales), no por el agua. 21 es el diseño actual (gate T7).
+      check('vegetacion cargada y batcheada (meshes <= 21 con arboles/arbustos/hierba > 0)', !!vegetation && vegetation.trees > 0 && vegetation.shrubs > 0 && vegetation.grassTufts > 0 && vegetation.meshes <= 21, vegetation, 'trees/shrubs/grassTufts > 0 y meshes <= 21');
       // El corredor runtime debe coincidir con el builder (ROAD 12 m / TRACK 8 m):
       // cualquier exclusión acá significa que el runtime ensanchó el corredor y
       // removió instancias aprobadas por la fuente.

@@ -132,6 +132,27 @@
       #accion[hidden] {
         display: none;
       }
+      /* Aviso de hundimiento/enfangado (§5.3): misma familia que #accion, un
+         punto más arriba para no taparlo. Solo lo muestra la regla del agua. */
+      #aviso {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 7px 14px;
+        border: 1px solid rgba(255, 143, 143, 0.55);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #aviso[hidden] {
+        display: none;
+      }
       #accion kbd {
         padding: 1px 6px;
         border: 1px solid rgba(255, 255, 255, 0.35);
@@ -308,6 +329,11 @@
           max-width: calc(100vw - 32px);
           text-align: center;
         }
+        #aviso {
+          bottom: max(189px, calc(env(safe-area-inset-bottom) + 189px));
+          max-width: calc(100vw - 32px);
+          text-align: center;
+        }
       }
       @media (max-width: 390px) {
         #mobile-controls { padding: 0 9px; }
@@ -329,6 +355,7 @@
     <div id="hud" role="status" aria-live="polite" hidden>Cargando terreno…</div>
     <div id="mision" role="status" aria-live="polite" hidden></div>
     <div id="accion" role="status" aria-live="polite" hidden></div>
+    <div id="aviso" role="status" aria-live="assertive" hidden>El 4x4 se hundió — volvés a la orilla</div>
     <div id="controls">
       F3: ayuda y diagnóstico
     </div>
