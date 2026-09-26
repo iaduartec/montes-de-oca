@@ -5,14 +5,14 @@
 // Ruta: Repetidor sin señal
 // 2361 m en planta · ROAD 661 m · TRACK 1700 m
 // Desnivel: +184 m / -20 m · pendiente máx 21.8°
-// Origen de la red: navigation.json sha256 f701907c6cfaab23…
+// Origen de la red: navigation.json sha256 df2b6db9f7592e2a…
 import type { FirstRoute } from './route-types';
 
 export const FIRST_ROUTE: FirstRoute = {
   id: 'villafranca-pista-objetivo',
   name: 'Repetidor sin señal',
   generatedBy: 'scripts/gameplay/build_first_route.mjs',
-  sourceSha256: 'f701907c6cfaab230a2470524fab427a9cbfa8d0c8f3fed2151e46e073a75303',
+  sourceSha256: 'df2b6db9f7592e2af2e4e47a02549c0d596c0be7a091f6442bdf4354de7ef7ee',
   start: {
     x: 3087.53,
     z: 3935.05,

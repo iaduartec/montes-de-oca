@@ -31,6 +31,15 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
+import {
+  calculateTriangleTerrainLift,
+  levelRoadProfile,
+  parseSpeedLimitKph,
+  ROAD_CLEARANCE_SAMPLES,
+  ROAD_SURFACE_CLEARANCE_M,
+  shouldMarkRoad,
+  shouldPlaceSpeedSign,
+} from './road-visuals';
 
 /** Clases viales del entregable de la FASE 3a. */
 export type RoadClass = 'ROAD' | 'TRACK' | 'PATH';
@@ -49,7 +58,31 @@ export interface RoadSource {
   readonly class: RoadClass;
   readonly width: number;
   readonly bridge: boolean;
+  readonly ref?: string;
+  readonly maxspeed?: unknown;
   readonly points: readonly (readonly [number, number])[];
+  /**
+   * Perfil de semiancho EXTERIOR (calzada + faldón) por estación, publicado por
+   * `build_roads.py` solo cuando la banda se recortó cerca de una huella. Si
+   * falta, se usa el ancho de diseño constante `width/2` (+ faldón en ROAD).
+   */
+  readonly clearance?: ClearanceProfile | null;
+}
+
+/**
+ * Perfil asimétrico de la banda dibujada. `bandLeft[k]`/`bandRight[k]` son el
+ * semiancho EXTERIOR total en la estación `k`, muestreado cada `stepM` metros
+ * de distancia acumulada desde el inicio de la vía. El renderer interpola por
+ * distancia y deriva calzada (`band - skirtM`) y faldón. `renderStepM` es la
+ * subdivisión transversal mínima que garantiza que la interpolación no
+ * recupere el ancho completo entre dos estaciones recortadas.
+ */
+export interface ClearanceProfile {
+  readonly stepM: number;
+  readonly renderStepM: number;
+  readonly skirtM: number;
+  readonly bandLeft: readonly number[];
+  readonly bandRight: readonly number[];
 }
 
 /**
@@ -64,7 +97,7 @@ export const DRAPING = {
   /** Separación transversal máxima entre vértices de calzada (m). */
   crossSectionSpacingM: 1.5,
   /** Separación libre mínima contra el DEM dentro de cada triángulo (m). */
-  surfaceClearanceM: 0.02,
+  surfaceClearanceM: ROAD_SURFACE_CLEARANCE_M,
   /** Ancho del faldón lateral de ROAD, más allá del borde del asfalto (m). */
   skirtWidthM: 0.6,
   /**
@@ -73,19 +106,40 @@ export const DRAPING = {
    * se solapan) gane la vía de mayor jerarquía y no queden caras coplanares.
    */
   verticalOffsetM: { ROAD: 0.12, TRACK: 0.1, PATH: 0.08 },
+  /**
+   * Cota del borde libre de los faldones (m). Queda por debajo del offset de
+   * cualquier calzada para que en cruces el z-buffer resuelva a favor del asfalto.
+   */
+  skirtLiftM: 0.04,
 } as const;
 const SURFACE_CLEARANCE_M = DRAPING.surfaceClearanceM;
+/** Cota del faldón: banda de mezcla apoyada en el terreno, nunca superficie de rodadura. */
+const SKIRT_LIFT_M = DRAPING.skirtLiftM;
+/**
+ * Tiras laterales del detalle de rodadas de una pista (fracción del semiancho y tinte
+ * R/G/B). Su largo fija la fila transversal de esos tramos: la malla reserva exactamente
+ * esta cantidad de vértices por estación para que el detalle y la malla base compartan
+ * el mismo avance por hueco.
+ */
+const TRACK_SECTION: readonly (readonly [number, number, number, number])[] = [
+  [-1, 1.02, 1.04, 0.92],
+  [-0.82, 1.02, 1.02, 0.94],
+  [-0.61, 0.88, 0.89, 0.88],
+  [-0.37, 0.88, 0.89, 0.88],
+  [0, 1.03, 1.02, 0.97],
+  [0.37, 0.88, 0.89, 0.88],
+  [0.61, 0.88, 0.89, 0.88],
+  [0.82, 1.02, 1.02, 0.94],
+  [1, 1.02, 1.04, 0.92],
+];
 
 /** Rol de un vértice de cinta, para poder auditar por separado. */
 const ROLE_PAVEMENT = 0;
 const ROLE_SKIRT = 1;
 /** Vértice de puente: NO se drapea (el deck es lineal entre extremos). */
 const ROLE_BRIDGE = 2;
-const TRIANGLE_TEST_SAMPLES = [
-  [1, 0, 0], [0, 1, 0], [0, 0, 1],
-  [0.5, 0.5, 0], [0, 0.5, 0.5], [0.5, 0, 0.5],
-  [1 / 3, 1 / 3, 1 / 3],
-] as const;
+/** Señal vertical en el buffer ROAD: no se incluye en auditorías del pavimento. */
+const ROLE_SIGN = 3;
 
 /* ------------------------------------------------------------------------- *
  * Parseo defensivo de `roads.json`
@@ -97,6 +151,63 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isRoadClass(value: unknown): value is RoadClass {
   return value === 'ROAD' || value === 'TRACK' || value === 'PATH';
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
+ * Parseo defensivo del perfil de recorte. Devuelve null ante cualquier forma
+ * inesperada: el renderer cae al ancho de diseño y el validador de datos es
+ * quien debe detectar el JSON inválido, no un fallo silencioso en runtime.
+ */
+function parseClearance(raw: unknown): ClearanceProfile | null {
+  if (!isRecord(raw)) return null;
+  const { stepM, renderStepM, skirtM, bandLeft, bandRight } = raw;
+  if (!isFiniteNumber(stepM) || stepM <= 0) return null;
+  if (!isFiniteNumber(renderStepM) || renderStepM <= 0) return null;
+  if (!isFiniteNumber(skirtM) || skirtM < 0) return null;
+  if (!Array.isArray(bandLeft) || !Array.isArray(bandRight)) return null;
+  if (bandLeft.length < 2 || bandLeft.length !== bandRight.length) return null;
+  const left: number[] = [];
+  const right: number[] = [];
+  for (let i = 0; i < bandLeft.length; i++) {
+    const l = bandLeft[i];
+    const r = bandRight[i];
+    if (!isFiniteNumber(l) || !isFiniteNumber(r) || l < 0 || r < 0) return null;
+    left.push(l);
+    right.push(r);
+  }
+  return { stepM, renderStepM, skirtM, bandLeft: left, bandRight: right };
+}
+
+/**
+ * Interpola `(bandLeft, bandRight)` del perfil por distancia acumulada `t`.
+ * Reproduce EXACTAMENTE `profile_at` de `build_roads.py`: mismo `floor`/`lerp`
+ * sobre `stepM` y mismo recorte a la última estación. Así el validador de datos
+ * y la malla consultan el perfil estación a estación con la misma aritmética.
+ */
+function profileAt(profile: ClearanceProfile, t: number): readonly [number, number] {
+  const last = profile.bandLeft.length - 1;
+  const pos = Math.max(0, t) / profile.stepM;
+  const i0 = Math.floor(pos);
+  if (i0 >= last) return [profile.bandLeft[last]!, profile.bandRight[last]!];
+  const f = pos - i0;
+  return [
+    profile.bandLeft[i0]! * (1 - f) + profile.bandLeft[i0 + 1]! * f,
+    profile.bandRight[i0]! * (1 - f) + profile.bandRight[i0 + 1]! * f,
+  ];
+}
+
+/** Límites laterales vigentes en una estación (metros desde el eje). */
+interface StationBand {
+  /** Semiancho de calzada por lado, ya recortado a `[0, width/2]`. */
+  readonly pavementLeft: number;
+  readonly pavementRight: number;
+  /** Banda EXTERIOR por lado (calzada + faldón) hasta donde se dibuja. */
+  readonly outerLeft: number;
+  readonly outerRight: number;
 }
 
 function parseRoads(raw: unknown): RoadSource[] {
@@ -120,12 +231,18 @@ function parseRoads(raw: unknown): RoadSource[] {
       points.push([x, z]);
     }
     if (points.length < 2) continue;
+    const tags = isRecord(item.tags) ? item.tags : null;
+    const ref = typeof item.ref === 'string' ? item.ref : (typeof tags?.ref === 'string' ? tags.ref : undefined);
+    const maxspeed = tags?.maxspeed;
     out.push({
       id: typeof item.id === 'string' ? item.id : '',
       class: item.class,
       width,
       bridge: item.bridge === true,
+      ...(ref === undefined ? {} : { ref }),
+      ...(maxspeed === undefined ? {} : { maxspeed }),
       points,
+      clearance: parseClearance(item.clearance),
     });
   }
   return out;
@@ -188,10 +305,11 @@ interface ClassBuffers {
   readonly stations: { x: number; z: number; dx: number; dz: number }[];
   roadCount: number;
   triangles: number;
+  signs: number;
 }
 
 function emptyBuffers(): ClassBuffers {
-  return { positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0 };
+  return { positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0, signs: 0 };
 }
 
 interface TypedClass {
@@ -221,8 +339,8 @@ function toTyped(buffers: ClassBuffers): TypedClass {
 /** Variación suave y determinista de color por posición (rompe la planitud). */
 function vertexShade(classValue: RoadClass, x: number, z: number): number {
   const n = Math.sin(x * 0.37 + z * 0.61) * Math.cos(z * 0.29 - x * 0.53);
-  const amplitude = classValue === 'ROAD' ? 0.04 : 0.12;
-  const base = classValue === 'ROAD' ? 0.96 : 0.88;
+  const amplitude = classValue === 'ROAD' ? 0.025 : 0.12;
+  const base = classValue === 'ROAD' ? 0.2 : 0.88;
   return base + amplitude * (0.5 + 0.5 * n);
 }
 
@@ -241,16 +359,80 @@ function buildRoad(
   terrain: RoadTerrain,
   trackPolish?: LocalPolishZone,
   roadPolish?: LocalPolishZone,
+  blendCorridor?: LoadRoadNetworkOptions['trackBlendCorridor'],
 ): void {
-  const stations = resamplePolyline(road.points, DRAPING.subdivisionM);
+  const clearance = road.clearance ?? null;
+  // Solo las vías con perfil de recorte se subdividen al paso fino publicado
+  // (`min(subdivisionM, renderStepM)`), para que la interpolación no recupere
+  // ancho entre estaciones. El resto conserva EXACTAMENTE la malla histórica.
+  const maxStep = clearance
+    ? Math.min(DRAPING.subdivisionM, clearance.renderStepM)
+    : DRAPING.subdivisionM;
+  const stations = resamplePolyline(road.points, maxStep);
   if (stations.length < 2) return;
 
   const halfWidth = road.width / 2;
   const isRoadClass = road.class === 'ROAD';
+  const isTrackClass = road.class === 'TRACK';
   const offset = DRAPING.verticalOffsetM[road.class];
-  const useSkirt = isRoadClass && !road.bridge;
+  /**
+   * El detalle de rodadas de la pista se decide por VÍA, no por hueco: si el layout
+   * cambiara a mitad de vía, los índices que avanza `i * verticesPerStation` dejarían
+   * de coincidir con los vértices realmente escritos y los huecos siguientes se
+   * dibujarían con vértices de estaciones anteriores (malla sesgada).
+   */
+  const detallePista = isTrackClass && !road.bridge && trackPolish !== undefined &&
+    Number.isFinite(trackPolish.radiusM) && trackPolish.radiusM > 0 &&
+    stations.some(
+      (station) =>
+        Math.hypot(station.x - trackPolish.x, station.z - trackPolish.z) <= trackPolish.radiusM + DRAPING.subdivisionM,
+    );
+  // La pista de tierra también recibe faldón de mezcla, pero solo en el corredor de la
+  // ruta jugable (ver `trackBlendCorridor`) y nunca en los tramos con rodadas detalladas.
+  const cercaDeRuta =
+    isTrackClass && blendCorridor !== undefined && blendCorridor.points.length > 0
+      ? stations.some(
+          (station, index) =>
+            index % 4 === 0 &&
+            blendCorridor.points.some(
+              (point) => Math.hypot(station.x - point.x, station.z - point.z) <= blendCorridor.radiusM,
+            ),
+        )
+      : false;
+  const useSkirt = (isRoadClass || (isTrackClass && !detallePista && cercaDeRuta)) && !road.bridge;
+  const smoothProfile = isRoadClass && !road.bridge
+    ? levelRoadProfile(
+      stations.map((station) => station.t),
+      stations.map((station) => terrain.heightAt(station.x, station.z)),
+      { radiusM: 20, maxFillM: 0.6, transitionM: 18 },
+    )
+    : null;
+
+  /**
+   * Límites laterales por estación. Sin perfil devuelve la calzada `width/2` y
+   * el faldón de diseño a ambos lados (idéntico al histórico). Con perfil,
+   * recorta la calzada a `band - skirt` (clamp `[0, width/2]`) y deja el faldón
+   * hasta la banda EXTERIOR publicada.
+   */
+  const bandAt = (t: number): StationBand => {
+    if (!clearance) {
+      const outer = halfWidth + DRAPING.skirtWidthM;
+      return { pavementLeft: halfWidth, pavementRight: halfWidth, outerLeft: outer, outerRight: outer };
+    }
+    const [outerLeft, outerRight] = profileAt(clearance, t);
+    const skirt = clearance.skirtM;
+    return {
+      pavementLeft: Math.max(0, Math.min(halfWidth, outerLeft - skirt)),
+      pavementRight: Math.max(0, Math.min(halfWidth, outerRight - skirt)),
+      outerLeft,
+      outerRight,
+    };
+  };
   const sectionCount = road.bridge ? 2 : Math.max(3, Math.ceil(road.width / DRAPING.crossSectionSpacingM) + 1);
-  const pavementVertices = sectionCount % 2 === 0 ? sectionCount + 1 : sectionCount;
+  // Con rodadas detalladas la fila usa exactamente las tiras de TRACK_SECTION; sin
+  // perfil, la retícula transversal de siempre. Ambas rutas reservan el mismo número
+  // de vértices por estación, así el avance por `i * verticesPerStation` no se desvía.
+  const pavementVertices = detallePista ? TRACK_SECTION.length : sectionCount % 2 === 0 ? sectionCount + 1 : sectionCount;
   const verticesPerStation = pavementVertices + (useSkirt ? 2 : 0);
   const baseVertex = buffers.positions.length / 3;
   const totalLength = stations[stations.length - 1]!.t || 1;
@@ -287,7 +469,7 @@ function buildRoad(
     const nx = -dz;
     const nz = dx;
 
-    const centerY = terrain.heightAt(station.x, station.z);
+    const centerY = smoothProfile?.[i] ?? terrain.heightAt(station.x, station.z);
     const bridgeT = station.t / totalLength;
 
     // Altura de calzada en un punto lateral. ROAD no-puente: aplanado parcial.
@@ -304,10 +486,12 @@ function buildRoad(
       return terrainY + offset;
     };
 
+    const band = bandAt(station.t);
     for (let section = 0; section < pavementVertices; section++) {
       const fraction = -1 + 2 * section / (pavementVertices - 1);
-      const px = station.x + nx * fraction * halfWidth;
-      const pz = station.z + nz * fraction * halfWidth;
+      const sideHalf = fraction < 0 ? band.pavementRight : band.pavementLeft;
+      const px = station.x + nx * fraction * sideHalf;
+      const pz = station.z + nz * fraction * sideHalf;
       const py = pavementY(px, pz);
       const normal = road.bridge ? up : terrain.normalAt(px, pz, scratch);
       pushVertex(px, py, pz, normal, road.bridge ? ROLE_BRIDGE : ROLE_PAVEMENT);
@@ -315,14 +499,22 @@ function buildRoad(
 
     if (useSkirt) {
       for (const sign of [-1, 1] as const) {
-        const lateral = sign * (halfWidth + DRAPING.skirtWidthM);
+        // El faldón llega hasta la banda EXTERIOR publicada (no a `half + skirt`).
+        const lateral = sign * (sign < 0 ? band.outerRight : band.outerLeft);
         const sx = station.x + nx * lateral;
         const sz = station.z + nz * lateral;
         // Borde libre del faldón: SIEMPRE sobre el terreno (residual 0).
-        const sy = terrain.heightAt(sx, sz) + offset;
+        // Banda de mezcla apoyada en el terreno: SIEMPRE por debajo de cualquier
+        // calzada (offset de clase 0.12 y aplanado por encima). Con la misma cota que
+        // una calzada (aplanado nulo) los faldones de vías que se cruzan quedaban
+        // coplanares y el z-buffer pintaba franjas de tierra sobre el asfalto.
+        const sy = terrain.heightAt(sx, sz) + SKIRT_LIFT_M;
         const normal = terrain.normalAt(sx, sz, scratchSkirt);
-        // La tierra cálida en el borde libre disuelve la línea gris del asfalto.
-        pushVertex(sx, sy, sz, normal, ROLE_SKIRT, [1.55, 1.25, 0.85]);
+        // La tierra cálida en el borde libre disuelve la línea gris del asfalto, pero
+        // suave: un tinte fuerte se leía como una franja de tierra pintada en la calle.
+        // En la pista de tierra, en cambio, el margen va hacia el pasto seco.
+        const tinte: readonly [number, number, number] = isRoadClass ? [1.22, 1.12, 0.94] : [0.85, 1.02, 0.72];
+        pushVertex(sx, sy, sz, normal, ROLE_SKIRT, tinte);
       }
     }
 
@@ -336,26 +528,17 @@ function buildRoad(
   let polishedGaps = 0;
   // Tonos de sección: borde terroso, hombro, rodada, franja central y simetría.
   // Cada franja sigue terrain.heightAt; no modifica las cotas ni la física.
-  const trackSection: readonly (readonly [number, number, number, number])[] = [
-    [-1, 1.02, 1.04, 0.92],
-    [-0.82, 1.02, 1.02, 0.94],
-    [-0.61, 0.88, 0.89, 0.88],
-    [-0.37, 0.88, 0.89, 0.88],
-    [0, 1.03, 1.02, 0.97],
-    [0.37, 0.88, 0.89, 0.88],
-    [0.61, 0.88, 0.89, 0.88],
-    [0.82, 1.02, 1.02, 0.94],
-    [1, 1.02, 1.04, 0.92],
-  ];
   const appendTrackSection = (stationIndex: number, strength: number): number => {
     const station = stations[stationIndex]!;
     const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
     const nx = -direction.dz;
     const nz = direction.dx;
+    const band = bandAt(station.t);
     const first = buffers.positions.length / 3;
-    for (const [fraction, red, green, blue] of trackSection) {
-      const x = station.x + nx * fraction * halfWidth;
-      const z = station.z + nz * fraction * halfWidth;
+    for (const [fraction, red, green, blue] of TRACK_SECTION) {
+      const sideHalf = fraction < 0 ? band.pavementRight : band.pavementLeft;
+      const x = station.x + nx * fraction * sideHalf;
+      const z = station.z + nz * fraction * sideHalf;
       const tint: readonly [number, number, number] = [
         1 + (red - 1) * strength,
         1 + (green - 1) * strength,
@@ -365,37 +548,44 @@ function buildRoad(
     }
     return first;
   };
-  // La carretera ancha de salida recibe líneas de borde y una raya central
-  // intermitente. Todo se colorea en la malla ROAD existente, sin decal ni lote.
-  const roadSection = [-1, -0.96, -0.92, -0.89, -0.045, -0.035, 0.035, 0.045, 0.89, 0.92, 0.96, 1] as const;
-  const appendRoadSection = (stationIndex: number, dash: boolean, strength: number): number => {
-    const station = stations[stationIndex]!;
-    const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
-    const nx = -direction.dz;
-    const nz = direction.dx;
-    const centerY = terrain.heightAt(station.x, station.z);
+  // Las marcas se dibujan como líneas estrechas encima de la calzada base. Antes
+  // se reemplazaba toda su superficie por una cinta con muchas franjas laterales;
+  // en móvil esa malla dejaba escapar el DEM y se veían bandas verdes en el asfalto.
+  const appendRoadMark = (
+    startStation: number,
+    endStation: number,
+    from: number,
+    to: number,
+    color: readonly [number, number, number],
+    strength: number,
+  ): void => {
     const first = buffers.positions.length / 3;
-    for (const fraction of roadSection) {
-      const x = station.x + nx * fraction * halfWidth;
-      const z = station.z + nz * fraction * halfWidth;
-      const terrainY = terrain.heightAt(x, z);
-      const flattenedY = terrainY + DRAPING.roadFlattenLerp * (centerY - terrainY);
-      const y = Math.max(terrainY, flattenedY) + offset;
-      const edge = Math.abs(fraction) >= 0.92 && Math.abs(fraction) <= 0.96;
-      const center = dash && Math.abs(fraction) <= 0.035;
-      const mark: readonly [number, number, number] = center
-        ? [2.05, 1.93, 1.55]
-        : edge ? [1.7, 1.66, 1.58] : [1, 1, 1];
-      const tint: readonly [number, number, number] = [
-        1 + (mark[0] - 1) * strength,
-        1 + (mark[1] - 1) * strength,
-        1 + (mark[2] - 1) * strength,
-      ];
-      pushVertex(x, y, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
+    for (const stationIndex of [startStation, endStation]) {
+      const station = stations[stationIndex]!;
+      const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
+      const nx = -direction.dz;
+      const nz = direction.dx;
+      const band = bandAt(station.t);
+      const centerY = smoothProfile?.[stationIndex] ?? terrain.heightAt(station.x, station.z);
+      for (const fraction of [from, to]) {
+        const sideHalf = fraction < 0 ? band.pavementRight : band.pavementLeft;
+        const x = station.x + nx * fraction * sideHalf;
+        const z = station.z + nz * fraction * sideHalf;
+        const groundY = terrain.heightAt(x, z);
+        const flattenedY = groundY + DRAPING.roadFlattenLerp * (centerY - groundY);
+        const y = Math.max(groundY, flattenedY) + offset + 0.025;
+        const tint: readonly [number, number, number] = [
+          1 + (color[0] - 1) * strength,
+          1 + (color[1] - 1) * strength,
+          1 + (color[2] - 1) * strength,
+        ];
+        pushVertex(x, y, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
+      }
     }
-    return first;
+    quad(first, first + 1, first + 3, first + 2);
   };
   let polishedRoadGaps = 0;
+  const markedRoad = shouldMarkRoad(road);
   for (let i = 0; i < gaps; i++) {
     const a = baseVertex + i * verticesPerStation;
     const b = baseVertex + (i + 1) * verticesPerStation;
@@ -406,32 +596,29 @@ function buildRoad(
       Number.isFinite(trackPolish.radiusM) && trackPolish.radiusM > 0 &&
       trackPolishDistance <= trackPolish.radiusM;
     const roadPolishDistance = roadPolish ? Math.hypot(midpointX - roadPolish.x, midpointZ - roadPolish.z) : Infinity;
-    const detailedRoad = road.class === 'ROAD' && !road.bridge && road.width >= 6.5 && roadPolish &&
-      Number.isFinite(roadPolish.radiusM) && roadPolish.radiusM > 0 &&
-      roadPolishDistance <= roadPolish.radiusM;
+    const detailedRoad = markedRoad || (road.class === 'ROAD' && !road.bridge && road.width >= 6.5 && roadPolish &&
+      Number.isFinite(roadPolish.radiusM) && roadPolish.radiusM > 0 && roadPolishDistance <= roadPolish.radiusM);
     if (detailedTrack) {
       const strength = Math.min(1, Math.max(0, (trackPolish.radiusM - trackPolishDistance) / 25));
       const first = appendTrackSection(i, strength);
       const second = appendTrackSection(i + 1, strength);
-      for (let strip = 0; strip < trackSection.length - 1; strip++) {
+      for (let strip = 0; strip < TRACK_SECTION.length - 1; strip++) {
         quad(first + strip, first + strip + 1, second + strip + 1, second + strip);
       }
       polishedGaps++;
-    } else if (detailedRoad) {
-      const dash = ((stations[i]!.t + stations[i + 1]!.t) / 2) % 10 < 3;
-      const strength = Math.min(1, Math.max(0, (roadPolish.radiusM - roadPolishDistance) / 25));
-      const first = appendRoadSection(i, dash, strength);
-      const second = appendRoadSection(i + 1, dash, strength);
-      for (let strip = 0; strip < roadSection.length - 1; strip++) {
-        quad(first + strip, first + strip + 1, second + strip + 1, second + strip);
-      }
-      polishedRoadGaps++;
-    } else if (pavementVertices > 2) {
+    } else {
+      // La superficie continua siempre usa la misma retícula y cota base.
       for (let strip = 0; strip < pavementVertices - 1; strip++) {
         quad(a + strip, a + strip + 1, b + strip + 1, b + strip);
       }
-    } else {
-      quad(a + 0, a + 1, b + 1, b + 0); // calzada
+    }
+    if (!detailedTrack && detailedRoad) {
+      const dash = ((stations[i]!.t + stations[i + 1]!.t) / 2) % 12 < 4;
+      const strength = markedRoad ? 1 : Math.min(1, Math.max(0, ((roadPolish?.radiusM ?? 0) - roadPolishDistance) / 25));
+      appendRoadMark(i, i + 1, -0.96, -0.92, [3.8, 3.7, 3.5], strength);
+      appendRoadMark(i, i + 1, 0.92, 0.96, [3.8, 3.7, 3.5], strength);
+      if (dash) appendRoadMark(i, i + 1, -0.012, 0.012, [4.6, 4.4, 3.8], strength);
+      polishedRoadGaps++;
     }
     if (useSkirt) {
       quad(a + pavementVertices, a + 0, b + 0, b + pavementVertices); // faldón izquierdo
@@ -439,13 +626,98 @@ function buildRoad(
     }
   }
 
+  // Señales de velocidad con geometría low-poly integrada en el único buffer
+  // de ROAD. Solo se usan límites numéricos presentes en los metadatos OSM.
+  const speedLimit = parseSpeedLimitKph(road.maxspeed);
+  if (speedLimit !== null && shouldPlaceSpeedSign(road, totalLength)) {
+    const stationIndex = Math.floor((stations.length - 1) / 2);
+    const station = stations[stationIndex]!;
+    const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
+    const nx = -direction.dz;
+    const nz = direction.dx;
+    const band = bandAt(station.t);
+    const narrowerSide = band.outerLeft < band.outerRight ? 1 : band.outerRight < band.outerLeft ? -1 : null;
+    const side = narrowerSide === null ? (Number(road.id.at(-1)) % 2 === 0 ? 1 : -1) : -narrowerSide;
+    // Mantén el poste dentro de la banda lateral autorizada y cerca del borde
+    // de calzada; añadirlo fuera del faldón lo acercaba innecesariamente a casas.
+    const lateral = side > 0 ? Math.max(0.1, band.outerLeft - 0.65) : -Math.max(0.1, band.outerRight - 0.65);
+    const signX = station.x + nx * lateral;
+    const signZ = station.z + nz * lateral;
+    const ground = terrain.heightAt(signX, signZ) + offset;
+    const signNormal = new Vector3(direction.dx, 0, direction.dz);
+    const signVertex = (u: number, y: number, tint: readonly [number, number, number]): number => {
+      const index = buffers.positions.length / 3;
+      pushVertex(signX + nx * u, y, signZ + nz * u, signNormal, ROLE_SIGN, tint);
+      return index;
+    };
+    const signQuad = (left: number, bottom: number, right: number, top: number, tint: readonly [number, number, number]): void => {
+      const a = signVertex(left, ground + bottom, tint);
+      const b = signVertex(right, ground + bottom, tint);
+      const c = signVertex(right, ground + top, tint);
+      const d = signVertex(left, ground + top, tint);
+      quad(a, b, c, d);
+      buffers.triangles += 2;
+    };
+    // Poste y disco en dos capas; el plano mira a lo largo del eje de la vía.
+    signQuad(-0.035, 0.08, 0.035, 1.52, [1.35, 1.28, 1.08]);
+    const disc = (radius: number, centerY: number, tint: readonly [number, number, number]): void => {
+      const center = signVertex(0, centerY, tint);
+      const count = 12;
+      const ring: number[] = [];
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count;
+        ring.push(signVertex(Math.cos(angle) * radius, centerY + Math.sin(angle) * radius, tint));
+      }
+      for (let i = 0; i < count; i++) {
+        buffers.indices.push(center, ring[i]!, ring[(i + 1) % count]!);
+      }
+      buffers.triangles += count;
+    };
+    const centerY = ground + 1.88;
+    disc(0.47, centerY, [4.5, 0.12, 0.08]);
+    disc(0.36, centerY, [4.8, 4.8, 4.6]);
+    // Dígitos de siete segmentos (metros/horas según la señal española).
+    const digits = String(speedLimit).split('').map(Number);
+    const segmentMap: Record<number, readonly number[]> = {
+      0: [0, 1, 2, 4, 5, 6], 1: [2, 5], 2: [0, 2, 3, 4, 6], 3: [0, 2, 3, 5, 6],
+      4: [1, 2, 3, 5], 5: [0, 1, 3, 5, 6], 6: [0, 1, 3, 4, 5, 6],
+      7: [0, 2, 5], 8: [0, 1, 2, 3, 4, 5, 6], 9: [0, 1, 2, 3, 5, 6],
+    };
+    const digitWidth = digits.length > 2 ? 0.16 : 0.205;
+    const digitGap = 0.035;
+    const totalDigitWidth = digits.length * digitWidth + (digits.length - 1) * digitGap;
+    const xStart = -totalDigitWidth / 2;
+    const topY = centerY + 0.16;
+    const segW = digits.length > 2 ? 0.025 : 0.035;
+    const segH = 0.16;
+    for (let d = 0; d < digits.length; d++) {
+      const x = xStart + d * (digitWidth + digitGap);
+      const midX = x + digitWidth / 2;
+      const midY = centerY;
+      const segments = [
+        [midX, topY + segH / 2, digitWidth * 0.76, segW],
+        [x + segW / 2, midY + segH / 2, segW, segH],
+        [x + digitWidth - segW / 2, midY + segH / 2, segW, segH],
+        [midX, midY, digitWidth * 0.76, segW],
+        [x + segW / 2, midY - segH / 2, segW, segH],
+        [x + digitWidth - segW / 2, midY - segH / 2, segW, segH],
+        [midX, topY - segH * 1.5, digitWidth * 0.76, segW],
+      ] as const;
+      for (const segment of segmentMap[digits[d]!] ?? []) {
+        const [u, y, w, h] = segments[segment]!;
+        signQuad(u - w / 2, y - h / 2, u + w / 2, y + h / 2, [0.035, 0.035, 0.03]);
+      }
+    }
+    buffers.signs += 1;
+  }
+
   buffers.roadCount += 1;
   const roadPavementTriangles = (pavementVertices - 1) * 2;
-  const trackDetailedTriangles = (trackSection.length - 1) * 2;
-  const roadDetailedTriangles = (roadSection.length - 1) * 2;
+  const trackDetailedTriangles = (TRACK_SECTION.length - 1) * 2;
+  const roadMarkTriangles = 6;
   buffers.triangles += gaps * (roadPavementTriangles + (useSkirt ? 4 : 0)) +
     polishedGaps * (trackDetailedTriangles - roadPavementTriangles) +
-    polishedRoadGaps * (roadDetailedTriangles - roadPavementTriangles);
+    polishedRoadGaps * roadMarkTriangles;
 }
 
 /** Eleva vértices locales si un triángulo de la cinta atraviesa la malla DEM. */
@@ -456,7 +728,8 @@ function clearTrianglesFromTerrain(buffers: ClassBuffers, terrain: RoadTerrain):
     const ia = buffers.indices[i]!;
     const ib = buffers.indices[i + 1]!;
     const ic = buffers.indices[i + 2]!;
-    if (buffers.roles[ia] === ROLE_BRIDGE || buffers.roles[ib] === ROLE_BRIDGE || buffers.roles[ic] === ROLE_BRIDGE) continue;
+    const roles = [buffers.roles[ia], buffers.roles[ib], buffers.roles[ic]];
+    if (roles.some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
     const ax = buffers.positions[ia * 3]!;
     const ay = buffers.positions[ia * 3 + 1]!;
     const az = buffers.positions[ia * 3 + 2]!;
@@ -466,13 +739,14 @@ function clearTrianglesFromTerrain(buffers: ClassBuffers, terrain: RoadTerrain):
     const cx = buffers.positions[ic * 3]!;
     const cy = buffers.positions[ic * 3 + 1]!;
     const cz = buffers.positions[ic * 3 + 2]!;
-    let needed = 0;
-    for (const [wa, wb, wc] of TRIANGLE_TEST_SAMPLES) {
-      const x = wa * ax + wb * bx + wc * cx;
-      const y = wa * ay + wb * by + wc * cy;
-      const z = wa * az + wb * bz + wc * cz;
-      needed = Math.max(needed, terrain.heightAt(x, z) + SURFACE_CLEARANCE_M - y);
-    }
+    const needed = calculateTriangleTerrainLift(
+      [{ x: ax, y: ay, z: az }, { x: bx, y: by, z: bz }, { x: cx, y: cy, z: cz }],
+      (x, z) => terrain.heightAt(x, z),
+      // El faldón es banda de mezcla: se conforma con vivir a SKIRT_LIFT_M del suelo.
+      // Con el margen de calzada quedaba a la misma cota que el asfalto de una vía que
+      // lo cruza y el z-buffer elegía entre ambos por píxel (franjas de tierra).
+      roles.includes(ROLE_SKIRT) ? SKIRT_LIFT_M : SURFACE_CLEARANCE_M,
+    );
     if (needed > 0) {
       lifts[ia] = Math.max(lifts[ia]!, needed);
       lifts[ib] = Math.max(lifts[ib]!, needed);
@@ -581,6 +855,7 @@ export interface RoadDrapingStats {
   readonly byClass: Record<RoadClass, { readonly roads: number; readonly stations: number; readonly vertices: number; readonly triangles: number }>;
   readonly constants: typeof DRAPING;
   readonly bridges: number;
+  readonly speedSigns: number;
   readonly maxTerrainClearanceLiftM: Record<RoadClass, number>;
 }
 
@@ -608,7 +883,7 @@ interface MaterialSpec {
 }
 
 const MATERIALS: Record<RoadClass, MaterialSpec> = {
-  ROAD: { name: 'road:asfalto', diffuse: [0.19, 0.19, 0.2], zOffset: -3 },
+  ROAD: { name: 'road:asfalto', diffuse: [1, 1, 1], zOffset: -3 },
   TRACK: { name: 'road:tierra', diffuse: [0.4, 0.32, 0.22], zOffset: -2 },
   PATH: { name: 'road:senda', diffuse: [0.52, 0.47, 0.34], zOffset: -1 },
 };
@@ -637,7 +912,9 @@ function createMesh(scene: Scene, name: string, data: TypedClass, material: Stan
   vertexData.applyToMesh(mesh, false);
   mesh.material = material;
   mesh.useVertexColors = true;
-  mesh.receiveShadows = true;
+  // Shadow-map aliasing left green terrain slivers visible on this very flat,
+  // near-coplanar surface. Terrain beside the road still receives the 4x4 shadow.
+  mesh.receiveShadows = false;
   mesh.isPickable = false;
   mesh.freezeWorldMatrix();
   return mesh;
@@ -658,6 +935,13 @@ export interface LoadRoadNetworkOptions {
    */
   readonly bounds?: { readonly minX: number; readonly maxX: number; readonly minZ: number; readonly maxZ: number };
   /** Zona local de rodadas y bordes de pista; omitir para mantener la cinta base. */
+  /**
+   * Corredor de la ruta jugable. El faldón de mezcla de la pista de tierra se dibuja
+   * solo dentro de este corredor: la red tiene 137 km de pistas y cubrirlas todas
+   * costaba ~162 k triángulos más en una malla que se dibuja entera cuando algo de la
+   * clase TRACK entra en cámara.
+   */
+  readonly trackBlendCorridor?: { readonly points: readonly { readonly x: number; readonly z: number }[]; readonly radiusM: number };
   readonly polishTrackAt?: LocalPolishZone;
   /** Marcas ligeras en la carretera ancha próxima a la salida del pueblo. */
   readonly polishRoadAt?: LocalPolishZone;
@@ -697,7 +981,7 @@ export async function loadRoadNetwork(
   let bridges = 0;
   for (const road of roads) {
     if (road.bridge) bridges += 1;
-    buildRoad(buffers[road.class], road, surface, options.polishTrackAt, options.polishRoadAt);
+    buildRoad(buffers[road.class], road, surface, options.polishTrackAt, options.polishRoadAt, options.trackBlendCorridor);
   }
 
   const maxTerrainClearanceLiftM: Record<RoadClass, number> = {
@@ -743,6 +1027,7 @@ export async function loadRoadNetwork(
     byClass,
     constants: DRAPING,
     bridges,
+    speedSigns: buffers.ROAD.signs,
     maxTerrainClearanceLiftM,
   };
 
@@ -765,7 +1050,7 @@ export async function loadRoadNetwork(
         const role = roles[v];
         if (role === ROLE_SKIRT) skirt.push(sample);
         else if (role === ROLE_BRIDGE) bridge.push(sample);
-        else pavement.push(sample);
+        else if (role !== ROLE_SIGN) pavement.push(sample);
       }
       let clearanceSamples = 0;
       let belowTerrain = 0;
@@ -777,7 +1062,7 @@ export async function loadRoadNetwork(
         const ia = indices[i]!;
         const ib = indices[i + 1]!;
         const ic = indices[i + 2]!;
-        if (roles[ia] === ROLE_BRIDGE || roles[ib] === ROLE_BRIDGE || roles[ic] === ROLE_BRIDGE) continue;
+        if ([roles[ia], roles[ib], roles[ic]].some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
         const ax = positions[ia * 3]!;
         const ay = positions[ia * 3 + 1]!;
         const az = positions[ia * 3 + 2]!;
@@ -787,7 +1072,7 @@ export async function loadRoadNetwork(
         const cx = positions[ic * 3]!;
         const cy = positions[ic * 3 + 1]!;
         const cz = positions[ic * 3 + 2]!;
-        for (const [wa, wb, wc] of TRIANGLE_TEST_SAMPLES) {
+        for (const [wa, wb, wc] of ROAD_CLEARANCE_SAMPLES) {
           const x = wa * ax + wb * bx + wc * cx;
           const y = wa * ay + wb * by + wc * cy;
           const z = wa * az + wb * bz + wc * cz;

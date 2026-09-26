@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "license": "CC BY 4.0 (IGN/CNIG)",
+  "provider": "Instituto Geogr\u00e1fico Nacional / Centro Nacional de Informaci\u00f3n Geogr\u00e1fica (IGN/CNIG)",
+  "product": "Modelo Digital de Superficies normalizado de Edificios (MDSnE 2,5 m), PNOA-LiDAR 1\u00aa cobertura",
+  "sourceUrl": "https://wcs-mds.idee.es/mds?service=WCS&version=2.0.1&request=GetCoverage&coverageId=mdsn_e025&format=image%2Ftiff&subset=x%28474390%2C475140%29&subset=y%284692190%2C4693560%29",
+  "sourceSha256": "3a047feb9720556e0f54ca0b6140502dc6bbef0ccd7357ebab5810caeb7c7b66",
+  "sourceFetchedAtUtc": "2026-09-25T19:22:06.566733+00:00",
+  "crs": "EPSG:25830",
+  "grid": {
+    "width": 300,
+    "height": 548,
+    "pixel_size_m": 2.5,
+    "top_left_easting_m": 474390.0,
+    "top_left_northing_m": 4693560.0,
+    "pixel_registration": "area; samples taken at pixel centers",
+    "sample_format": "signed int16, little-endian",
+    "zero_is": "no classified building height"
+  },
+  "valuesFile": "ign_mdsn_e025_villafranca_2_5m.bin",
+  "valuesSha256": "c0c86a420efad8e6af1e6bb83763daf479feb37ec1f370a731014e946c991db0",
+  "noBuildingValue": 0,
+  "valueUnits": "m above local terrain; normalized building-class height from PNOA-LiDAR first coverage"
+}

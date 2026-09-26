@@ -12,6 +12,21 @@ la superficie del terreno de Villafranca (DEM IGN MDT05, 36 tiles de 5 m).
 - **Mediciones crudas**: `output/roads_draping.json`.
 - **Capturas**: `output/roads_*.png`.
 
+## Despeje vial respecto a viviendas — 25 sep 2026
+
+El generador de vías publica perfiles laterales por estación cuando la banda
+visible se acerca a una huella. El perfil reduce solo la calzada y el faldón
+dibujados; no mueve el eje de carretera ni altera el grafo de navegación. El
+render usa el mismo paso fino del perfil y el validador reproduce esa geometría
+contra las huellas: última generación, **0 invasiones en 436 vías**, 62 vías con
+perfil y 3 mallas por clase. Los cuatro ceros laterales locales restantes están
+cuantificados en `public/roads/stats.json`; dos requieren el refinado exacto de
+triángulos para evitar una intrusión en una esquina.
+
+La garantía cubre las huellas publicadas en `public/village/buildings.json` y la
+banda renderizada actual; los edificios ausentes o desalineados en esos datos no
+se pueden detectar con esta prueba.
+
 > **Alcance respetado.** Solo se escribió en `src/**`,
 > `scripts/roads/draping/**`, `docs/roads/DRAPING_FASE3B.md` y `output/`. No se
 > tocó `public/**` (ni `roads.json` ni los tiles), `data/**`,

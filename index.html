@@ -150,6 +150,178 @@
         line-height: 1.5;
         pointer-events: none;
       }
+      #datos {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 10;
+        color: rgba(247, 239, 226, 0.78);
+        font: 10px/1.5 system-ui, sans-serif;
+      }
+      #datos summary {
+        padding: 3px 7px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 5px;
+        background: rgba(8, 12, 18, 0.55);
+        cursor: pointer;
+        list-style: none;
+      }
+      #datos summary::-webkit-details-marker {
+        display: none;
+      }
+      #datos summary::before {
+        content: 'ⓘ ';
+      }
+      #datos[open] .datos-contenido {
+        position: absolute;
+        right: 0;
+        bottom: 28px;
+        width: min(390px, 86vw);
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 7px;
+        background: rgba(8, 12, 18, 0.88);
+        color: #d7e2ee;
+      }
+      #datos a {
+        color: #d8c3a2;
+      }
+      #mobile-controls {
+        display: none;
+      }
+      @media (pointer: coarse), (max-width: 760px) {
+        #mision {
+          top: max(8px, env(safe-area-inset-top));
+          min-width: 0;
+          width: max-content;
+          max-width: calc(100vw - 24px);
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+        #hud {
+          top: max(8px, env(safe-area-inset-top));
+          left: 8px;
+          min-width: 0;
+          max-width: 48vw;
+          font-size: 10px;
+        }
+        #controls {
+          display: none;
+        }
+        #datos {
+          top: calc(max(8px, env(safe-area-inset-top)) + 76px);
+          right: 8px;
+          bottom: auto;
+        }
+        #mobile-controls {
+          position: fixed;
+          inset: auto 0 max(12px, env(safe-area-inset-bottom));
+          z-index: 20;
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
+          padding: 0 14px;
+          pointer-events: none;
+          font-family: system-ui, sans-serif;
+          user-select: none;
+          -webkit-user-select: none;
+        }
+        .mobile-actions {
+          display: grid;
+          gap: 7px;
+          pointer-events: auto;
+        }
+        .mobile-joystick {
+          position: relative;
+          width: 148px;
+          height: 148px;
+          border: 1px solid rgba(244, 224, 190, 0.48);
+          border-radius: 50%;
+          background:
+            radial-gradient(circle, rgba(255, 255, 255, 0.09) 0 1px, transparent 2px),
+            radial-gradient(circle, rgba(9, 16, 17, 0.48), rgba(9, 16, 17, 0.72));
+          box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.035), 0 7px 24px rgba(0, 0, 0, 0.26);
+          touch-action: none;
+          pointer-events: auto;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-joystick::before {
+          position: absolute;
+          inset: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.11);
+          border-radius: 50%;
+          content: '';
+          pointer-events: none;
+        }
+        .joystick-thumb {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: grid;
+          width: 62px;
+          height: 62px;
+          place-items: center;
+          border: 1px solid rgba(255, 240, 214, 0.84);
+          border-radius: 50%;
+          background: linear-gradient(145deg, rgba(169, 132, 83, 0.96), rgba(82, 63, 42, 0.96));
+          box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.42);
+          color: rgba(255, 248, 232, 0.92);
+          font: 700 22px/1 system-ui, sans-serif;
+          transform: translate(calc(-50% + var(--joy-x, 0px)), calc(-50% + var(--joy-y, 0px)));
+          pointer-events: none;
+        }
+        .mobile-actions {
+          grid-template-columns: repeat(2, minmax(76px, 96px));
+          align-items: end;
+        }
+        .mobile-control {
+          min-width: 54px;
+          min-height: 54px;
+          border: 1px solid rgba(255, 255, 255, 0.38);
+          border-radius: 16px;
+          background: rgba(17, 24, 27, 0.72);
+          color: #fff7e8;
+          font: 700 19px/1 system-ui, sans-serif;
+          text-shadow: 0 1px 4px #000;
+          touch-action: none;
+          -webkit-tap-highlight-color: transparent;
+          backdrop-filter: blur(5px);
+        }
+        .mobile-control:active,
+        .mobile-control.is-pressed {
+          background: rgba(151, 111, 62, 0.92);
+          border-color: rgba(255, 231, 187, 0.86);
+          transform: scale(0.96);
+        }
+        .mobile-control.action {
+          min-height: 58px;
+          font-size: 12px;
+          line-height: 1.15;
+        }
+        .mobile-control.primary {
+          background: rgba(108, 81, 48, 0.88);
+        }
+        #accion {
+          bottom: max(145px, calc(env(safe-area-inset-bottom) + 145px));
+          max-width: calc(100vw - 32px);
+          text-align: center;
+        }
+      }
+      @media (max-width: 390px) {
+        #mobile-controls { padding: 0 9px; }
+        .mobile-joystick { width: 132px; height: 132px; }
+        .joystick-thumb { width: 56px; height: 56px; }
+        .mobile-control { min-width: 48px; min-height: 48px; border-radius: 14px; }
+        .mobile-actions { grid-template-columns: repeat(2, minmax(68px, 82px)); gap: 5px; }
+        .mobile-control.action { min-height: 52px; font-size: 11px; }
+      }
+      @media (max-height: 500px) and (pointer: coarse) {
+        .mobile-joystick { width: 120px; height: 120px; }
+        .joystick-thumb { width: 52px; height: 52px; }
+        .mobile-control.action { min-height: 48px; }
+      }
     </style>
   </head>
   <body>
@@ -158,8 +330,26 @@
     <div id="mision" role="status" aria-live="polite" hidden></div>
     <div id="accion" role="status" aria-live="polite" hidden></div>
     <div id="controls">
-      WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar · F3 diagnóstico
+      F3: ayuda y diagnóstico
     </div>
+    <div id="mobile-controls" role="group" aria-label="Controles táctiles">
+      <div id="mobile-joystick" class="mobile-joystick" role="group" aria-label="Joystick: inclina para avanzar y girar" aria-roledescription="joystick">
+        <div id="joystick-thumb" class="joystick-thumb" aria-hidden="true">✥</div>
+      </div>
+      <div class="mobile-actions" aria-label="Acciones">
+        <button class="mobile-control action primary" type="button" data-code="KeyF" aria-label="Entrar o salir del 4x4">F · 4x4</button>
+        <button class="mobile-control action" type="button" data-code="KeyE" aria-label="Mantener para interactuar">Mantener<br />E · acción</button>
+        <button class="mobile-control action" type="button" data-code="Space" aria-label="Freno de mano">Freno</button>
+        <button class="mobile-control action" type="button" data-code="KeyR" aria-label="Reiniciar misión">Reiniciar</button>
+      </div>
+    </div>
+    <details id="datos">
+      <summary>Fuentes de datos</summary>
+      <div class="datos-contenido">
+        Vías y huellas: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> (ODbL 1.0).<br />
+        Terreno y alturas LiDAR: © <a href="https://centrodedescargas.cnig.es/CentroDescargas/home" target="_blank" rel="noreferrer">IGN/CNIG</a> (CC BY 4.0).
+      </div>
+    </details>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

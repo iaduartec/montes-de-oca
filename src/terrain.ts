@@ -152,10 +152,17 @@ function buildTileMesh(
       normals[n++] = normal.y;
       normals[n++] = normal.z;
 
-      const rgb = colorForHeight(heightSpan > 0 ? (meters - globalMinMeters) / heightSpan : 0);
-      colors[c++] = rgb[0];
-      colors[c++] = rgb[1];
-      colors[c++] = rgb[2];
+      const alturaN = heightSpan > 0 ? (meters - globalMinMeters) / heightSpan : 0;
+      const rgb = colorForHeight(alturaN);
+      // Manchas suaves de pasto: sin esto el valle es una alfombra de un solo tono.
+      // Deterministas por posición y de onda larga (~60-80 m), así se leen como
+      // variación de campo y no como ruido. Se apagan en roca y cima (`pasto`).
+      const pasto = Math.max(0, 1 - alturaN * 2.2);
+      const k = 1 + pasto * 0.11 * Math.sin(x * 0.078 + z * 0.122) * Math.cos(z * 0.094 - x * 0.066);
+      const verdor = 1 + pasto * 0.07 * Math.cos(x * 0.046 - z * 0.038);
+      colors[c++] = rgb[0] * k;
+      colors[c++] = rgb[1] * k * verdor;
+      colors[c++] = rgb[2] * k * verdor;
       colors[c++] = 1;
 
       uvs[t++] = i / (columns - 1);

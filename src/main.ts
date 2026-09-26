@@ -9,6 +9,7 @@ import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from '.
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
 import { loadVillage, type VillageStats } from './environment/village';
+import { VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M } from './environment/roof-clearance';
 import {
   loadVegetation,
   type Vegetation,
@@ -48,9 +49,12 @@ const misionEl = document.getElementById('mision');
 const accionEl = document.getElementById('accion');
 const controlsEl = document.getElementById('controls');
 
-/** Teclas del modo cámara libre: es el texto que ya trae `index.html`. */
+/** Teclas del modo cámara libre; sólo se muestran cuando la ayuda está activa (F3). */
 const CONTROLES_LIBRE =
   'WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar';
+
+/** Pista persistente mínima: recuerda que F3 revela las teclas y el diagnóstico. */
+const PISTA_AYUDA = 'F3: ayuda y diagnóstico';
 
 /**
  * Avisos de acción. Son constantes cerradas a propósito: se escriben con
@@ -279,6 +283,12 @@ function showError(message: string): void {
 }
 
 async function bootstrap(): Promise<void> {
+  // La primera carga (terreno, pueblo, vegetación) tarda segundos: el cartel de carga
+  // arranca visible desde el primer momento y recién se libera al final de bootstrap.
+  if (hud) {
+    hud.hidden = false;
+    hud.textContent = 'Cargando terreno…';
+  }
   const config = await loadTerrainConfig(fetch, publicUrl(TERRAIN_CONFIG_PATH));
   const terrain = await loadTerrain(scene, {
     ...config,
@@ -286,14 +296,18 @@ async function bootstrap(): Promise<void> {
   });
 
   const params = new URLSearchParams(window.location.search);
-  if (hud) {
-    hud.hidden = params.get('debug') !== '1';
-    window.addEventListener('keydown', (event) => {
-      if (event.code !== 'F3') return;
-      event.preventDefault();
-      hud.hidden = !hud.hidden;
-    });
-  }
+  // Ayuda y diagnóstico comparten conmutador: en estado normal sólo queda una pista
+  // compacta y F3 revela las teclas de control y el panel de instrumentación.
+  let ayudaVisible = params.get('debug') === '1';
+  // El panel se queda con el mensaje de carga hasta que arranca el render (final de
+  // bootstrap): ocultarlo acá dejaba la pantalla vacía durante la carga de pueblo y
+  // vegetación, justo el tramo más largo en el móvil.
+  window.addEventListener('keydown', (event) => {
+    if (event.code !== 'F3') return;
+    event.preventDefault();
+    ayudaVisible = !ayudaVisible;
+    if (hud) hud.hidden = !ayudaVisible;
+  });
 
   // Punto de aparición: el config trae el pueblo en WGS84; si no, el centro.
   const center = terrain.center();
@@ -314,6 +328,9 @@ async function bootstrap(): Promise<void> {
   const ty = queryNumber(params, 'ty');
   const tz = queryNumber(params, 'tz');
   const freeCamera = px !== null || py !== null || pz !== null;
+  // Modo medición = instrumentación a la vista: un arnés que pide cámara libre quiere
+  // el panel de diagnóstico, sin depender de que alguien recuerde `?debug=1`.
+  if (freeCamera) ayudaVisible = true;
 
   // ----- Auditoría del footgun de los dos heightAt (ver src/terrain.ts) -----
   const auditPoints: { x: number; z: number }[] = [];
@@ -388,6 +405,8 @@ async function bootstrap(): Promise<void> {
       bounds: { minX, maxX, minZ, maxZ },
       polishTrackAt: { ...FIRST_ROUTE.trackEntry, radiusM: 90 },
       polishRoadAt: { ...FIRST_ROUTE.start, radiusM: 120 },
+      // El faldón de mezcla de la pista se dibuja solo a lo largo de la ruta jugable.
+      trackBlendCorridor: { points: FIRST_ROUTE.polyline, radiusM: 30 },
     });
     console.info(
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
@@ -403,14 +422,18 @@ async function bootstrap(): Promise<void> {
   if (villageEnabled) {
     const start = FIRST_ROUTE.start;
     const roadClearance = roads?.stations()
-      .filter((station) => Math.hypot(station.x - start.x, station.z - start.z) <= 130)
+      .filter((station) => Math.hypot(station.x - start.x, station.z - start.z) <= VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M)
       .map((station) => ({
         x: station.x,
         z: station.z,
         radiusM: station.class === 'ROAD' ? 5.2 : station.class === 'TRACK' ? 3.6 : 2.5,
+        // La dirección del eje deja que el pueblo oriente los postes perpendiculares.
+        dx: station.dx,
+        dz: station.dz,
       })) ?? [];
     const village = await loadVillage(scene, terrain, {
       url: publicUrl('/village/buildings.json'),
+      buildingHeightGridUrl: publicUrl('/village/building_height_grid.json'),
       keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
       keepClearRadiusM: 12,
       roadClearance,
@@ -524,8 +547,77 @@ async function bootstrap(): Promise<void> {
           }
           return injected ? false : realControls.consumeToggle();
         },
+        setVirtualKey: (code, pressed) => realControls.setVirtualKey(code, pressed),
+        setVirtualAxes: (forward, strafe) => realControls.setVirtualAxes(forward, strafe),
         dispose: () => realControls.dispose(),
       };
+
+      const mobileButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('#mobile-controls [data-code]'));
+      const joystick = document.getElementById('mobile-joystick');
+      const joystickThumb = document.getElementById('joystick-thumb');
+      const releaseMobileButton = (button: HTMLButtonElement): void => {
+        realControls.setVirtualKey(button.dataset.code ?? '', false);
+        button.classList.remove('is-pressed');
+      };
+      for (const button of mobileButtons) {
+        button.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          realControls.setVirtualKey(button.dataset.code ?? '', true);
+          button.classList.add('is-pressed');
+          button.setPointerCapture(event.pointerId);
+        });
+        const release = (event: PointerEvent): void => {
+          event.preventDefault();
+          releaseMobileButton(button);
+        };
+        button.addEventListener('pointerup', release);
+        button.addEventListener('pointercancel', release);
+        button.addEventListener('lostpointercapture', () => releaseMobileButton(button));
+      }
+      if (joystick && joystickThumb) {
+        const DEAD_ZONE = 0.12;
+        let joystickPointer: number | null = null;
+        const resetJoystick = (): void => {
+          joystickPointer = null;
+          joystick.style.setProperty('--joy-x', '0px');
+          joystick.style.setProperty('--joy-y', '0px');
+          realControls.setVirtualAxes(0, 0);
+        };
+        const updateJoystick = (event: PointerEvent): void => {
+          const bounds = joystick.getBoundingClientRect();
+          const maxRadius = Math.max(1, bounds.width / 2 - joystickThumb.clientWidth / 2 - 5);
+          let dx = (event.clientX - (bounds.left + bounds.width / 2)) / maxRadius;
+          let dy = (event.clientY - (bounds.top + bounds.height / 2)) / maxRadius;
+          const distance = Math.hypot(dx, dy);
+          if (distance > 1) {
+            dx /= distance;
+            dy /= distance;
+          }
+          joystick.style.setProperty('--joy-x', `${dx * maxRadius}px`);
+          joystick.style.setProperty('--joy-y', `${dy * maxRadius}px`);
+          const magnitude = Math.min(1, Math.hypot(dx, dy));
+          const adjustedMagnitude = magnitude <= DEAD_ZONE ? 0 : (magnitude - DEAD_ZONE) / (1 - DEAD_ZONE);
+          const scale = magnitude === 0 ? 0 : adjustedMagnitude / magnitude;
+          realControls.setVirtualAxes(-dy * scale, dx * scale);
+        };
+        joystick.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          joystickPointer = event.pointerId;
+          joystick.setPointerCapture(event.pointerId);
+          updateJoystick(event);
+        });
+        joystick.addEventListener('pointermove', (event) => {
+          if (event.pointerId === joystickPointer) updateJoystick(event);
+        });
+        const releaseJoystick = (event: PointerEvent): void => {
+          if (event.pointerId === joystickPointer) resetJoystick();
+        };
+        joystick.addEventListener('pointerup', releaseJoystick);
+        joystick.addEventListener('pointercancel', releaseJoystick);
+        joystick.addEventListener('lostpointercapture', releaseJoystick);
+        window.addEventListener('blur', resetJoystick);
+      }
+      window.addEventListener('blur', () => mobileButtons.forEach(releaseMobileButton));
     } else {
       controls = createVehicleControls({ onReset: resetToStart });
     }
@@ -573,11 +665,14 @@ async function bootstrap(): Promise<void> {
   // nada que anclar al shadow map. El sol conserva la dirección que ya tenía la escena.
   const atmosphere = createAtmosphere(scene, {
     shadowCasters: [
-      ...(vehicle ? vehicle.root.getChildMeshes() : []),
+      // Los bujes son un detalle de llanta; no necesitan emitir sombras propias.
+      ...(vehicle ? vehicle.root.getChildMeshes().filter((mesh) => !mesh.name.startsWith('vehicle:hub-cap-')) : []),
       ...(player ? player.root.getChildMeshes() : []),
       ...(objective ? objective.root.getChildMeshes() : []),
     ],
-    shadowReceivers: [...terrain.meshes, ...(roads ? roads.meshes : [])],
+    // Roads and vehicle panels stay unshadowed to avoid PCF acne/green slivers;
+    // terrain receives shadows, so the vehicle remains grounded in the scene.
+    shadowReceivers: [...terrain.meshes],
   });
 
   window.addEventListener('resize', () => engine.resize());
@@ -634,14 +729,25 @@ async function bootstrap(): Promise<void> {
     const fz = Math.cos(yawRad);
     const body = walking ? player!.root.position : vehicle.root.position;
 
-    const distance = walking ? 4.2 : 7.5;
-    const height = walking ? 2.1 : 2.4;
+    // En vertical (móvil) el 4x4 tapa media pantalla con el encuadre de escritorio:
+    // el encuadre se abre con la relación de aspecto en vez de quedar fijo.
+    const aspect = engine.getRenderWidth() / Math.max(1, engine.getRenderHeight());
+    const verticalidad = Math.max(0, Math.min(1, (1 - aspect) / 0.55));
+    const distance = (walking ? 5.2 : 7.5) * (1 + 0.42 * verticalidad);
+    const height = (walking ? 2.1 : 2.4) * (1 + 0.3 * verticalidad);
     const lookAhead = walking ? 1.6 : 1.8;
     const lookHeight = walking ? 1.5 : 0.85;
 
     const desired = new Vector3(body.x - fx * distance, body.y + height, body.z - fz * distance);
+    // La pista trepa 21,8°: sin este tope la cámara queda enterrada en la ladera y la
+    // pantalla se llena de terreno (la persecución no tiene colisión propia).
+    desired.y = Math.max(desired.y, terrain.heightAt(desired.x, desired.z) + 0.7);
     const k = 1 - Math.exp(-dt * (walking ? 7 : 5));
     camera.position = Vector3.Lerp(camera.position, desired, k);
+    // El lerp puede acercar la cámara a una ladera ya atravesada: se sostiene la cota
+    // mínima también sobre la pose actual.
+    const cotaMinima = terrain.heightAt(camera.position.x, camera.position.z) + 0.5;
+    if (camera.position.y < cotaMinima) camera.position.y = cotaMinima;
     camera.setTarget(new Vector3(body.x + fx * lookAhead, body.y + lookHeight, body.z + fz * lookAhead));
   };
 
@@ -737,7 +843,10 @@ async function bootstrap(): Promise<void> {
       if (manualInput && vehicle) vehicle.step(dt);
       else if (player || vehicle) stepSimulation(dt);
     }
-    updateChaseCamera(dt);
+    // La cámara de persecución NO se toca en modo cámara libre: si se deja correr,
+    // reencuadra al jugador en el primer frame y las capturas de medición salen con la
+    // vista del juego (silenciosamente) en vez de la pedida por ?px/py/pz.
+    if (!freeCamera) updateChaseCamera(dt);
     // El shadow map sigue al jugador: con el ancla fija en el origen, la sombra se
     // cortaba a 100 m y el 4x4 dejaba de proyectar apenas te alejabas del spawn.
     const anclaSombra = player ? player.root.position : vehicle?.root.position;
@@ -760,13 +869,17 @@ async function bootstrap(): Promise<void> {
       // Las teclas van en su propio bloque y NO dentro del diagnóstico: en modo cámara
       // libre son otras, y decir las teclas equivocadas es peor que no decir ninguna.
       if (controlsEl) {
-        controlsEl.textContent = (player
-          ? player.mode === 'driving'
-            ? TECLAS_CONDUCIENDO
-            : TECLAS_A_PIE
-          : vehicle
-            ? TECLAS_CONDUCIENDO
-            : CONTROLES_LIBRE) + ' · F3 diagnóstico';
+        // La ayuda completa (teclas y panel) sólo aparece con F3; en estado normal
+        // queda la pista compacta para no ensuciar la vista de juego.
+        controlsEl.textContent = ayudaVisible
+          ? (player
+              ? player.mode === 'driving'
+                ? TECLAS_CONDUCIENDO
+                : TECLAS_A_PIE
+              : vehicle
+                ? TECLAS_CONDUCIENDO
+                : CONTROLES_LIBRE) + ' · F3 ocultar ayuda'
+          : PISTA_AYUDA;
       }
     }
   });
@@ -863,6 +976,10 @@ async function bootstrap(): Promise<void> {
         }
       : null,
   };
+
+  // Mundo listo: recién acá se libera el cartel de carga (queda abierto si lo pidió
+  // `?debug=1`, F3 o el modo medición).
+  if (hud && !ayudaVisible) hud.hidden = true;
 
   window.addEventListener('beforeunload', () => {
     playerControls?.dispose();

@@ -32,6 +32,9 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import type { WorldTerrain } from '../terrain';
 import { gridExtent } from '../heightfield';
+import { buildingRoofTint, buildingTint } from './building-tint';
+import { selectRoofShape } from './roof-shape';
+import { constrainEaveOverhang, VILLAGE_DETAIL_RADIUS_M } from './roof-clearance';
 
 /* ------------------------------------------------------------------------- *
  * Contrato (lo consumen main.ts cuando el orquestador integre las capas)
@@ -49,6 +52,16 @@ export interface VillageStats {
   readonly detailedBuildings: number;
   /** Tapias de patio generadas con despeje frente a edificios y vías. */
   readonly courtyardWalls: number;
+  /** Casas cuya altura de cubierta se midió con el ráster LiDAR del IGN. */
+  readonly lidarAdjustedBuildings: number;
+  /** Casas que conservan altura OSM porque el ráster no tiene muestra suficiente. */
+  readonly lidarFallbackBuildings: number;
+  /** Casas de altura estimada cuya cubierta se elevó para despejar la ladera. */
+  readonly roofLiftedBuildings: number;
+  /** Máximo aumento de altura aplicado a una cubierta estimada (m). */
+  readonly maxRoofLiftM: number;
+  /** Postes de madera con cables colocados a lo largo de la calle del spawn. */
+  readonly streetPoles: number;
 }
 
 export interface Village {
@@ -59,12 +72,23 @@ export interface Village {
 export interface LoadVillageOptions {
   /** URL de los datos. Por defecto `/village/buildings.json`. */
   readonly url?: string;
+  /** Manifiesto y rejilla independiente del MDSnE IGN/CNIG. */
+  readonly buildingHeightGridUrl?: string;
   /** Punto que NO puede quedar tapado por una casa (la aparición del 4x4). */
   readonly keepClearAt?: { readonly x: number; readonly z: number } | null;
   /** Radio a despejar alrededor de `keepClearAt`, en metros. */
   readonly keepClearRadiusM?: number;
-  /** Centros de vía locales; cada muestra incluye el semiancho que debe quedar libre. */
-  readonly roadClearance?: readonly { readonly x: number; readonly z: number; readonly radiusM: number }[];
+  /**
+   * Centros de vía locales; cada muestra incluye el semiancho que debe quedar libre y,
+   * si se conoce, la dirección `dx`/`dz` del eje (la usan los postes de la calle).
+   */
+  readonly roadClearance?: readonly {
+    readonly x: number;
+    readonly z: number;
+    readonly radiusM: number;
+    readonly dx?: number;
+    readonly dz?: number;
+  }[];
 }
 
 /* ------------------------------------------------------------------------- *
@@ -81,15 +105,34 @@ export const FALDON_M = 1.5;
 /** Umbral de alargamiento del footprint para pasar de tejado plano a dos aguas. */
 const GABLE_ELONGATION = 1.35;
 
+/** Bajada maxima del alero en las cubiertas a cuatro aguas / a un agua (m). */
+const HIP_MAX_DROP_M = 2.6;
+const SHED_MAX_DROP_M = 2.2;
+/** Separación mínima entre cubierta estimada y terreno bajo el footprint (m). */
+const ROOF_CLEARANCE_M = 0.2;
+/** Límite para no convertir errores puntuales del heightfield en casas altas (m). */
+const ROOF_MAX_LIFT_M = 1.6;
+
+/**
+ * Hash determinista y barato del id OSM. La variante de una casa no debe cambiar
+ * entre partidas ni depender del orden de carga.
+ */
+function hash32(id: number): number {
+  let h = (id ^ 0x9e3779b9) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
 /** Radio por defecto a despejar alrededor del spawn (contrato: >= 8 m verificado). */
 const DEFAULT_KEEP_CLEAR_RADIUS_M = 12;
 
 /**
- * Detalle de fachada: solo edificios a <= esta distancia del spawn. El resto del
- * pueblo mantiene el LOD de presupuesto. Elegido para cubrir el casco visible
- * desde la aparicion y la calle inicial sin inflar los triangulos.
+ * Detalle de fachada y cubierta: edificios a <= esta distancia del spawn. El
+ * resto del pueblo mantiene el LOD de presupuesto. 150 m cubren varias fachadas
+ * de la calle inicial, suficientes para que el recorrido no cambie de casas
+ * articuladas a cajas lisas tras solo dos manzanas.
  */
-const DETAIL_RADIUS_M = 90;
 
 /* Medidas del detalle (m). Conservadoras: nada que invada calzada ni spawn. */
 const PLINTH_HEIGHT_M = 0.55;
@@ -97,6 +140,9 @@ const PLINTH_OUT_M = 0.05;
 const OPENING_OUT_M = 0.1;
 const DOOR_WIDTH_M = 0.95;
 const DOOR_HEIGHT_M = 2.0;
+/** Porton de cuadra/cochera: la boca ancha de madera tipica del caserio. */
+const PORTON_WIDTH_M = 1.9;
+const PORTON_HEIGHT_M = 2.3;
 const WINDOW_WIDTH_M = 0.7;
 const WINDOW_HEIGHT_M = 0.95;
 const WINDOW_SILL_M = 1.15;
@@ -104,12 +150,16 @@ const SHUTTER_WIDTH_M = 0.14;
 const SHUTTER_GAP_M = 0.055;
 const SHUTTER_OUT_M = 0.15;
 const EAVE_OVERHANG_M = 0.35;
+const EAVE_ROAD_GAP_M = 0.1;
 const EAVE_FASCIA_M = 0.16;
 const WINDOW_TRIM_OUT_M = OPENING_OUT_M + 0.025;
 /** Longitud minima de fachada para colgar un hueco. */
 const MIN_FACADE_M = 2.0;
 
 const DEFAULT_URL = '/village/buildings.json';
+const DEFAULT_BUILDING_HEIGHT_GRID_URL = '/village/building_height_grid.json';
+const MIN_LIDAR_SAMPLES = 4;
+const MIN_LIDAR_WALL_HEIGHT_M = 2;
 
 /** Tipos de material. Cuerpos y tejados se agrupan por separado: 4 + 3 mallas. */
 const BODY_KINDS = ['piedra', 'revoco', 'teja', 'ladrillo'] as const;
@@ -161,7 +211,7 @@ interface Building {
   readonly footprint: readonly V2[];
   readonly heightM: number;
   readonly levels: number;
-  readonly heightSource: 'levels' | 'height' | 'tipo';
+  readonly heightSource: 'levels' | 'height' | 'tipo' | 'lidar';
   readonly materialKind: BodyKind;
   readonly roofKind: RoofKind;
 }
@@ -213,6 +263,52 @@ function isBodyKind(value: unknown): value is BodyKind {
 
 function isRoofKind(value: unknown): value is RoofKind {
   return typeof value === 'string' && (ROOF_KINDS as readonly string[]).includes(value);
+}
+
+interface BuildingHeightGrid {
+  readonly width: number;
+  readonly height: number;
+  readonly pixelSizeM: number;
+  readonly topLeftEastingM: number;
+  readonly topLeftNorthingM: number;
+  readonly values: Int16Array;
+}
+
+async function loadBuildingHeightGrid(url: string): Promise<BuildingHeightGrid> {
+  const metaResponse = await fetch(url);
+  if (!metaResponse.ok) throw new Error(`pueblo: no se pudo cargar ${url} (HTTP ${metaResponse.status})`);
+  const raw: unknown = await metaResponse.json();
+  if (!isRecord(raw) || raw.schemaVersion !== 1 || raw.crs !== 'EPSG:25830' || !isRecord(raw.grid)) {
+    throw new Error('pueblo: manifiesto de alturas IGN no válido');
+  }
+  const grid = raw.grid;
+  const width = grid.width;
+  const height = grid.height;
+  const pixelSizeM = grid.pixel_size_m;
+  const topLeftEastingM = grid.top_left_easting_m;
+  const topLeftNorthingM = grid.top_left_northing_m;
+  if (
+    typeof width !== 'number' || !Number.isInteger(width) || width <= 0 ||
+    typeof height !== 'number' || !Number.isInteger(height) || height <= 0 ||
+    typeof pixelSizeM !== 'number' || !Number.isFinite(pixelSizeM) || pixelSizeM <= 0 ||
+    typeof topLeftEastingM !== 'number' || !Number.isFinite(topLeftEastingM) ||
+    typeof topLeftNorthingM !== 'number' || !Number.isFinite(topLeftNorthingM) ||
+    typeof raw.valuesFile !== 'string' || !raw.valuesFile
+  ) {
+    throw new Error('pueblo: metadatos de rejilla IGN incompletos');
+  }
+
+  const valuesUrl = new URL(raw.valuesFile, new URL(url, globalThis.location.href));
+  const valuesResponse = await fetch(valuesUrl);
+  if (!valuesResponse.ok) throw new Error(`pueblo: no se pudo cargar ${valuesUrl} (HTTP ${valuesResponse.status})`);
+  const buffer = await valuesResponse.arrayBuffer();
+  if (buffer.byteLength !== width * height * 2) {
+    throw new Error(`pueblo: rejilla IGN de ${buffer.byteLength} bytes; se esperaban ${width * height * 2}`);
+  }
+  const data = new DataView(buffer);
+  const values = new Int16Array(width * height);
+  for (let i = 0; i < values.length; i++) values[i] = data.getInt16(i * 2, true);
+  return { width, height, pixelSizeM, topLeftEastingM, topLeftNorthingM, values };
 }
 
 /* ------------------------------------------------------------------------- *
@@ -304,6 +400,80 @@ function distanceToPolygon(points: readonly V2[], x: number, z: number): number 
   return best;
 }
 
+/** True si el poligono simple es convexo. Evita tejados a cuatro aguas plegados. */
+function isConvexPolygon(points: readonly V2[]): boolean {
+  const n = points.length;
+  if (n < 4) return true;
+  const ccw = signedArea(points) > 0;
+  for (let i = 0; i < n; i++) {
+    const a = points[i]!;
+    const b = points[(i + 1) % n]!;
+    const c = points[(i + 2) % n]!;
+    const cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]);
+    if (ccw ? cross < -1e-9 : cross > 1e-9) return false;
+  }
+  return true;
+}
+
+function containsPoint(points: readonly V2[], x: number, z: number): boolean {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const a = points[i]!;
+    const b = points[j]!;
+    if (a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0]) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * El MDSnE mide la cubierta sobre el terreno. El juego dibuja muros hasta el
+ * alero y añade su propia cumbrera, así que se resta el mismo ascenso del tejado
+ * antes de sustituir la altura estimada por plantas.
+ */
+function lidarWallHeightM(
+  building: Building,
+  grid: BuildingHeightGrid,
+  config: WorldTerrain['config'],
+): number | null {
+  if (building.heightSource === 'height') return null;
+  const scale = config.worldScale;
+  const e0 = config.bounds.e[0];
+  const n0 = config.bounds.n[0];
+  const points = building.footprint;
+  const minE = e0 + Math.min(...points.map(([x]) => x / scale));
+  const maxE = e0 + Math.max(...points.map(([x]) => x / scale));
+  const minN = n0 + Math.min(...points.map(([, z]) => z / scale));
+  const maxN = n0 + Math.max(...points.map(([, z]) => z / scale));
+  const colMin = Math.max(0, Math.floor((minE - grid.topLeftEastingM) / grid.pixelSizeM));
+  const colMax = Math.min(grid.width - 1, Math.floor((maxE - grid.topLeftEastingM) / grid.pixelSizeM));
+  const rowMin = Math.max(0, Math.floor((grid.topLeftNorthingM - maxN) / grid.pixelSizeM));
+  const rowMax = Math.min(grid.height - 1, Math.floor((grid.topLeftNorthingM - minN) / grid.pixelSizeM));
+  if (colMin > colMax || rowMin > rowMax) return null;
+
+  const samples: number[] = [];
+  for (let row = rowMin; row <= rowMax; row++) {
+    const z = (grid.topLeftNorthingM - (row + 0.5) * grid.pixelSizeM - n0) * scale;
+    for (let col = colMin; col <= colMax; col++) {
+      const index = row * grid.width + col;
+      const heightM = grid.values[index]!;
+      if (heightM <= 0) continue;
+      const x = (grid.topLeftEastingM + (col + 0.5) * grid.pixelSizeM - e0) * scale;
+      if (containsPoint(points, x, z)) samples.push(heightM);
+    }
+  }
+  if (samples.length < MIN_LIDAR_SAMPLES) return null;
+  samples.sort((a, b) => a - b);
+  const roofHeightM = samples[Math.floor((samples.length - 1) * 0.95)]!;
+
+  const axis = principalAxis(points);
+  const gable = axis.halfV > 0.5 && axis.halfU / axis.halfV >= GABLE_ELONGATION;
+  const roofRiseM = gable ? Math.min(Math.max(0.5 * axis.halfV, 0.4), 3) : 0;
+  const wallHeightM = roofHeightM - roofRiseM;
+  return wallHeightM >= MIN_LIDAR_WALL_HEIGHT_M && wallHeightM <= 60 ? wallHeightM : null;
+}
+
 /**
  * Triangulacion de un poligono simple por "ear clipping". Hace falta porque el
  * 62 % de los footprints de OSM NO son convexos (muescas, entrantes de patio):
@@ -377,19 +547,29 @@ function triangulatePolygon(points: readonly V2[]): number[] {
 interface GroupBuffers {
   readonly positions: number[];
   readonly normals: number[];
+  readonly colors: number[];
   readonly indices: number[];
   triangles: number;
 }
 
 function emptyGroup(): GroupBuffers {
-  return { positions: [], normals: [], indices: [], triangles: 0 };
+  return { positions: [], normals: [], colors: [], indices: [], triangles: 0 };
 }
 
 function pushVertex(g: GroupBuffers, x: number, y: number, z: number, nx: number, ny: number, nz: number): number {
   const index = g.positions.length / 3;
   g.positions.push(x, y, z);
   g.normals.push(nx, ny, nz);
+  g.colors.push(1, 1, 1, 1);
   return index;
+}
+
+function tintVertices(g: GroupBuffers, firstVertex: number, tint: readonly [number, number, number]): void {
+  for (let i = firstVertex * 4; i < g.colors.length; i += 4) {
+    g.colors[i] = tint[0];
+    g.colors[i + 1] = tint[1];
+    g.colors[i + 2] = tint[2];
+  }
 }
 
 function pushTri(g: GroupBuffers, a: number, b: number, c: number): void {
@@ -483,6 +663,165 @@ function pushWallStrip(
 }
 
 /**
+ * Caja vertical sin tapas apoyada en `baseY`: lados girados `anguloLargoRad` (el eje
+ * "largo" queda en la dirección (-sin, cos)). Alcanza para postes y travesaños, que se
+ * ven desde fuera; no hace falta cerrar la tapa ni la base.
+ */
+function pushCaja(
+  g: GroupBuffers,
+  x: number,
+  z: number,
+  baseY: number,
+  anchoM: number,
+  largoM: number,
+  altoM: number,
+  anguloLargoRad: number,
+): void {
+  const c = Math.cos(anguloLargoRad);
+  const sn = Math.sin(anguloLargoRad);
+  const hw = anchoM / 2;
+  const hl = largoM / 2;
+  const corners: V2[] = [
+    [x + c * hw + sn * hl, z - sn * hw + c * hl],
+    [x - c * hw + sn * hl, z + sn * hw + c * hl],
+    [x - c * hw - sn * hl, z + sn * hw - c * hl],
+    [x + c * hw - sn * hl, z - sn * hw - c * hl],
+  ];
+  const top = baseY + altoM;
+  for (let i = 0; i < 4; i++) {
+    const a = corners[i]!;
+    const b = corners[(i + 1) % 4]!;
+    pushWallStrip(g, a[0], a[1], b[0], b[1], baseY, top, top, b[1] - a[1], a[0] - b[0]);
+  }
+}
+
+/**
+ * Cable fino entre dos puntos: dos cintas cruzadas, así se lee como línea desde
+ * cualquier ángulo sin sumar un material de líneas ni otra llamada de dibujo.
+ */
+function pushAlambre(
+  g: GroupBuffers,
+  ax: number,
+  ay: number,
+  az: number,
+  bx: number,
+  by: number,
+  bz: number,
+  grosorM: number,
+): void {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const len = Math.hypot(dx, dz) || 1;
+  const ux = dx / len;
+  const uz = dz / len;
+  const px = -uz * grosorM;
+  const pz = ux * grosorM;
+  const quad = (
+    x0: number, y0: number, z0: number,
+    x1: number, y1: number, z1: number,
+    x2: number, y2: number, z2: number,
+    x3: number, y3: number, z3: number,
+    nx: number, ny: number, nz: number,
+  ): void => {
+    const i0 = pushVertex(g, x0, y0, z0, nx, ny, nz);
+    const i1 = pushVertex(g, x1, y1, z1, nx, ny, nz);
+    const i2 = pushVertex(g, x2, y2, z2, nx, ny, nz);
+    const i3 = pushVertex(g, x3, y3, z3, nx, ny, nz);
+    pushTri(g, i0, i1, i2);
+    pushTri(g, i0, i2, i3);
+  };
+  // Cinta vertical.
+  quad(ax, ay - grosorM, az, bx, by - grosorM, bz, bx, by + grosorM, bz, ax, ay + grosorM, az, px, 0.2, pz);
+  // Cinta horizontal.
+  quad(ax - px, ay, az - pz, bx - px, by, bz - pz, bx + px, by, bz + pz, ax + px, ay, az + pz, 0, 1, 0);
+}
+
+/**
+ * Postes y cables de la calle del pueblo. Se apoyan en las muestras viarias que ya
+ * recibe el módulo (nada nuevo que consultar) y van al lote de madera, así que no
+ * suman malla ni llamada de dibujo. Alternan de lado para que los cables crucen la
+ * calle en diagonal, como en un pueblo real.
+ */
+function buildStreetFurniture(ctx: BuildContext): number {
+  const muestras = ctx.roadClearance.filter(
+    (muestra) => muestra.radiusM >= 5 && muestra.dx !== undefined && muestra.dz !== undefined,
+  );
+  if (muestras.length < 6) return 0;
+
+  const postes: { x: number; z: number; y: number; nx: number; nz: number }[] = [];
+  let tramo: typeof muestras = [];
+  // Se postea por DISTANCIA acumulada, no por índice: las muestras vienen a 1 m en las
+  // vías con perfil de recorte y a 2,5 m en el resto.
+  const PASO_POSTE_M = 28;
+  const cerrarTramo = (): void => {
+    let acumulado = PASO_POSTE_M * 0.5;
+    let anterior: (typeof tramo)[number] | null = null;
+    let indice = 0;
+    for (const muestra of tramo) {
+      if (anterior) acumulado += Math.hypot(muestra.x - anterior.x, muestra.z - anterior.z);
+      anterior = muestra;
+      if (acumulado < PASO_POSTE_M) continue;
+      acumulado = 0;
+      const lado = indice++ % 2 === 0 ? 1 : -1;
+      const nx = -muestra.dz! * lado;
+      const nz = muestra.dx! * lado;
+      const lateral = Math.max(3.4, muestra.radiusM - 1.2);
+      const x = muestra.x + nx * lateral;
+      const z = muestra.z + nz * lateral;
+      postes.push({ x, z, y: ctx.heightAt(x, z), nx, nz });
+    }
+    tramo = [];
+  };
+  for (const muestra of muestras) {
+    const ultima = tramo[tramo.length - 1];
+    if (ultima && Math.hypot(muestra.x - ultima.x, muestra.z - ultima.z) > 40) cerrarTramo();
+    tramo.push(muestra);
+  }
+  cerrarTramo();
+
+  const ALTO_POSTE_M = 7.4;
+  const ALTURAS_CABLE_M = [6.9, 6.45];
+  const FLECHA_M = 0.45;
+  for (const poste of postes) {
+    pushCaja(ctx.shutters, poste.x, poste.z, poste.y - 0.4, 0.18, 0.18, ALTO_POSTE_M, 0);
+    // Travesaño perpendicular a la calle, en el extremo del poste.
+    pushCaja(
+      ctx.shutters,
+      poste.x,
+      poste.z,
+      poste.y + ALTURAS_CABLE_M[0]! - 0.06,
+      0.1,
+      1.5,
+      0.12,
+      Math.atan2(-poste.nx, poste.nz),
+    );
+  }
+  for (let i = 1; i < postes.length; i++) {
+    const a = postes[i - 1]!;
+    const b = postes[i]!;
+    const span = Math.hypot(b.x - a.x, b.z - a.z);
+    if (span > 40) continue;
+    for (const altura of ALTURAS_CABLE_M) {
+      const pasos = 3;
+      for (let k = 0; k < pasos; k++) {
+        const t0 = k / pasos;
+        const t1 = (k + 1) / pasos;
+        const caida = (t: number): number => Math.sin(Math.PI * t) * FLECHA_M;
+        const y0 = a.y + altura + (b.y + altura - (a.y + altura)) * t0 - caida(t0);
+        const y1 = a.y + altura + (b.y + altura - (a.y + altura)) * t1 - caida(t1);
+        pushAlambre(
+          ctx.shutters,
+          a.x + (b.x - a.x) * t0, y0, a.z + (b.z - a.z) * t0,
+          a.x + (b.x - a.x) * t1, y1, a.z + (b.z - a.z) * t1,
+          0.045,
+        );
+      }
+    }
+  }
+  return postes.length;
+}
+
+/**
  * Arista del footprint + su normal exterior unitaria. Misma convencion que
  * `pushWallStrip`; `i`/`j` permiten consultar la altura de tejado por vertice.
  */
@@ -548,8 +887,17 @@ function pushFacadeQuad(
 
 interface BuildContext {
   readonly heightAt: (x: number, z: number) => number;
-  /** Muestras del eje viario cercanas al spawn, para orientar ventanas a la calle. */
-  readonly roadClearance: readonly { readonly x: number; readonly z: number; readonly radiusM: number }[];
+  /**
+   * Muestras del eje viario cercanas al spawn, para orientar ventanas a la calle y
+   * clavar postes. `dx`/`dz` es la dirección del eje (opcional: sin ella no se postea).
+   */
+  readonly roadClearance: readonly {
+    readonly x: number;
+    readonly z: number;
+    readonly radiusM: number;
+    readonly dx?: number;
+    readonly dz?: number;
+  }[];
   readonly bodies: Record<BodyKind, GroupBuffers>;
   readonly roofs: Record<RoofKind, GroupBuffers>;
   /** Huecos (puerta/ventana) y zocalo: los dos lotes extra, solo cerca del spawn. */
@@ -582,13 +930,39 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
 
   const body = ctx.bodies[building.materialKind];
   const roof = ctx.roofs[building.roofKind];
+  const bodyFirstVertex = body.positions.length / 3;
+  const roofFirstVertex = roof.positions.length / 3;
+  const roofTint = buildingRoofTint(building.id);
 
   const axis = principalAxis(points);
   const elongation = axis.halfV > 0.5 ? axis.halfU / axis.halfV : 0;
-  const gable = elongation >= GABLE_ELONGATION && axis.halfV > 0.5;
+  const elongated = elongation >= GABLE_ELONGATION && axis.halfV > 0.5;
+  // Forma de la cubierta independiente del LOD de fachadas. La cumbrera se
+  // mantiene en `topY` y los aleros bajan, así que la altura LiDAR no cambia.
+  const areaM2 = Math.abs(signedArea(points));
+  // Cuatro aguas: la superficie va en abanico a la cumbrera, asi que exige planta
+  // convexa y sencilla; en un footprint con entrantes se plegaria sobre si misma.
+  const safeHip = n <= 8 && areaM2 <= 800 && isConvexPolygon(points);
+  // Un agua: la superficie se triangula con ear clipping igual que el tejado
+  // plano, de modo que es segura tambien en plantas no convexas; solo se limita
+  // el tamano para que un unico faldon no cruce un edificio complejo.
+  const safeShed = n <= 16 && areaM2 <= 1000;
+  const shape = selectRoofShape({
+    elongated,
+    hipAllowed: safeHip,
+    shedAllowed: safeShed,
+    variant: hash32(building.id) % 4,
+  });
+  const gable = shape === 'gable';
   // Puntas del tejado: crecen con el ancho y estan limitadas para que ningun
   // edificio se dispare (una nave de 30 m no lleva un fronton de 8 m).
   const rise = gable ? Math.min(Math.max(0.25 * (2 * axis.halfV), 0.4), 3) : 0;
+  // Cuanto baja el alero respecto a `topY`; la cumbrera (o el alero alto) queda
+  // siempre en `topY` para no alterar la altura maxima medida.
+  const hipDrop = shape === 'hip' ? Math.min(Math.max(0.45 * Math.min(axis.halfU, axis.halfV), 0.5), HIP_MAX_DROP_M) : 0;
+  const shedDrop = shape === 'shed' ? Math.min(Math.max(0.35 * axis.halfV, 0.4), SHED_MAX_DROP_M) : 0;
+  // Longitud media de la cumbrera: en cuatro aguas se recorta en los testeros.
+  const ridgeHalfU = shape === 'hip' ? Math.max(0, axis.halfU - axis.halfV) : axis.halfU;
 
   // Altura del tejado POR VERTICE. Con tejado plano es `topY` para todos; con
   // dos aguas sube linealmente desde los aleros hasta la cumbrera, lo que deja
@@ -601,11 +975,27 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
     const u = dx * axis.u[0] + dz * axis.u[1];
     const v = dx * -axis.u[1] + dz * axis.u[0]; // componente sobre el eje corto
     projU.push(u);
-    roofY.push(gable ? topY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV)) : topY);
+    let y = topY;
+    if (gable) {
+      y = topY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV));
+    } else if (shape === 'hip') {
+      // Distancia adimensional al borde: 0 en la cumbrera, 1 en el alero. El
+      // max() de las dos direcciones da el quiebro de las cuatro aguas; si la
+      // planta es cuadrada la cumbrera degenera en un vertice.
+      const dShort = Math.abs(v) / Math.max(axis.halfV, 1e-3);
+      const dLong = ridgeHalfU > 1e-3 ? Math.max(0, Math.abs(u) - ridgeHalfU) / Math.max(axis.halfV, 1e-3) : 0;
+      y = topY - hipDrop * Math.min(1, Math.max(dShort, dLong));
+    } else if (shape === 'shed') {
+      // Faldon unico: sube del alero bajo (-halfV) al alto (+halfV), tope en topY.
+      const t = Math.min(1, Math.max(0, (v + axis.halfV) / Math.max(2 * axis.halfV, 1e-3)));
+      y = topY - shedDrop * (1 - t);
+    }
+    roofY.push(y);
   }
 
   const ccw = signedArea(points) > 0;
   const ridgeSpan = Math.max(1e-6, 2 * axis.halfU);
+  const clampRidgeU = (u: number): number => (u < -ridgeHalfU ? -ridgeHalfU : u > ridgeHalfU ? ridgeHalfU : u);
 
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
@@ -620,31 +1010,48 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
     // Muro: de la base (min del terreno - faldon) hasta la linea de tejado.
     pushWallStrip(body, a[0], a[1], b[0], b[1], baseY, topA, topB, edgeNx, edgeNz);
 
-    if (!gable) continue;
+    if (shape === 'flat' || shape === 'shed') continue;
 
     const isEndEdge = Math.abs(projU[i]! - projU[j]!) <= 0.05 * ridgeSpan;
-    const uMid = (projU[i]! + projU[j]!) / 2;
-    const ridgeX = axis.c[0] + axis.u[0] * uMid;
-    const ridgeZ = axis.c[1] + axis.u[1] * uMid;
-    const ridgeY = topY + rise;
 
-    if (isEndEdge) {
-      // Hastial: el triangulo vertical cierra el techo por los extremos y lleva
-      // la normal del muro, porque es continuation de la pared.
-      pushWallTriangle(body, a[0], topA, a[1], b[0], topB, b[1], ridgeX, ridgeY, ridgeZ, edgeNx, edgeNz);
-    } else {
-      // Dos aguas: cuadrilatero desde el alero hasta la cumbrera.
-      const rA = [axis.c[0] + axis.u[0] * projU[i]!, ridgeY, axis.c[1] + axis.u[1] * projU[i]!] as const;
-      const rB = [axis.c[0] + axis.u[0] * projU[j]!, ridgeY, axis.c[1] + axis.u[1] * projU[j]!] as const;
-      const pa = [a[0], topA, a[1]] as const;
-      const pb = [b[0], topB, b[1]] as const;
-      pushRoofTriangle(roof, pa, pb, rB, axis.c);
-      pushRoofTriangle(roof, pa, rB, rA, axis.c);
+    if (gable) {
+      const uMid = (projU[i]! + projU[j]!) / 2;
+      const ridgeX = axis.c[0] + axis.u[0] * uMid;
+      const ridgeZ = axis.c[1] + axis.u[1] * uMid;
+      const ridgeY = topY + rise;
+      if (isEndEdge) {
+        // Hastial: el triangulo vertical cierra el techo por los extremos y lleva
+        // la normal del muro, porque es continuation de la pared.
+        pushWallTriangle(body, a[0], topA, a[1], b[0], topB, b[1], ridgeX, ridgeY, ridgeZ, edgeNx, edgeNz);
+      } else {
+        // Dos aguas: cuadrilatero desde el alero hasta la cumbrera.
+        const rA = [axis.c[0] + axis.u[0] * projU[i]!, ridgeY, axis.c[1] + axis.u[1] * projU[i]!] as const;
+        const rB = [axis.c[0] + axis.u[0] * projU[j]!, ridgeY, axis.c[1] + axis.u[1] * projU[j]!] as const;
+        const pa = [a[0], topA, a[1]] as const;
+        const pb = [b[0], topB, b[1]] as const;
+        pushRoofTriangle(roof, pa, pb, rB, axis.c);
+        pushRoofTriangle(roof, pa, rB, rA, axis.c);
+      }
+      continue;
     }
+
+    // Cuatro aguas: cada arista sube hasta la cumbrera recortada. En los testeros
+    // los dos extremos caen en el mismo punto y sale un triangulo de faldon.
+    const cuA = clampRidgeU(projU[i]!);
+    const cuB = clampRidgeU(projU[j]!);
+    const rA = [axis.c[0] + axis.u[0] * cuA, topY, axis.c[1] + axis.u[1] * cuA] as const;
+    const rB = [axis.c[0] + axis.u[0] * cuB, topY, axis.c[1] + axis.u[1] * cuB] as const;
+    const pa = [a[0], topA, a[1]] as const;
+    const pb = [b[0], topB, b[1]] as const;
+    pushRoofTriangle(roof, pa, pb, rB, axis.c);
+    pushRoofTriangle(roof, pa, rB, rA, axis.c);
   }
 
-  if (!gable) {
-    // Tejado plano: tapa el poligono completo en `topY`.
+  tintVertices(body, bodyFirstVertex, buildingTint(building.id));
+
+  if (shape === 'flat' || shape === 'shed') {
+    // Tejado plano o faldon unico: tapa el poligono completo a la altura de cada
+    // vertice. En plano `roofY` es constante; en un agua forma una pendiente.
     const indices = triangulatePolygon(points);
     for (let k = 0; k < indices.length; k += 3) {
       const ia = indices[k]!;
@@ -652,36 +1059,48 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
       const ic = indices[k + 2]!;
       pushRoofTriangle(
         roof,
-        [points[ia]![0], topY, points[ia]![1]],
-        [points[ib]![0], topY, points[ib]![1]],
-        [points[ic]![0], topY, points[ic]![1]],
+        [points[ia]![0], roofY[ia]!, points[ia]![1]],
+        [points[ib]![0], roofY[ib]!, points[ib]![1]],
+        [points[ic]![0], roofY[ic]!, points[ic]![1]],
         axis.c,
       );
     }
   }
 
+  tintVertices(roof, roofFirstVertex, roofTint);
+
   if (detailed) {
+    // Variante de fachada determinista: porton de cuadra, ritmo tupido (por
+    // defecto) o una sola ventana alta por planta (muro mas rural y ciego).
+    const variant = hash32(building.id) % 3;
+    const eaveFirstVertex = roof.positions.length / 3;
     buildFacadeDetails(ctx, points, {
       ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof,
       shutters: building.id % 2 === 0 ? ctx.shutters : null,
+      porton: variant === 0,
+      sparseWindows: variant === 2,
     });
-    if (gable && n <= 6 && building.id % 2 === 0 && Math.abs(signedArea(points)) >= 35 && axis.halfU >= 2) {
-      // La chimenea solo aparece en cubiertas sencillas y cerca del spawn. Se
-      // hunde en la cumbrera para que no flote, sin sobresalir del footprint.
-      const along = Math.min(axis.halfU * 0.22, 1.3);
+    tintVertices(roof, eaveFirstVertex, roofTint);
+    if ((gable || shape === 'hip') && n <= 8 && hash32(building.id) % 2 === 0 &&
+        Math.abs(signedArea(points)) >= 35 && axis.halfU >= 2) {
+      // Chimeneas de ladrillo/piedra en una parte de las casas próximas. La base
+      // se mete en la cumbrera; la posición queda dentro del footprint y la tapa
+      // sobresale lo justo para que la silueta se lea a media distancia.
+      const along = ridgeHalfU > 0.8 ? ridgeHalfU * 0.48 : 0;
       const cx = axis.c[0] + axis.u[0] * along;
       const cz = axis.c[1] + axis.u[1] * along;
       if (distanceToPolygon(points, cx, cz) > 0) return;
       const v: V2 = [-axis.u[1], axis.u[0]];
       const corners: V2[] = [
-        [cx - axis.u[0] * 0.28 - v[0] * 0.24, cz - axis.u[1] * 0.28 - v[1] * 0.24],
-        [cx + axis.u[0] * 0.28 - v[0] * 0.24, cz + axis.u[1] * 0.28 - v[1] * 0.24],
-        [cx + axis.u[0] * 0.28 + v[0] * 0.24, cz + axis.u[1] * 0.28 + v[1] * 0.24],
-        [cx - axis.u[0] * 0.28 + v[0] * 0.24, cz - axis.u[1] * 0.28 + v[1] * 0.24],
+        [cx - axis.u[0] * 0.3 - v[0] * 0.25, cz - axis.u[1] * 0.3 - v[1] * 0.25],
+        [cx + axis.u[0] * 0.3 - v[0] * 0.25, cz + axis.u[1] * 0.3 - v[1] * 0.25],
+        [cx + axis.u[0] * 0.3 + v[0] * 0.25, cz + axis.u[1] * 0.3 + v[1] * 0.25],
+        [cx - axis.u[0] * 0.3 + v[0] * 0.25, cz - axis.u[1] * 0.3 + v[1] * 0.25],
       ];
       if (corners.some((corner) => distanceToPolygon(points, corner[0], corner[1]) > 0)) return;
-      const bottom = topY + rise - 0.35;
-      const top = topY + rise + 0.75;
+      const ridgeY = gable ? topY + rise : topY;
+      const bottom = ridgeY - 0.28;
+      const top = ridgeY + 1.4;
       for (let i = 0; i < 4; i++) {
         const a = corners[i]!;
         const b = corners[(i + 1) % 4]!;
@@ -689,6 +1108,22 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
       }
       pushRoofTriangle(ctx.plinths, [corners[0]![0], top, corners[0]![1]], [corners[1]![0], top, corners[1]![1]], [corners[2]![0], top, corners[2]![1]], axis.c);
       pushRoofTriangle(ctx.plinths, [corners[0]![0], top, corners[0]![1]], [corners[2]![0], top, corners[2]![1]], [corners[3]![0], top, corners[3]![1]], axis.c);
+
+      // Tapa perimetral de piedra para que el conducto no termine como un bloque cortado.
+      const capCorners: V2[] = [
+        [cx - axis.u[0] * 0.37 - v[0] * 0.32, cz - axis.u[1] * 0.37 - v[1] * 0.32],
+        [cx + axis.u[0] * 0.37 - v[0] * 0.32, cz + axis.u[1] * 0.37 - v[1] * 0.32],
+        [cx + axis.u[0] * 0.37 + v[0] * 0.32, cz + axis.u[1] * 0.37 + v[1] * 0.32],
+        [cx - axis.u[0] * 0.37 + v[0] * 0.32, cz - axis.u[1] * 0.37 + v[1] * 0.32],
+      ];
+      const capY = top + 0.12;
+      for (let i = 0; i < 4; i++) {
+        const a = capCorners[i]!;
+        const b = capCorners[(i + 1) % 4]!;
+        pushWallStrip(ctx.plinths, a[0], a[1], b[0], b[1], top, capY, capY, b[1] - a[1], a[0] - b[0]);
+      }
+      pushRoofTriangle(ctx.plinths, [capCorners[0]![0], capY, capCorners[0]![1]], [capCorners[1]![0], capY, capCorners[1]![1]], [capCorners[2]![0], capY, capCorners[2]![1]], axis.c);
+      pushRoofTriangle(ctx.plinths, [capCorners[0]![0], capY, capCorners[0]![1]], [capCorners[2]![0], capY, capCorners[2]![1]], [capCorners[3]![0], capY, capCorners[3]![1]], axis.c);
     }
   }
 }
@@ -705,6 +1140,10 @@ interface FacadeDetailContext {
   readonly baseY: number;
   readonly roof: GroupBuffers;
   readonly shutters: GroupBuffers | null;
+  /** Porton ancho de cuadra en la fachada principal (madera). */
+  readonly porton: boolean;
+  /** Ritmo rural: una sola ventana por planta en lugar de dos. */
+  readonly sparseWindows: boolean;
 }
 
 /**
@@ -715,7 +1154,7 @@ interface FacadeDetailContext {
 function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx: FacadeDetailContext): void {
   const detail = ctx.detail;
   if (!detail) return;
-  const { ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof, shutters } = detailCtx;
+  const { ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof, shutters, porton, sparseWindows } = detailCtx;
   const n = points.length;
   const plinthTop = minY + PLINTH_HEIGHT_M;
 
@@ -793,13 +1232,22 @@ function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx:
     const s = main.len / 2;
     const ground = pointOn(main, s, 0);
     const out = pointOn(main, s, OPENING_OUT_M);
-    // La puerta tapa el zocalo desde el suelo local, con un umbral minimo.
+    // La puerta tapa el zocalo desde el suelo local, con un umbral minimo. El
+    // porton de cuadra es mas ancho y alto y va en madera: se usa SIEMPRE
+    // `ctx.shutters`, que existe para todos los edificios; el `shutters` local
+    // solo salta las contraventanas de ventana en ids impares.
+    const doorWidth = porton ? PORTON_WIDTH_M : DOOR_WIDTH_M;
+    const doorHeight = porton ? PORTON_HEIGHT_M : DOOR_HEIGHT_M;
     const y0 = ctx.heightAt(ground.x, ground.z) + 0.03;
-    const y1 = y0 + DOOR_HEIGHT_M;
+    const y1 = y0 + doorHeight;
     if (y1 <= topAt(main, s) - 0.1 && clear(out.x, out.z)) {
-      const s0 = s - DOOR_WIDTH_M / 2;
-      const s1 = s + DOOR_WIDTH_M / 2;
-      pushFacadeQuad(ctx.details, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, OPENING_OUT_M, s0, s1, y0, y1);
+      const s0 = s - doorWidth / 2;
+      const s1 = s + doorWidth / 2;
+      if (porton) {
+        pushFacadeQuad(ctx.shutters, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, OPENING_OUT_M, s0, s1, y0, y1);
+      } else {
+        pushFacadeQuad(ctx.details, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, OPENING_OUT_M, s0, s1, y0, y1);
+      }
       pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s0 - 0.1, s0 - 0.025, y0, y1 + 0.05);
       pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s1 + 0.025, s1 + 0.1, y0, y1 + 0.05);
       pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz, WINDOW_TRIM_OUT_M, s0 - 0.1, s1 + 0.1, y0 - 0.05, y0 + 0.02);
@@ -858,7 +1306,7 @@ function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx:
   const windowFacades = main ? [main, ...ordered.slice(0, 2)] : ordered.slice(0, 3);
   for (const facade of windowFacades) {
     for (let floor = 0; floor < 3; floor++) {
-      if (facade.len >= 3.2) {
+      if (facade.len >= 3.2 && !sparseWindows) {
         addWindow(facade, facade.len * 0.2, floor);
         addWindow(facade, facade.len * 0.8, floor);
       } else {
@@ -876,10 +1324,23 @@ function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx:
     if (gable && Math.abs(projU[i]! - projU[j]!) <= 0.05 * ridgeSpan) continue;
     const topA = roofY[i]!;
     const topB = roofY[j]!;
-    const oax = facade.ax + facade.ux * EAVE_OVERHANG_M;
-    const oaz = facade.az + facade.uz * EAVE_OVERHANG_M;
-    const obx = facade.bx + facade.ux * EAVE_OVERHANG_M;
-    const obz = facade.bz + facade.uz * EAVE_OVERHANG_M;
+    const overhangM = constrainEaveOverhang(
+      {
+        ax: facade.ax,
+        az: facade.az,
+        bx: facade.bx,
+        bz: facade.bz,
+        nx: facade.ux,
+        nz: facade.uz,
+      },
+      ctx.roadClearance,
+      EAVE_OVERHANG_M,
+      EAVE_ROAD_GAP_M,
+    );
+    const oax = facade.ax + facade.ux * overhangM;
+    const oaz = facade.az + facade.uz * overhangM;
+    const obx = facade.bx + facade.ux * overhangM;
+    const obz = facade.bz + facade.uz * overhangM;
     pushRoofTriangle(roof, [facade.ax, topA, facade.az], [facade.bx, topB, facade.bz], [obx, topB, obz], axis.c);
     pushRoofTriangle(roof, [facade.ax, topA, facade.az], [obx, topB, obz], [oax, topA, oaz], axis.c);
     pushFacadeQuad(
@@ -911,7 +1372,7 @@ function buildYardWalls(
   if (!keepClearAt) return 0;
   const candidates: YardWallCandidate[] = [];
   for (const building of buildings) {
-    if (distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) > DETAIL_RADIUS_M) continue;
+    if (distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) > VILLAGE_DETAIL_RADIUS_M) continue;
     const ccw = signedArea(building.footprint) > 0;
     const facades = building.footprint.flatMap((a, i) => {
       const j = (i + 1) % building.footprint.length;
@@ -1050,10 +1511,12 @@ function createMesh(scene: Scene, name: string, group: GroupBuffers, material: S
   const vertexData = new VertexData();
   vertexData.positions = new Float32Array(group.positions);
   vertexData.normals = new Float32Array(group.normals);
+  vertexData.colors = new Float32Array(group.colors);
   // Uint32 como en las vias: con todos los grupos juntos se pasa de 65.535 vertices.
   vertexData.indices = new Uint32Array(group.indices);
   const mesh = new Mesh(name, scene);
   vertexData.applyToMesh(mesh, false);
+  mesh.useVertexColors = true;
   mesh.material = material;
   mesh.isPickable = false;
   mesh.receiveShadows = true;
@@ -1086,7 +1549,20 @@ export async function loadVillage(
 
   const response = await fetch(url);
   if (!response.ok) throw new Error(`pueblo: no se pudo cargar ${url} (HTTP ${response.status})`);
-  const buildings = parseBuildings((await response.json()) as unknown);
+  let buildings = parseBuildings((await response.json()) as unknown);
+  let lidarAdjustedBuildings = 0;
+  try {
+    const grid = await loadBuildingHeightGrid(options.buildingHeightGridUrl ?? DEFAULT_BUILDING_HEIGHT_GRID_URL);
+    buildings = buildings.map((building) => {
+      const measuredHeightM = lidarWallHeightM(building, grid, terrain.config);
+      if (measuredHeightM === null) return building;
+      lidarAdjustedBuildings++;
+      return { ...building, heightM: measuredHeightM, heightSource: 'lidar' };
+    });
+  } catch (error) {
+    console.warn('[pueblo] sin alturas LiDAR IGN; se conservan alturas OSM', error);
+  }
+  const lidarFallbackBuildings = buildings.length - lidarAdjustedBuildings;
 
   // Dominio real del terreno: `terrain.heightAt` fuera de la ventana devuelve 0
   // (absoluto - datum) y clavaria una casa 870 m bajo tierra. El build ya descarta
@@ -1106,6 +1582,34 @@ export async function loadVillage(
   const heightAt = (x: number, z: number): number =>
     terrain.heightAt(clamp(x, minX, maxX), clamp(z, minZ, maxZ));
 
+  // Evita que el terreno tape el alero de casas cuya altura sigue siendo una
+  // estimación OSM. Las alturas LiDAR y `height` explícita permanecen intactas.
+  let roofLiftedBuildings = 0;
+  let maxRoofLiftM = 0;
+  let roofLiftCapped = 0;
+  buildings = buildings.map((building) => {
+    if (building.heightSource === 'lidar' || building.heightSource === 'height') return building;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const [x, z] of building.footprint) {
+      const y = heightAt(x, z);
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const requiredLift = maxY + ROOF_CLEARANCE_M - (minY + building.heightM);
+    if (requiredLift <= 1e-6) return building;
+    const lift = Math.min(requiredLift, ROOF_MAX_LIFT_M);
+    if (requiredLift > ROOF_MAX_LIFT_M) roofLiftCapped++;
+    roofLiftedBuildings++;
+    maxRoofLiftM = Math.max(maxRoofLiftM, lift);
+    return { ...building, heightM: building.heightM + lift };
+  });
+  if (roofLiftCapped > 0) {
+    console.warn(
+      `[pueblo] ${roofLiftCapped} cubiertas estimadas superan el tope de elevación (${ROOF_MAX_LIFT_M} m)`,
+    );
+  }
+
   const bodies = emptyGroups(BODY_KINDS);
   const roofs = emptyGroups(ROOF_KINDS);
   const details = emptyGroup();
@@ -1120,7 +1624,7 @@ export async function loadVillage(
     plinths,
     shutters,
     detail: keepClearAt
-      ? { x: keepClearAt.x, z: keepClearAt.z, radiusM: DETAIL_RADIUS_M, clearRadiusM: keepClearRadiusM }
+      ? { x: keepClearAt.x, z: keepClearAt.z, radiusM: VILLAGE_DETAIL_RADIUS_M, clearRadiusM: keepClearRadiusM }
       : null,
   };
 
@@ -1129,6 +1633,7 @@ export async function loadVillage(
   let tallestM = 0;
   let rendered = 0;
   let detailedBuildings = 0;
+  const streetPoles = buildStreetFurniture(ctx);
   for (const building of buildings) {
     if (keepClearAt && distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) < keepClearRadiusM) {
       droppedAtSpawn++;
@@ -1199,12 +1704,20 @@ export async function loadVillage(
     droppedAtSpawn,
     detailedBuildings,
     courtyardWalls,
+    lidarAdjustedBuildings,
+    lidarFallbackBuildings,
+    roofLiftedBuildings,
+    maxRoofLiftM,
+    streetPoles,
   };
 
   console.info(
     `[pueblo] ${stats.buildings} edificios · ${stats.meshes} mallas · ${stats.triangles} triángulos · ` +
       `${stats.footprintAreaM2} m² · más alto ${stats.tallestM} m · ${stats.droppedAtSpawn} descartados en el spawn · ` +
-      `${stats.detailedBuildings} con detalle · ${stats.courtyardWalls} tapias de patio`,
+      `${stats.detailedBuildings} con detalle · ${stats.courtyardWalls} tapias · ` +
+      `${stats.lidarAdjustedBuildings}/${stats.buildings} alturas LiDAR IGN · ` +
+      `${stats.roofLiftedBuildings} cubiertas elevadas (máx ${stats.maxRoofLiftM.toFixed(2)} m) · ` +
+      `${stats.streetPoles} postes de calle`,
   );
 
   return {

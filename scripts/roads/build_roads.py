@@ -40,7 +40,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pyproj import Transformer
-from shapely.geometry import LineString, Polygon, box
+from shapely.geometry import LineString, Point, Polygon, box
+from shapely.strtree import STRtree
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = ROOT / "data" / "roads" / "raw"
@@ -102,6 +103,27 @@ PATH_SPEED_FACTOR = 0.10
 # Desempate cuando dos ways comparten exactamente un tramo de geometria.
 PRIORITY = {"ROAD": 0, "TRACK": 1, "PATH": 2}
 
+# --- Banda renderizada vs huellas de edificios (H-000008) -------------------
+# El renderer dibuja la calzada (width/2 por lado) mas, en ROAD sin puente, un
+# faldon de SKIRT_WIDTH_M. Invasiones de huellas no se pueden juzgar con la
+# linea central: hay que medir la banda exterior completa. Para no invadir
+# huellas se publica un perfil de semiancho exterior ASIMETRICO por estacion
+# (bandLeft/bandRight), recortado contra las huellas. Se busca la holgura
+# CLEARANCE_MARGIN_M donde el ancho minimo legible lo permite; no es garantizada.
+CLEARANCE_PROFILE_STEP_M = 1.0  # paso del perfil a lo largo de la via (m)
+CLEARANCE_MARGIN_M = 0.30  # holgura preferida si el ancho visible lo permite (m)
+CLEARANCE_MIN_FILTER_RADIUS = 1  # minimo movil en muestras (±1 m con paso 1 m)
+# El renderer interpola el perfil entre DOS estaciones consecutivas resampleadas
+# y esa interpolacion podria recuperar ancho. La garantia NO es analitica: la
+# pasada `refine_profile` comprueba los triangulos EXACTOS del renderer sobre su
+# mismo resample (segmento a segmento, `ceil(len/step)`), asi que
+# CLEARANCE_RENDER_STEP_M fija la subdivision que el validador debe reproducir.
+CLEARANCE_RENDER_STEP_M = 1.0  # <= RENDER_SUBDIVISION_M; DEBE coincidir con el renderer
+RENDER_SUBDIVISION_M = 2.5  # DEBE coincidir con DRAPING.subdivisionM
+SKIRT_WIDTH_M = 0.6  # DEBE coincidir con DRAPING.skirtWidthM
+CLEARANCE_VISUAL_MIN_HALF_M = 0.5  # por debajo de esto la calzada es un hilo
+CLEARANCE_NEAR_SPAWN_M = 300.0  # radio del informe "cerca del arranque"
+
 
 # --------------------------------------------------------------------------
 # Geometria
@@ -125,6 +147,12 @@ def clamp_world(p) -> tuple[float, float]:
 
 def polyline_length(pts) -> float:
     return sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts, pts[1:]))
+
+
+def canonical_sha256(obj) -> str:
+    """sha256 del JSON canonico (claves ordenadas, sin espacios)."""
+    blob = json.dumps(obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(blob).hexdigest()
 
 
 def dedupe(pts):
@@ -336,6 +364,429 @@ def simplify_protected(pts, protected: set[int], tol: float):
                 continue
             out.append(p)
     return dedupe(out)
+
+
+# --------------------------------------------------------------------------
+# Banda renderizada vs huellas (perfil asimetrico por estacion)
+# --------------------------------------------------------------------------
+def outer_half_width(road: dict) -> float:
+    """Semiancho exterior de la banda renderizada (calzada + faldon)."""
+    skirt = SKIRT_WIDTH_M if (road["class"] == "ROAD" and not road["bridge"]) else 0.0
+    return road["width"] / 2.0 + skirt
+
+
+def band_from_clearance(outer: float, raw_distance: float) -> float:
+    """Semiancho exterior objetivo dado el hueco real hasta la fachada.
+
+    Se busca `raw_distance - CLEARANCE_MARGIN_M`, pero el minimo visual tiene
+    preferencia si la fachada deja algo de espacio. En huecos mas estrechos se
+    acorta hasta la distancia REAL disponible: el margen es preferido, no una
+    garantia. La pasada exacta de triangulos impide que la banda cruce huellas.
+    """
+    safe = min(outer, raw_distance)
+    preferred = min(safe, max(0.0, raw_distance - CLEARANCE_MARGIN_M))
+    floored = min(safe, CLEARANCE_VISUAL_MIN_HALF_M)
+    return max(preferred, floored)
+
+
+def arc_samples(
+    points: list, step: float
+) -> list[tuple[float, float, float, float, float]]:
+    """Muestrea la polilinea cada <= step m.
+
+    Devuelve [(x, z, t, nx, nz)] con t = distancia acumulada desde el inicio y
+    (nx, nz) la normal unitaria izquierda en t (promedio de vecinos, igual que
+    el renderer). Incluye inicio y fin.
+    """
+    cum = [0.0]
+    for a, b in zip(points, points[1:]):
+        cum.append(cum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    length = cum[-1]
+    if length <= 0 or len(points) < 2:
+        return []
+    n = int(math.floor(length / step + 1e-9))
+    ts = [i * step for i in range(n + 1)]
+    if ts[-1] < length - 1e-9:
+        ts.append(length)
+    seg = 0
+    raw: list[tuple[float, float, float]] = []
+    for t in ts:
+        while seg < len(cum) - 2 and cum[seg + 1] < t:
+            seg += 1
+        a, b = points[seg], points[seg + 1]
+        seg_len = cum[seg + 1] - cum[seg]
+        f = 0.0 if seg_len <= 0 else min(1.0, max(0.0, (t - cum[seg]) / seg_len))
+        raw.append((a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, t))
+    out = []
+    for i, (x, z, t) in enumerate(raw):
+        prev = raw[max(0, i - 1)]
+        nxt = raw[min(len(raw) - 1, i + 1)]
+        dx, dz = nxt[0] - prev[0], nxt[1] - prev[1]
+        dist = math.hypot(dx, dz)
+        if dist < 1e-9:
+            nx, nz = 0.0, 0.0
+        else:
+            nx, nz = -dz / dist, dx / dist
+        out.append((x, z, t, nx, nz))
+    return out
+
+
+def render_stations(points: list, max_step: float) -> list[tuple[float, float, float]]:
+    """Reproduce EXACTAMENTE `resamplePolyline` de src/road-draping.ts.
+
+    Subdivide cada tramo OSM en `ceil(len/max_step)` pasos IGUALES (no una grilla
+    uniforme desde el inicio) y conserva los vertices originales. El perfil de
+    recorte y su validacion deben usar esta misma lista o la comprobacion no
+    corresponde a lo que dibuja el renderer.
+    """
+    out: list[tuple[float, float, float]] = []
+    total = 0.0
+
+    def push(x: float, z: float, t: float) -> None:
+        if out and abs(out[-1][0] - x) < 1e-6 and abs(out[-1][1] - z) < 1e-6:
+            return
+        out.append((x, z, t))
+
+    push(points[0][0], points[0][1], 0.0)
+    for i in range(1, len(points)):
+        ax, az = points[i - 1][0], points[i - 1][1]
+        bx, bz = points[i][0], points[i][1]
+        seg = math.hypot(bx - ax, bz - az)
+        if seg < 1e-9:
+            continue
+        steps = max(1, math.ceil(seg / max_step))
+        for k in range(1, steps + 1):
+            f = k / steps
+            push(ax + (bx - ax) * f, az + (bz - az) * f, total + seg * f)
+        total += seg
+    return out
+
+
+def with_normals(
+    stations: list[tuple[float, float, float]],
+) -> list[tuple[float, float, float, float, float]]:
+    """Normal izquierda por estacion (promedio de vecinos, igual que el renderer)."""
+    n = len(stations)
+    out = []
+    for i, (x, z, t) in enumerate(stations):
+        prev = stations[max(0, i - 1)]
+        nxt = stations[min(n - 1, i + 1)]
+        dx, dz = nxt[0] - prev[0], nxt[1] - prev[1]
+        dist = math.hypot(dx, dz)
+        if dist < 1e-9:
+            nx, nz = 0.0, 0.0
+        else:
+            nx, nz = -dz / dist, dx / dist
+        out.append((x, z, t, nx, nz))
+    return out
+
+
+def render_half_widths(road: dict, arrays: dict | None, stations: list) -> list:
+    """(hl, hr) por estacion: perfil publicado o ancho de diseno constante."""
+    outer = outer_half_width(road)
+    widths = []
+    for _x, _z, t, _nx, _nz in stations:
+        if arrays is not None:
+            hl, hr = profile_at(arrays, t)
+        else:
+            hl = hr = outer
+        widths.append((hl, hr))
+    return widths
+
+
+def min_filter(values: list[float], radius: int) -> list[float]:
+    """Minimo movil (conservador) para cubrir el hueco entre muestras."""
+    if radius <= 0:
+        return list(values)
+    out = []
+    for i in range(len(values)):
+        lo, hi = max(0, i - radius), min(len(values), i + radius + 1)
+        out.append(min(values[lo:hi]))
+    return out
+
+
+def profile_at(arrays: dict, t: float) -> tuple[float, float]:
+    """Interpola (bandLeft, bandRight) por distancia acumulada."""
+    step = arrays["stepM"]
+    left, right = arrays["bandLeft"], arrays["bandRight"]
+    last = len(left) - 1
+    pos = max(0.0, t) / step
+    i0 = int(math.floor(pos))
+    if i0 >= last:
+        return left[last], right[last]
+    f = pos - i0
+    return (
+        left[i0] * (1 - f) + left[i0 + 1] * f,
+        right[i0] * (1 - f) + right[i0 + 1] * f,
+    )
+
+
+def clearance_profile(road: dict, tree, polys: list) -> dict | None:
+    """Recorta el semiancho exterior por lado contra las huellas.
+
+    Para cada estacion se mide la distancia al borde mas cercano de la huella y
+    se busca dejar CLEARANCE_MARGIN_M, si el minimo visual lo permite. El margen
+    es preferente, no garantizado. Un minimo movil suaviza el perfil y
+    `refine_profile` comprueba los triangulos EXACTOS del renderer (mismo
+    resample, paso CLEARANCE_RENDER_STEP_M) y solo puede REDUCIR. Devuelve None
+    si la via no necesita recorte.
+    """
+    outer = outer_half_width(road)
+    if outer <= 0 or tree is None:
+        return None
+    samples = arc_samples(road["points"], CLEARANCE_PROFILE_STEP_M)
+    if len(samples) < 2:
+        return None
+    dist_left = [math.inf] * len(samples)
+    dist_right = [math.inf] * len(samples)
+    for i, (x, z, _t, nx, nz) in enumerate(samples):
+        start = Point(x, z)
+        for j in tree.query(start.buffer(outer)):
+            boundary = polys[int(j)].exterior
+            nearest = boundary.interpolate(boundary.project(start))
+            vx, vy = nearest.x - x, nearest.y - z
+            side = vx * nx + vy * nz
+            d = math.hypot(vx, vy)
+            if side >= 0:
+                dist_left[i] = min(dist_left[i], d)
+            else:
+                dist_right[i] = min(dist_right[i], d)
+    left = [
+        outer if not math.isfinite(d) else band_from_clearance(outer, d)
+        for d in dist_left
+    ]
+    right = [
+        outer if not math.isfinite(d) else band_from_clearance(outer, d)
+        for d in dist_right
+    ]
+    left = min_filter(left, CLEARANCE_MIN_FILTER_RADIUS)
+    right = min_filter(right, CLEARANCE_MIN_FILTER_RADIUS)
+    safe_left, safe_right = list(left), list(right)
+    left, right = refine_profile(road, left, right, tree, polys)
+    if not (
+        any(v < outer - 1e-6 for v in left) or any(v < outer - 1e-6 for v in right)
+    ):
+        return None
+    skirt = SKIRT_WIDTH_M if (road["class"] == "ROAD" and not road["bridge"]) else 0.0
+    return {
+        "stepM": CLEARANCE_PROFILE_STEP_M,
+        "renderStepM": CLEARANCE_RENDER_STEP_M,
+        "skirtM": round(skirt, 2),
+        "outer": outer,
+        "left": left,
+        "right": right,
+        "samples": samples,
+        "arrays": {
+            "stepM": CLEARANCE_PROFILE_STEP_M,
+            "bandLeft": left,
+            "bandRight": right,
+        },
+        "hidden": hidden_stretches(road, left, right, safe_left, safe_right, samples),
+    }
+
+
+def band_triangles(road: dict, use_profile: bool) -> list:
+    """Triangulos de la banda exterior, como los dibuja el renderer.
+
+    Usa el resample REAL (`render_stations`) con el mismo paso que el renderer
+    (perfil: `renderStepM`; diseno: `RENDER_SUBDIVISION_M`). Cada tramo se emite
+    como dos triangulos (igual que la malla); modelarlo asi evita cuadrilateros
+    autointersecados (invalidos para GEOS) y mide la geometria real.
+    """
+    arrays = road.get("clearance") if use_profile else None
+    step = arrays["renderStepM"] if arrays is not None else RENDER_SUBDIVISION_M
+    stations = with_normals(render_stations(road["points"], step))
+    if len(stations) < 2:
+        return []
+    widths = render_half_widths(road, arrays, stations)
+    triangles = []
+    for i in range(len(stations) - 1):
+        hl0, hr0 = widths[i]
+        hl1, hr1 = widths[i + 1]
+        ring = quad_ring(stations, i, hl0, hr0, hl1, hr1)
+        if ring is None:
+            continue
+        for a, b, c in ((0, 1, 2), (0, 2, 3)):
+            tri = Polygon([ring[a], ring[b], ring[c]])
+            if tri.is_valid and tri.area > 1e-12:
+                triangles.append((tri, [stations[i][0], stations[i][1]]))
+    return triangles
+
+
+def quad_ring(samples: list, i: int, hl0: float, hr0: float, hl1: float, hr1: float):
+    """Anillo de la banda entre dos estaciones (o None si degenera)."""
+    x0, z0, _t0, nx0, nz0 = samples[i]
+    x1, z1, _t1, nx1, nz1 = samples[i + 1]
+    ring = [
+        (x0 + nx0 * hl0, z0 + nz0 * hl0),
+        (x0 - nx0 * hr0, z0 - nz0 * hr0),
+        (x1 - nx1 * hr1, z1 - nz1 * hr1),
+        (x1 + nx1 * hl1, z1 + nz1 * hl1),
+    ]
+    if len(set(ring)) < 4:
+        return None
+    return ring
+
+
+def refine_profile(road: dict, left: list, right: list, tree, polys: list):
+    """Reduce el perfil hasta que la banda no toque las huellas.
+
+    La cota perpendicular no ve esquinas oblicuas ni el resample segmento a
+    segmento del renderer. Esta pasada reproduce ese resample y comprueba los
+    triangulos EXACTOS; cuando uno invade, encoge los indices del perfil que la
+    interpolacion usa en ese tramo (los de `floor(t/step)` y `+1`), sin volver a
+    aplicar el minimo movil global, que re-expandiria. Converge porque el
+    semiancho solo decrece y una banda degenerada deja de producir triangulos.
+    """
+    step = CLEARANCE_PROFILE_STEP_M
+    stations = with_normals(render_stations(road["points"], CLEARANCE_RENDER_STEP_M))
+    if len(stations) < 2:
+        return left, right
+    arrays = {"stepM": step, "bandLeft": left, "bandRight": right}
+    last = len(left) - 1
+    for _ in range(4000):
+        offenders: dict[tuple[int, bool], None] = {}
+        for i in range(len(stations) - 1):
+            hl0, hr0 = profile_at(arrays, stations[i][2])
+            hl1, hr1 = profile_at(arrays, stations[i + 1][2])
+            ring = quad_ring(stations, i, hl0, hr0, hl1, hr1)
+            if ring is None:
+                continue
+            for a, b, c in ((0, 1, 2), (0, 2, 3)):
+                tri = Polygon([ring[a], ring[b], ring[c]])
+                if not tri.is_valid or tri.area <= 1e-12:
+                    continue
+                for j in tree.query(tri):
+                    inter = tri.intersection(polys[int(j)])
+                    if inter.is_empty or inter.area <= 1e-9:
+                        continue
+                    x, z, _t, nx, nz = stations[i]
+                    on_left = (inter.centroid.x - x) * nx + (
+                        inter.centroid.y - z
+                    ) * nz >= 0
+                    offenders[(i, on_left)] = None
+        if not offenders:
+            break
+        changed = False
+        for i, on_left in offenders:
+            k0 = max(0, int(math.floor(stations[i][2] / step)))
+            k1 = min(last, int(math.floor(stations[i + 1][2] / step)) + 1)
+            target = left if on_left else right
+            for k in range(k0, k1 + 1):
+                value = max(0.0, target[k] - 0.10)
+                if value < target[k] - 1e-12:
+                    target[k] = value
+                    changed = True
+        if not changed:
+            break
+    return left, right
+
+
+def hidden_stretches(
+    road: dict,
+    left: list,
+    right: list,
+    safe_left: list,
+    safe_right: list,
+    samples: list,
+) -> list[dict]:
+    """Tramos con banda CERO. No se dejan ocultos: se listan y clasifican.
+
+    `holgura`: el eje cae dentro de la huella. `refinado`: el ray-cast inicial
+    permitia banda, pero la comprobacion de los triangulos exactos del renderer
+    la redujo a cero para evitar una intrusión en una esquina/curva.
+    """
+    out = []
+    for side, arr, safe in (("left", left, safe_left), ("right", right, safe_right)):
+        i = 0
+        n = len(arr)
+        while i < n:
+            if arr[i] > 1e-9:
+                i += 1
+                continue
+            j = i
+            while j < n and arr[j] <= 1e-9:
+                j += 1
+            holgura = sum(1 for k in range(i, j) if safe[k] <= 1e-9)
+            # `safe` is the profile after ray casting and the continuity
+            # filter. If it still had width but the exact rendered triangles
+            # forced this station to zero, the triangle refinement was
+            # necessary; calling it an interpolation artifact was misleading.
+            reason = "holgura" if holgura * 2 >= (j - i) else "refinado"
+            t0 = samples[i][2]
+            t1 = samples[j - 1][2]
+            out.append(
+                {
+                    "road": road["id"],
+                    "class": road["class"],
+                    "side": side,
+                    "t0_m": round(t0, 2),
+                    "t1_m": round(t1, 2),
+                    "length_m": round(t1 - t0, 2),
+                    "stations": j - i,
+                    "holgura_stations": holgura,
+                    "refinado_stations": (j - i) - holgura,
+                    "reason": reason,
+                }
+            )
+            i = j
+    return out
+
+
+def overlap_report(
+    roads: list[dict], tree, polys: list, ids: list, use_profile: bool
+) -> dict:
+    """Pares (via, edificio) cuya banda exterior pisa una huella SIN buffer.
+
+    Antes del recorte mide el ancho de diseno; despues, el perfil publicado y
+    con el mismo paso de estaciones que usara el renderer. Devuelve conteos por
+    clase, totales y el subconjunto a <= CLEARANCE_NEAR_SPAWN_M del arranque.
+    """
+    pairs: set[tuple[str, object]] = set()
+    by_class: dict[str, int] = defaultdict(int)
+    pairs_near = 0
+    worst: list[dict] = []
+    for road in roads:
+        if tree is None or not len(
+            tree.query(LineString([tuple(p) for p in road["points"]]))
+        ):
+            continue
+        for poly, origin in band_triangles(road, use_profile):
+            if poly.is_empty or poly.area <= 1e-9:
+                continue
+            for j in tree.query(poly):
+                j = int(j)
+                inter = poly.intersection(polys[j])
+                if inter.is_empty or inter.area <= 1e-6:
+                    continue
+                key = (road["id"], ids[j])
+                if key in pairs:
+                    continue
+                pairs.add(key)
+                by_class[road["class"]] += 1
+                if (
+                    math.hypot(origin[0] - SPAWN[0], origin[1] - SPAWN[1])
+                    <= CLEARANCE_NEAR_SPAWN_M
+                ):
+                    pairs_near += 1
+                if len(worst) < 12:
+                    worst.append(
+                        {
+                            "road": road["id"],
+                            "class": road["class"],
+                            "building": ids[j],
+                            "overlap_m2": round(inter.area, 3),
+                            "x": round(origin[0], 2),
+                            "z": round(origin[1], 2),
+                        }
+                    )
+    return {
+        "pairs": len(pairs),
+        "buildings": len({b for _r, b in pairs}),
+        "by_class": {c: by_class[c] for c in ("ROAD", "TRACK", "PATH") if by_class[c]},
+        "pairs_within_%dm_of_spawn" % int(CLEARANCE_NEAR_SPAWN_M): pairs_near,
+        "sample": worst,
+    }
 
 
 # --------------------------------------------------------------------------
@@ -581,6 +1032,12 @@ def main() -> None:
         (building["id"], Polygon(building["footprint"]))
         for building in buildings_doc["buildings"]
     ]
+    # Huellas CRUDAS para recortar y validar. CLEARANCE_MARGIN_M es una
+    # preferencia de ancho: band_from_clearance la aplica donde cabe junto al
+    # minimo visual; el despeje de triángulos contra la huella sí es obligatorio.
+    clearance_ids = [bid for bid, _poly in building_footprints]
+    raw_polys = [poly for _bid, poly in building_footprints]
+    raw_tree = STRtree(raw_polys) if raw_polys else None
     elements = payload.get("elements", [])
     to_world = make_projector()
 
@@ -731,6 +1188,139 @@ def main() -> None:
     for recs in parts_by_way.values():
         for i, rec in enumerate(recs):
             roads.append(make_road(rec, i, len(recs)))
+
+    # -------- banda renderizada vs huellas (H-000008) ----------------------
+    # ANTES: ancho de diseno (width/2 + faldon) contra huellas SIN buffer.
+    # RECORTE: hueco REAL hasta la fachada (sin buffer) + holgura preferente +
+    #          refinado contra los triangulos EXACTOS del renderer (resample real).
+    # DESPUES: perfil publicado con el mismo resample del renderer.
+    # No se toca "points": la geometria de navegacion y el eje central quedan
+    # intactos; solo cambia el semiancho dibujado por estacion.
+    before_report = overlap_report(
+        roads, raw_tree, raw_polys, clearance_ids, use_profile=False
+    )
+
+    clamped_roads = 0
+    clamped_by_class: Counter = Counter()
+    degraded_stations = 0  # pavement < minimo visual pero > 0
+    degraded_sample: list[dict] = []
+    hidden_runs: list[dict] = []
+    hidden_stations = 0
+    hidden_holgura_stations = 0
+    hidden_refined_stations = 0
+    hidden_roads: set[str] = set()
+    fully_zero_roads: list[str] = []
+    min_pavement_half = float("inf")
+
+    def published(v: float) -> float:
+        """Redondeo HACIA ABAJO a mm: publicar nunca re-expande la banda."""
+        return math.floor(v * 1000.0 + 1e-9) / 1000.0
+
+    for road in roads:
+        prof = clearance_profile(road, raw_tree, raw_polys)
+        if prof is None:
+            continue
+        outer = prof["outer"]
+        half = road["width"] / 2.0
+        skirt = prof["skirtM"]
+        clamped_roads += 1
+        clamped_by_class[road["class"]] += 1
+        for side, arr in (("left", prof["left"]), ("right", prof["right"])):
+            for i, v in enumerate(arr):
+                if v >= outer - 1e-6:
+                    continue
+                pavement_half = max(0.0, min(half, v - skirt))
+                min_pavement_half = min(min_pavement_half, pavement_half)
+                sx, sz, st = (
+                    prof["samples"][i][0],
+                    prof["samples"][i][1],
+                    prof["samples"][i][2],
+                )
+                if v > 1e-9 and pavement_half < CLEARANCE_VISUAL_MIN_HALF_M:
+                    degraded_stations += 1
+                    if len(degraded_sample) < 12:
+                        degraded_sample.append(
+                            {
+                                "road": road["id"],
+                                "class": road["class"],
+                                "side": side,
+                                "t_m": round(st, 2),
+                                "band_half_m": round(v, 2),
+                                "pavement_half_m": round(pavement_half, 2),
+                                "visual_min_half_m": CLEARANCE_VISUAL_MIN_HALF_M,
+                                "x": round(sx, 2),
+                                "z": round(sz, 2),
+                            }
+                        )
+        for run in prof["hidden"]:
+            hidden_runs.append(run)
+            hidden_stations += run["stations"]
+            hidden_holgura_stations += run["holgura_stations"]
+            hidden_refined_stations += run["refinado_stations"]
+            hidden_roads.add(road["id"])
+        if all(
+            v <= 1e-9
+            for _side, arr in (("left", prof["left"]), ("right", prof["right"]))
+            for v in arr
+        ):
+            fully_zero_roads.append(road["id"])
+        road["clearance"] = {
+            "stepM": prof["stepM"],
+            "renderStepM": CLEARANCE_RENDER_STEP_M,
+            "skirtM": round(skirt, 2),
+            "bandLeft": [published(v) for v in prof["left"]],
+            "bandRight": [published(v) for v in prof["right"]],
+        }
+
+    after_report = overlap_report(
+        roads, raw_tree, raw_polys, clearance_ids, use_profile=True
+    )
+    clearance_stats = {
+        "model": (
+            "semiancho exterior asimetrico por estacion; ray-cast contra huellas "
+            "sin buffer; clearance_margin_m preferido si el minimo visual cabe; "
+            "minimo movil de "
+            "+-min_filter_radius_m; refinado contra los triangulos EXACTOS del "
+            "renderer (resample real) y redondeo conservador hacia abajo; la "
+            "banda incluye el faldon de ROAD"
+        ),
+        "profile_step_m": CLEARANCE_PROFILE_STEP_M,
+        "min_filter_radius_m": CLEARANCE_MIN_FILTER_RADIUS * CLEARANCE_PROFILE_STEP_M,
+        "clearance_margin_m": CLEARANCE_MARGIN_M,
+        "skirt_width_m": SKIRT_WIDTH_M,
+        "render_subdivision_m": RENDER_SUBDIVISION_M,
+        "render_step_clamped_m": CLEARANCE_RENDER_STEP_M,
+        "visual_min_pavement_half_m": CLEARANCE_VISUAL_MIN_HALF_M,
+        "published_precision_m": 0.001,
+        "before": before_report,
+        "after": after_report,
+        "clamped_roads": clamped_roads,
+        "clamped_roads_by_class": {
+            c: clamped_by_class[c]
+            for c in ("ROAD", "TRACK", "PATH")
+            if clamped_by_class[c]
+        },
+        "degraded_stations_below_visual_min": degraded_stations,
+        "degraded_sample": degraded_sample,
+        "min_pavement_half_m": round(
+            0.0 if min_pavement_half == float("inf") else min_pavement_half, 3
+        ),
+        "hidden_stations": hidden_stations,
+        "hidden_holgura_stations": hidden_holgura_stations,
+        "hidden_refinado_stations": hidden_refined_stations,
+        "hidden_roads": sorted(hidden_roads),
+        "roads_fully_zero_band": sorted(fully_zero_roads),
+        "hidden_runs": hidden_runs,
+        "note": (
+            "bandLeft/bandRight son el semiancho EXTERIOR total (calzada+faldon) publicado "
+            "por via recortada; el renderer deriva calzada y faldon, subdivide al "
+            "render_step_clamped_m publicado y no recupera ancho entre estaciones. "
+            "`after` mide el perfil publicado con el resample REAL del renderer contra "
+            "huellas SIN buffer: 0 invasiones. Las estaciones con banda CERO no se "
+            "ocultan: quedan en hidden_runs, clasificadas como `holgura` (eje dentro del "
+            "margen) o `refinado` (la comprobacion exacta de triangulos redujo la banda a cero)."
+        ),
+    }
 
     # grafo diagnostico: ademas de las del juego, las excluidas SOLO por acceso
     diag_by_way: dict[int, list[dict]] = defaultdict(list)
@@ -1043,6 +1633,13 @@ def main() -> None:
                 "note": "km de la ventana que el bbox viejo NO cubria",
             },
         },
+        "footprint_clearance": clearance_stats,
+        "hashes": {
+            "roads_sha256": canonical_sha256(roads),
+            "navigation_nodes_sha256": canonical_sha256(graph["nodes"]),
+            "navigation_edges_sha256": canonical_sha256(graph["edges"]),
+            "note": "sha256 del JSON canonico; reproducible entre corridas (no depende de generated_at_utc)",
+        },
     }
 
     # -------- escritura ----------------------------------------------------
@@ -1067,6 +1664,13 @@ def main() -> None:
                 "speedFactor": "multiplicador de velocidad (diseno de gameplay)",
                 "points": "[[worldX, worldZ], ...] metros, origen sudoeste",
                 "tags": "tags OSM crudos completos",
+                "clearance": (
+                    "opcional; presente solo si la banda renderizada se recorto cerca de una "
+                    "huella. {stepM, renderStepM, skirtM, bandLeft[], bandRight[]} = semiancho "
+                    "EXTERIOR total (calzada+faldon) por estacion, en metros, lado izquierdo y "
+                    "derecho. El renderer interpola por distancia, subdivide a renderStepM y "
+                    "deriva calzada y faldon. Ausente = ancho de diseno constante (width/2)."
+                ),
             },
         },
         "roads": roads,
@@ -1118,6 +1722,15 @@ def main() -> None:
           f"({conn_all['track_pct_reached']}%) | SOLO RODABLES {conn_drive['track_reached_km']} km "
           f"({conn_drive['track_pct_reached']}%)")
     print(f"TRACK inalcanzable : {unreachable['track_km_unreachable_by_cause']}")
+    print(
+        f"huellas banda      : antes {before_report['pairs']} pares / {before_report['buildings']} "
+        f"edificios -> despues {after_report['pairs']} / {after_report['buildings']} "
+        f"(recortadas {clamped_roads} vias; banda cero {hidden_stations} estaciones en "
+        f"{len(hidden_roads)} vias [holgura {hidden_holgura_stations}, "
+        f"refinado {hidden_refined_stations}]; min calzada "
+        f"{clearance_stats['min_pavement_half_m']} m; vias ancho 0 "
+        f"{len(fully_zero_roads)})"
+    )
     if audit is not None:
         print(f"auditoria buffer   : coverage_ok={audit['coverage_ok']} "
               f"(solo_en_audit={audit['ways_only_in_audit']}, "

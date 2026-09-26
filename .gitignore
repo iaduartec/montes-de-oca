@@ -17,3 +17,7 @@ orchestration/logs/*.exit
 
 # Config de agentes que NO se usa en este proyecto (Codex/GPT esta prohibido aca).
 .codex/
+
+# Artefactos locales de herramientas (no son parte del proyecto)
+__pycache__/
+.playwright-cli/

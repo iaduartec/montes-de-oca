@@ -63,6 +63,95 @@ def segment_crosses_footprint(a: list[float], b: list[float], ring: list[list[fl
     return any(proper_segments_cross(a, b, c, d)
                for c, d in zip(ring, ring[1:] + ring[:1]))
 
+# --- Banda dibujada (clearance): mismos primitivos, sin dependencias nuevas --
+RENDER_SUBDIVISION_M = 2.5  # DEBE coincidir con DRAPING.subdivisionM
+ZERO_EPS = 1e-9
+
+
+def render_stations(points, max_step):
+    """Replica `resamplePolyline` del renderer: por tramo, ceil(len/maxStep).
+
+    Conserva los vertices originales y acumula `t` (distancia desde el inicio).
+    """
+    out = []
+    total = 0.0
+
+    def push(x, z, t):
+        if out and abs(out[-1][0] - x) < 1e-6 and abs(out[-1][1] - z) < 1e-6:
+            return
+        out.append((x, z, t))
+
+    if len(points) < 2 or max_step <= 0:
+        return out
+    push(points[0][0], points[0][1], 0.0)
+    for i in range(1, len(points)):
+        ax, az = points[i - 1][0], points[i - 1][1]
+        bx, bz = points[i][0], points[i][1]
+        seg = math.hypot(bx - ax, bz - az)
+        if seg < 1e-9:
+            continue
+        steps = max(1, math.ceil(seg / max_step))
+        for k in range(1, steps + 1):
+            f = k / steps
+            push(ax + (bx - ax) * f, az + (bz - az) * f, total + seg * f)
+        total += seg
+    return out
+
+
+def station_normals(stations):
+    """Normal izquierda por estacion (promedio de vecinos, igual que el renderer)."""
+    n = len(stations)
+    out = []
+    for i, (x, z, t) in enumerate(stations):
+        prev = stations[max(0, i - 1)]
+        nxt = stations[min(n - 1, i + 1)]
+        dx, dz = nxt[0] - prev[0], nxt[1] - prev[1]
+        dist = math.hypot(dx, dz)
+        if dist < 1e-9:
+            nx, nz = 0.0, 0.0
+        else:
+            nx, nz = -dz / dist, dx / dist
+        out.append((x, z, t, nx, nz))
+    return out
+
+
+def profile_at(arrays, t):
+    """Interpola (bandLeft, bandRight) por distancia acumulada."""
+    step = arrays["stepM"]
+    left, right = arrays["bandLeft"], arrays["bandRight"]
+    last = len(left) - 1
+    pos = max(0.0, t) / step
+    i0 = int(math.floor(pos))
+    if i0 >= last:
+        return left[last], right[last]
+    f = pos - i0
+    return (left[i0] * (1 - f) + left[i0 + 1] * f,
+            right[i0] * (1 - f) + right[i0 + 1] * f)
+
+
+def point_in_triangle_strict(p, a, b, c):
+    eps = 1e-9
+    d1, d2, d3 = orient(p, a, b), orient(p, b, c), orient(p, c, a)
+    return (d1 > eps and d2 > eps and d3 > eps) or (d1 < -eps and d2 < -eps and d3 < -eps)
+
+
+def triangle_crosses_footprint(tri, ring, ring_edges):
+    a, b, c = tri
+    if point_strictly_inside(a, ring) or point_strictly_inside(b, ring) or point_strictly_inside(c, ring):
+        return True
+    mid = [(a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0]
+    if point_strictly_inside(mid, ring):
+        return True
+    for p in ring:
+        if point_in_triangle_strict(p, a, b, c):
+            return True
+    for e0, e1 in ((a, b), (b, c), (c, a)):
+        for r0, r1 in ring_edges:
+            if proper_segments_cross(e0, e1, r0, r1):
+                return True
+    return False
+
+
 
 def main() -> int:
     roads_doc = json.loads((OUT / "roads.json").read_text(encoding="utf-8"))
@@ -119,14 +208,14 @@ def main() -> int:
     footprints = []
     for building in buildings_doc["buildings"]:
         ring = building["footprint"]
-        footprints.append((building["id"], ring,
+        footprints.append((building["id"], ring, list(zip(ring, ring[1:] + ring[:1])),
                            min(point[0] for point in ring), min(point[1] for point in ring),
                            max(point[0] for point in ring), max(point[1] for point in ring)))
     for road in roads:
         for a, b in zip(road["points"], road["points"][1:]):
             seg_min_x, seg_max_x = min(a[0], b[0]), max(a[0], b[0])
             seg_min_y, seg_max_y = min(a[1], b[1]), max(a[1], b[1])
-            for building_id, ring, min_x, min_y, max_x, max_y in footprints:
+            for building_id, ring, _ring_edges, min_x, min_y, max_x, max_y in footprints:
                 if seg_max_x < min_x or seg_min_x > max_x or seg_max_y < min_y or seg_min_y > max_y:
                     continue
                 if segment_crosses_footprint(a, b, ring):
@@ -135,6 +224,142 @@ def main() -> int:
     check("roads: polilineas no atraviesan huellas de edificios",
           not road_building_crossings,
           f"{len(road_building_crossings)} tramos; muestra={road_building_crossings[:5]}")
+    # --- 1b. clearance: esquema y valores del perfil publicado --------------
+    EXPECTED_CLEAR_KEYS = {"stepM", "renderStepM", "skirtM", "bandLeft", "bandRight"}
+    profiled = [r for r in roads if r.get("clearance") is not None]
+    bad_clear_keys = [r["id"] for r in profiled if set(r["clearance"]) != EXPECTED_CLEAR_KEYS]
+    check("clearance: esquema {stepM,renderStepM,skirtM,bandLeft,bandRight}",
+          not bad_clear_keys, f"{len(bad_clear_keys)} con claves raras")
+
+    clear_schema_err = []
+    clear_len_err = []
+    clear_bound_err = []
+    clear_steps = set()
+    fully_zero_recomputed = []
+    zero_intervals_recomputed = 0
+    for r in profiled:
+        cl = r["clearance"]
+        try:
+            step, rstep, skirt = cl["stepM"], cl["renderStepM"], cl["skirtM"]
+            left, right = cl["bandLeft"], cl["bandRight"]
+        except (KeyError, TypeError):
+            clear_schema_err.append(r["id"])
+            continue
+        if (not isinstance(left, list) or not isinstance(right, list)
+                or len(left) < 2 or len(left) != len(right)
+                or not all(isinstance(v, (int, float)) and math.isfinite(v)
+                           for v in [step, rstep, skirt] + left + right)):
+            clear_schema_err.append(r["id"])
+            continue
+        exp_skirt = 0.6 if (r["class"] == "ROAD" and not r.get("bridge", False)) else 0.0
+        if not (step > 0 and rstep > 0) or skirt < 0 or abs(skirt - exp_skirt) > 1e-9:
+            clear_schema_err.append((r["id"], step, rstep, skirt))
+            continue
+        if rstep > RENDER_SUBDIVISION_M + 1e-9:
+            clear_schema_err.append((r["id"], f"renderStepM={rstep}>2.5"))
+            continue
+        clear_steps.add((step, rstep, skirt))
+        L = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(r["points"], r["points"][1:]))
+        n = int(math.floor(L / step + 1e-9))
+        exp_n = n + 1 + (1 if n * step < L - 1e-9 else 0)
+        if len(left) != exp_n:
+            clear_len_err.append((r["id"], len(left), exp_n))
+        half = r["width"] / 2.0
+        outer = half + skirt
+        for v in left + right:
+            if not (-1e-12 <= v <= outer + 1e-6):
+                clear_bound_err.append((r["id"], v))
+                break
+            pav = max(0.0, min(half, v - skirt))  # calzada derivada; el resto es faldon
+            if not (0.0 <= pav <= half + 1e-9):
+                clear_bound_err.append((r["id"], f"pav={pav}"))
+                break
+        if all(v <= ZERO_EPS for v in left + right):
+            fully_zero_recomputed.append(r["id"])
+        for side in (left, right):
+            in_run = False
+            for v in side:
+                if v <= ZERO_EPS and not in_run:
+                    in_run = True
+                    zero_intervals_recomputed += 1
+                elif v > ZERO_EPS:
+                    in_run = False
+    check("clearance: step/renderStep/skirt validos y renderStepM<=2.5m",
+          not clear_schema_err,
+          f"{len(clear_schema_err)} errores; pasos={sorted(clear_steps)}; muestra={clear_schema_err[:5]}")
+    check("clearance: longitudes bandLeft/bandRight == estaciones del perfil",
+          not clear_len_err, f"{len(clear_len_err)} descuadres; muestra={clear_len_err[:5]}")
+    check("clearance: 0<=banda<=width/2+skirt y calzada+faldon coherente",
+          not clear_bound_err, f"{len(clear_bound_err)} fuera de cota; muestra={clear_bound_err[:5]}")
+
+    # --- 1c. banda dibujada (calzada+faldon) vs huellas ----------------------
+    band_overlaps = []
+    for road in roads:
+        cl = road.get("clearance")
+        half = road["width"] / 2.0
+        if cl is not None:
+            step = cl["renderStepM"]
+            skirt = cl["skirtM"]
+            arrays = {"stepM": cl["stepM"], "bandLeft": cl["bandLeft"], "bandRight": cl["bandRight"]}
+        else:
+            step = RENDER_SUBDIVISION_M
+            skirt = 0.6 if (road["class"] == "ROAD" and not road.get("bridge", False)) else 0.0
+            arrays = None
+        outer = half + skirt
+        if outer <= 0:
+            continue
+        pts = road["points"]
+        rminx = min(p[0] for p in pts) - outer
+        rmaxx = max(p[0] for p in pts) + outer
+        rminy = min(p[1] for p in pts) - outer
+        rmaxy = max(p[1] for p in pts) + outer
+        cands = [(fbid, fring, fedges, fx0, fy0, fx1, fy1)
+                 for (fbid, fring, fedges, fx0, fy0, fx1, fy1) in footprints
+                 if not (rmaxx < fx0 or rminx > fx1 or rmaxy < fy0 or rminy > fy1)]
+        if not cands:
+            continue
+        stations = station_normals(render_stations(pts, step))
+        if len(stations) < 2:
+            continue
+        if arrays is not None:
+            widths = [profile_at(arrays, t) for (_x, _z, t, _nx, _nz) in stations]
+        else:
+            widths = [(outer, outer)] * len(stations)
+        hit = None
+        for i in range(len(stations) - 1):
+            x0, z0, _t0, nx0, nz0 = stations[i]
+            x1, z1, _t1, nx1, nz1 = stations[i + 1]
+            hl0, hr0 = widths[i]
+            hl1, hr1 = widths[i + 1]
+            corners = ((x0 + nx0 * hl0, z0 + nz0 * hl0),
+                       (x0 - nx0 * hr0, z0 - nz0 * hr0),
+                       (x1 - nx1 * hr1, z1 - nz1 * hr1),
+                       (x1 + nx1 * hl1, z1 + nz1 * hl1))
+            if len(set(corners)) < 4:
+                continue
+            for tri in ((corners[0], corners[1], corners[2]), (corners[0], corners[2], corners[3])):
+                if abs(orient(tri[0], tri[1], tri[2])) / 2.0 <= 1e-12:
+                    continue
+                tminx = min(p[0] for p in tri)
+                tmaxx = max(p[0] for p in tri)
+                tminy = min(p[1] for p in tri)
+                tmaxy = max(p[1] for p in tri)
+                for fbid, fring, fedges, fx0, fy0, fx1, fy1 in cands:
+                    if tmaxx < fx0 or tminx > fx1 or tmaxy < fy0 or tminy > fy1:
+                        continue
+                    if triangle_crosses_footprint(tri, fring, fedges):
+                        hit = (road["id"], fbid)
+                        break
+                if hit is not None:
+                    break
+            if hit is not None:
+                break
+        if hit is not None:
+            band_overlaps.append(hit)
+    check("clearance: banda exterior (calzada+faldon) no invade huellas",
+          not band_overlaps,
+          f"{len(band_overlaps)} pares; muestra={band_overlaps[:5]}")
+
 
     # --- 2. esquema de navigation.json ------------------------------------
     check("nav: nodes/edges/edgeMeta paralelos",
@@ -271,6 +496,48 @@ def main() -> int:
     pct = stats["connectivity"]["variants"]["todas_las_clases"]["track_pct_reached"]
     check("conectividad: >= 95% de TRACK alcanzable desde Villafranca", pct >= 95.0,
           f"{pct}%")
+
+
+    # --- 8. invariantes de la corrida con clearance --------------------------
+    check("roads: 436 ejes publicados", len(roads) == 436, f"{len(roads)} segmentos")
+    check("stats: segments_kept == ejes publicados",
+          stats["counts"]["segments_kept"] == len(roads),
+          f"kept={stats['counts']['segments_kept']}")
+    check("nav: sin cambios (nodos/aristas de stats)",
+          len(nodes) == stats["graph"]["nodes"] and len(edges) == stats["graph"]["edges"],
+          f"nodos={len(nodes)}/{stats['graph']['nodes']} aristas={len(edges)}/{stats['graph']['edges']}")
+    fc = stats.get("footprint_clearance", {})
+    check("stats: footprint_clearance trae before/after/hidden_runs",
+          isinstance(fc, dict) and isinstance(fc.get("before"), dict)
+          and isinstance(fc.get("after"), dict) and isinstance(fc.get("hidden_runs"), list),
+          f"claves={sorted(fc)[:6] if isinstance(fc, dict) else None}")
+    after = fc.get("after", {}) if isinstance(fc, dict) else {}
+    runs = fc.get("hidden_runs", []) if isinstance(fc, dict) else []
+    check("clearance: after == 0 pares/edificios y banda dibujada sin solape",
+          after.get("pairs", -1) == 0 and after.get("buildings", -1) == 0 and not band_overlaps,
+          f"after={after.get('pairs')}/{after.get('buildings')} banda={len(band_overlaps)}")
+    check("clearance: vias recortadas == perfiles publicados",
+          fc.get("clamped_roads", -1) == len(profiled),
+          f"clamped={fc.get('clamped_roads')} perfiles={len(profiled)}")
+    check("clearance: ninguna via entera con banda cero",
+          fc.get("roads_fully_zero_band", None) == [] and not fully_zero_recomputed,
+          f"stats={fc.get('roads_fully_zero_band')} recalculadas={fully_zero_recomputed[:5]}")
+    runs_ok = (
+        isinstance(runs, list)
+        and sum(r.get("stations", -1) for r in runs) == fc.get("hidden_stations", -2)
+        and sum(r.get("holgura_stations", -1) for r in runs) == fc.get("hidden_holgura_stations", -2)
+        and sum(r.get("refinado_stations", -1) for r in runs) == fc.get("hidden_refinado_stations", -2)
+        and sorted({r.get("road") for r in runs}) == list(fc.get("hidden_roads", []))
+        and all(set(r) >= {"road", "class", "side", "t0_m", "t1_m", "length_m", "stations", "reason"}
+                and r.get("reason") in {"holgura", "refinado"}
+                and r.get("side") in {"left", "right"} for r in runs)
+    )
+    check("clearance: hidden_runs cuantificados en stats",
+          runs_ok,
+          f"{len(runs)} runs en {len(fc.get('hidden_roads', []))} vias; "
+          f"refinado={fc.get('hidden_refinado_stations')}; "
+          f"recalculados={zero_intervals_recomputed} intervalos cero; "
+          f"muestra={runs[:2] if isinstance(runs, list) else None}")
 
     print(f"\n{CHECKS - len(FAILS)}/{CHECKS} checks OK")
     if FAILS:

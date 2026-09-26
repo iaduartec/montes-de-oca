@@ -36,6 +36,7 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { Scene } from '@babylonjs/core/scene';
 import { gridExtent } from '../heightfield';
 import type { WorldTerrain } from '../terrain';
+import { radialLobeScale, radialLobeScaleAtAngle, vegetationInstanceTint } from './vegetation-profile';
 
 /* ------------------------------------------------------------------------- *
  * Contrato (lo consume main.ts cuando el orquestador integre las capas)
@@ -102,16 +103,23 @@ type Family = 'arbol' | 'arbusto' | 'hierba';
  * radio la instancia no se dibuja: es el culling propio, porque las thin
  * instances NO se recortan por frustum una por una.
  *
- * `arbol` lejano = 900 m = `config.viewRadius`, el mismo corte que usa
- * `terrain.cull()`. Con 650 m (el valor original) se veia un DISCO DURO de
- * terreno pelado rodeando la camara: la malla seguia hasta el horizonte y los
- * arboles paraban 250 m antes. Medido en la captura aerea y en un test a
- * 900 m de altura (cero arboles, o sea era el radio y no el landcover).
- * Coste: ~2x triangulos de vegetacion en vista aerea, 0 draw calls extra
+ * `arbol` lejano = 900 m = `config.viewRadius`: el MISMO numero que usa
+ * `terrain.cull()`, asi que el bosque no saca ni una copa fuera del recorte.
+ * Con 650 m (el valor original) se veia un DISCO DURO de terreno pelado
+ * rodeando la camara: la malla seguia hasta el horizonte y los arboles paraban
+ * 250 m antes. Con 1200 m pasaba lo contrario: las copas se colaban por encima
+ * del borde de terreno ya recortado. Medido con camara libre a 300-380 m sobre
+ * la loma, A/B con y sin vegetacion en la MISMA escena: con 1200 m, el 2,0 % y
+ * el 2,6 % de los pixeles de cielo de cada vista tenia copa de arbol encima;
+ * con 900 m, 0,01 % y 0,06 %, que es solo el dentado del antialias del borde.
+ * OJO: `terrain.cull()` mide contra la CAJA del tile (1.000 m de lado), asi
+ * que la malla sigue mas alla de 900 m; 900 m es el radio que coincide con el
+ * parametro, no con el ultimo borde de la malla.
+ * Coste: menos triangulos que con 1200 m en vista aerea y 0 draw calls extra
  * (siguen siendo 21 mallas como tope).
  */
 const LOD_RADII: Record<Family, readonly [number, number, number]> = {
-  arbol: [110, 320, 1200],
+  arbol: [110, 320, 900],
   arbusto: [90, 250, 500],
   hierba: [45, 120, 220],
 };
@@ -123,14 +131,23 @@ const LOD_RADII: Record<Family, readonly [number, number, number]> = {
  */
 const SINK_M: Record<Family, number> = { arbol: 0.25, arbusto: 0.15, hierba: 0.05 };
 
-/** Variación de silueta por ejemplar sin duplicar mallas ni bandas de LOD. */
+/**
+ * Variación de silueta por ejemplar sin duplicar mallas ni bandas de LOD.
+ * `[sx, sy, sz, tiltX, tiltZ]`: la escala Y cambia la proporción copa/tronco y,
+ * como el giro por instancia ya aleatoriza el azimut, unas pocas proporciones
+ * más rompen el patrón repetido del dosel. Es solo transformación: no añade ni
+ * un vértice ni un triángulo a las mallas compartidas.
+ */
 const TREE_PROFILES = [
-  [0.78, 1.08, 0.84, -0.045, 0.025],
-  [1.2, 0.9, 1.12, 0.035, -0.05],
-  [0.92, 1.2, 0.78, 0.055, 0.015],
-  [1.14, 0.84, 1.2, -0.02, 0.045],
-  [0.82, 0.96, 1.18, -0.04, -0.03],
-  [1.2, 1.08, 0.82, 0.025, 0.055],
+  [0.78, 1.12, 0.84, -0.045, 0.025],
+  [1.22, 0.86, 1.12, 0.035, -0.055],
+  [0.92, 1.26, 0.78, 0.06, 0.015],
+  [1.16, 0.8, 1.2, -0.02, 0.05],
+  [0.82, 0.96, 1.2, -0.05, -0.035],
+  [1.24, 1.14, 0.82, 0.025, 0.06],
+  [1.04, 0.9, 0.96, 0.075, -0.02],
+  [0.86, 1.18, 1.06, -0.065, 0.04],
+  [1.1, 1.0, 0.88, 0.02, -0.07],
 ] as const;
 
 function treeProfileIndex(x: number, z: number): number {
@@ -241,6 +258,8 @@ function pushFrustum(
   topColor: RGB,
   capBottom: boolean,
   capTop: boolean,
+  lobeAmount = 0,
+  lobeCount = 4,
 ): void {
   const dy = y1 - y0;
   const nLen = Math.hypot(dy, r0 - r1) || 1;
@@ -255,8 +274,9 @@ function pushFrustum(
     const uz = Math.sin(-angle);
     // Cada anillo guarda su color: la rampa base->cima es lo que hace que la
     // copa se ilumine mas arriba aunque el sol este a contraluz.
-    ringA.push(addVertex(g, ux * r0, y0, uz * r0, nR * ux, nY, nR * uz, baseColor));
-    ringB.push(addVertex(g, ux * r1, y1, uz * r1, nR * ux, nY, nR * uz, topColor));
+    const scale = radialLobeScaleAtAngle(angle, lobeAmount, lobeCount);
+    ringA.push(addVertex(g, ux * r0 * scale, y0, uz * r0 * scale, nR * ux, nY, nR * uz, baseColor));
+    ringB.push(addVertex(g, ux * r1 * scale, y1, uz * r1 * scale, nR * ux, nY, nR * uz, topColor));
   }
 
   if (r1 > 1e-4 && r0 > 1e-4) {
@@ -341,7 +361,7 @@ function pushBlob(
       const angle = (j2 / seg) * Math.PI * 2;
       // Broadleaf crowns break the perfect umbrella outline. This is a radial
       // vertex displacement only, so it costs no triangles or draw calls.
-      const lobe = 1 + lobeAmount * Math.cos(angle * lobeCount) * Math.sin(Math.PI * t);
+      const lobe = radialLobeScale(t, angle, lobeAmount, lobeCount);
       const r = radius * Math.sin(Math.PI * t) * lobe;
       const ux = Math.cos(-angle);
       const uz = Math.sin(-angle);
@@ -419,13 +439,17 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
       pushBlob(g, 5, 2, 3.0, 0, 6.2, p.low, p.high, 0.14, 2);
     } else {
       pushFrustum(g, near ? 7 : 5, 0.34, 0.24, 0, near ? 3 : 2.6, p.wood, p.wood, true, false);
+      // La copa baja hasta el tronco: el vértice inferior del blob (ápice en el
+      // eje) era lo que se leía como copa flotante pinchada por un poste. Bajar
+      // `y0` y alargar la altura conserva la cota superior de la copa y no añade
+      // triángulos, vértices, mallas ni draw calls.
       pushBlob(
         g,
         near ? 10 : 6,
         near ? 4 : 3,
         near ? 3.0 : 2.6,
-        near ? 2.25 : 2.1,
-        near ? 4.45 : 4.0,
+        near ? 1.85 : 1.8,
+        near ? 4.85 : 4.3,
         p.low,
         p.high,
         near ? 0.18 : 0.14,
@@ -456,7 +480,8 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
       pushBlob(g, 5, 2, 1.5, 0, 7.4, p.low, p.high, 0.08, 2);
     } else {
       pushFrustum(g, near ? 6 : 4, 0.2, 0.13, 0, near ? 4.6 : 4.0, p.wood, p.wood, true, false);
-      pushBlob(g, near ? 9 : 6, 3, near ? 1.7 : 1.6, near ? 3.8 : 3.45, near ? 4.55 : 4.25, p.low, p.high, near ? 0.1 : 0.08, 3);
+      // Copa más baja (misma cota superior): el abedul era el tronco desnudo más largo.
+      pushBlob(g, near ? 9 : 6, 3, near ? 1.7 : 1.6, near ? 2.4 : 2.2, near ? 5.95 : 5.5, p.low, p.high, near ? 0.1 : 0.08, 3);
     }
     return g;
   }
@@ -466,13 +491,14 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
       pushBlob(g, 5, 2, 2.35, 0, 8.2, p.low, p.high, 0.1, 3);
     } else {
       pushFrustum(g, near ? 7 : 5, 0.29, 0.2, 0, near ? 5.2 : 4.5, p.wood, p.wood, true, false);
+      // Copa más baja y alta; el haya dejaba ~4 m de tronco desnudo.
       pushBlob(
         g,
         near ? 10 : 6,
         near ? 4 : 3,
         near ? 2.65 : 2.35,
-        near ? 4.35 : 3.9,
-        near ? 4.25 : 3.9,
+        near ? 2.9 : 2.6,
+        near ? 5.7 : 5.2,
         p.low,
         p.high,
         near ? 0.12 : 0.1,
@@ -482,11 +508,35 @@ function buildGeometry(type: VegType, band: 0 | 1 | 2): Geo {
     return g;
   }
   if (type === 'jaral') {
-    pushBlob(g, near ? 8 : mid ? 6 : 5, near || mid ? 3 : 2, 1.25, 0.1, near ? 1.7 : 1.6, p.low, p.high);
+    pushBlob(
+      g,
+      near ? 8 : mid ? 6 : 5,
+      near || mid ? 3 : 2,
+      1.25,
+      0.1,
+      near ? 1.7 : 1.6,
+      p.low,
+      p.high,
+      near ? 0.16 : mid ? 0.12 : 0.08,
+      near ? 4 : mid ? 3 : 2,
+    );
     return g;
   }
   if (type === 'enebro') {
-    pushFrustum(g, near ? 8 : mid ? 6 : 5, 1.05, 0, 0.1, near || mid ? 2 : 1.9, p.low, p.high, true, false);
+    pushFrustum(
+      g,
+      near ? 8 : mid ? 6 : 5,
+      1.05,
+      0,
+      0.1,
+      near || mid ? 2 : 1.9,
+      p.low,
+      p.high,
+      true,
+      false,
+      near ? 0.14 : mid ? 0.12 : 0.1,
+      near ? 4 : mid ? 3 : 2,
+    );
     return g;
   }
   // hierba
@@ -603,6 +653,8 @@ interface Group {
   readonly family: Family;
   /** Matrices ya compuestas; `count` es el indice de llenado durante la carga. */
   matrices: Float32Array;
+  /** Matiz persistente por ejemplar; solo existe en grupos arbóreos. */
+  readonly instanceColors: Float32Array | null;
   count: number;
 }
 
@@ -610,6 +662,7 @@ interface Bucket {
   readonly mesh: Mesh;
   /** Capacidad = instancias del tipo: ninguna banda puede desbordarla. */
   readonly buffer: Float32Array;
+  readonly colorBuffer: Float32Array | null;
 }
 
 const BANDS = [0, 1, 2] as const;
@@ -620,7 +673,10 @@ function applyBand(bucket: Bucket, count: number): void {
   // primero se fija el conteo y despues se vuelca el buffer.
   bucket.mesh.thinInstanceCount = count;
   bucket.mesh.isVisible = count > 0;
-  if (count > 0) bucket.mesh.thinInstanceBufferUpdated('matrix');
+  if (count > 0) {
+    bucket.mesh.thinInstanceBufferUpdated('matrix');
+    if (bucket.colorBuffer) bucket.mesh.thinInstanceBufferUpdated('instanceColor');
+  }
 }
 
 function createMaterial(scene: Scene, name: string, ambient: number): StandardMaterial {
@@ -639,7 +695,14 @@ function createMaterial(scene: Scene, name: string, ambient: number): StandardMa
   return material;
 }
 
-function createMesh(scene: Scene, type: VegType, band: Band, material: StandardMaterial, buffer: Float32Array): Mesh {
+function createMesh(
+  scene: Scene,
+  type: VegType,
+  band: Band,
+  material: StandardMaterial,
+  buffer: Float32Array,
+  colorBuffer: Float32Array | null,
+): Mesh {
   const geo = buildGeometry(type, band);
   const vertexData = new VertexData();
   vertexData.positions = new Float32Array(geo.positions);
@@ -664,6 +727,7 @@ function createMesh(scene: Scene, type: VegType, band: Band, material: StandardM
   // staticBuffer = false → buffer updatable: `thinInstanceBufferUpdated`
   // vuelca sin recrear el buffer de GPU en cada actualizacion.
   mesh.thinInstanceSetBuffer('matrix', buffer, 16, false);
+  if (colorBuffer) mesh.thinInstanceSetBuffer('instanceColor', colorBuffer, 4, false);
   mesh.thinInstanceCount = 0;
   mesh.isVisible = false;
   return mesh;
@@ -752,7 +816,14 @@ export async function loadVegetation(
   for (const { raw } of kept) totals.set(raw.type, (totals.get(raw.type) ?? 0) + 1);
   const groups = new Map<VegType, Group>();
   for (const [type, total] of totals) {
-    groups.set(type, { type, family: familyOf(type), matrices: new Float32Array(total * 16), count: 0 });
+    const family = familyOf(type);
+    groups.set(type, {
+      type,
+      family,
+      matrices: new Float32Array(total * 16),
+      instanceColors: family === 'arbol' ? new Float32Array(total * 4) : null,
+      count: 0,
+    });
   }
 
   const scaleVec = new Vector3();
@@ -779,6 +850,14 @@ export async function loadVegetation(
     Matrix.ComposeToRef(scaleVec, rotQuat, posVec, composed);
     const o = group.count * 16;
     for (let k = 0; k < 16; k++) group.matrices[o + k] = composed.m[k]!;
+    if (group.instanceColors) {
+      const tint = vegetationInstanceTint(raw.x, raw.z);
+      const colorOffset = group.count * 4;
+      group.instanceColors[colorOffset] = tint[0];
+      group.instanceColors[colorOffset + 1] = tint[1];
+      group.instanceColors[colorOffset + 2] = tint[2];
+      group.instanceColors[colorOffset + 3] = 1;
+    }
     group.count++;
     tierCounts[raw.tier]++;
     familyCounts[group.family]++;
@@ -795,9 +874,10 @@ export async function loadVegetation(
     const list: Bucket[] = [];
     for (const band of BANDS) {
       const buffer = new Float32Array(group.matrices.length);
-      const mesh = createMesh(scene, group.type, band, material, buffer);
+      const colorBuffer = group.instanceColors ? new Float32Array(group.instanceColors.length) : null;
+      const mesh = createMesh(scene, group.type, band, material, buffer, colorBuffer);
       meshes.push(mesh);
-      list.push({ mesh, buffer });
+      list.push({ mesh, buffer, colorBuffer });
     }
     buckets.set(group.type, list);
   }
@@ -844,6 +924,7 @@ export async function loadVegetation(
       const rMid = radii[1]! * radii[1]!;
       const rFar = radii[2]! * radii[2]!;
       const src = group.matrices;
+      const sourceColors = group.instanceColors;
       // Buckets resueltos una sola vez: con `noUncheckedIndexedAccess` cada
       // `list[i]` es opcional y el compilador no acepta indizar con una
       // variable. Tres referencias locales, cero ramas en el hot path.
@@ -853,6 +934,9 @@ export async function loadVegetation(
       const nearBuf = nearBucket.buffer;
       const midBuf = midBucket.buffer;
       const farBuf = farBucket.buffer;
+      const nearColors = nearBucket.colorBuffer;
+      const midColors = midBucket.colorBuffer;
+      const farColors = farBucket.colorBuffer;
       let writtenNear = 0;
       let writtenMid = 0;
       let writtenFar = 0;
@@ -864,17 +948,21 @@ export async function loadVegetation(
         const dz = src[o + 14]! - cz;
         const d2 = dx * dx + dy * dy + dz * dz;
         let buf: Float32Array;
+        let colorBuf: Float32Array | null;
         let w: number;
         if (d2 < rNear) {
           buf = nearBuf;
+          colorBuf = nearColors;
           w = writtenNear * 16;
           writtenNear++;
         } else if (d2 < rMid) {
           buf = midBuf;
+          colorBuf = midColors;
           w = writtenMid * 16;
           writtenMid++;
         } else if (d2 < rFar) {
           buf = farBuf;
+          colorBuf = farColors;
           w = writtenFar * 16;
           writtenFar++;
         } else {
@@ -886,6 +974,11 @@ export async function loadVegetation(
         // `noUncheckedIndexedAccess` cada lectura de un Float32Array es
         // opcional; aqui el indice siempre esta en rango.
         for (let j = 0; j < 16; j++) buf[w + j] = src[o + j]!;
+        if (sourceColors && colorBuf) {
+          const sourceColorOffset = k * 4;
+          const targetColorOffset = (w / 16) * 4;
+          for (let j = 0; j < 4; j++) colorBuf[targetColorOffset + j] = sourceColors[sourceColorOffset + j]!;
+        }
       }
 
       applyBand(nearBucket, writtenNear);

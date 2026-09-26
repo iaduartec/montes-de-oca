@@ -29,6 +29,10 @@ export interface PlayerControls {
   readonly interact: boolean;
   /** Consumo de F: true UNA sola vez por pulsación (flanco). */
   consumeToggle(): boolean;
+  /** Añade o suelta una tecla virtual, usada por los controles táctiles. */
+  setVirtualKey(code: string, pressed: boolean): void;
+  /** Ejes analógicos del joystick: avance y giro, ambos en el rango [-1, 1]. */
+  setVirtualAxes(forward: number, strafe: number): void;
   dispose(): void;
 }
 
@@ -56,6 +60,10 @@ function axis(keys: ReadonlySet<string>, positive: readonly string[], negative: 
 
 export function createPlayerControls(options: PlayerControlsOptions = {}): PlayerControls {
   const keys = new Set<string>();
+  const keyboardKeys = new Set<string>();
+  const virtualKeys = new Set<string>();
+  let virtualForward = 0;
+  let virtualStrafe = 0;
   let neutral = false;
   // Flanco de F: se levanta en keydown y se consume en el primer `consumeToggle`.
   let togglePending = false;
@@ -66,19 +74,25 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
       if (event.code === 'KeyF') togglePending = true;
       if (event.code === 'KeyR') options.onReset?.();
     }
+    keyboardKeys.add(event.code);
     keys.add(event.code);
     // Evita que Espacio/flechas hagan scroll de la página mientras se juega.
     if (event.code === 'Space' || event.code.startsWith('Arrow')) event.preventDefault();
   };
 
   const onKeyUp = (event: KeyboardEvent): void => {
-    keys.delete(event.code);
+    keyboardKeys.delete(event.code);
+    if (!virtualKeys.has(event.code)) keys.delete(event.code);
   };
 
   // Al perder foco se sueltan TODAS las teclas: si no, el coche se queda
   // acelerando solo después de un Alt+Tab.
   const onBlur = (): void => {
     keys.clear();
+    keyboardKeys.clear();
+    virtualKeys.clear();
+    virtualForward = 0;
+    virtualStrafe = 0;
     // El flanco de F también se tira. Si no, apretás F, cambiás de ventana y al volver
     // el F pendiente dispara solo: entrás o salís del 4x4 sin haber tocado nada.
     togglePending = false;
@@ -90,14 +104,14 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
 
   return {
     readVehicular: () => ({
-      throttle: axis(keys, FORWARD_KEYS, BACK_KEYS),
-      steer: axis(keys, RIGHT_KEYS, LEFT_KEYS),
+      throttle: Math.max(-1, Math.min(1, axis(keys, FORWARD_KEYS, BACK_KEYS) + virtualForward)),
+      steer: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualStrafe)),
       handbrake: keys.has('Space'),
       neutral,
     }),
     readOnFoot: () => ({
-      forward: axis(keys, FORWARD_KEYS, BACK_KEYS),
-      strafe: axis(keys, RIGHT_KEYS, LEFT_KEYS),
+      forward: Math.max(-1, Math.min(1, axis(keys, FORWARD_KEYS, BACK_KEYS) + virtualForward)),
+      strafe: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualStrafe)),
       run: any(keys, RUN_KEYS),
     }),
     get interact() {
@@ -108,11 +122,33 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
       togglePending = false;
       return pending;
     },
+    setVirtualKey: (code, pressed) => {
+      if (pressed) {
+        if (virtualKeys.has(code)) return;
+        virtualKeys.add(code);
+        keys.add(code);
+        if (code === 'KeyN') neutral = !neutral;
+        if (code === 'KeyF') togglePending = true;
+        if (code === 'KeyR') options.onReset?.();
+        return;
+      }
+      virtualKeys.delete(code);
+      // A keyboard key with the same code may still be held.
+      if (!keyboardKeys.has(code)) keys.delete(code);
+    },
+    setVirtualAxes: (forward, strafe) => {
+      virtualForward = Number.isFinite(forward) ? Math.max(-1, Math.min(1, forward)) : 0;
+      virtualStrafe = Number.isFinite(strafe) ? Math.max(-1, Math.min(1, strafe)) : 0;
+    },
     dispose: () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       keys.clear();
+      keyboardKeys.clear();
+      virtualKeys.clear();
+      virtualForward = 0;
+      virtualStrafe = 0;
       togglePending = false;
     },
   };

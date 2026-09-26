@@ -10,14 +10,20 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "make:dev-terrain": "node scripts/make-dev-terrain.mjs",
-    "test": "npm run typecheck && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check && node scripts/environment/build_vegetation.mjs --check",
+    "test": "npm run typecheck && node scripts/roads/test_road_visuals.mjs && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check && node scripts/environment/validate_building_height_grid.mjs && node scripts/environment/test_roof_shape.mjs && node scripts/environment/test_roof_clearance.mjs && node scripts/environment/test_building_tint.mjs && node scripts/environment/test_vegetation_color.mjs && node scripts/environment/build_vegetation.mjs --check",
     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
     "test:terrain": "node scripts/terrain/validate_terrain.mjs",
     "test:roads": "python3 scripts/roads/validate_roads.py",
+    "test:road-visuals": "node scripts/roads/test_road_visuals.mjs",
     "test:mission": "node scripts/gameplay/validate_mission.mjs",
     "test:atmosphere": "node scripts/environment/verify_atmosphere.mjs",
     "test:village": "node scripts/environment/build_village.mjs --check",
-    "test:vegetation": "node scripts/environment/build_vegetation.mjs --check"
+    "test:roof-shape": "node scripts/environment/test_roof_shape.mjs",
+    "test:roof-clearance": "node scripts/environment/test_roof_clearance.mjs",
+    "test:building-tint": "node scripts/environment/test_building_tint.mjs",
+    "test:building-heights": "node scripts/environment/validate_building_height_grid.mjs",
+    "test:vegetation": "node scripts/environment/build_vegetation.mjs --check",
+    "test:vegetation-color": "node scripts/environment/test_vegetation_color.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^8.0.0"

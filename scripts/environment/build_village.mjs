@@ -57,6 +57,13 @@ const MAX_HEIGHT_M = 60;
  * en pendiente. --check lo verifica leyendo el TS.
  */
 const FALDON_M = 1.5;
+/** Altura minima sobre la ladera para casas que conservan altura OSM estimada. */
+const ROOF_CLEARANCE_M = 0.2;
+/** Límite del runtime: evita que un error puntual genere una casa desproporcionada. */
+const ROOF_MAX_LIFT_M = 1.6;
+const GABLE_ELONGATION = 1.35;
+const MIN_LIDAR_SAMPLES = 4;
+const MIN_LIDAR_WALL_HEIGHT_M = 2;
 
 /* ------------------------------------------------------------------------- *
  * 1. Config del proyecto (transpilado, patron de scripts/terrain/validate_terrain.mjs)
@@ -631,7 +638,7 @@ async function runCheck(derived, serialized, sourceSha, manifest) {
   let datumTeethCaught = 0; // si alguien olvidara el datum, este check tiene que fallar
   let maxRelief = 0;
   let maxBurial = 0;
-  let aboveRoof = 0; // terreno por encima de la cumbrera: casa embebida en la ladera
+  let aboveRoof = 0; // diagnóstico previo a los overrides LiDAR/despeje runtime
   let maxBilinDiff = 0;
   let sampledVertices = 0;
   for (const index of picked) {
@@ -647,8 +654,8 @@ async function runCheck(derived, serialized, sourceSha, manifest) {
       // si alguien bilineal a mano, este es el error que se le entra en la base).
       maxBilinDiff = Math.max(maxBilinDiff, Math.abs(y - terrain.bilinearAt(x, z)));
     }
-    // Rango vertical del edificio TAL COMO lo construye src/environment/village.ts:
-    // base = min(terreno) - faldon, cumbrera = min(terreno) + altura.
+    // Diagnóstico OSM crudo: runtime puede sustituir la altura por LiDAR y elevar
+    // las alturas estimadas para mantener el alero fuera de la ladera (se verifica abajo).
     const builtBottom = minY - FALDON_M;
     const builtTop = minY + b.heightM;
     if (!(minY >= builtBottom - 1e-6 && minY <= builtTop + 1e-6)) outsideRange++;
@@ -665,14 +672,105 @@ async function runCheck(derived, serialized, sourceSha, manifest) {
   console.log(`      relieve max bajo un footprint: ${maxRelief.toFixed(2)} m (faldon ${FALDON_M} m)`);
   console.log(`      hundimiento max (terreno mas alto - base): ${maxBurial.toFixed(2)} m`);
   console.log(`      max |triangular - bilineal| en los mismos vertices: ${maxBilinDiff.toFixed(3)} m (la trampa del proyecto)`);
-  console.log(
-    `      ${aboveRoof}/${sampleCount} muestreados tienen terreno mas alto que la cumbrera: ` +
-      'no flotan (la base esta en el minimo) pero quedan EMBEBIDOS en la ladera. Es la consecuencia ' +
-      'del contrato de estirar desde el minimo; se ve en las capturas.',
-  );
+  console.log(`      ${aboveRoof}/${sampleCount} alturas OSM crudas intersectan terreno antes del ajuste runtime.`);
 
-  console.log('\n=== 6. el faldon esta sincronizado con el runtime ===');
+  console.log('\n=== 6. tejados de altura estimada despejados de la ladera ===');
   const villageSource = readFileSync(resolve(root, 'src/environment/village.ts'), 'utf8');
+  const clearanceMatch = villageSource.match(/ROOF_CLEARANCE_M\s*=\s*([0-9.]+)/);
+  const liftCapMatch = villageSource.match(/ROOF_MAX_LIFT_M\s*=\s*([0-9.]+)/);
+  report('el margen de cubierta coincide con runtime', !!clearanceMatch && Number(clearanceMatch[1]) === ROOF_CLEARANCE_M,
+    clearanceMatch ? `${clearanceMatch[1]} m` : 'no encontrado');
+  report('el tope de elevación coincide con runtime', !!liftCapMatch && Number(liftCapMatch[1]) === ROOF_MAX_LIFT_M,
+    liftCapMatch ? `${liftCapMatch[1]} m` : 'no encontrado');
+
+  const heightMeta = JSON.parse(readFileSync(resolve(root, 'public/village/building_height_grid.json'), 'utf8'));
+  const heightBytes = readFileSync(resolve(root, 'public/village', heightMeta.valuesFile));
+  const heightValues = new DataView(heightBytes.buffer, heightBytes.byteOffset, heightBytes.byteLength);
+  const heightGrid = heightMeta.grid;
+  const terrainConfig = JSON.parse(readFileSync(resolve(root, 'public/terrain/config.json'), 'utf8'));
+  const scale = terrainConfig.worldScale;
+  const e0 = terrainConfig.bounds.e[0];
+  const n0 = terrainConfig.bounds.n[0];
+
+  // Reproduce la clasificación LiDAR de runtime para comprobar los casos que
+  // realmente conservan fallback OSM; no se corrigen alturas medidas/explicitas.
+  const runtimeLidarHeight = (building) => {
+    if (building.heightSource === 'height') return null;
+    const points = building.footprint;
+    const minE = e0 + Math.min(...points.map(([x]) => x / scale));
+    const maxE = e0 + Math.max(...points.map(([x]) => x / scale));
+    const minN = n0 + Math.min(...points.map(([, z]) => z / scale));
+    const maxN = n0 + Math.max(...points.map(([, z]) => z / scale));
+    const colMin = Math.max(0, Math.floor((minE - heightGrid.top_left_easting_m) / heightGrid.pixel_size_m));
+    const colMax = Math.min(heightGrid.width - 1, Math.floor((maxE - heightGrid.top_left_easting_m) / heightGrid.pixel_size_m));
+    const rowMin = Math.max(0, Math.floor((heightGrid.top_left_northing_m - maxN) / heightGrid.pixel_size_m));
+    const rowMax = Math.min(heightGrid.height - 1, Math.floor((heightGrid.top_left_northing_m - minN) / heightGrid.pixel_size_m));
+    if (colMin > colMax || rowMin > rowMax) return null;
+    const samples = [];
+    for (let row = rowMin; row <= rowMax; row++) {
+      const z = (heightGrid.top_left_northing_m - (row + 0.5) * heightGrid.pixel_size_m - n0) * scale;
+      for (let col = colMin; col <= colMax; col++) {
+        const value = heightValues.getInt16((row * heightGrid.width + col) * 2, true);
+        if (value <= 0) continue;
+        const x = (heightGrid.top_left_easting_m + (col + 0.5) * heightGrid.pixel_size_m - e0) * scale;
+        if (distanceToPolygon(points, x, z) <= 1e-6) samples.push(value);
+      }
+    }
+    if (samples.length < MIN_LIDAR_SAMPLES) return null;
+    samples.sort((a, b) => a - b);
+    const roofHeightM = samples[Math.floor((samples.length - 1) * 0.95)];
+    const axis = principalAxis(points);
+    const gable = axis.halfV > 0.5 && axis.halfU / axis.halfV >= GABLE_ELONGATION;
+    const roofRiseM = gable ? Math.min(Math.max(0.5 * axis.halfV, 0.4), 3) : 0;
+    const wallHeightM = roofHeightM - roofRiseM;
+    return wallHeightM >= MIN_LIDAR_WALL_HEIGHT_M && wallHeightM <= 60 ? wallHeightM : null;
+  };
+
+  let lidarAdjusted = 0;
+  let fallbackLifted = 0;
+  let fallbackStillBuried = 0;
+  let fallbackOverCap = 0;
+  let measuredStillBuried = 0;
+  let maxRuntimeLift = 0;
+  let maxMeasuredIntersection = 0;
+  for (const building of buildings) {
+    const measuredHeight = runtimeLidarHeight(building);
+    const heightSource = measuredHeight === null ? building.heightSource : 'lidar';
+    const heightM = measuredHeight ?? building.heightM;
+    if (heightSource === 'lidar') lidarAdjusted++;
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const [x, z] of building.footprint) {
+      const y = terrain.heightAt(x, z);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+    const eaveY = minY + heightM;
+    const requiredLift = maxY + ROOF_CLEARANCE_M - eaveY;
+    if (heightSource === 'levels' || heightSource === 'tipo') {
+      const lift = Math.min(Math.max(0, requiredLift), ROOF_MAX_LIFT_M);
+      if (requiredLift > ROOF_MAX_LIFT_M) fallbackOverCap++;
+      if (lift > 0) fallbackLifted++;
+      if (requiredLift > ROOF_MAX_LIFT_M || maxY > eaveY + lift - ROOF_CLEARANCE_M + 1e-6) fallbackStillBuried++;
+      maxRuntimeLift = Math.max(maxRuntimeLift, lift);
+    } else if (maxY > eaveY) {
+      measuredStillBuried++;
+      maxMeasuredIntersection = Math.max(maxMeasuredIntersection, maxY - eaveY);
+    }
+  }
+  const runtimeLiftLogicPresent =
+    villageSource.includes("building.heightSource === 'lidar' || building.heightSource === 'height'") &&
+    villageSource.includes('return { ...building, heightM: building.heightM + lift };') &&
+    villageSource.includes('const topY = minY + building.heightM;');
+  report('runtime eleva solo alturas levels/tipo; LiDAR y height explícita permanecen intactas', runtimeLiftLogicPresent);
+  report('ninguna casa fallback queda embebida y no se supera el tope',
+    fallbackStillBuried === 0 && fallbackOverCap === 0 && maxRuntimeLift <= ROOF_MAX_LIFT_M,
+    `${fallbackLifted} elevadas · máximo ${maxRuntimeLift.toFixed(2)} m · ${fallbackStillBuried} enterradas`);
+  console.log(`      override runtime LiDAR rederivado: ${lidarAdjusted}/${buildings.length}`);
+  console.log(`      intersecciones LiDAR sin modificar: ${measuredStillBuried} (máx ${maxMeasuredIntersection.toFixed(2)} m; altura medida preservada)`);
+
+  console.log('\n=== 7. el faldon esta sincronizado con el runtime ===');
   const faldonMatch = villageSource.match(/FALDON_M\s*=\s*([0-9.]+)/);
   report('src/environment/village.ts declara el mismo FALDON_M', !!faldonMatch && Number(faldonMatch[1]) === FALDON_M,
     faldonMatch ? faldonMatch[1] : 'no encontrado');

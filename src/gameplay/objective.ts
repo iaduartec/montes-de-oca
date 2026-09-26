@@ -184,6 +184,8 @@ export function createRepeaterObjective(scene: Scene, terrain: WorldTerrain, opt
   const concreteMat = material(scene, 'objective:concrete', new Color3(0.55, 0.55, 0.53), 0.04);
   const towerMat = material(scene, 'objective:tower', new Color3(0.72, 0.74, 0.78), 0.2);
   const cabinetMat = material(scene, 'objective:cabinet', new Color3(0.84, 0.85, 0.87), 0.12);
+  const cabinetDetailMat = material(scene, 'objective:cabinet-detail', new Color3(0.26, 0.3, 0.29), 0.08);
+  const cabinetHardwareMat = material(scene, 'objective:cabinet-hardware', new Color3(0.62, 0.58, 0.45), 0.1);
   const dishMat = material(scene, 'objective:dish', new Color3(0.9, 0.9, 0.88), 0.25);
   dishMat.backFaceCulling = false;
   const beaconMat = material(scene, 'objective:beacon', BEACON_OFF_DIFFUSE.clone(), 0.2);
@@ -191,7 +193,7 @@ export function createRepeaterObjective(scene: Scene, terrain: WorldTerrain, opt
   const indicatorMat = material(scene, 'objective:indicator', new Color3(0.5, 0.06, 0.04), 0.1);
   indicatorMat.emissiveColor = new Color3(0.3, 0.02, 0.01);
 
-  const materials = [concreteMat, towerMat, cabinetMat, dishMat, beaconMat, indicatorMat];
+  const materials = [concreteMat, towerMat, cabinetMat, cabinetDetailMat, cabinetHardwareMat, dishMat, beaconMat, indicatorMat];
   const ctx: BuildContext = { scene, root, parts: [] };
 
   // Patín: centro en y=-0.2 con 1.0 de alto ⇒ tope en +0.3 y fondo en -0.7, por
@@ -225,9 +227,16 @@ export function createRepeaterObjective(scene: Scene, terrain: WorldTerrain, opt
   box(ctx, 'objective:brace-a', towerMat, 2.4, 0.1, 0.1, 0, 7.0, 0);
   box(ctx, 'objective:brace-b', towerMat, 1.8, 0.1, 0.1, 0, 10.2, 0);
 
-  // Armario técnico y su piloto (segundo indicador de estado).
+  // Armario técnico con puerta y ventilación: los detalles oscuros rompen el
+  // bloque gris a corta distancia sin textura ni materiales por ventana.
   box(ctx, 'objective:cabinet', cabinetMat, 1.4, 1.8, 0.9, 2.1, 1.2, 1.4);
-  box(ctx, 'objective:cabinet-indicator', indicatorMat, 0.5, 0.12, 0.05, 2.1, 1.95, 1.88);
+  box(ctx, 'objective:cabinet-service-door', cabinetDetailMat, 1.1, 1.48, 0.035, 2.1, 1.2, 0.929);
+  for (let vent = 0; vent < 4; vent++) {
+    box(ctx, `objective:cabinet-vent-${vent}`, cabinetHardwareMat, 0.34, 0.035, 0.025, 1.83, 0.92 + vent * 0.11, 0.9);
+  }
+  box(ctx, 'objective:cabinet-handle', cabinetHardwareMat, 0.055, 0.19, 0.045, 2.54, 1.2, 0.898);
+  box(ctx, 'objective:cabinet-lock', cabinetHardwareMat, 0.07, 0.07, 0.035, 2.53, 1.2, 0.89);
+  box(ctx, 'objective:cabinet-indicator', indicatorMat, 0.16, 0.12, 0.05, 2.1, 1.95, 0.88);
 
   // Antena: brazo + reflector que GIRA con el progreso. Es la señal visual más
   // clara de "se está reparando" junto con la baliza.

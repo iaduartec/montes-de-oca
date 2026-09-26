@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at_utc": "2026-09-25T18:07:38+00:00",
+    "generated_at_utc": "2026-09-25T20:52:24+00:00",
     "script": "scripts/roads/build_roads.py",
     "coordinate_system": "EPSG:25830 (UTM 30N) -> worldX = E - 471500, worldZ = N - 4689000",
     "world_scale": 1.0,
@@ -790,5 +790,314 @@
       "ways_affected": 91,
       "note": "km de la ventana que el bbox viejo NO cubria"
     }
+  },
+  "footprint_clearance": {
+    "model": "semiancho exterior asimetrico por estacion; ray-cast contra huellas sin buffer; clearance_margin_m preferido si el minimo visual cabe; minimo movil de +-min_filter_radius_m; refinado contra los triangulos EXACTOS del renderer (resample real) y redondeo conservador hacia abajo; la banda incluye el faldon de ROAD",
+    "profile_step_m": 1.0,
+    "min_filter_radius_m": 1.0,
+    "clearance_margin_m": 0.3,
+    "skirt_width_m": 0.6,
+    "render_subdivision_m": 2.5,
+    "render_step_clamped_m": 1.0,
+    "visual_min_pavement_half_m": 0.5,
+    "published_precision_m": 0.001,
+    "before": {
+      "pairs": 190,
+      "buildings": 157,
+      "by_class": {
+        "ROAD": 169,
+        "TRACK": 7,
+        "PATH": 14
+      },
+      "pairs_within_300m_of_spawn": 121,
+      "sample": [
+        {
+          "road": "168459092",
+          "class": "ROAD",
+          "building": 1509801028,
+          "overlap_m2": 0.716,
+          "x": 2994.74,
+          "z": 3545.21
+        },
+        {
+          "road": "168459092",
+          "class": "ROAD",
+          "building": 1509801009,
+          "overlap_m2": 1.5,
+          "x": 3002.22,
+          "z": 3536.86
+        },
+        {
+          "road": "168459092",
+          "class": "ROAD",
+          "building": 1509801010,
+          "overlap_m2": 0.505,
+          "x": 3003.72,
+          "z": 3535.19
+        },
+        {
+          "road": "168459099",
+          "class": "ROAD",
+          "building": 1509801059,
+          "overlap_m2": 0.393,
+          "x": 3002.09,
+          "z": 3521.74
+        },
+        {
+          "road": "168459099",
+          "class": "ROAD",
+          "building": 1509801049,
+          "overlap_m2": 0.593,
+          "x": 2987.92,
+          "z": 3478.99
+        },
+        {
+          "road": "168459099",
+          "class": "ROAD",
+          "building": 1509801070,
+          "overlap_m2": 0.179,
+          "x": 2991.08,
+          "z": 3408.21
+        },
+        {
+          "road": "168459120",
+          "class": "TRACK",
+          "building": 1509801070,
+          "overlap_m2": 0.024,
+          "x": 2993.08,
+          "z": 3401.37
+        },
+        {
+          "road": "168459124",
+          "class": "ROAD",
+          "building": 1509801065,
+          "overlap_m2": 1.484,
+          "x": 2975.42,
+          "z": 3529.6
+        },
+        {
+          "road": "548355745",
+          "class": "ROAD",
+          "building": 1509801061,
+          "overlap_m2": 0.571,
+          "x": 2969.68,
+          "z": 3503.33
+        },
+        {
+          "road": "121899256",
+          "class": "ROAD",
+          "building": 1509801002,
+          "overlap_m2": 0.553,
+          "x": 3071.2,
+          "z": 3514.75
+        },
+        {
+          "road": "168459094",
+          "class": "TRACK",
+          "building": 479721683,
+          "overlap_m2": 0.003,
+          "x": 3238.57,
+          "z": 3482.04
+        },
+        {
+          "road": "168459102",
+          "class": "ROAD",
+          "building": 1509779475,
+          "overlap_m2": 0.002,
+          "x": 3246.97,
+          "z": 3346.14
+        }
+      ]
+    },
+    "after": {
+      "pairs": 0,
+      "buildings": 0,
+      "by_class": {},
+      "pairs_within_300m_of_spawn": 0,
+      "sample": []
+    },
+    "clamped_roads": 62,
+    "clamped_roads_by_class": {
+      "ROAD": 46,
+      "TRACK": 6,
+      "PATH": 10
+    },
+    "degraded_stations_below_visual_min": 369,
+    "degraded_sample": [
+      {
+        "road": "168459099",
+        "class": "ROAD",
+        "side": "left",
+        "t_m": 129.0,
+        "band_half_m": 1.08,
+        "pavement_half_m": 0.48,
+        "visual_min_half_m": 0.5,
+        "x": 2991.95,
+        "z": 3406.37
+      },
+      {
+        "road": "168459099",
+        "class": "ROAD",
+        "side": "left",
+        "t_m": 129.16,
+        "band_half_m": 1.08,
+        "pavement_half_m": 0.48,
+        "visual_min_half_m": 0.5,
+        "x": 2992.02,
+        "z": 3406.22
+      },
+      {
+        "road": "168459120",
+        "class": "TRACK",
+        "side": "right",
+        "t_m": 33.0,
+        "band_half_m": 0.3,
+        "pavement_half_m": 0.3,
+        "visual_min_half_m": 0.5,
+        "x": 2992.45,
+        "z": 3404.26
+      },
+      {
+        "road": "168459120",
+        "class": "TRACK",
+        "side": "right",
+        "t_m": 34.0,
+        "band_half_m": 0.3,
+        "pavement_half_m": 0.3,
+        "visual_min_half_m": 0.5,
+        "x": 2992.23,
+        "z": 3405.24
+      },
+      {
+        "road": "168459120",
+        "class": "TRACK",
+        "side": "right",
+        "t_m": 35.0,
+        "band_half_m": 0.3,
+        "pavement_half_m": 0.3,
+        "visual_min_half_m": 0.5,
+        "x": 2992.02,
+        "z": 3406.22
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 46.0,
+        "band_half_m": 1.08,
+        "pavement_half_m": 0.48,
+        "visual_min_half_m": 0.5,
+        "x": 2979.83,
+        "z": 3532.47
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 47.0,
+        "band_half_m": 1.0,
+        "pavement_half_m": 0.4,
+        "visual_min_half_m": 0.5,
+        "x": 2980.67,
+        "z": 3533.01
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 48.0,
+        "band_half_m": 0.91,
+        "pavement_half_m": 0.31,
+        "visual_min_half_m": 0.5,
+        "x": 2981.51,
+        "z": 3533.56
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 49.0,
+        "band_half_m": 0.91,
+        "pavement_half_m": 0.31,
+        "visual_min_half_m": 0.5,
+        "x": 2982.35,
+        "z": 3534.1
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 50.0,
+        "band_half_m": 0.91,
+        "pavement_half_m": 0.31,
+        "visual_min_half_m": 0.5,
+        "x": 2983.19,
+        "z": 3534.65
+      },
+      {
+        "road": "168459124",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 51.0,
+        "band_half_m": 0.94,
+        "pavement_half_m": 0.34,
+        "visual_min_half_m": 0.5,
+        "x": 2984.03,
+        "z": 3535.19
+      },
+      {
+        "road": "168459102",
+        "class": "ROAD",
+        "side": "right",
+        "t_m": 0.0,
+        "band_half_m": 1.04,
+        "pavement_half_m": 0.44,
+        "visual_min_half_m": 0.5,
+        "x": 3246.97,
+        "z": 3346.14
+      }
+    ],
+    "min_pavement_half_m": 0.0,
+    "hidden_stations": 4,
+    "hidden_holgura_stations": 0,
+    "hidden_refinado_stations": 4,
+    "hidden_roads": [
+      "266152557",
+      "310174515"
+    ],
+    "roads_fully_zero_band": [],
+    "hidden_runs": [
+      {
+        "road": "266152557",
+        "class": "ROAD",
+        "side": "right",
+        "t0_m": 98.0,
+        "t1_m": 99.0,
+        "length_m": 1.0,
+        "stations": 2,
+        "holgura_stations": 0,
+        "refinado_stations": 2,
+        "reason": "refinado"
+      },
+      {
+        "road": "310174515",
+        "class": "ROAD",
+        "side": "right",
+        "t0_m": 27.0,
+        "t1_m": 28.0,
+        "length_m": 1.0,
+        "stations": 2,
+        "holgura_stations": 0,
+        "refinado_stations": 2,
+        "reason": "refinado"
+      }
+    ],
+    "note": "bandLeft/bandRight son el semiancho EXTERIOR total (calzada+faldon) publicado por via recortada; el renderer deriva calzada y faldon, subdivide al render_step_clamped_m publicado y no recupera ancho entre estaciones. `after` mide el perfil publicado con el resample REAL del renderer contra huellas SIN buffer: 0 invasiones. Las estaciones con banda CERO no se ocultan: quedan en hidden_runs, clasificadas como `holgura` (eje dentro del margen) o `refinado` (la comprobacion exacta de triangulos redujo la banda a cero)."
+  },
+  "hashes": {
+    "roads_sha256": "fd08dc3746b46ecee0f78dde98effc3c487561d5d4bc76e612e6ca6c859c3171",
+    "navigation_nodes_sha256": "044fa5800531e45ccc699d4e91c4cd47a319dcf7422d1e7a7c78f4cacc25b314",
+    "navigation_edges_sha256": "4bdbc5948cef469b01c1566419a62dfc12b5f0f594b76fc0f3af8c64156806b5",
+    "note": "sha256 del JSON canonico; reproducible entre corridas (no depende de generated_at_utc)"
   }
 }

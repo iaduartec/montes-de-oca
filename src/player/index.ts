@@ -72,8 +72,8 @@ export interface CreatePlayerOptions {
 }
 
 const DEFAULT_ENTER_RADIUS_M = 4.5;
-/** Altura del centro del cuerpo sobre los pies (m). */
-const BODY_CENTER_Y_M = 0.95;
+/** Altura del centro del cuerpo sobre los pies (m). Cadera más alta = más pierna visible. */
+const BODY_CENTER_Y_M = 1.0;
 /** Longitud de la pierna (m). */
 const LEG_LENGTH_M = 1.0;
 /** Amplitud de la oscilación de las piernas (rad). */
@@ -108,8 +108,13 @@ function createCharacterModel(scene: Scene): {
   const torsoMat = makeMaterial(scene, 'player:torso', new Color3(0.2, 0.34, 0.5));
   const headMat = makeMaterial(scene, 'player:head', new Color3(0.82, 0.66, 0.52));
   const legMat = makeMaterial(scene, 'player:leg', new Color3(0.22, 0.23, 0.27), 0.08);
-  const vestMat = makeMaterial(scene, 'player:vest', new Color3(0.78, 0.63, 0.15));
+  // Material propio para el calzado: botas y pantalón dejan de leerse como un solo bloque oscuro.
+  const bootMat = makeMaterial(scene, 'player:boot', new Color3(0.16, 0.12, 0.1), 0.06);
+  const vestMat = makeMaterial(scene, 'player:vest', new Color3(0.9, 0.72, 0.12));
   const gearMat = makeMaterial(scene, 'player:gear', new Color3(0.25, 0.31, 0.22));
+  // Cabello: material propio y oscuro. Sin él la cabeza es una esfera de piel lisa y
+  // el personaje lee como maniquí desde la cámara de juego, que ve la espalda.
+  const hairMat = makeMaterial(scene, 'player:hair', new Color3(0.17, 0.12, 0.08), 0.05);
 
   const detail = (name: string, mat: StandardMaterial, width: number, height: number, depth: number, x: number, y: number, z: number): void => {
     const mesh = CreateBox(name, { width, height, depth }, scene);
@@ -120,7 +125,7 @@ function createCharacterModel(scene: Scene): {
   };
 
   // Hombros algo más anchos que la cintura, con una silueta angular sencilla.
-  const torso = CreateCylinder('player:torso', { height: 0.8, diameterTop: 0.54, diameterBottom: 0.44, tessellation: 6 }, scene);
+  const torso = CreateCylinder('player:torso', { height: 0.72, diameterTop: 0.54, diameterBottom: 0.44, tessellation: 6 }, scene);
   torso.material = torsoMat;
   torso.position.set(0, BODY_CENTER_Y_M, 0);
   torso.scaling.z = 0.65;
@@ -130,6 +135,12 @@ function createCharacterModel(scene: Scene): {
   // Front is +Z. The vest and field pack make the role legible from either side.
   detail('player:vest-front', vestMat, 0.42, 0.58, 0.05, 0, BODY_CENTER_Y_M, 0.19);
   detail('player:field-pack', gearMat, 0.38, 0.53, 0.17, 0, BODY_CENTER_Y_M + 0.02, -0.23);
+  // La cámara habitual ve la espalda: esta banda recupera la lectura del chaleco
+  // aunque la mochila tape el panel delantero desde ese ángulo.
+  detail('player:vest-back-reflective', vestMat, 0.31, 0.1, 0.012, 0, BODY_CENTER_Y_M + 0.02, -0.322);
+  // Tira reflectante alta del chaleco: fina y apoyada sobre la mochila, suma lectura
+  // de chaleco desde atrás sin quedar como una placa suelta.
+  detail('player:vest-yoke', vestMat, 0.39, 0.06, 0.018, 0, BODY_CENTER_Y_M + 0.24, -0.326);
   detail('player:field-radio', gearMat, 0.11, 0.17, 0.07, 0.16, BODY_CENTER_Y_M + 0.26, 0.22);
   for (const side of [-1, 1] as const) {
     const sleeve = CreateCylinder(`player:sleeve-${side}`, { height: 0.58, diameterTop: 0.2, diameterBottom: 0.15, tessellation: 6 }, scene);
@@ -141,7 +152,7 @@ function createCharacterModel(scene: Scene): {
 
     const hand = CreateSphere(`player:hand-${side}`, { diameter: 0.12, segments: 6 }, scene);
     hand.material = headMat;
-    hand.position.set(side * 0.37, 0.64, 0);
+    hand.position.set(side * 0.37, 0.7, 0);
     hand.parent = root;
     hand.isPickable = false;
   }
@@ -151,6 +162,13 @@ function createCharacterModel(scene: Scene): {
   head.position.set(0, 1.55, 0);
   head.parent = root;
   head.isPickable = false;
+  // Pelo corto en la nuca: una pieza redondeada bajo la gorra, sin cubrir la cara.
+  const hairBack = CreateSphere('player:hair-back', { diameter: 0.2, segments: 8 }, scene);
+  hairBack.material = hairMat;
+  hairBack.position.set(0, 1.52, -0.14);
+  hairBack.scaling.set(1, 0.48, 0.4);
+  hairBack.parent = root;
+  hairBack.isPickable = false;
   const capBrim = CreateCylinder('player:cap-brim', {
     height: 0.035,
     diameterTop: 0.39,
@@ -181,6 +199,12 @@ function createCharacterModel(scene: Scene): {
     leg.position.set(x, LEG_LENGTH_M / 2, 0);
     leg.parent = root;
     leg.isPickable = false;
+
+    const boot = CreateBox(`${name}-boot`, { width: 0.23, height: 0.14, depth: 0.34 }, scene);
+    boot.material = bootMat;
+    boot.position.set(0, -LEG_LENGTH_M / 2 + 0.07, 0.07);
+    boot.parent = leg;
+    boot.isPickable = false;
     return leg;
   };
   const legRight = makeLeg('player:leg-right', 0.14);
@@ -207,8 +231,10 @@ function createCharacterModel(scene: Scene): {
       torsoMat.dispose();
       headMat.dispose();
       legMat.dispose();
+      bootMat.dispose();
       vestMat.dispose();
       gearMat.dispose();
+      hairMat.dispose();
     },
   };
 }
