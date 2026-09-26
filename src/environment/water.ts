@@ -31,6 +31,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import type { Scene } from '@babylonjs/core/scene';
+import { gridExtent } from '../heightfield';
 import type { WorldTerrain } from '../terrain';
 
 /* ------------------------------------------------------------------------- *
@@ -73,6 +74,8 @@ interface SheetData {
   readonly id: string;
   readonly kind: string;
   readonly levelM: number;
+  /** Ancho de la banda de espuma del borde, en metros (el dato trae 1,5). */
+  readonly foamM: number;
   readonly ring: readonly (readonly [number, number])[];
   readonly indices: readonly number[];
 }
@@ -105,7 +108,6 @@ interface DepthGridData {
 }
 
 interface WaterData {
-  readonly levelM: number;
   readonly sheets: readonly SheetData[];
   readonly ribbons: readonly RibbonData[];
   readonly dam: DamData | null;
@@ -160,6 +162,7 @@ function parseSheets(raw: unknown): SheetData[] {
       id: typeof item.id === 'string' ? item.id : 'lamina',
       kind: typeof item.kind === 'string' ? item.kind : 'pond',
       levelM: item.levelM,
+      foamM: isFiniteNumber(item.foamM) && item.foamM > 0 ? item.foamM : 1.5,
       ring,
       indices,
     });
@@ -239,9 +242,7 @@ function parseWaterData(raw: unknown, bytes: number): WaterData {
   const meta = raw.meta;
   const versionOk = raw.schemaVersion === 1 || (isRecord(meta) && meta.schemaVersion === 1);
   if (!versionOk) throw new Error('agua: schemaVersion no soportada');
-  if (!isFiniteNumber(raw.levelM)) throw new Error('agua: falta "levelM"');
   return {
-    levelM: raw.levelM,
     sheets: parseSheets(raw.sheets),
     ribbons: parseRibbons(raw.ribbons),
     dam: parseDam(raw.dam ?? null),
@@ -260,9 +261,6 @@ function sheetColor(depthM: number, foam: boolean, deepM = 18): [number, number,
   const t = Math.max(0, Math.min(1, depthM / Math.max(1, deepM)));
   return [0.32 - 0.18 * t, 0.52 - 0.24 * t, 0.66 - 0.24 * t];
 }
-
-/** Profundidad a partir de la cual un vértice deja de ser espuma de borde. */
-const FOAM_DEPTH_M = 0.4;
 
 /**
  * Cintas: tono claro de agua con espuma en los vértices laterales. Como la tira
@@ -510,24 +508,35 @@ export async function loadWater(
     const box = emptyBBox();
     const levelY = toWorld(sheet.levelM);
     const base = sheetsBuffers.positions.length / 3;
-    const ringIndex: number[] = [];
+    // Espuma por DISTANCIA al borde (AGUA.md §4: banda de 1-2 m; el dato trae
+    // `foamM`), no por umbral de profundidad: con el umbral (0,4 m) las
+    // plataformas someras del vaso se pintaban de blanco y la lámina se leía
+    // como hielo (captura water_vaso.png del gate de T4).
+    const edgeDist = (x: number, z: number): number => {
+      let best = Infinity;
+      const ring = sheet.ring;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const d = pointSegDist(x, z, ring[j]![0], ring[j]![1], ring[i]![0], ring[i]![1]);
+        if (d < best) best = d;
+      }
+      return best;
+    };
+    const foamAt = (x: number, z: number): boolean => edgeDist(x, z) <= sheet.foamM;
     for (const [x, z] of sheet.ring) {
       growBBox(box, x, z);
       const depth = sheetDepthAt(sheet, x, z);
-      ringIndex.push(
-        pushVertex(sheetsBuffers, x, levelY, z, 0, 1, 0, sheetColor(depth, depth < FOAM_DEPTH_M, deepM)),
-      );
+      pushVertex(sheetsBuffers, x, levelY, z, 0, 1, 0, sheetColor(depth, foamAt(x, z), deepM));
     }
     sheetBoxes.push(box);
-    // Triangulación del dato + puntos medios con color de profundidad SOLO
-    // donde hace falta: si el centroide es playo, el triángulo ya es todo
+    // Triangulación del dato + puntos medios con color SOLO donde hace falta:
+    // si el centroide cae dentro de la banda de espuma, el triángulo ya es todo
     // espuma y subdividir sumaría vértices sin cambiar el tono. En el vaso, en
     // cambio, el interior lleva el azul profundo que ningún vértice del borde
     // tiene. Los puntos medios se comparten entre triángulos vecinos (caché
     // por posición redondeada al cm) y su color sale SOLO de la posición, así
-    // que ambos lados coinciden y no hay costuras: la espuma queda en la
-    // orilla exacta y el interior degrada suave al azul del vaso. (Un centroide
-    // por triángulo dibujaba la red de triangulación en blanco sobre el agua.)
+    // que ambos lados coinciden y no hay costuras: la espuma queda en el borde
+    // exacto y el interior degrada suave al azul del vaso. (Un centroide por
+    // triángulo dibujaba la red de triangulación en blanco sobre el agua.)
     const midKey = (x: number, z: number): string => `${Math.round(x * 100)},${Math.round(z * 100)}`;
     const midCache = new Map<string, number>();
     const midVertex = (ax: number, az: number, bx: number, bz: number): number => {
@@ -537,7 +546,7 @@ export async function loadWater(
       const hit = midCache.get(key);
       if (hit !== undefined) return hit;
       const depth = sheetDepthAt(sheet, mx, mz);
-      const vertex = pushVertex(sheetsBuffers, mx, levelY, mz, 0, 1, 0, sheetColor(depth, depth < FOAM_DEPTH_M, deepM));
+      const vertex = pushVertex(sheetsBuffers, mx, levelY, mz, 0, 1, 0, sheetColor(depth, foamAt(mx, mz), deepM));
       midCache.set(key, vertex);
       return vertex;
     };
@@ -551,8 +560,8 @@ export async function loadWater(
       const bz = sheetsBuffers.positions[i1 * 3 + 2]!;
       const cx = sheetsBuffers.positions[i2 * 3]!;
       const cz = sheetsBuffers.positions[i2 * 3 + 2]!;
-      const centerDepth = sheetDepthAt(sheet, (ax + bx + cx) / 3, (az + bz + cz) / 3);
-      if (centerDepth < FOAM_DEPTH_M) {
+      const centerDist = edgeDist((ax + bx + cx) / 3, (az + bz + cz) / 3);
+      if (centerDist <= sheet.foamM) {
         pushTri(sheetsBuffers, i0, i1, i2);
         continue;
       }
@@ -695,13 +704,17 @@ export async function loadWater(
 
   function depthAt(x: number, z: number): number {
     let best = ribbonDepthAt(x, z);
-    const gridDepth = gridDepthAt(x, z);
-    if (gridDepth !== null && gridDepth > best) best = gridDepth;
     for (const { sheet, box } of sheetBoxesWithData) {
-      if (sheet.kind === 'reservoir') continue; // el vaso manda la batimetría, no nivel−terreno
       if (x < box.minX || x > box.maxX || z < box.minZ || z > box.maxZ) continue;
+      // Pertenencia al anillo SIEMPRE: la grilla del vaso tiene celdas con
+      // profundidad >0 fuera del borde dibujado (21 celdas, peor 0,125 m a
+      // 5 m del anillo en el gate de T4); sin este filtro `depthAt` devolvía
+      // agua en seco y `nearestSafeShore` podía rechazar un punto seco.
       if (!containsPoint(sheet.ring, x, z)) continue;
-      const depth = Math.max(0, Math.min(1.5, sheet.levelM - (heightAt(x, z) + datum)));
+      const depth =
+        sheet.kind === 'reservoir'
+          ? Math.max(0, gridDepthAt(x, z) ?? 0) // el vaso manda la batimetría, no nivel−terreno
+          : Math.max(0, Math.min(1.5, sheet.levelM - (heightAt(x, z) + datum)));
       if (depth > best) best = depth;
     }
     return best;
@@ -754,8 +767,11 @@ export async function loadWater(
     for (let col = 0; col < mudCols; col++) {
       const x = mudBox.minX + (col + 0.5) * MUD_CELL_M;
       const depth = depthAt(x, z);
-      let muddy = depth >= 0.05 && depth <= 0.5;
-      if (!muddy && depth === 0) {
+      // Bit 1 = barro seguro (dentro del agua o banda de lámina); bit 2 = banda
+      // de cinta CANDIDATA: la celda de 4 m no puede representar la banda de
+      // 2 m, así que `isMuddy` la refina con la distancia exacta al eje.
+      let mud = depth >= 0.05 && depth <= 0.5 ? 1 : 0;
+      if (mud === 0 && depth === 0) {
         // Orilla: 12 m de láminas o ~2 m de cintas, siempre con pendiente <20°.
         let nearSheet = false;
         for (const { sheet, box } of sheetBoxesWithData) {
@@ -778,9 +794,9 @@ export async function loadWater(
           if (nearSheet) break;
         }
         const nearRibbon = !nearSheet && ribbonEdgeDistAt(x, z) <= RIBBON_SHORE_M;
-        if ((nearSheet || nearRibbon) && slopeTanAt(x, z) < MAX_SLOPE_TAN) muddy = true;
+        if ((nearSheet || nearRibbon) && slopeTanAt(x, z) < MAX_SLOPE_TAN) mud = nearSheet ? 1 : 2;
       }
-      if (muddy) mudBits[row * mudCols + col] = 1;
+      if (mud !== 0) mudBits[row * mudCols + col] = mud;
     }
   }
 
@@ -788,7 +804,21 @@ export async function loadWater(
     const col = Math.floor((x - mudBox.minX) / MUD_CELL_M);
     const row = Math.floor((z - mudBox.minZ) / MUD_CELL_M);
     if (col < 0 || row < 0 || col >= mudCols || row >= mudRows) return false;
-    return mudBits[row * mudCols + col] === 1;
+    const bit = mudBits[row * mudCols + col];
+    if (bit === 0) return false;
+    if (bit === 1) return true;
+    // Candidata a orilla de cinta: se refina con la distancia exacta al eje
+    // (banda de ~2 m, no el tamaño de la celda) y la pendiente en el punto.
+    return ribbonEdgeDistAt(x, z) <= RIBBON_SHORE_M && slopeTanAt(x, z) < MAX_SLOPE_TAN;
+  }
+
+  // Cota del mundo cargado: `heightAt` devuelve 0 fuera de los tiles, así que
+  // sin esto un anillo de `nearestSafeShore` podría devolver un punto del vacío.
+  const worldBox = emptyBBox();
+  for (const sampler of terrain.samplers) {
+    const ext = gridExtent(sampler.grid);
+    growBBox(worldBox, ext.minX, ext.minZ);
+    growBBox(worldBox, ext.maxX, ext.maxZ);
   }
 
   function nearestSafeShore(x: number, z: number): { x: number; z: number } | null {
@@ -799,6 +829,7 @@ export async function loadWater(
         const angle = (k / STEPS) * Math.PI * 2;
         const cx = x + Math.cos(angle) * radius;
         const cz = z + Math.sin(angle) * radius;
+        if (cx < worldBox.minX || cx > worldBox.maxX || cz < worldBox.minZ || cz > worldBox.maxZ) continue;
         if (depthAt(cx, cz) !== 0) continue;
         if (slopeTanAt(cx, cz) >= MAX_SLOPE_TAN) continue;
         return { x: Math.round(cx * 100) / 100, z: Math.round(cz * 100) / 100 };

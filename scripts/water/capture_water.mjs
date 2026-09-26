@@ -224,10 +224,20 @@ async function main() {
         `${report.stats.meshes} mallas · ${report.stats.triangles} tris · ${report.stats.dataBytes} B`,
     );
     check('agua: 3 mallas', report.stats.meshes === 3, `${report.stats.meshes} mallas`);
+    // Cotas INFERIORES: sin ellas, un fallo de carga (sheets/ribbons vacíos)
+    // pasaría todos los checks (residual=0 muestras, triángulos bajo el tope).
+    check(
+      'agua: láminas y cintas presentes',
+      report.stats.sheets >= 5 && report.stats.ribbons >= 50,
+      `${report.stats.sheets} láminas · ${report.stats.ribbons} cintas`,
+    );
+    check('agua: triángulos >= 30 k (piso)', report.stats.triangles >= 30000, `${report.stats.triangles} tris`);
     check('agua: triángulos <= 40 k', report.stats.triangles <= 40000, `${report.stats.triangles} tris`);
 
     const perfCon = await cdp.evaluate('window.__game.perf()');
-    report.perf_con_agua = perfCon;
+    // Solo métricas válidas en headless: FPS/frameTime de SwiftShader no se
+    // persisten en el JSON (inducen a error si se leen como medición).
+    report.perf_con_agua = { drawCalls: perfCon.drawCalls, triangles: perfCon.triangles };
     console.log(`[agua] con agua (presa): draw=${perfCon.drawCalls} tris=${perfCon.triangles.toFixed(0)}`);
 
     // ===================== Residual cinta<->terreno EN LA APP =====================
@@ -262,6 +272,7 @@ async function main() {
       `[agua] residual: ${residual.checked} muestras · violaciones=${residual.violations} · ` +
         `peor=${residual.worst.toFixed(3)} m en (${residual.worstAt.map((v) => v.toFixed(1)).join(', ')})`,
     );
+    check('agua: residual con muestras (no vacío)', residual.checked >= 15000, `${residual.checked} muestras`);
     check('agua: residual >= +0,02 m en todo el eje', residual.violations === 0, `${residual.violations} violaciones`);
 
     // ===================== Vados: depthAt <= 0,35 m =====================
@@ -315,7 +326,7 @@ async function main() {
     await waitReady(cdp, '!!(window.__game && window.__game.water === null)');
     await wait(2500);
     const perfSin = await cdp.evaluate('window.__game.perf()');
-    report.perf_sin_agua = perfSin;
+    report.perf_sin_agua = { drawCalls: perfSin.drawCalls, triangles: perfSin.triangles };
     report.costo_agua = {
       draw_calls_sin: perfSin.drawCalls,
       draw_calls_con: perfCon.drawCalls,
@@ -330,6 +341,11 @@ async function main() {
         `tris ${perfSin.triangles.toFixed(0)} -> ${perfCon.triangles.toFixed(0)}`,
     );
     check('agua: delta draw calls >= 2', perfCon.drawCalls - perfSin.drawCalls >= 2, `${perfSin.drawCalls} -> ${perfCon.drawCalls}`);
+    check(
+      'agua: triángulos del agua en vista >= 30 k',
+      report.costo_agua.triangulos_delta >= 30000,
+      `${report.costo_agua.triangulos_delta} tris`,
+    );
     await cdp.screenshot(resolve(OUT_DIR, 'water_presa_sin_agua.png'));
     console.log('[agua] captura output/water_presa_sin_agua.png');
 
