@@ -163,7 +163,10 @@ simulación y solo añade amortiguación y un offset visual.
 - **Visual**: capturas antes/después con la misma cámara en (a) la presa desde el
   agua arriba, (b) la orilla del vaso, (c) el vado del Oca, (d) un arroyo. Con y
   sin `?water=0` para el coste.
-- **Presupuesto**: ≤3 mallas nuevas, ≤25 k triángulos, `water.json` ≤0,5 MB,
+- **Presupuesto**: ≤3 mallas nuevas, ≤40 k triángulos (revisado el 26 sep 2026
+  con datos reales: las 60 cintas a 2,5 m de paso dan ~31,7 k triángulos; la
+  estimación inicial de 25 k no contaba el número real de arroyos y recortarles
+  fidelidad no compensa), `water.json` ≤0,5 MB,
   0 trabajo por frame salvo una consulta de celda (O(1)); medición de draw calls
   y triángulos con y sin la capa.
 

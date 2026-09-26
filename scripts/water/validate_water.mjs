@@ -268,8 +268,8 @@ check('al menos 60 cintas de río/arroyo',
 check('cintas con ancho > 0, al menos 2 puntos de eje y calado > 0',
   water.ribbons.length > 0 && water.ribbons.every((r) =>
     r.widthM > 0 && r.points.length >= 2 && r.caladoM > 0));
-const CALADO = { river: 0.25, stream: 0.18, ditch: 0.12 };
-check('calado según tipo (river 0,25 / stream 0,18 / ditch 0,12)',
+const CALADO = { river: 0.25, stream: 0.18, ditch: 0.15 };
+check('calado según tipo (river 0,25 / stream 0,18 / ditch 0,15, dentro del rango 0,15-0,25)',
   water.ribbons.length > 0 && water.ribbons.every((r) => r.caladoM === CALADO[r.kind]));
 let puntosEje = 0;
 let puntosEjeMal = 0;
@@ -294,16 +294,16 @@ const cruces = stats.crucesRuta ?? [];
 const crucesRio = cruces.filter((c) => c.kind === 'river');
 check('el Oca cruza la ruta (al menos 1 cruce de río en stats.crucesRuta)',
   crucesRio.length >= 1, `${crucesRio.length} de río sobre ${cruces.length} cruces`);
-const maxCaladoRio = crucesRio.length ? Math.max(...crucesRio.map((c) => c.caladoM)) : Infinity;
-check('calado ≤ 0,35 m en todos los cruces de río',
-  crucesRio.length >= 1 && crucesRio.every((c) => c.caladoM <= 0.35),
-  `máx ${maxCaladoRio} m en ${crucesRio.map((c) => `(${c.x}, ${c.z})`).join(' ')}`);
+const maxCalado = cruces.length ? Math.max(...cruces.map((c) => c.caladoM)) : Infinity;
+check('calado ≤ 0,35 m en TODOS los cruces de la ruta (río y arroyo)',
+  cruces.length >= 1 && cruces.every((c) => c.caladoM <= 0.35),
+  `máx ${maxCalado} m en ${cruces.map((c) => `(${c.x}, ${c.z}) ${c.kind}`).join(' ')}`);
 let crucesVerificados = 0;
 let peorDesvio = 0;
-for (const c of crucesRio) {
+for (const c of cruces) {
   if (!Number.isFinite(c.x) || !Number.isFinite(c.caladoM)) continue;
   let mejor = null;
-  for (const r of water.ribbons.filter((r) => r.kind === 'river')) {
+  for (const r of water.ribbons.filter((r) => r.kind === c.kind)) {
     for (let i = 0; i + 1 < r.points.length; i++) {
       const [ax, az, ay] = r.points[i];
       const [bx, bz, by] = r.points[i + 1];
@@ -323,8 +323,8 @@ for (const c of crucesRio) {
   if (desvio > peorDesvio) peorDesvio = desvio;
 }
 check('calado re-derivado del DEM coincide (±0,05 m, no vacío)',
-  crucesVerificados === crucesRio.length && crucesVerificados >= 1 && peorDesvio <= 0.05,
-  `${crucesVerificados}/${crucesRio.length} cruces, peor desvío ${peorDesvio.toFixed(3)} m`);
+  crucesVerificados === cruces.length && crucesVerificados >= 1 && peorDesvio <= 0.05,
+  `${crucesVerificados}/${cruces.length} cruces, peor desvío ${peorDesvio.toFixed(3)} m`);
 
 // ------------------------------------------------------- 10. trazabilidad
 // Cada cinta debe salir de un way river/stream/ditch del crudo no entubado,
@@ -339,11 +339,15 @@ const entubados = waysAgua.filter((e) => e.tags?.tunnel !== undefined || e.tags?
 const detalle = stats.cintas?.detalle ?? [];
 check('stats.cintas.total coincide con water.ribbons',
   stats.cintas?.total === water.ribbons.length, `${stats.cintas?.total} vs ${water.ribbons.length}`);
-check('cintas + entubadas + descartadas cubren los ways del crudo',
-  detalle.length + (stats.cintasDescartadas ?? []).length === dibujables.length &&
-    (stats.cintasEntubadas?.total ?? -1) === entubados.length,
-  `${detalle.length} cintas + ${(stats.cintasDescartadas ?? []).length} descartadas = ${dibujables.length} dibujables, ${stats.cintasEntubadas?.total} entubadas de ${entubados.length}`);
 const idsDibujables = new Set(dibujables.map((e) => `waterway-${e.id}`));
+const idsDetalle = new Set(detalle.map((d) => d.osmId));
+const descartadas = stats.cintasDescartadas ?? [];
+const idsDescartadas = new Set(descartadas.map((d) => d.id ?? d.osmId));
+const idsCubiertos = new Set([...idsDetalle, ...idsDescartadas]);
+check('cada way dibujable queda cubierto por el detalle o por los descartados (ids únicos, robusto a tramos)',
+  idsCubiertos.size === idsDibujables.size && [...idsDibujables].every((id) => idsCubiertos.has(id)) &&
+    (stats.cintasEntubadas?.total ?? -1) === entubados.length,
+  `${idsDetalle.size} ways en ${detalle.length} tramos + ${idsDescartadas.size} descartados = ${idsDibujables.size} dibujables; ${stats.cintasEntubadas?.total} entubadas de ${entubados.length}`);
 check('cada cinta detalla un way dibujable real (no wastewater/dam/túnel)',
   detalle.length === water.ribbons.length && detalle.every((d) => idsDibujables.has(d.osmId)),
   `${detalle.length} detalles`);
@@ -356,6 +360,96 @@ check('el muro sale del way waterway=dam del crudo (<5 cm en extremos)',
   Math.hypot(water.dam.a[0] - damPts[0][0], water.dam.a[1] - damPts[0][1]) < 0.05 &&
     Math.hypot(water.dam.b[0] - damPts[damPts.length - 1][0], water.dam.b[1] - damPts[damPts.length - 1][1]) < 0.05,
   `way ${damRaw.id} (${damPts.length} nodos)`);
+
+// ------------------------------------- 11. cinta sobre el terreno (todo el eje)
+// Invariante de la corrección de la Tarea 3: la superficie de la cinta (lerp
+// del eje + calado) no puede quedar bajo el terreno triangular en NINGÚN
+// punto del eje, no sólo en los vértices. Se muestrea a 0,25 m y en todos los
+// cruces de frontera de triángulo del DEM: dentro de un triángulo ambas
+// funciones son lineales, así que en los extremos de cada pieza está el
+// control exacto. No puede pasar en vacío.
+console.log('\n=== 11. superficie de cinta ≥ terreno + 0,02 m en todo el eje ===');
+function surfaceAt(x, z) {
+  const cands = tileIndex.get(Math.floor(x / 1000) + ',' + Math.floor(z / 1000)) ?? [];
+  for (const t of cands) {
+    if (x >= t.x0 - 0.01 && x <= t.x0 + (t.columns - 1) * t.dx + 0.01 &&
+        z >= t.z0 - 0.01 && z <= t.z0 + (t.rows - 1) * t.dz + 0.01) {
+      const c = (x - t.x0) / t.dx;
+      const r = (z - t.z0) / t.dz;
+      const i = Math.max(0, Math.min(Math.floor(c), t.columns - 2));
+      const j = Math.max(0, Math.min(Math.floor(r), t.rows - 2));
+      const u = c - i;
+      const v = r - j;
+      const hSW = t.heights[j * t.columns + i];
+      const hSE = t.heights[j * t.columns + i + 1];
+      const hNW = t.heights[(j + 1) * t.columns + i];
+      const hNE = t.heights[(j + 1) * t.columns + i + 1];
+      return u >= v
+        ? hSW * (1 - u) + hSE * (u - v) + hNE * v
+        : hSW * (1 - v) + hNE * u + hNW * (v - u);
+    }
+  }
+  return null;
+}
+function triangleSplits(ax, az, bx, bz, dx, dz) {
+  const ts = [];
+  const add = (t) => { if (t > 1e-9 && t < 1 - 1e-9) ts.push(t); };
+  if (bx !== ax) {
+    for (let k = Math.ceil(Math.min(ax, bx) / dx - 1e-12);
+         k <= Math.floor(Math.max(ax, bx) / dx + 1e-12); k++) {
+      add((k * dx - ax) / (bx - ax));
+    }
+  }
+  if (bz !== az) {
+    for (let k = Math.ceil(Math.min(az, bz) / dz - 1e-12);
+         k <= Math.floor(Math.max(az, bz) / dz + 1e-12); k++) {
+      add((k * dz - az) / (bz - az));
+    }
+  }
+  const f0 = ax / dx - az / dz;
+  const f1 = bx / dx - bz / dz;
+  if (Math.abs(f1 - f0) > 1e-12) {
+    for (let k = Math.ceil(Math.min(f0, f1) - 1e-12);
+         k <= Math.floor(Math.max(f0, f1) + 1e-12); k++) {
+      add((k - f0) / (f1 - f0));
+    }
+  }
+  ts.sort((a, b) => a - b);
+  const out = [];
+  for (const t of ts) if (!out.length || t - out[out.length - 1] > 1e-9) out.push(t);
+  return out;
+}
+const dxDEM = tileGrids[0].dx;
+const dzDEM = tileGrids[0].dz;
+const holguraMin = { river: Infinity, stream: Infinity, ditch: Infinity };
+let muestrasCinta = 0;
+let cintasSinDEM = 0;
+for (const r of water.ribbons) {
+  for (let i = 0; i + 1 < r.points.length; i++) {
+    const [ax, az, ay] = r.points[i];
+    const [bx, bz, by] = r.points[i + 1];
+    const pasos = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.25));
+    const ts = new Set([0, 1]);
+    for (let j = 0; j <= pasos; j++) ts.add(j / pasos);
+    for (const t of triangleSplits(ax, az, bx, bz, dxDEM, dzDEM)) ts.add(t);
+    for (const t of ts) {
+      const x = ax + (bx - ax) * t;
+      const z = az + (bz - az) * t;
+      const h = surfaceAt(x, z);
+      if (h === null) { cintasSinDEM++; continue; }
+      const holg = ay + t * (by - ay) + r.caladoM - h;
+      muestrasCinta++;
+      if (holg < holguraMin[r.kind]) holguraMin[r.kind] = holg;
+    }
+  }
+}
+let peorHolgura = Infinity;
+for (const v of Object.values(holguraMin)) if (v < peorHolgura) peorHolgura = v;
+check('superficie de cinta ≥ terreno + 0,02 m en todo el eje (> 10 000 muestras, no vacío)',
+  muestrasCinta > 10000 && cintasSinDEM === 0 && peorHolgura >= 0.02 - 1e-4,
+  `${muestrasCinta} muestras, peor holgura ${peorHolgura.toFixed(4)} m (` +
+    Object.entries(holguraMin).map(([k, v]) => `${k} ${v.toFixed(4)}`).join(', ') +
+    `), ${cintasSinDEM} sin DEM`);
 
 // ------------------------------------------------------------------ resumen
 const total = pass + fails.length;

@@ -52,7 +52,7 @@ SHORE_ZERO_M = CELL_M * 0.5  # banda de orilla con profundidad 0 forzada
 FOAM_M = 1.5  # espuma blanca en el borde de cada lámina
 DAM_WIDTH_M = 6.0  # ancho del muro de la presa
 WIDTH_BY_KIND = {"river": 7.0, "stream": 2.5, "ditch": 1.2}  # ancho de cinta (m)
-CALADO_M = {"river": 0.25, "stream": 0.18, "ditch": 0.12}  # calado de la cinta (m)
+CALADO_M = {"river": 0.25, "stream": 0.18, "ditch": 0.15}  # calado de la cinta (m)
 RIBBON_STEP_M = 2.5  # remuestreo del eje de cintas, como las pistas
 FORD_MARGIN_M = 1.0  # margen sobre el semiancho para detectar cruces de ruta
 ROUTE_FILE = ROOT / "src" / "gameplay" / "first-route.ts"  # polilínea real
@@ -149,6 +149,185 @@ def height_at(index: dict[tuple[int, int], list[dict]], x: float, z: float) -> f
             r = round((z - g["z0"]) / g["dz"])
             return g["heights"][r * g["columns"] + c]
     raise KeyError((x, z))
+
+
+HOLGURA_MIN_M = 0.02  # invariante: superficie de cinta >= terreno + 0,02 m en
+# TODO el eje, no solo en los vértices (corrección de revisión T3).
+
+
+def surface_at(index: dict[tuple[int, int], list[dict]], x: float, z: float) -> float:
+    """Altura ABSOLUTA de la superficie triangular del DEM (metros).
+
+    Réplica exacta de `surface_meters` (`scripts/terrain/build_terrain_tiles.py:60`,
+    gemela en TS: `surfaceMeters` en `src/heightfield.ts`): cada celda se parte
+    con la diagonal SW->NE y se interpola el triángulo que contiene al punto.
+    Misma selección de tile/bbox que `height_at` (KeyError fuera del DEM).
+    `height_at` (vecino más cercano) sigue viva para cota del vaso, láminas
+    menores y base de la presa; las cintas usan ESTA.
+    """
+    cands = index.get((math.floor(x / 1000), math.floor(z / 1000)), [])
+    for g in cands:
+        if (
+            g["x0"] - 0.01 <= x <= g["x0"] + (g["columns"] - 1) * g["dx"] + 0.01
+            and g["z0"] - 0.01 <= z <= g["z0"] + (g["rows"] - 1) * g["dz"] + 0.01
+        ):
+            c = (x - g["x0"]) / g["dx"]
+            r = (z - g["z0"]) / g["dz"]
+            # como en el motor (min con el borde); el max(0, …) cubre el borde
+            # de 1 cm de la bbox, donde c/r pueden dar -0,002 (extrapola mm).
+            i = max(0, min(math.floor(c), g["columns"] - 2))
+            j = max(0, min(math.floor(r), g["rows"] - 2))
+            u = c - i
+            v = r - j
+            h = g["heights"]
+            cols = g["columns"]
+            hSW = h[j * cols + i]
+            hSE = h[j * cols + i + 1]
+            hNW = h[(j + 1) * cols + i]
+            hNE = h[(j + 1) * cols + i + 1]
+            if u >= v:
+                return hSW * (1 - u) + hSE * (u - v) + hNE * v
+            return hSW * (1 - v) + hNE * u + hNW * (v - u)
+    raise KeyError((x, z))
+
+
+def _dem_step(index: dict[tuple[int, int], list[dict]]) -> tuple[float, float]:
+    """Paso (dx, dz) de la grilla DEM; todos los tiles lo comparten."""
+    g = next(iter(index.values()))[0]
+    return g["dx"], g["dz"]
+
+
+def triangle_splits(
+    ax: float, az: float, bx: float, bz: float, dx: float, dz: float
+) -> list[float]:
+    """Parámetros t en (0, 1) donde el segmento cruza una frontera de
+    triángulo del DEM: rectas x=k*dx, z=k*dz y diagonales SW->NE (gx−gz
+    entero, con gx=x/dx y gz=z/dz; los orígenes de tile son múltiplos del
+    paso, así que valen las rectas globales). Dentro de un triángulo el
+    terreno y la cinta son lineales, así que el control exacto de la holgura
+    es en estos cruces (más los pasos de 0,25 m del validador).
+    """
+    ts: list[float] = []
+
+    def add(t: float) -> None:
+        if 1e-9 < t < 1 - 1e-9:
+            ts.append(t)
+
+    if bx != ax:
+        for k in range(
+            math.ceil(min(ax, bx) / dx - 1e-12),
+            math.floor(max(ax, bx) / dx + 1e-12) + 1,
+        ):
+            add((k * dx - ax) / (bx - ax))
+    if bz != az:
+        for k in range(
+            math.ceil(min(az, bz) / dz - 1e-12),
+            math.floor(max(az, bz) / dz + 1e-12) + 1,
+        ):
+            add((k * dz - az) / (bz - az))
+    f0 = ax / dx - az / dz
+    f1 = bx / dx - bz / dz
+    if abs(f1 - f0) > 1e-12:
+        for k in range(
+            math.ceil(min(f0, f1) - 1e-12), math.floor(max(f0, f1) + 1e-12) + 1
+        ):
+            add((k - f0) / (f1 - f0))
+    ts.sort()
+    fuera: list[float] = []
+    for t in ts:
+        if not fuera or t - fuera[-1] > 1e-9:
+            fuera.append(t)
+    return fuera
+
+
+def refine_axis(
+    eje: list[tuple[float, float]], calado: float, index: dict
+) -> tuple[list[tuple[float, float]], list[float], int]:
+    """Eje + cotas triangulares, con vértices extra solo donde haga falta.
+
+    La cinta se renderiza como lerp lineal entre vértices; donde el terreno
+    es convexo la superficie puede quedar enterrada ENTRE vértices. Como en
+    cada triángulo del DEM ambas funciones son lineales, basta controlar los
+    cruces de frontera (`triangle_splits`): se inserta un vértice (con su cota
+    triangular exacta) solo en los cruces que violan la holgura.
+
+    Se trabaja sobre coordenadas ya redondeadas a cm (lo que se serializa en
+    `water.json`): así la holgura evaluada es la publicada, sin deriva por
+    redondeo. Se itera hasta que ningún cruce viola: cada vértice insertado
+    queda POR ENCIMA de la interpolación vieja (su superficie es
+    terreno+calado, con calado >> 0,02), así que lo que cumplía sigue
+    cumpliendo y el conjunto de violadores solo decrece; lo insertado queda
+    con holgura = calado para siempre. Devuelve (eje, cotas, agregados).
+    """
+    dx, dz = _dem_step(index)
+    eje = [(round(x, 2), round(z, 2)) for x, z in eje]
+    # cotas también redondeadas: son las publicadas, y el validador interpola
+    # sobre ellas (una cota sin redondear difiere hasta 5 mm y escondería
+    # violadores al verificar).
+    cotas = [round(surface_at(index, x, z), 2) for x, z in eje]
+    agregados = 0
+    for _ in range(20):
+        viol = 0
+        fuera: list[tuple[float, float]] = [eje[0]]
+        fuera_cotas: list[float] = [cotas[0]]
+        for i in range(len(eje) - 1):
+            ax, az = eje[i]
+            bx, bz = eje[i + 1]
+            y0, y1 = cotas[i], cotas[i + 1]
+            for t in triangle_splits(ax, az, bx, bz, dx, dz):
+                # se EVALÚA en el punto exacto del cruce (es lo que recorre la
+                # cinta y lo que muestrea el validador); si viola, se INSERTA
+                # su redondeo a cm (el punto publicado, con su cota exacta).
+                x = ax + (bx - ax) * t
+                z = az + (bz - az) * t
+                if (
+                    y0 + t * (y1 - y0) + calado - surface_at(index, x, z)
+                    < HOLGURA_MIN_M - 1e-9
+                ):
+                    xr, zr = round(x, 2), round(z, 2)
+                    fuera.append((xr, zr))
+                    fuera_cotas.append(round(surface_at(index, xr, zr), 2))
+                    agregados += 1
+                    viol += 1
+            fuera.append((bx, bz))
+            fuera_cotas.append(y1)
+        eje, cotas = fuera, fuera_cotas
+        if viol == 0:
+            break
+    return eje, cotas, agregados
+
+
+def holgura_minima_por_tipo(ribbons_full: list[dict], index: dict) -> dict[str, float]:
+    """Peor holgura (superficie − terreno triangular) por tipo, muestreo denso.
+
+    Mismo método que el check §11 del validador: pasos de 0,25 m + todos los
+    cruces de triángulo de cada segmento. Comando que la mide:
+    `python3 scripts/water/build_water.py` (la deja en
+    `stats.cintas.peorHolguraM`).
+    """
+    dx, dz = _dem_step(index)
+    peor: dict[str, float] = {}
+    for r in ribbons_full:
+        pts = r["points"]
+        calado = r["caladoM"]
+        minimo = peor.get(r["kind"], float("inf"))
+        for i in range(len(pts) - 1):
+            ax, az, ay = pts[i]
+            bx, bz, by = pts[i + 1]
+            seg = math.hypot(bx - ax, bz - az)
+            ts = {0.0, 1.0}
+            k = max(1, math.ceil(seg / 0.25))
+            for j in range(k + 1):
+                ts.add(j / k)
+            ts.update(triangle_splits(ax, az, bx, bz, dx, dz))
+            for t in ts:
+                x = ax + (bx - ax) * t
+                z = az + (bz - az) * t
+                holg = (ay + t * (by - ay) + calado) - surface_at(index, x, z)
+                if holg < minimo:
+                    minimo = holg
+        peor[r["kind"]] = minimo
+    return {k: round(v, 3) for k, v in sorted(peor.items())}
 
 
 # ------------------------------------------------------------- geometría 2D
@@ -654,11 +833,13 @@ def build_sheets(
 
 def ribbon_from_way(
     index: dict, element: dict, kind: str, proj: dict, origin: dict
-) -> tuple[list[dict], list[dict]]:
+) -> tuple[list[dict], list[dict], int]:
     """Cintas de un way río/arroyo/zanja: un way puede dar varios tramos.
 
-    Devuelve (cintas, descartadas). Cada cinta lleva su eje remuestreado a
-    2,5 m con la cota del terreno por punto, el ancho y el calado de su tipo.
+    Devuelve (cintas, descartadas, agregados). Cada cinta lleva su eje
+    remuestreado a 2,5 m con la cota TRIANGULAR del terreno por punto
+    (`surface_at`, la del motor) más los vértices extra de `refine_axis`, el
+    ancho y el calado de su tipo.
     """
     tags = element.get("tags", {})
     geom = element.get("geometry", [])
@@ -674,6 +855,7 @@ def ribbon_from_way(
     world = [to_world(g["lon"], g["lat"], proj, origin) for g in geom]
     ribbons: list[dict] = []
     dropped: list[dict] = []
+    agregados = 0
     for tramo, run in enumerate(clip_line_to_window(world)):
         if len(run) < 2:
             dropped.append(
@@ -682,13 +864,14 @@ def ribbon_from_way(
             continue
         eje = resample_line(run, RIBBON_STEP_M)
         try:
+            eje, cotas, unos = refine_axis(eje, calado, index)
             pts = [
-                [round(x, 2), round(z, 2), round(height_at(index, x, z), 2)]
-                for x, z in eje
+                [round(x, 2), round(z, 2), round(y, 2)] for (x, z), y in zip(eje, cotas)
             ]
         except KeyError:
             dropped.append({"id": osm_id, "motivo": "fuera del DEM"})
             continue
+        agregados += unos
         ribbons.append(
             {
                 "kind": kind,
@@ -702,15 +885,15 @@ def ribbon_from_way(
         )
     if not ribbons and not dropped:
         dropped.append({"id": osm_id, "motivo": "íntegramente fuera de la ventana"})
-    return ribbons, dropped
+    return ribbons, dropped, agregados
 
 
 def build_ribbons(
     raw: dict, proj: dict, origin: dict, index: dict
-) -> tuple[list[dict], list[dict], list[dict]]:
+) -> tuple[list[dict], list[dict], list[dict], int]:
     """Cintas de ríos/arroyos/zanjas desde los ways con geometría propia.
 
-    Devuelve (cintas, entubadas, descartadas). No se dibujan como cinta el
+    Devuelve (cintas, entubadas, descartadas, agregados). No se dibujan como cinta el
     muro (`waterway=dam`, va aparte en `dam`) ni las láminas de
     `water=wastewater`; los tramos con `tunnel=*` o `culvert=*` van entubados
     (pintarlos cruzaría calzada y camino) y se cuentan, nunca se silencian.
@@ -718,6 +901,7 @@ def build_ribbons(
     ribbons: list[dict] = []
     entubadas: list[dict] = []
     dropped: list[dict] = []
+    agregados = 0
     for el in raw.get("elements", []):
         if el.get("type") != "way":
             continue
@@ -738,11 +922,12 @@ def build_ribbons(
                 }
             )
             continue
-        unas, unas_fuera = ribbon_from_way(index, el, kind, proj, origin)
+        unas, unas_fuera, unas_mas = ribbon_from_way(index, el, kind, proj, origin)
         ribbons.extend(unas)
         dropped.extend(unas_fuera)
+        agregados += unas_mas
     ribbons.sort(key=lambda r: (r["_osm"], r["_tramo"]))
-    return ribbons, entubadas, dropped
+    return ribbons, entubadas, dropped, agregados
 
 
 def load_route_polyline() -> list[tuple[float, float]]:
@@ -769,10 +954,11 @@ def ford_depths(
 ) -> list[dict]:
     """Calado real en los cruces de la ruta: (superficie − terreno) en el punto.
 
-    La superficie de la cinta en el punto de cruce es la cota del terreno de
-    su eje interpolada + el calado del tipo; el calado medido es esa
-    superficie menos el terreno bajo la ruta. Un cruce por cinta como máximo
-    (el punto de la ruta más cercano a su eje, dentro del semiancho + margen).
+    La superficie de la cinta en el punto de cruce es la cota triangular del
+    terreno de su eje interpolada + el calado del tipo; el calado medido es esa
+    superficie menos el terreno triangular (`surface_at`, el del motor) bajo
+    la ruta. Un cruce por cinta como máximo (el punto de la ruta más cercano
+    a su eje, dentro del semiancho + margen).
     """
     cruces: list[dict] = []
     for r in ribbons:
@@ -807,7 +993,7 @@ def ford_depths(
         d, rx, rz, superficie = mejor
         superficie += r["caladoM"]
         try:
-            terreno = height_at(index, rx, rz)
+            terreno = surface_at(index, rx, rz)
         except KeyError:
             continue
         cruces.append(
@@ -898,9 +1084,12 @@ def derive() -> tuple[dict, dict]:
         raw, proj, origin, index, pool, reservoir_world
     )
 
-    ribbons_full, entubadas, cintas_fuera = build_ribbons(raw, proj, origin, index)
+    ribbons_full, entubadas, cintas_fuera, agregados = build_ribbons(
+        raw, proj, origin, index
+    )
     route = load_route_polyline()
     cruces = ford_depths(index, ribbons_full, route)
+    holguras = holgura_minima_por_tipo(ribbons_full, index)
     # el esquema de water.json está congelado: las claves internas de
     # trazabilidad (_osm, _tramo) viajan en stats.json, no en water.json.
     ribbons = [
@@ -960,6 +1149,14 @@ def derive() -> tuple[dict, dict]:
             "total": len(ribbons_full),
             "porTipo": por_tipo,
             "puntosEje": sum(len(r["points"]) for r in ribbons_full),
+            # Vértices que `refine_axis` insertó en cruces de triángulo del
+            # DEM para sostener superficie >= terreno + 0,02 m en todo el eje.
+            "verticesAgregados": agregados,
+            # Peor holgura final (superficie − terreno triangular) por tipo,
+            # medida en denso (0,25 m + cruces); la mide
+            # `python3 scripts/water/build_water.py` vía
+            # `holgura_minima_por_tipo` y la re-exige el check §11.
+            "peorHolguraM": holguras,
             "detalle": [
                 {
                     "osmId": r["_osm"],
