@@ -6,8 +6,8 @@ Entrada : data/water/raw/osm_water_window.json (+ manifiesto con sha256)
 Salida  : public/water/water.json (láminas trianguladas + cota + grilla)
           public/water/stats.json (conteos y medidas para el reporte)
 
-Sin dependencias: solo stdlib. La Tarea 3 rellenará `ribbons` y `dam` en este
-mismo archivo; por eso el esquema ya incluye ambas claves.
+Sin dependencias: solo stdlib. La Tarea 3 rellenó `ribbons` (cintas de
+río/arroyo) y verificó `dam` en este mismo archivo; el esquema incluye ambas.
 
 Uso:
   python3 scripts/water/build_water.py           # escribe water.json + stats.json
@@ -51,6 +51,11 @@ FALLBACK_LEVEL_M = 1013.0  # plano del vaso según la especificación (AGUA.md �
 SHORE_ZERO_M = CELL_M * 0.5  # banda de orilla con profundidad 0 forzada
 FOAM_M = 1.5  # espuma blanca en el borde de cada lámina
 DAM_WIDTH_M = 6.0  # ancho del muro de la presa
+WIDTH_BY_KIND = {"river": 7.0, "stream": 2.5, "ditch": 1.2}  # ancho de cinta (m)
+CALADO_M = {"river": 0.25, "stream": 0.18, "ditch": 0.12}  # calado de la cinta (m)
+RIBBON_STEP_M = 2.5  # remuestreo del eje de cintas, como las pistas
+FORD_MARGIN_M = 1.0  # margen sobre el semiancho para detectar cruces de ruta
+ROUTE_FILE = ROOT / "src" / "gameplay" / "first-route.ts"  # polilínea real
 
 
 # --- Anillo del embalse (Embalse de Alba, relation OSM 18149353) ---
@@ -191,6 +196,25 @@ def resample(ring: list, step: float) -> list[tuple[float, float]]:
     return pts
 
 
+def resample_line(pts: list, step: float) -> list[tuple[float, float]]:
+    """Remuestrea una LÍNEA ABIERTA con un punto aprox. cada `step` metros.
+
+    A diferencia de `resample` (anillos cerrados), conserva los extremos y no
+    añade el segmento de cierre: un río no vuelve a su nacimiento.
+    """
+    out: list[tuple[float, float]] = []
+    for i in range(len(pts) - 1):
+        x1, z1 = pts[i]
+        x2, z2 = pts[i + 1]
+        seg = math.hypot(x2 - x1, z2 - z1)
+        k = max(1, int(round(seg / step)))
+        for j in range(k):
+            t = j / k
+            out.append((x1 + (x2 - x1) * t, z1 + (z2 - z1) * t))
+    out.append((pts[-1][0], pts[-1][1]))
+    return out
+
+
 def min_distance_to_ring(x: float, z: float, ring: list, step: float = 10.0) -> float:
     """Distancia a la orilla con muestreo del anillo (cota superior, error<step)."""
     return min(math.hypot(x - px, z - pz) for (px, pz) in resample(ring, step))
@@ -278,6 +302,67 @@ def clip_ring_to_window(ring: list) -> list:
     ):
         clean.pop()
     return clean
+
+
+def clip_segment_to_window(
+    ax: float, az: float, bx: float, bz: float
+) -> tuple[tuple[float, float], tuple[float, float]] | None:
+    """Recorte Liang–Barsky de un segmento contra [0, 6000]²; None si no entra."""
+    t0, t1 = 0.0, 1.0
+    dx, dz = bx - ax, bz - az
+    for p, q in (
+        (-dx, ax),
+        (dx, WINDOW_M - ax),
+        (-dz, az),
+        (dz, WINDOW_M - az),
+    ):
+        if abs(p) < 1e-12:
+            if q < 0:
+                return None  # paralelo y fuera
+            continue
+        r = q / p
+        if p < 0:
+            if r > t1:
+                return None
+            t0 = max(t0, r)
+        else:
+            if r < t0:
+                return None
+            t1 = min(t1, r)
+    if t0 > t1:
+        return None
+    return (
+        (ax + dx * t0, az + dz * t0),
+        (ax + dx * t1, az + dz * t1),
+    )
+
+
+def clip_line_to_window(pts: list) -> list[list[tuple[float, float]]]:
+    """Recorta una línea abierta a la ventana; devuelve tramos (runs) disjuntos.
+
+    Un way que sale y vuelve a entrar produce varios tramos; cada tramo con
+    <2 puntos lo descarta quien llama (nunca se silencia).
+    """
+    runs: list[list[tuple[float, float]]] = []
+    cur: list[tuple[float, float]] = []
+    for i in range(len(pts) - 1):
+        seg = clip_segment_to_window(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])
+        if seg is None:
+            if cur:
+                runs.append(cur)
+                cur = []
+            continue
+        (cx0, cz0), (cx1, cz1) = seg
+        if not cur:
+            cur = [(cx0, cz0)]
+        elif math.hypot(cx0 - cur[-1][0], cz0 - cur[-1][1]) > 1e-6:
+            # el segmento anterior salió de la ventana: empieza otro tramo
+            runs.append(cur)
+            cur = [(cx0, cz0)]
+        cur.append((cx1, cz1))
+    if cur:
+        runs.append(cur)
+    return runs
 
 
 def _signed_area2(ring: list) -> float:
@@ -567,10 +652,181 @@ def build_sheets(
     return sheets, dropped, parciales
 
 
+def ribbon_from_way(
+    index: dict, element: dict, kind: str, proj: dict, origin: dict
+) -> tuple[list[dict], list[dict]]:
+    """Cintas de un way río/arroyo/zanja: un way puede dar varios tramos.
+
+    Devuelve (cintas, descartadas). Cada cinta lleva su eje remuestreado a
+    2,5 m con la cota del terreno por punto, el ancho y el calado de su tipo.
+    """
+    tags = element.get("tags", {})
+    geom = element.get("geometry", [])
+    osm_id = f"waterway-{element.get('id')}"
+    if len(geom) < 2:
+        return [], [{"id": osm_id, "motivo": "way con <2 nodos", "vertices": len(geom)}]
+    try:
+        width = float(tags.get("width") or WIDTH_BY_KIND[kind])
+    except (TypeError, ValueError):
+        width = WIDTH_BY_KIND[kind]
+    width = max(0.8, width)
+    calado = CALADO_M[kind]
+    world = [to_world(g["lon"], g["lat"], proj, origin) for g in geom]
+    ribbons: list[dict] = []
+    dropped: list[dict] = []
+    for tramo, run in enumerate(clip_line_to_window(world)):
+        if len(run) < 2:
+            dropped.append(
+                {"id": osm_id, "motivo": "tramo con <2 puntos tras el recorte"}
+            )
+            continue
+        eje = resample_line(run, RIBBON_STEP_M)
+        try:
+            pts = [
+                [round(x, 2), round(z, 2), round(height_at(index, x, z), 2)]
+                for x, z in eje
+            ]
+        except KeyError:
+            dropped.append({"id": osm_id, "motivo": "fuera del DEM"})
+            continue
+        ribbons.append(
+            {
+                "kind": kind,
+                "name": tags.get("name", ""),
+                "widthM": round(width, 2),
+                "caladoM": calado,
+                "points": pts,
+                "_osm": osm_id,  # trazabilidad interna (no se serializa)
+                "_tramo": tramo,  # idem
+            }
+        )
+    if not ribbons and not dropped:
+        dropped.append({"id": osm_id, "motivo": "íntegramente fuera de la ventana"})
+    return ribbons, dropped
+
+
+def build_ribbons(
+    raw: dict, proj: dict, origin: dict, index: dict
+) -> tuple[list[dict], list[dict], list[dict]]:
+    """Cintas de ríos/arroyos/zanjas desde los ways con geometría propia.
+
+    Devuelve (cintas, entubadas, descartadas). No se dibujan como cinta el
+    muro (`waterway=dam`, va aparte en `dam`) ni las láminas de
+    `water=wastewater`; los tramos con `tunnel=*` o `culvert=*` van entubados
+    (pintarlos cruzaría calzada y camino) y se cuentan, nunca se silencian.
+    """
+    ribbons: list[dict] = []
+    entubadas: list[dict] = []
+    dropped: list[dict] = []
+    for el in raw.get("elements", []):
+        if el.get("type") != "way":
+            continue
+        tags = el.get("tags", {})
+        kind = tags.get("waterway")
+        if kind == "dam":
+            continue  # el muro va aparte (build_dam)
+        if tags.get("water") == "wastewater":
+            continue  # balsas de depuradora: no se dibujan
+        if kind not in WIDTH_BY_KIND:
+            continue  # láminas (natural=water) y resto: no son cintas
+        if tags.get("tunnel") is not None or tags.get("culvert") is not None:
+            entubadas.append(
+                {
+                    "id": f"waterway-{el.get('id')}",
+                    "name": tags.get("name", ""),
+                    "motivo": "entubado (tunnel/culvert)",
+                }
+            )
+            continue
+        unas, unas_fuera = ribbon_from_way(index, el, kind, proj, origin)
+        ribbons.extend(unas)
+        dropped.extend(unas_fuera)
+    ribbons.sort(key=lambda r: (r["_osm"], r["_tramo"]))
+    return ribbons, entubadas, dropped
+
+
+def load_route_polyline() -> list[tuple[float, float]]:
+    """Polilínea real de la ruta (first-route.ts, metros de mundo).
+
+    Se extrae con regex acotada al bloque `polyline:` (los bloques
+    `waypoints:`/`checkpoints:` también tienen pares x/z y no valen).
+    """
+    src = ROUTE_FILE.read_text()
+    seg = src[src.index("polyline:") : src.index("waypoints:")]
+    import re
+
+    pts = [
+        (float(x), float(z))
+        for x, z in re.findall(r"x:\s*([\d.]+),\s*z:\s*([\d.]+)", seg)
+    ]
+    if len(pts) < 2:
+        raise ValueError(f"polilínea de la ruta degenerada en {ROUTE_FILE}")
+    return pts
+
+
+def ford_depths(
+    index: dict, ribbons: list[dict], route: list[tuple[float, float]]
+) -> list[dict]:
+    """Calado real en los cruces de la ruta: (superficie − terreno) en el punto.
+
+    La superficie de la cinta en el punto de cruce es la cota del terreno de
+    su eje interpolada + el calado del tipo; el calado medido es esa
+    superficie menos el terreno bajo la ruta. Un cruce por cinta como máximo
+    (el punto de la ruta más cercano a su eje, dentro del semiancho + margen).
+    """
+    cruces: list[dict] = []
+    for r in ribbons:
+        eje = [(p[0], p[1], p[2]) for p in r["points"]]
+        # prefiltro por bbox del eje para no medir toda la ruta por cinta
+        margen = r["widthM"] / 2.0 + FORD_MARGIN_M
+        xs = [p[0] for p in eje]
+        zs = [p[1] for p in eje]
+        x0, x1, z0, z1 = (
+            min(xs) - margen,
+            max(xs) + margen,
+            min(zs) - margen,
+            max(zs) + margen,
+        )
+        mejor = None
+        for rx, rz in route:
+            if not (x0 <= rx <= x1 and z0 <= rz <= z1):
+                continue
+            # distancia al eje con proyección por segmento + cota interpolada
+            for i in range(len(eje) - 1):
+                ax, az, ay = eje[i]
+                bx, bz, by = eje[i + 1]
+                dx, dz = bx - ax, bz - az
+                denom = dx * dx + dz * dz
+                t = ((rx - ax) * dx + (rz - az) * dz) / denom if denom else 0.0
+                t = max(0.0, min(1.0, t))
+                d = math.hypot(rx - (ax + t * dx), rz - (az + t * dz))
+                if mejor is None or d < mejor[0]:
+                    mejor = (d, rx, rz, ay + t * (by - ay))
+        if mejor is None or mejor[0] > margen:
+            continue
+        d, rx, rz, superficie = mejor
+        superficie += r["caladoM"]
+        try:
+            terreno = height_at(index, rx, rz)
+        except KeyError:
+            continue
+        cruces.append(
+            {
+                "x": round(rx, 2),
+                "z": round(rz, 2),
+                "kind": r["kind"],
+                "name": r["name"],
+                "caladoM": round(superficie - terreno, 2),
+            }
+        )
+    cruces.sort(key=lambda c: (c["x"], c["z"]))
+    return cruces
+
+
 def build_dam(
     raw: dict, proj: dict, origin: dict, index: dict, level: float
 ) -> tuple[dict, list]:
-    """Muro de la presa desde el way waterway=dam (la Tarea 3 lo completará)."""
+    """Muro de la presa desde el way waterway=dam (completo desde la Tarea 2)."""
     dam_ways = [
         el
         for el in raw.get("elements", [])
@@ -642,6 +898,19 @@ def derive() -> tuple[dict, dict]:
         raw, proj, origin, index, pool, reservoir_world
     )
 
+    ribbons_full, entubadas, cintas_fuera = build_ribbons(raw, proj, origin, index)
+    route = load_route_polyline()
+    cruces = ford_depths(index, ribbons_full, route)
+    # el esquema de water.json está congelado: las claves internas de
+    # trazabilidad (_osm, _tramo) viajan en stats.json, no en water.json.
+    ribbons = [
+        {k: r[k] for k in ("kind", "name", "widthM", "caladoM", "points")}
+        for r in ribbons_full
+    ]
+    por_tipo: dict[str, int] = {}
+    for r in ribbons_full:
+        por_tipo[r["kind"]] = por_tipo.get(r["kind"], 0) + 1
+
     payload = {
         "schemaVersion": 1,
         "meta": {
@@ -653,7 +922,7 @@ def derive() -> tuple[dict, dict]:
         },
         "levelM": level,
         "sheets": sheets,
-        "ribbons": [],  # Tarea 3: cintas de río y arroyos
+        "ribbons": ribbons,
         "dam": dam,
         "depthGrid": grid,
     }
@@ -687,6 +956,41 @@ def derive() -> tuple[dict, dict]:
                 math.hypot(dam["b"][0] - dam["a"][0], dam["b"][1] - dam["a"][1]), 1
             ),
         },
+        "cintas": {
+            "total": len(ribbons_full),
+            "porTipo": por_tipo,
+            "puntosEje": sum(len(r["points"]) for r in ribbons_full),
+            "detalle": [
+                {
+                    "osmId": r["_osm"],
+                    "tramo": r["_tramo"],
+                    "kind": r["kind"],
+                    "name": r["name"],
+                    "puntos": len(r["points"]),
+                    "largoM": round(
+                        sum(
+                            math.hypot(
+                                r["points"][i + 1][0] - r["points"][i][0],
+                                r["points"][i + 1][1] - r["points"][i][1],
+                            )
+                            for i in range(len(r["points"]) - 1)
+                        ),
+                        1,
+                    ),
+                }
+                for r in ribbons_full
+            ],
+        },
+        # Tramos con tunnel=* o culvert=*: van entubados bajo calzada y camino;
+        # pintarlos como cinta cruzaría la ruta. Se cuentan, no se silencian.
+        "cintasEntubadas": {
+            "total": len(entubadas),
+            "nota": "ways con tunnel=* o culvert=* (van entubados)",
+            "ways": entubadas,
+        },
+        "cintasDescartadas": cintas_fuera,
+        # Calado medido (superficie − terreno) en cada cruce cinta × ruta.
+        "crucesRuta": cruces,
         "sourceSha256": manifest["sha256"],
     }
     return payload, stats
@@ -760,10 +1064,11 @@ def main() -> int:
                 pass
         if ok:
             n = len(payload["sheets"])
+            nr = len(payload["ribbons"])
             g = payload["depthGrid"]
             print(
                 f"[agua] OK: water.json + stats.json coinciden "
-                f"({n} láminas, cota {payload['levelM']}, "
+                f"({n} láminas, {nr} cintas, cota {payload['levelM']}, "
                 f"grilla {g['cols']}x{g['rows']}, máx {g['maxDepthM']} m)"
             )
         return 0 if ok else 1
@@ -771,11 +1076,14 @@ def main() -> int:
     for name, blob in blobs.items():
         (OUT_DIR / name).write_bytes(blob)
     n = len(payload["sheets"])
+    nr = len(payload["ribbons"])
     g = payload["depthGrid"]
     print(
-        f"[agua] {n} láminas · cota {payload['levelM']} m · "
+        f"[agua] {n} láminas · {nr} cintas · cota {payload['levelM']} m · "
         f"grilla {g['cols']}x{g['rows']} · máx {g['maxDepthM']} m · "
-        f"descartadas {len(stats['descartadas'])}"
+        f"descartadas {len(stats['descartadas'])}+{len(stats['cintasDescartadas'])} · "
+        f"entubadas {stats['cintasEntubadas']['total']} · "
+        f"cruces de ruta {len(stats['crucesRuta'])}"
     )
     return 0
 

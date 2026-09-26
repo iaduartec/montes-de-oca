@@ -1,9 +1,10 @@
-// Validador de la capa de agua (plan AGUA, Tarea 2).
+// Validador de la capa de agua (plan AGUA, Tareas 2 y 3).
 //
 // Comprueba los invariantes de `public/water/water.json` derivado por
-// `scripts/water/build_water.py` desde el crudo OSM de la Tarea 1 y el DEM.
-// La Tarea 3 extiende ESTE archivo con los checks de `ribbons` y del `dam`
-// completo; no crear un segundo validador.
+// `scripts/water/build_water.py` desde el crudo OSM de la Tarea 1 y el DEM:
+// esquema y trazabilidad, láminas trianguladas, grilla de profundidad y,
+// desde la Tarea 3, cintas de río/arroyo (`ribbons`), el vado del Oca sobre
+// la ruta y el muro completo (`dam`). No crear un segundo validador.
 //
 // Uso: node scripts/water/validate_water.mjs
 import { createHash } from 'node:crypto';
@@ -188,7 +189,7 @@ check('la celda más honda está del lado de la presa (< 250 m del muro)', damDi
   `${damDistMax.toFixed(1)} m`);
 
 // ------------------------------------------------------------------ 6. presa
-console.log('\n=== 6. muro de la presa (parcial: la Tarea 3 lo completa) ===');
+console.log('\n=== 6. muro de la presa ===');
 check('coronación por encima del vaso (+0,6 m)', water.dam.crestM > water.levelM,
   `coronación ${water.dam.crestM} vs vaso ${water.levelM}`);
 check('base por debajo de la coronación', water.dam.baseM < water.dam.crestM,
@@ -252,6 +253,109 @@ for (let r = 0; r < g.rows; r++) {
 check('cota ≥ terreno debajo en celdas mojadas (> 100 comprobadas, no vacío)',
   mojadas > 100 && sinDEM === 0 && sobreTerreno === 0,
   `${mojadas} celdas mojadas, máx terreno ${maxTerreno} m en ${maxTerrenoEn} vs cota ${g.levelM}, ${sinDEM} sin DEM, ${sobreTerreno} por encima`);
+
+// ------------------------------------------------------- 8. cintas de agua
+// Invariantes del constructor (Tarea 3): una cinta por way río/arroyo/zanja
+// no entubado, eje remuestreado a 2,5 m recortado a la ventana, ancho y
+// calado según tipo. Los conteos no pueden pasar en vacío: se exige el total
+// mínimo y más de 1000 puntos de eje comprobados.
+console.log('\n=== 8. cintas de ríos y arroyos ===');
+const porTipo = { river: 0, stream: 0, ditch: 0 };
+for (const r of water.ribbons) porTipo[r.kind] = (porTipo[r.kind] ?? 0) + 1;
+check('al menos 60 cintas de río/arroyo',
+  water.ribbons.length >= 60,
+  `${water.ribbons.length} (ríos ${porTipo.river ?? 0}, arroyos ${porTipo.stream ?? 0}, zanjas ${porTipo.ditch ?? 0})`);
+check('cintas con ancho > 0, al menos 2 puntos de eje y calado > 0',
+  water.ribbons.length > 0 && water.ribbons.every((r) =>
+    r.widthM > 0 && r.points.length >= 2 && r.caladoM > 0));
+const CALADO = { river: 0.25, stream: 0.18, ditch: 0.12 };
+check('calado según tipo (river 0,25 / stream 0,18 / ditch 0,12)',
+  water.ribbons.length > 0 && water.ribbons.every((r) => r.caladoM === CALADO[r.kind]));
+let puntosEje = 0;
+let puntosEjeMal = 0;
+for (const r of water.ribbons) {
+  for (const p of r.points) {
+    puntosEje++;
+    if (!(Array.isArray(p) && p.length === 3 && p.every(Number.isFinite))) { puntosEjeMal++; continue; }
+    if (p[0] < -0.5 || p[0] > 6000.5 || p[1] < -0.5 || p[1] > 6000.5) puntosEjeMal++;
+  }
+}
+check('ejes recortados a la ventana [0, 6000] con cota finita (> 1000 puntos, no vacío)',
+  puntosEje > 1000 && puntosEjeMal === 0, `${puntosEje} puntos, ${puntosEjeMal} mal`);
+
+// ------------------------------------------------------- 9. vado del Oca
+// Punto crítico de misión: donde la ruta vadea el Oca (mundo ≈ (3174, 3450))
+// el calado medido (superficie − terreno) debe ser ≤ 0,35 m. Se exige desde
+// `stats.crucesRuta` y se re-deriva de forma independiente: superficie =
+// cota del eje + calado del tipo en el punto del eje más cercano, menos el
+// terreno DEM bajo el cruce (tolerancia 0,05 m por el redondeo a cm).
+console.log('\n=== 9. vado del Oca sobre la ruta (calado ≤ 0,35 m) ===');
+const cruces = stats.crucesRuta ?? [];
+const crucesRio = cruces.filter((c) => c.kind === 'river');
+check('el Oca cruza la ruta (al menos 1 cruce de río en stats.crucesRuta)',
+  crucesRio.length >= 1, `${crucesRio.length} de río sobre ${cruces.length} cruces`);
+const maxCaladoRio = crucesRio.length ? Math.max(...crucesRio.map((c) => c.caladoM)) : Infinity;
+check('calado ≤ 0,35 m en todos los cruces de río',
+  crucesRio.length >= 1 && crucesRio.every((c) => c.caladoM <= 0.35),
+  `máx ${maxCaladoRio} m en ${crucesRio.map((c) => `(${c.x}, ${c.z})`).join(' ')}`);
+let crucesVerificados = 0;
+let peorDesvio = 0;
+for (const c of crucesRio) {
+  if (!Number.isFinite(c.x) || !Number.isFinite(c.caladoM)) continue;
+  let mejor = null;
+  for (const r of water.ribbons.filter((r) => r.kind === 'river')) {
+    for (let i = 0; i + 1 < r.points.length; i++) {
+      const [ax, az, ay] = r.points[i];
+      const [bx, bz, by] = r.points[i + 1];
+      const d = segDist(c.x, c.z, ax, az, bx, bz);
+      if (mejor === null || d < mejor.d) {
+        const dx = bx - ax; const dz = bz - az;
+        const t = dx === 0 && dz === 0 ? 0 :
+          Math.min(1, Math.max(0, ((c.x - ax) * dx + (c.z - az) * dz) / (dx * dx + dz * dz)));
+        mejor = { d, superficie: ay + t * (by - ay) + r.caladoM };
+      }
+    }
+  }
+  const terreno = heightAt(c.x, c.z);
+  if (mejor === null || terreno === null) continue;
+  const desvio = Math.abs((mejor.superficie - terreno) - c.caladoM);
+  crucesVerificados++;
+  if (desvio > peorDesvio) peorDesvio = desvio;
+}
+check('calado re-derivado del DEM coincide (±0,05 m, no vacío)',
+  crucesVerificados === crucesRio.length && crucesVerificados >= 1 && peorDesvio <= 0.05,
+  `${crucesVerificados}/${crucesRio.length} cruces, peor desvío ${peorDesvio.toFixed(3)} m`);
+
+// ------------------------------------------------------- 10. trazabilidad
+// Cada cinta debe salir de un way river/stream/ditch del crudo no entubado,
+// y cada way dibujable debe aparecer en el detalle de stats (o como
+// descartado con motivo). El muro debe salir del way waterway=dam.
+console.log('\n=== 10. trazabilidad cintas ↔ crudo OSM ===');
+const rawWater = JSON.parse(readFileSync(resolve(root, 'data/water/raw/osm_water_window.json'), 'utf8'));
+const waysAgua = rawWater.elements.filter((e) =>
+  e.type === 'way' && ['river', 'stream', 'ditch'].includes(e.tags?.waterway));
+const dibujables = waysAgua.filter((e) => e.tags?.tunnel === undefined && e.tags?.culvert === undefined);
+const entubados = waysAgua.filter((e) => e.tags?.tunnel !== undefined || e.tags?.culvert !== undefined);
+const detalle = stats.cintas?.detalle ?? [];
+check('stats.cintas.total coincide con water.ribbons',
+  stats.cintas?.total === water.ribbons.length, `${stats.cintas?.total} vs ${water.ribbons.length}`);
+check('cintas + entubadas + descartadas cubren los ways del crudo',
+  detalle.length + (stats.cintasDescartadas ?? []).length === dibujables.length &&
+    (stats.cintasEntubadas?.total ?? -1) === entubados.length,
+  `${detalle.length} cintas + ${(stats.cintasDescartadas ?? []).length} descartadas = ${dibujables.length} dibujables, ${stats.cintasEntubadas?.total} entubadas de ${entubados.length}`);
+const idsDibujables = new Set(dibujables.map((e) => `waterway-${e.id}`));
+check('cada cinta detalla un way dibujable real (no wastewater/dam/túnel)',
+  detalle.length === water.ribbons.length && detalle.every((d) => idsDibujables.has(d.osmId)),
+  `${detalle.length} detalles`);
+const damRaw = rawWater.elements.find((e) => e.type === 'way' && e.tags?.waterway === 'dam');
+const damPts = damRaw.geometry.map((pt) => [
+  (pt.lon - terrainCfg.origin.lon) * terrainCfg.projection.metersPerDegreeLon,
+  (pt.lat - terrainCfg.origin.lat) * terrainCfg.projection.metersPerDegreeLat,
+]);
+check('el muro sale del way waterway=dam del crudo (<5 cm en extremos)',
+  Math.hypot(water.dam.a[0] - damPts[0][0], water.dam.a[1] - damPts[0][1]) < 0.05 &&
+    Math.hypot(water.dam.b[0] - damPts[damPts.length - 1][0], water.dam.b[1] - damPts[damPts.length - 1][1]) < 0.05,
+  `way ${damRaw.id} (${damPts.length} nodos)`);
 
 // ------------------------------------------------------------------ resumen
 const total = pass + fails.length;
