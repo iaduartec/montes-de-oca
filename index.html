@@ -153,6 +153,122 @@
       #aviso[hidden] {
         display: none;
       }
+      /* Selector de vehículo (FASE 2): chip persistente arriba a la derecha y
+         panel de tarjetas con las cifras reales de cada preset. Misma familia
+         visual que #mision/#accion; las tarjetas son <button> nativos (Tab y
+         Enter funcionan sin código extra). */
+      #vehiculo-chip {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 12;
+        padding: 7px 12px;
+        border: 1px solid rgba(231, 195, 138, 0.42);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+      }
+      #vehiculos-panel {
+        position: fixed;
+        top: 56px;
+        right: 12px;
+        z-index: 13;
+        width: min(330px, calc(100vw - 24px));
+        padding: 12px;
+        border: 1px solid rgba(231, 195, 138, 0.4);
+        border-radius: 10px;
+        background: rgba(28, 32, 29, 0.94);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        box-shadow: 0 8px 28px rgba(12, 17, 16, 0.4);
+        backdrop-filter: blur(4px);
+      }
+      #vehiculos-panel[hidden] {
+        display: none;
+      }
+      #vehiculos-panel h2 {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #d8c3a2;
+      }
+      #vehiculos-panel h2 .vehiculo-cierre {
+        float: right;
+        color: rgba(243, 238, 229, 0.6);
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .vehiculo-lista {
+        display: grid;
+        gap: 8px;
+      }
+      .vehiculo-tarjeta {
+        display: block;
+        width: 100%;
+        padding: 9px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f3eee5;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .vehiculo-tarjeta.activa {
+        border-color: rgba(231, 195, 138, 0.75);
+        background: rgba(231, 195, 138, 0.1);
+      }
+      .vehiculo-nombre {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .vehiculo-marca {
+        float: right;
+        padding: 1px 7px;
+        border-radius: 4px;
+        background: rgba(231, 195, 138, 0.28);
+        color: #ffdc99;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .vehiculo-marca[hidden] {
+        display: none;
+      }
+      .vehiculo-resumen {
+        display: block;
+        margin: 2px 0 6px;
+        color: rgba(243, 238, 229, 0.72);
+        font-size: 11px;
+      }
+      .vehiculo-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 10px;
+        font-size: 11px;
+        color: rgba(243, 238, 229, 0.72);
+      }
+      .vehiculo-stats b {
+        color: #f3eee5;
+        font-weight: 600;
+      }
+      .vehiculo-ayuda {
+        margin: 8px 0 0;
+        color: rgba(243, 238, 229, 0.55);
+        font-size: 11px;
+      }
+      #vehiculo-chip:focus-visible,
+      .vehiculo-tarjeta:focus-visible {
+        outline: 2px solid #9fd0ff;
+        outline-offset: 2px;
+      }
       #accion kbd {
         padding: 1px 6px;
         border: 1px solid rgba(255, 255, 255, 0.35);
@@ -334,6 +450,19 @@
           max-width: calc(100vw - 32px);
           text-align: center;
         }
+        #vehiculo-chip {
+          top: max(8px, env(safe-area-inset-top));
+          right: 8px;
+        }
+        #vehiculos-panel {
+          top: auto;
+          right: 8px;
+          left: 8px;
+          bottom: 235px;
+          width: auto;
+          max-height: 36vh;
+          overflow: auto;
+        }
       }
       @media (max-width: 390px) {
         #mobile-controls { padding: 0 9px; }
@@ -356,6 +485,12 @@
     <div id="mision" role="status" aria-live="polite" hidden></div>
     <div id="accion" role="status" aria-live="polite" hidden></div>
     <div id="aviso" role="status" aria-live="assertive" hidden>El 4x4 se hundió — volvés a la orilla</div>
+    <button id="vehiculo-chip" type="button" aria-controls="vehiculos-panel" aria-expanded="false" title="Cambiar vehículo (V)">4x4 · Estándar</button>
+    <div id="vehiculos-panel" role="dialog" aria-label="Selector de vehículo" hidden>
+      <h2>Vehículo <span class="vehiculo-cierre">V o Esc cierra</span></h2>
+      <div class="vehiculo-lista"></div>
+      <p class="vehiculo-ayuda">Elegir aplica el preset al instante y lo recuerda.</p>
+    </div>
     <div id="controls">
       F3: ayuda y diagnóstico
     </div>
@@ -368,6 +503,7 @@
         <button class="mobile-control action" type="button" data-code="KeyE" aria-label="Mantener para interactuar">Mantener<br />E · acción</button>
         <button class="mobile-control action" type="button" data-code="Space" aria-label="Freno de mano">Freno</button>
         <button class="mobile-control action" type="button" data-code="KeyR" aria-label="Reiniciar misión">Reiniciar</button>
+        <button class="mobile-control action" type="button" data-code="KeyV" aria-label="Abrir el selector de vehículo">V · vehículo</button>
       </div>
     </div>
     <details id="datos">

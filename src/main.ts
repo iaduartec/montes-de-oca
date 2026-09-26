@@ -30,6 +30,7 @@ import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/in
 import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
 import { applyPreset, DEFAULT_PRESET_ID, presetById } from './vehicle/presets';
+import { createVehicleSelector, type VehicleSelector } from './vehicle/selector';
 import { FIRST_ROUTE } from './gameplay/first-route';
 import type { FirstRoute, RouteLeg, RoutePoint } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
@@ -54,7 +55,7 @@ const controlsEl = document.getElementById('controls');
 
 /** Teclas del modo cámara libre; sólo se muestran cuando la ayuda está activa (F3). */
 const CONTROLES_LIBRE =
-  'WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar';
+  'WASD/flechas: mover · Mouse: mirar · Clic en el canvas para capturar el puntero · Shift: acelerar · V: vehículo';
 
 /** Pista persistente mínima: recuerda que F3 revela las teclas y el diagnóstico. */
 const PISTA_AYUDA = 'F3: ayuda y diagnóstico';
@@ -370,6 +371,14 @@ async function bootstrap(): Promise<void> {
   // bootstrap): ocultarlo acá dejaba la pantalla vacía durante la carga de pueblo y
   // vegetación, justo el tramo más largo en el móvil.
   window.addEventListener('keydown', (event) => {
+    // El selector de vehículo vive en `selectorVehiculo` (se crea con el 4x4);
+    // si aún no existe (carga), la V no hace nada.
+    if (event.code === 'KeyV' && !event.repeat) {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      selectorVehiculo?.toggle();
+      return;
+    }
     if (event.code !== 'F3') return;
     event.preventDefault();
     ayudaVisible = !ayudaVisible;
@@ -423,6 +432,21 @@ async function bootstrap(): Promise<void> {
   let player: Player | null = null;
   /** Preset aplicado al 4x4 (`estandar` por defecto; `?vehicle=` gana a localStorage). */
   let currentPresetId = DEFAULT_PRESET_ID;
+  // Selector de vehículo (FASE 2): se crea con el 4x4; el listener de KeyV
+  // (registrado arriba) lo usa si ya existe. `null` durante la carga.
+  let selectorVehiculo: VehicleSelector | null = null;
+
+  /** Aplica un preset por id, lo persiste y refresca el selector. `false` si no existe. */
+  function aplicarPreset(id: string): boolean {
+    if (!vehicle) return false;
+    const preset = presetById(id);
+    if (!preset) return false;
+    applyPreset(vehicle.params, preset);
+    currentPresetId = preset.id;
+    writeStoredVehicleId(preset.id);
+    selectorVehiculo?.setCurrent(preset.id);
+    return true;
+  }
   let playerControls: PlayerControls | null = null;
   /** Envoltorio del control del personaje que admite entrada inyectada. */
   let controlsForPlayer: PlayerControls | null = null;
@@ -739,14 +763,37 @@ async function bootstrap(): Promise<void> {
       controls: controls ?? undefined,
     });
 
-    // ----- Preset del vehículo (FASE 1: sin UI) -----
+    // ----- Preset del vehículo (FASE 1: datos; FASE 2: + UI) -----
     // `?vehicle=<id>` gana sobre localStorage; id desconocido → default. El
     // default reproduce exactamente DEFAULT_VEHICLE_PARAMS: la misión no cambia.
     {
       const wanted = params.get('vehicle') ?? readStoredVehicleId() ?? DEFAULT_PRESET_ID;
-      const preset = presetById(wanted) ?? presetById(DEFAULT_PRESET_ID)!;
-      applyPreset(vehicle.params, preset);
-      currentPresetId = preset.id;
+      aplicarPreset(presetById(wanted) ? wanted : DEFAULT_PRESET_ID);
+    }
+
+    // ----- Selector de vehículo (FASE 2: chip + panel de tarjetas) -----
+    // Las tarjetas salen de VEHICLE_PRESETS; elegir aplica al instante, persiste
+    // y cierra el panel. Si el DOM no trae los elementos, el juego sigue sin selector.
+    {
+      const panel = document.getElementById('vehiculos-panel');
+      const chip = document.getElementById('vehiculo-chip');
+      const canvas = document.getElementById('render-canvas');
+      if (panel && chip instanceof HTMLButtonElement && canvas) {
+        selectorVehiculo = createVehicleSelector({
+          panel,
+          chip,
+          canvas,
+          initialId: currentPresetId,
+          onSelect: (id) => {
+            if (aplicarPreset(id)) selectorVehiculo?.toggle(false);
+          },
+        });
+        // El botón táctil usa click directo: el modelo press-and-hold de
+        // `setVirtualKey` no sirve para un conmutador.
+        document
+          .querySelector<HTMLButtonElement>('#mobile-controls [data-code="KeyV"]')
+          ?.addEventListener('click', () => selectorVehiculo?.toggle());
+      }
     }
 
     if (playerEnabled) {
@@ -904,8 +951,8 @@ async function bootstrap(): Promise<void> {
   };
 
   const TECLAS_CONDUCIENDO =
-    'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · F bajar del 4x4 · R reiniciar misión';
-  const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · R reiniciar misión';
+    'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · F bajar del 4x4 · V vehículo · R reiniciar misión';
+  const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · V vehículo · R reiniciar misión';
 
   /**
    * Nivel de gas actual en conducción, para la regla de enfangado. Lee el mismo
@@ -1144,14 +1191,7 @@ async function bootstrap(): Promise<void> {
         setParams: (partial: Partial<VehicleParams>) => Object.assign(vehicle!.params, partial),
         params: () => ({ ...vehicle!.params }),
         preset: () => currentPresetId,
-        setPreset: (id: string) => {
-          const preset = presetById(id);
-          if (!preset) return false;
-          applyPreset(vehicle!.params, preset);
-          currentPresetId = preset.id;
-          writeStoredVehicleId(preset.id);
-          return true;
-        },
+        setPreset: (id: string) => aplicarPreset(id),
         step: (seconds: number, dt = 1 / 60) => {
           manualStep = true;
           const steps = Math.max(1, Math.round(seconds / dt));
