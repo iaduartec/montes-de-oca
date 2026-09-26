@@ -1,0 +1,22 @@
+{
+  "generado_por": "scripts/water/fetch_water.py",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "bbox": {
+    "south": 42.35274241,
+    "west": -3.34604719,
+    "north": 42.40675247747657,
+    "east": -3.2731924966217267
+  },
+  "sha256": "e7829e82318c98aa6e569cbea833c6e686ef25cb235783b603764efebd588c92",
+  "bytes": 146884,
+  "elements": 102,
+  "counts": {
+    "reservoir": 1,
+    "dam": 1,
+    "river": 11,
+    "stream": 76,
+    "lake": 1,
+    "pond": 2,
+    "wastewater": 8
+  }
+}
