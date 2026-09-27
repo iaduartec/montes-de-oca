@@ -837,6 +837,93 @@ def build_sheets(
     return sheets, dropped, parciales
 
 
+# --- Snap del Oca a su cauce DEM (corrección de trazado OSM) ---
+#
+# El eje OSM del Río Oca viene pegado a la vía en dos corredores (valle de la
+# BU-V-7033 / pueblo de Villafranca y desfiladero del Hoz) hasta pisar casas y
+# solaparse con la calzada a distancias <8 m con ángulos <30° (paralelismo, no
+# cruce real). La ortofoto PNOA y el propio DEM confirman que el cauce real va
+# al lado: mover el eje al mínimo transversal del DEM lo separa sin inventar
+# un trazado nuevo. Solo actúa dentro de dos cajas, con rampa en bordes para
+# no crear codos y suavizado del desplazamiento; fuera de las cajas el eje OSM
+# queda intacto. No añade vértices (el presupuesto de triángulos no cambia) y
+# el vado de la ruta (z≈3450) queda fuera de ambas cajas, así que su calado no
+# se toca.
+OCA_SNAP_BOXES = [
+    {"x0": 3040.0, "x1": 3140.0, "z0": 3680.0, "z1": 3840.0, "radio": 30.0},
+    {"x0": 2440.0, "x1": 2660.0, "z0": 1560.0, "z1": 1760.0, "radio": 30.0},
+]
+OCA_SNAP_RAMPA_M = 25.0  # rampa de entrada/salida en el borde de cada caja
+OCA_SNAP_PASO_M = 2.5  # muestreo transversal (paso del DEM y de la cinta)
+OCA_SNAP_SUAVE = 2  # suavizado del desplazamiento: media en ±2 puntos
+
+
+def _oca_snap_peso(x: float, z: float, caja: dict) -> float:
+    """Peso 0..1 del snap en un punto: 1 dentro, rampa lineal al borde."""
+    if not (caja["x0"] <= x <= caja["x1"] and caja["z0"] <= z <= caja["z1"]):
+        return 0.0
+    margen = min(x - caja["x0"], caja["x1"] - x, z - caja["z0"], caja["z1"] - z)
+    return min(1.0, margen / OCA_SNAP_RAMPA_M)
+
+
+def snap_oca_to_thalweg(
+    eje: list[tuple[float, float]], index: dict
+) -> list[tuple[float, float]]:
+    """Desplaza el eje del Oca al mínimo transversal del DEM (cauce real).
+
+    Para cada punto se busca, sobre la perpendicular local y dentro del radio
+    de su caja, la cota triangular mínima (`surface_at`, la del motor) y se
+    desplaza allí ponderado por la rampa de borde. El campo de desplazamiento
+    se suaviza con media móvil para no crear dientes. Determinista.
+    """
+    n = len(eje)
+    if n < 2:
+        return eje
+    desp: list[tuple[float, float]] = [(0.0, 0.0)] * n
+    for i, (x, z) in enumerate(eje):
+        ax, az = eje[max(0, i - 1)]
+        bx, bz = eje[min(n - 1, i + 1)]
+        dx, dz = bx - ax, bz - az
+        largo = math.hypot(dx, dz)
+        if largo < 1e-9:
+            continue
+        nx, nz = -dz / largo, dx / largo
+        mejor = None
+        for caja in OCA_SNAP_BOXES:
+            peso = _oca_snap_peso(x, z, caja)
+            if peso <= 0.0:
+                continue
+            try:
+                h0 = surface_at(index, x, z)
+            except KeyError:
+                continue
+            k_mejor, h_mejor = 0.0, h0
+            k = -caja["radio"]
+            while k <= caja["radio"] + 1e-9:
+                try:
+                    h = surface_at(index, x + nx * k, z + nz * k)
+                except KeyError:
+                    k += OCA_SNAP_PASO_M
+                    continue
+                if h < h_mejor:
+                    k_mejor, h_mejor = k, h
+                k += OCA_SNAP_PASO_M
+            cand = (peso, nx * k_mejor, nz * k_mejor)
+            if mejor is None or cand[0] > mejor[0]:
+                mejor = cand
+        if mejor is not None:
+            desp[i] = (mejor[1] * mejor[0], mejor[2] * mejor[0])
+    suav: list[tuple[float, float]] = []
+    for i in range(n):
+        sx = sz = c = 0.0
+        for j in range(max(0, i - OCA_SNAP_SUAVE), min(n, i + OCA_SNAP_SUAVE + 1)):
+            sx += desp[j][0]
+            sz += desp[j][1]
+            c += 1.0
+        suav.append((sx / c, sz / c))
+    return [(x + dx, z + dz) for (x, z), (dx, dz) in zip(eje, suav)]
+
+
 def ribbon_from_way(
     index: dict, element: dict, kind: str, proj: dict, origin: dict
 ) -> tuple[list[dict], list[dict], int]:
@@ -869,6 +956,8 @@ def ribbon_from_way(
             )
             continue
         eje = resample_line(run, RIBBON_STEP_M)
+        if tags.get("name") == "Río Oca":
+            eje = snap_oca_to_thalweg(eje, index)
         try:
             eje, cotas, unos = refine_axis(eje, calado, index)
             pts = [
