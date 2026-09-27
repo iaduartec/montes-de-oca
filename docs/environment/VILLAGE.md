@@ -20,7 +20,7 @@
 - Contrato: `loadVillage(scene, terrain, options?) → {stats, dispose}`; `keepClearAt`/`keepClearRadiusM` filtran en runtime.
 - Base SIEMPRE en `terrain.heightAt` por esquina, estirada hacia abajo `FALDON_M = 1.5` (constante duplicada y verificada por `--check`).
 - Las plantas alargadas usan cubierta a dos aguas; el subconjunto cercano al spawn añade variantes a cuatro aguas y de un agua. Las casas dentro de 90 m reciben detalles de fachada y alero.
-- El pueblo se agrupa en 4 mallas de cuerpo, 3 de cubierta y hasta 3 de detalle (10 en la escena actual de 330 edificios; 11.558 triángulos). No hay una malla por casa.
+- Las 322 casas fuera del piloto mantienen los grupos procedurales por material. Los ocho modelos Blender se cargan en una malla GLB; la escena del piloto queda en 11 mallas y 17.076 triángulos del pueblo. Si el GLB falta o una casa piloto cae dentro del radio a despejar, vuelve a los grupos procedurales. No hay una malla por detalle.
 - `backFaceCulling = false` (igual que terreno y vías); normales de muro orientadas por el signo del área.
 
 ## Referencia visual
@@ -28,7 +28,7 @@
 
 ## Verificación
 - `npm run typecheck`, `npm run build` y `build_village.mjs --check` limpios.
-- Capturas: `output/milestone1/10_village_street.png`, `11_village_aerial.png` (Chrome headless + CDP, sin Playwright).
-- Coste medido: +6 draw calls (5→11), +7708 triángulos (237306→245014); pico aéreo 14/405027.
-- Auditoría de base por esquina: 250 edificios, gap máx 0.0000 m. Spawn (3088,3935) libre a 27.9 m.
+- Comparativa del piloto: `output/pilot-before/` y `output/pilot-after/` (calle, aérea, fachada), generada con Chrome headless + CDP. Detalle en `docs/environment/VILLAGE_PILOT.md`.
+- Coste en la vista de calle: pasa de +9 a +10 draw calls y de +16.271 a +17.003 triángulos sobre el resto de la escena; el GLB pesa 182.384 bytes.
+- Auditoría de base por esquina: antes y después, 250 edificios, gap máx 0.0000 m. Spawn (3088,3935) libre a 27.9 m.
 - La auditoría actual eleva 3/65 alturas estimadas, con máximo 0,83 m; permanecen 9 intersecciones puntuales en alturas LiDAR medidas (máximo 1,18 m), sin modificar esas mediciones.

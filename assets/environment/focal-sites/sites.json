@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "coordinateSystem": "local game world metres; x=easting-471500, z=northing-4689000, y=absolute height-870",
+  "attribution": {
+    "osm": "© OpenStreetMap contributors, ODbL 1.0",
+    "ign": "© Instituto Geográfico Nacional (IGN/CNIG), CC BY 4.0"
+  },
+  "sites": {
+    "church": {
+      "name": "Iglesia de Santiago Apóstol",
+      "osm": { "type": "way", "id": 90614388, "source": "public/village/buildings.json" },
+      "height": { "metres": 12.8, "source": "type-derived from four floors; not a LiDAR measurement" },
+      "footprintSource": "public/village/buildings.json",
+      "reconstruction": "stylized low-poly approximation; no surveyed interior",
+      "photoReference": {
+        "title": "Villafranca Montes de Oca-02-Santiago Apostol-1996-gje.jpg",
+        "author": "Gerd Eichmann",
+        "license": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Villafranca_Montes_de_Oca-02-Santiago_Apostol-1996-gje.jpg",
+        "use": "visual reference only; no raster texture included"
+      }
+    },
+    "plaza": {
+      "name": "La Plaza",
+      "osmWays": [
+        { "id": 645040295, "role": "pedestrian square polygon", "source": "data/roads/raw/osm_highways_window.json" },
+        { "id": 741760074, "role": "existing living_street; keep current road mesh", "source": "public/roads/roads.json" }
+      ],
+      "furnitureAnchorsWorldXZ": [
+        [3084.0, 4004.5],
+        [3049.5, 4001.5],
+        [3084.0, 4001.5],
+        [3087.0, 4010.5]
+      ],
+      "placementSource": "manual low-poly furniture anchors tested inside pedestrian square way 645040295, at least 3 m from building footprints and at least 5 m from the living_street centerline",
+      "reconstruction": "generic low-poly furniture; existing street surface and collisions stay unchanged"
+    },
+    "parking": {
+      "name": "Parking de El Pájaro",
+      "source": "https://visualizadores.ign.es/comparador_pnoa/",
+      "sourceLicense": "IGN/CNIG CC BY 4.0",
+      "referenceUse": "manual visual reference only; do not bundle orthophoto pixels",
+      "traceStatus": "pending manual PNOA inspection",
+      "observationDate": null,
+      "boundsWorldXZ": null,
+      "confidence": null,
+      "unverifiedDetails": ["surface markings", "curbs", "furniture"]
+    },
+    "dam": {
+      "name": "Presa de Alba",
+      "osm": { "type": "way", "id": 168459142, "source": "data/roads/raw/osm_highways_window.json" },
+      "geometrySource": "public/water/water.json",
+      "reconstruction": "stylized low-poly approximation; architectural details without a reusable photo source are not claimed as literal"
+    }
+  }
+}

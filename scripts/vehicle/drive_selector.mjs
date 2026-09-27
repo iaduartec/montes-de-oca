@@ -108,13 +108,32 @@ async function waitReady(cdp, probe) {
   let ready = false;
   for (let i = 0; i < 150 && !ready; i++) {
     await wait(1000);
+    let startupError = null;
     try {
       ready = await cdp.evaluate(probe);
+      startupError = await cdp.evaluate(
+        "document.body.innerText.startsWith('ERROR\\n') ? document.body.innerText.split('\\n').slice(0, 2).join(': ') : null",
+      );
     } catch {
       ready = false;
     }
+    if (startupError) throw new Error(startupError);
   }
   if (!ready) throw new Error(`la app no quedó lista (${probe})`);
+}
+
+async function navigateReady(cdp, url, probe) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await cdp.send('Page.navigate', { url });
+    try {
+      await waitReady(cdp, probe);
+      return;
+    } catch (error) {
+      const fetchAborted = await cdp.evaluate("document.body.innerText.includes('ERROR\\nFailed to fetch')").catch(() => false);
+      if (!fetchAborted || attempt > 0) throw error;
+      console.warn('[selector] carga de datos abortada en el primer arranque; se reintenta una vez');
+    }
+  }
 }
 
 const ESTADO_UI = `(() => {
@@ -180,8 +199,7 @@ async function main() {
     await cdp.send('Runtime.enable');
 
     console.log('[selector] arranque en modo misión (perfil limpio)');
-    await cdp.send('Page.navigate', { url: `${BASE}/` });
-    await waitReady(cdp, '!!(window.__game && window.__game.vehicle)');
+    await navigateReady(cdp, `${BASE}/`, '!!(window.__game && window.__game.vehicle)');
     await wait(2500);
 
     // ---- 1. arranque: chip en Estándar, panel oculto. ----
@@ -241,8 +259,7 @@ async function main() {
 
     // ---- 6. persistencia: recarga con localStorage=carga. ----
     await cdp.evaluate("window.localStorage.setItem('selectedVehicleId', 'carga')");
-    await cdp.send('Page.navigate', { url: `${BASE}/` });
-    await waitReady(cdp, '!!(window.__game && window.__game.vehicle)');
+    await navigateReady(cdp, `${BASE}/`, '!!(window.__game && window.__game.vehicle)');
     await wait(1500);
     const persistido = await cdp.evaluate(ESTADO_UI);
     report.persistido = { chip: persistido.chip, activa: persistido.activa };

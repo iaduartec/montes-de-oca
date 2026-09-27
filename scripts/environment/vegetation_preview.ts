@@ -1,11 +1,10 @@
 // Harness de VERIFICACION de la capa de vegetacion (FASE D).
 //
-// Por que existe: `src/main.ts` esta congelado para este worker (lo integra el
-// orquestador), asi que el juego todavia no llama a `loadVegetation`. Sin esto
-// no habria forma de MIRAR el bosque ni de medir cuanto cuesta. Arranca los
-// mismos bloques que arrancara el juego: config -> terreno real -> vias
-// drapeadas -> `src/environment/vegetation.ts`, con la misma convencion de
-// camara que main.ts.
+// Por que existe: `src/main.ts` ya integra `loadVegetation`, pero este harness
+// sigue siendo el lugar donde MIRAR el bosque de forma aislada y medir cuanto
+// cuesta (antes/despues en la MISMA escena). Arranca los mismos bloques que el
+// juego: config -> terreno real -> vias drapeadas -> `src/environment/vegetation.ts`,
+// con la misma convencion de camara que main.ts.
 //
 // Expone `window.__game` (mismo nombre que usa main.ts) para que el script de
 // captura por CDP haga lo mismo que en el resto del repo:
@@ -184,7 +183,7 @@ async function bootstrap(): Promise<void> {
   // Aerea: picado sobre la zona mas densa de la ventana (3750-4250 x 1750-2750),
   // que ademas es donde la primera ruta corta el bosque: se ve el corredor
   // despejado serpenteando entre arboles. Altura elegida para que el radio
-  // lejano del LOD (650 m) alcance el horizonte marcado del terreno.
+  // lejano del LOD (900 m = viewRadius) alcance el horizonte marcado del terreno.
   const aerialPos = { x: 3760, z: 2640 };
   const aerialTarget = { x: 4120, z: 2260 };
   // Suelo: parado sobre la pista cerca del objetivo, mirando hacia el claro de
@@ -209,10 +208,15 @@ async function bootstrap(): Promise<void> {
         groundTarget.z,
       ),
     },
-    // Sobre el claro de inicio: 30 m de radio sin nada, bosque alrededor.
+    // Claro de inicio (30 m sin nada) con el bosque de fondo. La camara va del
+    // lado OPUESTO al bosque: los arboles empiezan a ~150 m en la direccion
+    // (+98, -107) respecto del spawn (centroide de las 287 instancias no-hierba
+    // del anillo 150-500 m; en total hay 2598 arboles a menos de 900 m). Apuntando
+    // solo al claro, el encuadre quedaba sin UN arbol y la captura parecia
+    // demostrar que la capa no cargaba.
     spawn: {
-      pos: new Vector3(routeStart.x - 40, terrain.heightAt(routeStart.x, routeStart.z) + 60, routeStart.z + 40),
-      target: new Vector3(routeStart.x, terrain.heightAt(routeStart.x, routeStart.z), routeStart.z),
+      pos: new Vector3(routeStart.x - 61, terrain.heightAt(routeStart.x - 61, routeStart.z + 66) + 55, routeStart.z + 66),
+      target: new Vector3(3186, terrain.heightAt(3186, 3828) + 12, 3828),
     },
   };
 

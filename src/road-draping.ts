@@ -44,6 +44,12 @@ import {
 /** Clases viales del entregable de la FASE 3a. */
 export type RoadClass = 'ROAD' | 'TRACK' | 'PATH';
 
+export interface RoadMapLine {
+  readonly id: string;
+  readonly class: RoadClass;
+  readonly points: readonly (readonly [number, number])[];
+}
+
 const CLASSES: readonly RoadClass[] = ['ROAD', 'TRACK', 'PATH'];
 
 /** Superficie del terreno que consume el drapeado (WorldTerrain la cumple). */
@@ -862,6 +868,8 @@ export interface RoadDrapingStats {
 export interface RoadNetwork {
   readonly meshes: readonly Mesh[];
   readonly stats: RoadDrapingStats;
+  /** Líneas XZ de la fuente OSM ya parseada, sin solicitar roads.json otra vez. */
+  mapLines(): readonly RoadMapLine[];
   /** Residual de TODOS los vértices de la cinta contra `terrain.heightAt`. */
   audit(): RoadAuditReport;
   /** Muestra aleatoria de vértices con su rol, para verificación independiente. */
@@ -1031,6 +1039,12 @@ export async function loadRoadNetwork(
     maxTerrainClearanceLiftM,
   };
 
+  const mapLines: readonly RoadMapLine[] = roads.map((road) => ({
+    id: road.id,
+    class: road.class,
+    points: road.points,
+  }));
+
   const audit = (): RoadAuditReport => {
     const classes = {} as RoadAuditReport['classes'];
     for (const cls of CLASSES) {
@@ -1132,6 +1146,7 @@ export async function loadRoadNetwork(
   return {
     meshes,
     stats,
+    mapLines: () => mapLines,
     audit,
     probe,
     stations,

@@ -10,6 +10,7 @@ import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
 import { loadWater, type Water, type WaterStats } from './environment/water';
 import { loadVillage, type VillageStats } from './environment/village';
+import { loadVillageLandmarks, type VillageLandmarks } from './environment/village-landmarks';
 import { VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M } from './environment/roof-clearance';
 import {
   loadVegetation,
@@ -31,6 +32,7 @@ import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
 import { applyPreset, DEFAULT_PRESET_ID, presetById } from './vehicle/presets';
 import { createVehicleSelector, type VehicleSelector } from './vehicle/selector';
+import { createMinimap, type Minimap } from './ui/minimap';
 import { FIRST_ROUTE } from './gameplay/first-route';
 import type { FirstRoute, RouteLeg, RoutePoint } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
@@ -428,6 +430,7 @@ async function bootstrap(): Promise<void> {
   }
 
   let vehicle: Vehicle | null = null;
+  let minimap: Minimap | null = null;
   let controls: ReturnType<typeof createVehicleControls> | null = null;
   let player: Player | null = null;
   /** Preset aplicado al 4x4 (`estandar` por defecto; `?vehicle=` gana a localStorage). */
@@ -442,6 +445,7 @@ async function bootstrap(): Promise<void> {
     const preset = presetById(id);
     if (!preset) return false;
     applyPreset(vehicle.params, preset);
+    vehicle.setAppearance(preset.visual);
     currentPresetId = preset.id;
     writeStoredVehicleId(preset.id);
     selectorVehiculo?.setCurrent(preset.id);
@@ -492,6 +496,15 @@ async function bootstrap(): Promise<void> {
   let roads: RoadNetwork | null = null;
   /** Stats del pueblo cargado (FASE E), para la API de depuración. */
   let villageStats: VillageStats | null = null;
+  let landmarks: VillageLandmarks | null = null;
+  const landmarksEnabled = params.get('landmarks') !== '0';
+  if (landmarksEnabled) {
+    try {
+      landmarks = await loadVillageLandmarks(scene, terrain, { baseUrl: publicUrl('/village/focal-sites/') });
+    } catch (error) {
+      console.warn('[hitos] no se pudieron cargar; se mantienen los elementos base', error);
+    }
+  }
   if (roadsEnabled) {
     // Dominio real del terreno: evita que `heightAt` devuelva el "0 absoluto"
     // (−datum) para vértices laterales que asoman fuera de la ventana.
@@ -529,7 +542,10 @@ async function bootstrap(): Promise<void> {
   let water: Water | null = null;
   if (waterEnabled) {
     try {
-      water = await loadWater(scene, terrain, { url: publicUrl('/water/water.json') });
+      water = await loadWater(scene, terrain, {
+        url: publicUrl('/water/water.json'),
+        includeDam: !landmarks?.replacesDam,
+      });
       console.info(
         `[agua] ${water.stats.sheets} láminas · ${water.stats.ribbons} cintas · ${water.stats.meshes} mallas`,
       );
@@ -559,6 +575,8 @@ async function bootstrap(): Promise<void> {
     const village = await loadVillage(scene, terrain, {
       url: publicUrl('/village/buildings.json'),
       buildingHeightGridUrl: publicUrl('/village/building_height_grid.json'),
+      pilotAssetUrl: publicUrl('/village/pilot-houses.glb'),
+      ...(landmarks ? { omitBuildingIds: landmarks.coveredBuildingIds } : {}),
       keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
       keepClearRadiusM: 12,
       roadClearance,
@@ -824,6 +842,25 @@ async function bootstrap(): Promise<void> {
     // Posición de cámara inicial detrás del vehículo.
     camera.position = new Vector3(startX - Math.sin(yaw) * 7.5, terrain.heightAt(startX, startZ) + 2.4, startZ - Math.cos(yaw) * 7.5);
     camera.minZ = 0.3;
+  }
+
+  // The minimap is available in normal play and in the free-camera capture mode.
+  {
+    const mapCanvas = document.getElementById('minimapa-canvas');
+    const recenterButton = document.getElementById('minimapa-recenter');
+    if (mapCanvas instanceof HTMLCanvasElement) {
+      minimap = createMinimap({
+        canvas: mapCanvas,
+        roads: roads?.mapLines() ?? [],
+        route: FIRST_ROUTE.polyline,
+        labels: [
+          { id: 'santiago', name: 'Iglesia', x: 3067.357, z: 3976.874, kind: 'church' },
+          { id: 'plaza', name: 'Plaza', x: 3063.04, z: 4012.346, kind: 'square' },
+          { id: 'presa', name: 'Presa de Alba', x: 2434.565, z: 1523.295, kind: 'dam' },
+        ],
+        ...(recenterButton instanceof HTMLButtonElement ? { recenterButton } : {}),
+      });
+    }
   }
 
   // ----- Atmósfera (FASE I): niebla exponencial + sombras -----
@@ -1133,6 +1170,16 @@ async function bootstrap(): Promise<void> {
     // reencuadra al jugador en el primer frame y las capturas de medición salen con la
     // vista del juego (silenciosamente) en vez de la pedida por ?px/py/pz.
     if (!freeCamera) updateChaseCamera(dt);
+    if (minimap) {
+      const walking = player !== null && player.mode === 'on-foot';
+      const body = walking ? player!.root.position : vehicle?.root.position ?? { x: startX, z: startZ };
+      if (body) {
+        const headingRad = walking
+          ? ((player!.telemetry().yawDeg * Math.PI) / 180)
+          : (vehicle?.state.yaw ?? yaw);
+        minimap.update({ x: body.x, z: body.z, headingRad });
+      }
+    }
     // El shadow map sigue al jugador: con el ancla fija en el origen, la sombra se
     // cortaba a 100 m y el 4x4 dejaba de proyectar apenas te alejabas del spawn.
     const anclaSombra = player ? player.root.position : vehicle?.root.position;
@@ -1285,8 +1332,10 @@ async function bootstrap(): Promise<void> {
     objective?.dispose();
     controls?.dispose();
     vehicle?.dispose();
+    minimap?.dispose();
     roads?.dispose();
     water?.dispose();
+    landmarks?.dispose();
     vegetation?.dispose();
     diagnostics.dispose();
     terrain.dispose();

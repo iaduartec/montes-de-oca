@@ -5,6 +5,7 @@ export interface VehiclePreset {
   id: string;
   name: string;
   summary: string;
+  visual: 'estandar' | 'patrulla' | 'carga';
   params: Partial<VehicleParams>;
 }
 
@@ -12,13 +13,15 @@ export const VEHICLE_PRESETS: readonly VehiclePreset[] = [
   {
     id: 'estandar',
     name: 'Estándar',
-    summary: 'La afinación actual del 4x4.',
+    summary: 'Carrocería rural corta con baca y defensa.',
+    visual: 'estandar',
     params: {},
   },
   {
     id: 'patrulla',
     name: 'Patrulla',
-    summary: 'Más liviano y rápido.',
+    summary: 'Carrocería clara con baliza de servicio.',
+    visual: 'patrulla',
     params: {
       mass: 1200,
       dragCoefficient: 0.45,
@@ -30,7 +33,8 @@ export const VEHICLE_PRESETS: readonly VehiclePreset[] = [
   {
     id: 'carga',
     name: 'Carga',
-    summary: 'Más pesado y lento, con más freno.',
+    summary: 'Caja trasera abierta con carga visible.',
+    visual: 'carga',
     params: {
       mass: 2400,
       dragCoefficient: 0.95,

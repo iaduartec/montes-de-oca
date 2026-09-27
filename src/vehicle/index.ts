@@ -69,6 +69,8 @@ export interface Vehicle {
   teleport(x: number, z: number, yaw: number): void;
   /** Aplica estado físico a los meshes y devuelve el residual de ruedas. */
   applyPose(): number;
+  /** Cambia solo la carrocería visible; no altera el estado ni la física. */
+  setAppearance(id: 'estandar' | 'patrulla' | 'carga'): void;
   telemetry(): VehicleTelemetry;
   dispose(): void;
 }
@@ -186,6 +188,7 @@ export function createVehicle(options: CreateVehicleOptions): Vehicle {
       applyPose();
     },
     applyPose,
+    setAppearance: (id) => model.setAppearance(id),
     telemetry,
     dispose: () => model.dispose(),
   };

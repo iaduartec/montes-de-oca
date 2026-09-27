@@ -208,6 +208,14 @@ async function main() {
     await cdp.screenshot(resolve(OUT_DIR, '11_village_aerial.png'));
     console.log('[pueblo] captura aérea -> output/milestone1/11_village_aerial.png');
 
+    await cdp.evaluate('window.__game.setView("facade")');
+    await wait(900);
+    await cdp.screenshot(resolve(OUT_DIR, '12_village_facade.png'));
+    console.log('[pueblo] captura de fachada -> output/milestone1/12_village_facade.png');
+
+    report.pilot_asset_manifest = await fetchJson(`${BASE}/village/pilot-houses.json`);
+    report.pilot_asset_loaded = report.stats.meshes > 10;
+
     // ------------------------------------------ 5. estres del filtro de spawn
     // El JSON ya viene limpio (el build descarta lo que invada 12 m), asi que con
     // el radio por defecto `droppedAtSpawn` da 0. Con 40 m se ve que el filtro

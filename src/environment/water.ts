@@ -60,6 +60,8 @@ export interface Water {
 export interface LoadWaterOptions {
   /** URL de los datos. Por defecto `/water/water.json`. */
   readonly url?: string;
+  /** Omite únicamente el muro genérico si ya se cargó una presa detallada. */
+  readonly includeDam?: boolean;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -675,7 +677,7 @@ export async function loadWater(
   meshes.push(createWaterMesh(scene, 'agua:cintas', ribbonsBuffers));
   // La cara de aguas arriba queda a contraluz del sol de mediodía: sin un
   // mínimo emisivo el hormigón se leía negro en la captura de la presa.
-  if (data.dam) meshes.push(createWaterMesh(scene, 'agua:presa', damBuffers, [0.22, 0.22, 0.23]));
+  if (data.dam && options.includeDam !== false) meshes.push(createWaterMesh(scene, 'agua:presa', damBuffers, [0.22, 0.22, 0.23]));
 
   /* ----- Consultas (AGUA.md §5.1) ----- */
 
@@ -842,7 +844,7 @@ export async function loadWater(
     sheets: data.sheets.length,
     ribbons: data.ribbons.length,
     meshes: meshes.length,
-    triangles: sheetsBuffers.triangles + ribbonsBuffers.triangles + damBuffers.triangles,
+    triangles: sheetsBuffers.triangles + ribbonsBuffers.triangles + (options.includeDam === false ? 0 : damBuffers.triangles),
     dataBytes: data.bytes,
   };
 

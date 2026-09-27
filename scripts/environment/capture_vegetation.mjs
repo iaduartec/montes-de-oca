@@ -14,8 +14,7 @@
 // ADVERTENCIA: FPS/frame en headless con SwiftShader NO es senal de rendimiento.
 // Draw calls y triangulos si lo son.
 //
-// El harness es un HTML que solo existe en el dev server (main.ts esta congelado
-// para este worker):  npm run dev  y despues
+// El harness es un HTML que solo existe en el dev server:  npm run dev  y despues
 //   node scripts/environment/capture_vegetation.mjs --base http://127.0.0.1:5174
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';

@@ -24,6 +24,7 @@ export interface VehicleModel {
   readonly wheels: readonly TransformNode[];
   /** Aplica el giro de rueda (rad) y el ángulo de dirección (rad). */
   setWheelPose(spin: number, steer: number): void;
+  setAppearance(id: 'estandar' | 'patrulla' | 'carga'): void;
   dispose(): void;
 }
 
@@ -195,6 +196,44 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
     merged.receiveShadows = false;
   }
 
+  // Each selectable vehicle has its own silhouette. Patrol is a long-roof
+  // wagon with a rear cabin and service lightbar; cargo is an open-bed pickup.
+  // The kits are merged and hidden until selected, without changing physics.
+  const patrolPieces = [
+    box(scene, 'vehicle:patrol-lightbar', lampMat, 1.06, 0.13, 0.24, 0, chassisY + 1.08, -0.3),
+    box(scene, 'vehicle:patrol-wagon-roof', bodyMat, 1.3, 0.12, 1.28, 0, chassisY + 0.91, -1.52),
+    box(scene, 'vehicle:patrol-rear-door', bodyMat, 1.18, 0.48, 0.09, 0, chassisY + 0.37, -2.12),
+    box(scene, 'vehicle:patrol-rear-glass', cabinMat, 0.88, 0.28, 0.035, 0, chassisY + 0.65, -2.18),
+  ];
+  for (const side of [-1, 1] as const) {
+    patrolPieces.push(
+      box(scene, `vehicle:patrol-side-body-${side}`, bodyMat, 0.06, 0.4, 0.92, side * 0.65, chassisY + 0.27, -1.59),
+      box(scene, `vehicle:patrol-side-glass-${side}`, cabinMat, 0.035, 0.28, 0.74, side * 0.685, chassisY + 0.64, -1.59),
+    );
+  }
+  const patrolKit = Mesh.MergeMeshes(patrolPieces, true, true, undefined, false, false);
+  if (!patrolKit) throw new Error('No se pudo crear la carrocería de patrulla');
+  patrolKit.name = 'vehicle:variant-patrulla';
+  patrolKit.parent = root;
+  patrolKit.setEnabled(false);
+  patrolKit.isPickable = false;
+  patrolKit.receiveShadows = false;
+
+  const cargoPieces = [
+    box(scene, 'vehicle:cargo-bed', trimMat, 1.48, 0.2, 1.72, 0, chassisY + 0.42, -1.28),
+    box(scene, 'vehicle:cargo-side-left', trimMat, 0.11, 0.48, 1.72, -0.69, chassisY + 0.73, -1.28),
+    box(scene, 'vehicle:cargo-side-right', trimMat, 0.11, 0.48, 1.72, 0.69, chassisY + 0.73, -1.28),
+    box(scene, 'vehicle:cargo-tailgate', trimMat, 1.36, 0.46, 0.12, 0, chassisY + 0.72, -2.08),
+    box(scene, 'vehicle:cargo-load', bodyMat, 0.92, 0.35, 0.74, 0, chassisY + 0.84, -1.28),
+  ];
+  const cargoKit = Mesh.MergeMeshes(cargoPieces, true, true, undefined, false, false);
+  if (!cargoKit) throw new Error('No se pudo crear la variante de carga');
+  cargoKit.name = 'vehicle:variant-carga';
+  cargoKit.parent = root;
+  cargoKit.setEnabled(false);
+  cargoKit.isPickable = false;
+  cargoKit.receiveShadows = false;
+
   const offsets: readonly (readonly [number, number])[] = [
     [-layout.halfTrack, layout.front],
     [layout.halfTrack, layout.front],
@@ -249,6 +288,15 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   return {
     root,
     wheels: wheelHubs,
+    setAppearance: (id) => {
+      patrolKit.setEnabled(id === 'patrulla');
+      cargoKit.setEnabled(id === 'carga');
+      bodyMat.diffuseColor = id === 'patrulla'
+        ? new Color3(0.69, 0.7, 0.64)
+        : id === 'carga'
+          ? new Color3(0.48, 0.38, 0.25)
+          : new Color3(0.4, 0.43, 0.32);
+    },
     setWheelPose: (spin: number, steer: number) => {
       for (let i = 0; i < wheelHubs.length; i++) {
         const hub = wheelHubs[i]!;

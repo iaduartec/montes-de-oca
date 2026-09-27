@@ -29,12 +29,16 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import '@babylonjs/loaders/glTF';
 import type { Scene } from '@babylonjs/core/scene';
 import type { WorldTerrain } from '../terrain';
 import { gridExtent } from '../heightfield';
 import { buildingRoofTint, buildingTint } from './building-tint';
 import { selectRoofShape } from './roof-shape';
 import { constrainEaveOverhang, VILLAGE_DETAIL_RADIUS_M } from './roof-clearance';
+import { VILLAGE_PILOT_HOUSES, type VillagePilotHouseStyle } from './village-pilot';
 
 /* ------------------------------------------------------------------------- *
  * Contrato (lo consumen main.ts cuando el orquestador integre las capas)
@@ -72,6 +76,10 @@ export interface Village {
 export interface LoadVillageOptions {
   /** URL de los datos. Por defecto `/village/buildings.json`. */
   readonly url?: string;
+  /** GLB del piloto. */
+  readonly pilotAssetUrl?: string;
+  /** Edificios sustituidos por hitos externos que se cargaron correctamente. */
+  readonly omitBuildingIds?: ReadonlySet<number>;
   /** Manifiesto y rejilla independiente del MDSnE IGN/CNIG. */
   readonly buildingHeightGridUrl?: string;
   /** Punto que NO puede quedar tapado por una casa (la aparición del 4x4). */
@@ -1069,6 +1077,11 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
 
   tintVertices(roof, roofFirstVertex, roofTint);
 
+  const pilotStyle = VILLAGE_PILOT_HOUSES[building.id];
+  if (pilotStyle?.tileCourses && gable && building.roofKind === 'teja') {
+    buildRoofTileCourses(roof, points, axis, topY, rise, roofTint);
+  }
+
   if (detailed) {
     // Variante de fachada determinista: porton de cuadra, ritmo tupido (por
     // defecto) o una sola ventana alta por planta (muro mas rural y ciego).
@@ -1076,12 +1089,13 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
     const eaveFirstVertex = roof.positions.length / 3;
     buildFacadeDetails(ctx, points, {
       ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof,
-      shutters: building.id % 2 === 0 ? ctx.shutters : null,
+      shutters: pilotStyle ? ctx.shutters : building.id % 2 === 0 ? ctx.shutters : null,
       porton: variant === 0,
       sparseWindows: variant === 2,
+      pilotStyle,
     });
     tintVertices(roof, eaveFirstVertex, roofTint);
-    if ((gable || shape === 'hip') && n <= 8 && hash32(building.id) % 2 === 0 &&
+    if ((gable || shape === 'hip') && n <= 8 && (pilotStyle?.chimney || hash32(building.id) % 2 === 0) &&
         Math.abs(signedArea(points)) >= 35 && axis.halfU >= 2) {
       // Chimeneas de ladrillo/piedra en una parte de las casas próximas. La base
       // se mete en la cumbrera; la posición queda dentro del footprint y la tapa
@@ -1128,6 +1142,81 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean)
   }
 }
 
+/**
+ * Add fine, darkened tile courses to selected nearby gable roofs. The strips are
+ * written into the existing roof material buffer, so they add geometry without
+ * adding a mesh or draw call. Their ends follow the actual OSM polygon section;
+ * irregular gables therefore cannot grow stripes past their roof silhouette.
+ */
+function buildRoofTileCourses(
+  roof: GroupBuffers,
+  points: readonly V2[],
+  axis: { readonly c: V2; readonly u: V2; readonly halfU: number; readonly halfV: number },
+  topY: number,
+  rise: number,
+  tint: readonly [number, number, number],
+): void {
+  if (axis.halfU < 1.5 || axis.halfV < 0.8 || rise <= 0 || !isConvexPolygon(points)) return;
+
+  const projected = points.map(([x, z]) => {
+    const dx = x - axis.c[0];
+    const dz = z - axis.c[1];
+    return {
+      u: dx * axis.u[0] + dz * axis.u[1],
+      v: dx * -axis.u[1] + dz * axis.u[0],
+    };
+  });
+  const sideExtentAt = (u: number, side: -1 | 1): number | null => {
+    const crossings: number[] = [];
+    for (let i = 0; i < projected.length; i++) {
+      const a = projected[i]!;
+      const b = projected[(i + 1) % projected.length]!;
+      const du = b.u - a.u;
+      if (Math.abs(du) < 1e-6) {
+        if (Math.abs(u - a.u) < 1e-5) crossings.push(a.v, b.v);
+        continue;
+      }
+      const t = (u - a.u) / du;
+      if (t >= -1e-6 && t <= 1 + 1e-6) crossings.push(a.v + (b.v - a.v) * t);
+    }
+    if (crossings.length === 0) return null;
+    return side > 0 ? Math.max(...crossings) : Math.min(...crossings);
+  };
+  const pointAt = (u: number, v: number): readonly [number, number, number] => [
+    axis.c[0] + axis.u[0] * u - axis.u[1] * v,
+    topY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV)) + 0.018,
+    axis.c[1] + axis.u[1] * u + axis.u[0] * v,
+  ];
+  const halfBandM = 0.035;
+  const endMarginM = Math.min(0.45, axis.halfU * 0.16);
+  const span = Math.max(0, axis.halfU * 2 - endMarginM * 2);
+  const count = Math.min(28, Math.max(3, Math.ceil(span / 0.82)));
+  const step = span / (count - 1);
+  const firstVertex = roof.positions.length / 3;
+
+  for (const side of [-1, 1] as const) {
+    for (let index = 0; index < count; index++) {
+      const u = -axis.halfU + endMarginM + index * step;
+      const u0 = Math.max(-axis.halfU, u - halfBandM);
+      const u1 = Math.min(axis.halfU, u + halfBandM);
+      const edge0 = sideExtentAt(u0, side);
+      const edge1 = sideExtentAt(u1, side);
+      if (edge0 === null || edge1 === null) continue;
+      const v0 = edge0 - side * 0.08;
+      const v1 = edge1 - side * 0.08;
+      if (Math.abs(v0) < 0.12 || Math.abs(v1) < 0.12) continue;
+      const a = pointAt(u0, side * 0.08);
+      const b = pointAt(u1, side * 0.08);
+      const c = pointAt(u1, v1);
+      const d = pointAt(u0, v0);
+      pushRoofTriangle(roof, a, b, c, axis.c);
+      pushRoofTriangle(roof, a, c, d, axis.c);
+    }
+  }
+
+  tintVertices(roof, firstVertex, [tint[0] * 0.78, tint[1] * 0.75, tint[2] * 0.73]);
+}
+
 /** Contexto de detalle que `buildBuilding` ya calculo y no queremos repetir. */
 interface FacadeDetailContext {
   readonly ccw: boolean;
@@ -1144,6 +1233,8 @@ interface FacadeDetailContext {
   readonly porton: boolean;
   /** Ritmo rural: una sola ventana por planta en lugar de dos. */
   readonly sparseWindows: boolean;
+  /** Selected pilot façades may use a small, stylized stone corner return. */
+  readonly pilotStyle: VillagePilotHouseStyle | undefined;
 }
 
 /**
@@ -1154,7 +1245,7 @@ interface FacadeDetailContext {
 function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx: FacadeDetailContext): void {
   const detail = ctx.detail;
   if (!detail) return;
-  const { ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof, shutters, porton, sparseWindows } = detailCtx;
+  const { ccw, gable, ridgeSpan, roofY, projU, axis, minY, baseY, roof, shutters, porton, sparseWindows, pilotStyle } = detailCtx;
   const n = points.length;
   const plinthTop = minY + PLINTH_HEIGHT_M;
 
@@ -1228,6 +1319,15 @@ function buildFacadeDetails(ctx: BuildContext, points: readonly V2[], detailCtx:
   };
   let doorInterval: readonly [number, number] | null = null;
   const main = facades.find((facade) => facingSpawn(facade) > 0.3) ?? facades[0];
+  if (main && pilotStyle?.stoneReturns && main.len >= 4.2) {
+    const edgeWidthM = 0.22;
+    const topStart = topAt(main, edgeWidthM);
+    const topEnd = topAt(main, main.len - edgeWidthM);
+    pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz,
+      WINDOW_TRIM_OUT_M, 0.03, edgeWidthM, baseY, topStart);
+    pushFacadeQuad(ctx.plinths, main.ax, main.az, main.bx, main.bz, main.ux, main.uz,
+      WINDOW_TRIM_OUT_M, main.len - edgeWidthM, main.len - 0.03, baseY, topEnd);
+  }
   if (main) {
     const s = main.len / 2;
     const ground = pointOn(main, s, 0);
@@ -1628,6 +1728,47 @@ export async function loadVillage(
       : null,
   };
 
+  // The pilot is one exported, vertex-colored mesh. Keep the procedural path as
+  // a resilient fallback so missing/corrupt optional art never removes houses.
+  let pilotContainer: AssetContainer | null = null;
+  const loadedPilotIds = new Set<number>();
+  const pilotWouldBeDropped = keepClearAt !== null && buildings.some(
+    (building) => VILLAGE_PILOT_HOUSES[building.id] &&
+      distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) < keepClearRadiusM,
+  );
+  if (!pilotWouldBeDropped) {
+    try {
+      pilotContainer = await SceneLoader.LoadAssetContainerAsync('', options.pilotAssetUrl ?? '/village/pilot-houses.glb', scene);
+      for (const mesh of pilotContainer.meshes) {
+        if (!(mesh instanceof Mesh) || mesh.getTotalVertices() === 0) continue;
+        // Blender's Y-up and glTF/Babylon root transforms must be baked so the
+        // footprint coordinates stay in the same world space as OSM and terrain.
+        mesh.computeWorldMatrix(true);
+        mesh.bakeTransformIntoVertices(mesh.getWorldMatrix().clone());
+        mesh.setParent(null);
+        mesh.position.set(0, 0, 0);
+        mesh.rotation.set(0, 0, 0);
+        mesh.rotationQuaternion = null;
+        mesh.scaling.set(1, 1, 1);
+        // The exported Blender→glTF frame arrives mirrored on both horizontal
+        // axes; a 180° Y rotation restores the positive OSM world coordinates.
+        mesh.scaling.set(-1, 1, -1);
+        mesh.bakeCurrentTransformIntoVertices();
+        mesh.refreshBoundingInfo(true);
+        mesh.computeWorldMatrix(true);
+        mesh.name = 'pueblo:piloto:casas';
+        mesh.isPickable = false;
+        mesh.checkCollisions = false;
+      }
+      pilotContainer.addAllToScene();
+      for (const id of Object.keys(VILLAGE_PILOT_HOUSES)) loadedPilotIds.add(Number(id));
+    } catch (error) {
+      pilotContainer?.dispose();
+      pilotContainer = null;
+      console.warn('[pueblo] GLB del piloto no disponible; se usan las casas procedurales', error);
+    }
+  }
+
   let droppedAtSpawn = 0;
   let footprintAreaM2 = 0;
   let tallestM = 0;
@@ -1635,13 +1776,14 @@ export async function loadVillage(
   let detailedBuildings = 0;
   const streetPoles = buildStreetFurniture(ctx);
   for (const building of buildings) {
+    if (options.omitBuildingIds?.has(building.id)) continue;
     if (keepClearAt && distanceToPolygon(building.footprint, keepClearAt.x, keepClearAt.z) < keepClearRadiusM) {
       droppedAtSpawn++;
       continue;
     }
     const detailed =
       ctx.detail !== null && distanceToPolygon(building.footprint, ctx.detail.x, ctx.detail.z) <= ctx.detail.radiusM;
-    buildBuilding(ctx, building, detailed);
+    if (!loadedPilotIds.has(building.id)) buildBuilding(ctx, building, detailed);
     if (detailed) detailedBuildings++;
     footprintAreaM2 += Math.abs(signedArea(building.footprint));
     tallestM = Math.max(tallestM, building.heightM);
@@ -1660,6 +1802,13 @@ export async function loadVillage(
   const materials: StandardMaterial[] = [];
   const meshes: Mesh[] = [];
   let triangles = 0;
+  if (pilotContainer) {
+    for (const mesh of pilotContainer.meshes) {
+      if (!(mesh instanceof Mesh) || mesh.getTotalVertices() === 0) continue;
+      meshes.push(mesh);
+      triangles += Math.floor(mesh.getTotalIndices() / 3);
+    }
+  }
   for (const kind of BODY_KINDS) {
     const material = createMaterial(scene, BODY_MATERIALS[kind]);
     materials.push(material);
@@ -1723,6 +1872,7 @@ export async function loadVillage(
   return {
     stats,
     dispose: () => {
+      pilotContainer?.dispose();
       for (const mesh of meshes) mesh.dispose();
       for (const material of materials) material.dispose();
     },

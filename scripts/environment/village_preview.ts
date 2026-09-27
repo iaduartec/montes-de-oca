@@ -279,6 +279,19 @@ async function bootstrap(): Promise<void> {
       const target = new Vector3(center.x + 40, terrain.heightAt(center.x + 40, center.z + 60) + 10, center.z + 60);
       return { pos, target };
     })(),
+    // Fachada cercana de la casa de piedra en el tramo inicial de Calle Mayor.
+    facade: (() => {
+      const building = villageData.buildings.find((item) => item.id === 305647007);
+      if (!building) throw new Error('falta la casa piloto 305647007');
+      const center = building.footprint.reduce(
+        (acc, point) => ({ x: acc.x + point[0] / building.footprint.length, z: acc.z + point[1] / building.footprint.length }),
+        { x: 0, z: 0 },
+      );
+      const towardSpawn = new Vector3(routeStart.x - center.x, 0, routeStart.z - center.z).normalize();
+      const pos = new Vector3(center.x + towardSpawn.x * 26, terrain.heightAt(center.x + towardSpawn.x * 26, center.z + towardSpawn.z * 26) + 2.1, center.z + towardSpawn.z * 26);
+      const target = new Vector3(center.x, terrain.heightAt(center.x, center.z) + 3.4, center.z);
+      return { pos, target };
+    })(),
   };
 
   // El HUD muestra la vista ACTIVA, no el query param: setView() se puede llamar
