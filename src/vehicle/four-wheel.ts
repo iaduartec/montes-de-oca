@@ -217,7 +217,10 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
       applyPose();
     },
     applyPose,
-    setAppearance: (id) => { if (!definition) model.setAppearance(id); },
+    setAppearance: (id) => {
+      if (definition) throw new Error('Cannot change appearance of a catalog vehicle; create a new actor');
+      model.setAppearance(id);
+    },
     telemetry,
     dispose: () => model.dispose(),
   };

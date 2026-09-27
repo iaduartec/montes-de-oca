@@ -38,7 +38,9 @@ const catalogModule = await import(`data:text/javascript;base64,${Buffer.from(aw
 const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine.js');
 const { Scene } = await import('@babylonjs/core/scene.js');
 const expectedParams = {
-  estandar: {}, patrulla: { mass: 1200, maxSpeed: 38 }, carga: { mass: 2400, maxSpeed: 22 },
+  estandar: {},
+  patrulla: { mass: 1200, dragCoefficient: 0.45, maxDriveForce: 18000, maxSpeed: 38, steerRate: 8 },
+  carga: { mass: 2400, dragCoefficient: 0.95, brakeForce: 16000, maxDriveForce: 10000, maxSpeed: 22, steerMax: 0.4 },
   explorador: { mass: 1550, wheelBase: 2.5 }, turismo: { mass: 1350, wheelBase: 2.68 },
   rally: { mass: 1250, wheelBase: 2.55 },
 };
@@ -54,7 +56,11 @@ for (const definition of catalogModule.VEHICLE_CATALOG.filter((entry) => entry.c
   assert.equal(vehicle.category, definition.category);
   assert.deepEqual(vehicle.bodySize, definition.bodySize);
   assert.equal(vehicle.exitOffsetM, definition.exitOffsetM);
+  if (['estandar', 'patrulla', 'carga'].includes(definition.id)) {
+    assert.deepEqual(definition.params, expectedParams[definition.id], `${definition.id} complete legacy preset`);
+  }
   for (const [key, value] of Object.entries(expectedParams[definition.id])) assert.equal(vehicle.params[key], value, `${definition.id}.${key}`);
+  assert.throws(() => vehicle.setAppearance('patrulla'), /appearance.*catalog/i, `${definition.id} rejects appearance mutation`);
   assert.equal(vehicle.contactPoints({ x: 0, z: 0, yaw: 0 }).length, 4);
   assert.ok(Number.isFinite(vehicle.applyPose()));
   vehicle.setInput({ throttle: 1, steer: 0.5, handbrake: false, neutral: false });
@@ -72,6 +78,12 @@ for (const definition of catalogModule.VEHICLE_CATALOG.filter((entry) => entry.c
   assert.equal(scene.materials.length, beforeMaterials, `${definition.id} disposes materials`);
 }
 assert.equal(silhouettes.size, 6, 'six distinct active silhouettes');
+const legacy = actorModule.createVehicle({ scene, terrain, spawn: { x: 0, z: 0 } });
+legacy.setAppearance('patrulla');
+assert.equal(legacy.root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:variant-patrulla').isEnabled(), true);
+legacy.setAppearance('carga');
+assert.equal(legacy.root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:variant-carga').isEnabled(), true);
+legacy.dispose();
 scene.dispose();
 engine.dispose();
 console.log('PASS four-wheel adapter: six distinct active bodies, pose, drive and disposal');
