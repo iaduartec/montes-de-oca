@@ -93,54 +93,117 @@ function taperedBox(
   return mesh;
 }
 
-function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, size: VehicleBodySize): VehicleModel {
+/**
+ * Caja perfilada: taper superior (como taperedBox) + caída diferencial del
+ * plano superior (wedge). frontDrop hunde el borde delantero y rearDrop el
+ * trasero. Misma topología y coste que una caja (12 triángulos); rompe el
+ * perfil de ladrillo en capó (morro bajo), cabina (corona de techo) y baúl
+ * (cola caída).
+ */
+function slopedBox(
+  scene: Scene,
+  name: string,
+  mat: StandardMaterial,
+  bottomWidth: number,
+  bottomDepth: number,
+  topWidth: number,
+  topDepth: number,
+  height: number,
+  x: number,
+  y: number,
+  z: number,
+  frontDrop = 0,
+  rearDrop = 0,
+): Mesh {
+  const mesh = CreateBox(name, { width: bottomWidth, height, depth: bottomDepth }, scene);
+  const positions = mesh.getVerticesData('position');
+  const indices = mesh.getIndices();
+  if (positions && indices) {
+    const sx = topWidth / bottomWidth;
+    const sz = topDepth / bottomDepth;
+    const maxDrop = height * 0.85;
+    const fDrop = Math.min(Math.max(frontDrop, 0), maxDrop);
+    const rDrop = Math.min(Math.max(rearDrop, 0), maxDrop);
+    for (let i = 0; i < positions.length; i += 3) {
+      if (positions[i + 1]! > 0) {
+        positions[i] = positions[i]! * sx;
+        const lz = positions[i + 2]! * sz;
+        positions[i + 2] = lz;
+        positions[i + 1] = positions[i + 1]! - (lz > 0 ? fDrop : rDrop);
+      }
+    }
+    mesh.updateVerticesData('position', positions, true);
+    const normals: number[] = [];
+    VertexData.ComputeNormals(positions, indices, normals);
+    mesh.updateVerticesData('normal', normals);
+  }
+  mesh.material = mat;
+  mesh.position.set(x, y, z);
+  mesh.isPickable = false;
+  mesh.receiveShadows = false;
+  return mesh;
+}
+
+/**
+ * Ancho visual atado al tamaño homologado y a la pisada: cubre el exterior
+ * del neumático (`halfTrack + wheelWidth/2`) sin pasarse de `size + 8 cm`.
+ * Así las ruedas no quedan por fuera de la carrocería (efecto kart del A4).
+ */
+function catalogBodyWidth(sizeWidthM: number, halfTrack: number, wheelWidth: number, factor: number): number {
+  const fromSize = sizeWidthM * factor;
+  const fromTrack = halfTrack * 2 + wheelWidth + 0.02;
+  return Math.min(Math.max(fromSize, fromTrack), sizeWidthM + 0.08);
+}
+
+/**
+ * Guardabarros de aspecto redondeado con una sola caja afilada por rueda:
+ * tapa el borde exterior del neumático con 3 cm de luz y se solapa con el
+ * lateral para no flotar. Se fusiona con su grupo de material (sin dibujos
+ * extra) y deja la huella `arch-` para los asserts de geometría.
+ */
+function archCap(
+  scene: Scene,
+  kit: CatalogKit,
+  mat: StandardMaterial,
+  name: string,
+  x: number,
+  z: number,
+  wheelRadius: number,
+  wheelWidth: number,
+): void {
+  const capH = 0.14;
+  kit.parts.push(taperedBox(
+    scene, name, mat,
+    wheelWidth + 0.16, wheelRadius * 2.2 + 0.1,
+    wheelWidth + 0.1, wheelRadius * 2.0 + 0.08,
+    capH, x, wheelRadius * 2 + 0.03 + capH / 2, z,
+  ));
+}
+
+interface CatalogKit {
+  root: TransformNode;
+  parts: Mesh[];
+  bodyMat: StandardMaterial;
+  glassMat: StandardMaterial;
+  trimMat: StandardMaterial;
+  wheelMat: StandardMaterial;
+  lampMat: StandardMaterial;
+  mats: StandardMaterial[];
+}
+
+function catalogKit(scene: Scene, body: Color3, glass: Color3): CatalogKit {
   const root = new TransformNode('vehicle:root', scene);
-  const palettes: Record<string, Color3> = {
-    explorador: new Color3(0.28, 0.43, 0.31),
-    turismo: new Color3(0.33, 0.42, 0.54),
-    rally: new Color3(0.72, 0.3, 0.2),
-  };
-  const bodyMat = material(scene, 'vehicle:body', palettes[visual] ?? new Color3(0.4, 0.43, 0.32));
-  const glassMat = material(scene, 'vehicle:glass', new Color3(0.1, 0.17, 0.22), 0.3);
+  const bodyMat = material(scene, 'vehicle:body', body, 0.08);
+  const glassMat = material(scene, 'vehicle:glass', glass, 0.3);
   const trimMat = material(scene, 'vehicle:trim', new Color3(0.12, 0.12, 0.13));
   const wheelMat = material(scene, 'vehicle:wheel', new Color3(0.09, 0.09, 0.1));
-  const mats = [bodyMat, glassMat, trimMat, wheelMat];
-  const parts: Mesh[] = [];
-  const width = size.widthM * 0.78;
-  const length = size.lengthM;
-  const chassisY = wheelRadius + (visual === 'explorador' ? 0.43 : 0.29);
-  parts.push(taperedBox(scene, `vehicle:${visual}-chassis`, bodyMat, width, length, width * 0.94, length * 0.97, 0.42, 0, chassisY, 0));
-  const cabinLength = visual === 'explorador' ? length * 0.48 : length * 0.45;
-  const cabinHeight = Math.max(0.35, size.heightM - chassisY - 0.3);
-  parts.push(taperedBox(scene, `vehicle:${visual}-cabin`, bodyMat, width * 0.86, cabinLength,
-    width * (visual === 'explorador' ? 0.8 : 0.65), cabinLength * 0.82, cabinHeight,
-    0, chassisY + 0.21 + cabinHeight / 2, visual === 'explorador' ? -0.22 : -0.15));
-  parts.push(box(scene, `vehicle:${visual}-windshield`, glassMat, width * 0.63, cabinHeight * 0.43, 0.04,
-    0, chassisY + 0.25 + cabinHeight * 0.56, cabinLength * 0.4 - 0.15));
-  for (const side of [-1, 1] as const) {
-    parts.push(box(scene, `vehicle:${visual}-side-glass-${side}`, glassMat, 0.035, cabinHeight * 0.35,
-      cabinLength * 0.48, side * width * 0.39, chassisY + 0.25 + cabinHeight * 0.58, -0.18));
-  }
-  if (visual === 'explorador') {
-    parts.push(box(scene, 'vehicle:explorador-roof-rack', trimMat, width * 0.68, 0.06, cabinLength * 0.68,
-      0, chassisY + cabinHeight + 0.45, -0.22));
-    parts.push(box(scene, 'vehicle:explorador-front-guard', trimMat, width * 0.85, 0.22, 0.13,
-      0, chassisY, length / 2 + 0.04));
-  } else if (visual === 'turismo') {
-    parts.push(taperedBox(scene, 'vehicle:turismo-trunk', bodyMat, width * 0.94, length * 0.24,
-      width * 0.88, length * 0.22, 0.16, 0, chassisY + 0.28, -length * 0.37));
-  } else {
-    parts.push(box(scene, 'vehicle:rally-spoiler', trimMat, width * 0.75, 0.08, 0.26,
-      0, chassisY + 0.65, -length * 0.47));
-    parts.push(box(scene, 'vehicle:rally-roof-scoop', trimMat, 0.43, 0.13, 0.5,
-      0, chassisY + cabinHeight + 0.42, -0.17));
-  }
-  for (const side of [-1, 1] as const) {
-    parts.push(box(scene, `vehicle:${visual}-headlight-${side}`, glassMat, 0.25, 0.12, 0.04,
-      side * width * 0.32, chassisY + 0.13, length / 2));
-  }
+  const lampMat = material(scene, 'vehicle:lamp', new Color3(0.85, 0.78, 0.55), 0.22);
+  return { root, parts: [], bodyMat, glassMat, trimMat, wheelMat, lampMat, mats: [bodyMat, glassMat, trimMat, wheelMat, lampMat] };
+}
+
+function assembleCatalogBody(scene: Scene, kit: CatalogKit, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, wheelWidth = 0.3): VehicleModel {
   const byMaterial = new Map<StandardMaterial, Mesh[]>();
-  for (const part of parts) {
+  for (const part of kit.parts) {
     const group = byMaterial.get(part.material as StandardMaterial) ?? [];
     group.push(part);
     byMaterial.set(part.material as StandardMaterial, group);
@@ -150,7 +213,7 @@ function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: numbe
     const merged = group.length === 1 ? group[0]! : Mesh.MergeMeshes(group, true, true, undefined, false, false);
     if (!merged) throw new Error(`Could not merge ${visual} body`);
     merged.name = groupIndex++ === 0 ? `vehicle:body-${visual}` : `vehicle:detail-${visual}-${groupIndex}`;
-    merged.parent = root;
+    merged.parent = kit.root;
   }
   const offsets: readonly (readonly [number, number])[] = [
     [-layout.halfTrack, layout.front], [layout.halfTrack, layout.front],
@@ -158,26 +221,369 @@ function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: numbe
   ];
   const wheels = offsets.map(([x, z], i) => {
     const hub = new TransformNode(`vehicle:wheel-hub-${i}`, scene);
-    hub.parent = root;
+    hub.parent = kit.root;
     hub.position.set(x, wheelRadius, z);
-    const tyre = CreateCylinder(`vehicle:wheel-${i}`, { height: 0.3, diameter: 2 * wheelRadius, tessellation: 16 }, scene);
-    tyre.material = wheelMat;
+    const tyre = CreateCylinder(`vehicle:wheel-${i}`, { height: wheelWidth, diameter: 2 * wheelRadius, tessellation: 14 }, scene);
+    tyre.material = kit.wheelMat;
     tyre.rotation.z = Math.PI / 2;
     tyre.parent = hub;
+    tyre.isPickable = false;
+    tyre.receiveShadows = false;
+    const hubCap = CreateCylinder(`vehicle:hub-cap-${i}`, { height: 0.07, diameterTop: wheelRadius * 0.62, diameterBottom: wheelRadius * 1.1, tessellation: 8 }, scene);
+    hubCap.material = kit.bodyMat;
+    hubCap.rotation.z = x > 0 ? -Math.PI / 2 : Math.PI / 2;
+    hubCap.position.x = Math.sign(x) * (wheelWidth / 2);
+    hubCap.parent = hub;
+    hubCap.isPickable = false;
+    hubCap.receiveShadows = false;
     return hub;
   });
   return {
-    root, wheels,
+    root: kit.root, wheels,
     setWheelPose: (spin, steer) => wheels.forEach((hub, i) => hub.rotation.set(spin, i < 2 ? steer : 0, 0)),
     setAppearance: () => {},
-    dispose: () => { root.dispose(false, true); mats.forEach((mat) => mat.dispose()); },
+    dispose: () => { kit.root.dispose(false, true); kit.mats.forEach((mat) => mat.dispose()); },
   };
+}
+
+function spareRear(scene: Scene, kit: CatalogKit, wheelRadius: number, x: number, y: number, z: number): void {
+  const spare = CreateCylinder('vehicle:spare-wheel', { height: 0.2, diameter: wheelRadius * 1.7, tessellation: 12 }, scene);
+  spare.material = kit.wheelMat;
+  spare.rotation.x = Math.PI / 2;
+  spare.position.set(x, y, z);
+  spare.isPickable = false;
+  spare.receiveShadows = false;
+  kit.parts.push(spare);
+  const cover = box(scene, 'vehicle:spare-cover', kit.trimMat, wheelRadius * 0.9, wheelRadius * 0.9, 0.06, x, y, z + 0.12);
+  kit.parts.push(cover);
+}
+
+// Mitsubishi Montero V20: corto 3 puertas, volumen alto, techo recto, repuesto trasera, verde bosque.
+function buildEstandarCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.18, 0.35, 0.22), new Color3(0.1, 0.17, 0.2));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.94);
+  const halfW = width / 2;
+  const length = size.lengthM;
+  const chassisY = wheelRadius + 0.44;
+  const chassisH = 0.55;
+  const frontFace = 0.05 + (length * 0.96) / 2;
+  const rearFace = 0.05 - (length * 0.96) / 2;
+  kit.parts.push(slopedBox(scene, 'vehicle:estandar-chassis', kit.bodyMat, width, length * 0.96, width * 0.97, length * 0.94, chassisH, 0, chassisY, 0.05, 0.06, 0));
+  const cabinL = length * 0.52;
+  const cabinW = width * 0.88;
+  const cabinY = chassisY + 0.58;
+  // Techo recto con apenas corona: paredes casi verticales, perfil de caja alta.
+  kit.parts.push(slopedBox(scene, 'vehicle:estandar-cabin', kit.bodyMat, cabinW, cabinL, width * 0.84, cabinL * 0.96, 0.62, 0, cabinY, -0.42, 0.05, 0.02));
+  kit.parts.push(box(scene, 'vehicle:estandar-roof', kit.bodyMat, width * 0.84, 0.07, cabinL * 0.96, 0, cabinY + 0.33, -0.42));
+  // Capó en cuña: morro bajo hacia la parrilla, cowl alto contra el parabrisas.
+  const hoodD = length * 0.26;
+  const hoodZ = length * 0.34;
+  kit.parts.push(slopedBox(scene, 'vehicle:estandar-hood', kit.bodyMat, width * 0.96, hoodD, width * 0.9, length * 0.22, 0.18, 0, chassisY + 0.35, hoodZ, 0.1, 0));
+  const shield = box(scene, 'vehicle:estandar-windshield', kit.glassMat, cabinW * 0.78, 0.4, 0.04, 0, cabinY + 0.04, cabinL * 0.5 - 0.42);
+  shield.rotation.x = -0.18;
+  kit.parts.push(shield);
+  for (const side of [-1, 1] as const) {
+    // 3 puertas: luna delantera larga + trasera corta con pilar grueso.
+    kit.parts.push(box(scene, `vehicle:estandar-side-front-${side}`, kit.glassMat, 0.035, 0.34, 0.72, side * (cabinW / 2 - 0.005), cabinY + 0.04, -0.1));
+    kit.parts.push(box(scene, `vehicle:estandar-side-rear-${side}`, kit.glassMat, 0.035, 0.34, 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.04, -0.95));
+    kit.parts.push(box(scene, `vehicle:estandar-pillar-${side}`, kit.trimMat, 0.045, 0.4, 0.09, side * (cabinW / 2 + 0.005), cabinY + 0.04, -0.58));
+    kit.parts.push(box(scene, `vehicle:estandar-handle-${side}`, kit.trimMat, 0.04, 0.06, 0.18, side * (halfW + 0.005), chassisY + 0.3, -0.2));
+    kit.parts.push(box(scene, `vehicle:estandar-mirror-${side}`, kit.trimMat, 0.14, 0.12, 0.18, side * (halfW + 0.05), cabinY + 0.1, 0.52));
+    kit.parts.push(box(scene, `vehicle:estandar-step-${side}`, kit.trimMat, 0.18, 0.1, 1.5, side * (halfW + 0.02), wheelRadius + 0.2, -0.3));
+    // Guardabarros: tapa el exterior del neumático, solapada con el lateral.
+    kit.parts.push(taperedBox(scene, `vehicle:estandar-arch-f-${side}`, kit.trimMat, wheelWidth + 0.16, wheelRadius * 2.2 + 0.1, wheelWidth + 0.1, wheelRadius * 2.0 + 0.08, 0.14, side * layout.halfTrack, wheelRadius * 2 + 0.1, layout.front));
+    kit.parts.push(taperedBox(scene, `vehicle:estandar-arch-r-${side}`, kit.trimMat, wheelWidth + 0.16, wheelRadius * 2.2 + 0.1, wheelWidth + 0.1, wheelRadius * 2.0 + 0.08, 0.14, side * layout.halfTrack, wheelRadius * 2 + 0.1, -layout.rear));
+  }
+  kit.parts.push(box(scene, 'vehicle:estandar-rear-glass', kit.glassMat, cabinW * 0.72, 0.32, 0.04, 0, cabinY + 0.04, -0.42 - cabinL / 2 + 0.01));
+  kit.parts.push(box(scene, 'vehicle:estandar-grille', kit.trimMat, 0.8, 0.24, 0.05, 0, chassisY + 0.12, frontFace - 0.005));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:estandar-headlamp-${side}`, kit.lampMat, 0.26, 0.18, 0.05, side * width * 0.3, chassisY + 0.14, frontFace - 0.005));
+    kit.parts.push(box(scene, `vehicle:estandar-taillamp-${side}`, kit.lampMat, 0.13, 0.26, 0.06, side * (halfW - 0.12), chassisY + 0.16, rearFace + 0.01));
+  }
+  kit.parts.push(box(scene, 'vehicle:estandar-bumper-f', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, frontFace + 0.06));
+  kit.parts.push(box(scene, 'vehicle:estandar-bumper-r', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, rearFace - 0.06));
+  // Repuesto centrado, embutido 4 cm en el portón para no flotar.
+  spareRear(scene, kit, wheelRadius, 0, chassisY + 0.2, rearFace - 0.06);
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'estandar', wheelWidth);
+}
+
+// Nissan Patrol GR Y61: 5 puertas, más largo y cuadrado, techo alto, guardabarros anchos, gris/beige.
+function buildPatrullaCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.68, 0.66, 0.58), new Color3(0.12, 0.18, 0.2));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.94);
+  const halfW = width / 2;
+  const length = size.lengthM;
+  const chassisY = wheelRadius + 0.46;
+  const chassisH = 0.58;
+  const frontFace = (length * 1.0) / 2;
+  const rearFace = -length / 2;
+  kit.parts.push(slopedBox(scene, 'vehicle:patrulla-chassis', kit.bodyMat, width, length, width * 0.98, length * 0.99, chassisH, 0, chassisY, 0, 0.05, 0));
+  const cabinL = length * 0.64;
+  const cabinW = width * 0.9;
+  const cabinY = chassisY + 0.6;
+  // Cuadrado: paredes casi verticales y techo alto plano.
+  kit.parts.push(taperedBox(scene, 'vehicle:patrulla-cabin', kit.bodyMat, cabinW, cabinL, width * 0.88, cabinL * 0.98, 0.66, 0, cabinY, -0.55));
+  kit.parts.push(box(scene, 'vehicle:patrulla-roof', kit.bodyMat, width * 0.88, 0.08, cabinL * 0.98, 0, cabinY + 0.36, -0.55));
+  // Capó alto y casi plano: morro de todo terreno grande con leve caída.
+  kit.parts.push(slopedBox(scene, 'vehicle:patrulla-hood', kit.bodyMat, width * 0.96, length * 0.2, width * 0.94, length * 0.19, 0.2, 0, chassisY + 0.38, length * 0.38, 0.07, 0));
+  const shield = box(scene, 'vehicle:patrulla-windshield', kit.glassMat, cabinW * 0.78, 0.42, 0.04, 0, cabinY + 0.04, cabinL * 0.5 - 0.55);
+  shield.rotation.x = -0.08;
+  kit.parts.push(shield);
+  for (const side of [-1, 1] as const) {
+    // 5 puertas: tres lunas laterales por lado.
+    kit.parts.push(box(scene, `vehicle:patrulla-glass-a-${side}`, kit.glassMat, 0.035, 0.34, 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.04, 0.05));
+    kit.parts.push(box(scene, `vehicle:patrulla-glass-b-${side}`, kit.glassMat, 0.035, 0.34, 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.04, -0.6));
+    kit.parts.push(box(scene, `vehicle:patrulla-glass-c-${side}`, kit.glassMat, 0.035, 0.34, 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.04, -1.25));
+    kit.parts.push(box(scene, `vehicle:patrulla-pillar-ab-${side}`, kit.trimMat, 0.045, 0.4, 0.08, side * (cabinW / 2 + 0.005), cabinY + 0.04, -0.28));
+    kit.parts.push(box(scene, `vehicle:patrulla-pillar-bc-${side}`, kit.trimMat, 0.045, 0.4, 0.08, side * (cabinW / 2 + 0.005), cabinY + 0.04, -0.93));
+    // Guardabarros anchos sobre las cuatro ruedas, solapados con el lateral.
+    archCap(scene, kit, kit.trimMat, `vehicle:patrulla-arch-f-${side}`, side * layout.halfTrack, layout.front, wheelRadius, wheelWidth);
+    archCap(scene, kit, kit.trimMat, `vehicle:patrulla-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
+    kit.parts.push(box(scene, `vehicle:patrulla-handle-f-${side}`, kit.trimMat, 0.04, 0.06, 0.16, side * (halfW + 0.005), chassisY + 0.32, 0.0));
+    kit.parts.push(box(scene, `vehicle:patrulla-handle-r-${side}`, kit.trimMat, 0.04, 0.06, 0.16, side * (halfW + 0.005), chassisY + 0.32, -0.75));
+  }
+  kit.parts.push(box(scene, 'vehicle:patrulla-tailgate', kit.bodyMat, width * 0.8, 0.5, 0.08, 0, chassisY + 0.35, rearFace + 0.02));
+  kit.parts.push(box(scene, 'vehicle:patrulla-rear-glass', kit.glassMat, cabinW * 0.7, 0.3, 0.04, 0, cabinY + 0.06, rearFace + 0.05));
+  kit.parts.push(box(scene, 'vehicle:patrulla-grille', kit.trimMat, 0.9, 0.26, 0.05, 0, chassisY + 0.14, frontFace - 0.005));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:patrulla-headlamp-${side}`, kit.lampMat, 0.28, 0.2, 0.05, side * width * 0.3, chassisY + 0.16, frontFace - 0.005));
+    kit.parts.push(box(scene, `vehicle:patrulla-taillamp-${side}`, kit.lampMat, 0.14, 0.3, 0.06, side * (halfW - 0.12), chassisY + 0.2, rearFace + 0.01));
+  }
+  kit.parts.push(box(scene, 'vehicle:patrulla-bumper-f', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, frontFace + 0.06));
+  kit.parts.push(box(scene, 'vehicle:patrulla-bumper-r', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, rearFace - 0.06));
+  // Repuesto lateralizado a la izquierda (portón dividido del Y61), embutido en el portón.
+  spareRear(scene, kit, wheelRadius, -0.35, chassisY + 0.22, rearFace - 0.04);
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'patrulla', wheelWidth);
+}
+
+// Jeep Wrangler TJ: 2 puertas muy corto, frontal vertical, faros redondos, parrilla 7 ranuras, techo duro, bisagras, amarillo.
+function buildCargaCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.75, 0.58, 0.15), new Color3(0.1, 0.16, 0.19));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.9);
+  const halfW = width / 2;
+  // La bañera cubre los dos ejes con vuelo propio: largo mínimo por pisada.
+  const tubLen = Math.max(size.lengthM * 0.8, layout.front + layout.rear + wheelRadius * 2 + 0.3);
+  const tubZ = (layout.front - layout.rear) / 2;
+  const frontFace = tubZ + tubLen / 2;
+  const rearFace = tubZ - tubLen / 2;
+  const chassisY = wheelRadius + 0.42;
+  kit.parts.push(taperedBox(scene, 'vehicle:carga-tub', kit.bodyMat, width, tubLen * 0.98, width * 0.96, tubLen * 0.96, 0.5, 0, chassisY, tubZ));
+  // Capó largo hasta el morro: del vuelo delantero al cowl, medio metro tras el eje.
+  const hoodD = frontFace - layout.front + 0.5;
+  const hoodZ = frontFace - hoodD / 2;
+  // Cabina del cowl (solapado con el capó) casi hasta el portón: techo duro TJ.
+  const cabinFront = hoodZ - hoodD / 2 + 0.07;
+  const cabinRear = rearFace + 0.28;
+  const cabinL = cabinFront - cabinRear;
+  const cabinZ = (cabinFront + cabinRear) / 2;
+  const cabinW = width * 0.86;
+  const cabinY = chassisY + 0.52;
+  // Techo duro desmontable: cabina corta con techo plano separado por junta.
+  kit.parts.push(taperedBox(scene, 'vehicle:carga-hardtop', kit.bodyMat, cabinW, cabinL, width * 0.82, cabinL * 0.94, 0.55, 0, cabinY, cabinZ));
+  kit.parts.push(box(scene, 'vehicle:carga-roof-seam', kit.trimMat, cabinW + 0.01, 0.05, cabinL * 0.95, 0, cabinY + 0.24, cabinZ));
+  // Capó plano de Jeep: horizontal, contra el parabrisas vertical.
+  kit.parts.push(taperedBox(scene, 'vehicle:carga-hood', kit.bodyMat, width * 0.9, hoodD, width * 0.88, hoodD * 0.98, 0.16, 0, chassisY + 0.32, hoodZ));
+  // Frontal vertical con parrilla de 7 ranuras, embutida en el morro.
+  kit.parts.push(box(scene, 'vehicle:carga-grille-panel', kit.trimMat, width * 0.7, 0.34, 0.06, 0, chassisY + 0.1, frontFace - 0.01));
+  for (let slot = 0; slot < 7; slot++) {
+    kit.parts.push(box(scene, `vehicle:carga-slot-${slot}`, kit.bodyMat, 0.07, 0.26, 0.02, (slot - 3) * 0.13, chassisY + 0.1, frontFace + 0.025));
+  }
+  for (const side of [-1, 1] as const) {
+    const lamp = CreateCylinder(`vehicle:carga-roundlamp-${side}`, { height: 0.05, diameter: 0.24, tessellation: 12 }, scene);
+    lamp.material = kit.lampMat;
+    lamp.rotation.x = Math.PI / 2;
+    lamp.position.set(side * width * 0.42, chassisY + 0.14, frontFace + 0.01);
+    lamp.isPickable = false;
+    lamp.receiveShadows = false;
+    kit.parts.push(lamp);
+    // Bisagras de capó y puertas + aletas planas solapadas con el lateral.
+    kit.parts.push(box(scene, `vehicle:carga-hood-hinge-${side}`, kit.trimMat, 0.06, 0.1, 0.12, side * (halfW - 0.02), chassisY + 0.36, hoodZ + hoodD * 0.3));
+    kit.parts.push(box(scene, `vehicle:carga-door-hinge-a-${side}`, kit.trimMat, 0.05, 0.09, 0.1, side * (halfW + 0.005), chassisY + 0.3, cabinZ + 0.25));
+    kit.parts.push(box(scene, `vehicle:carga-door-hinge-b-${side}`, kit.trimMat, 0.05, 0.09, 0.1, side * (halfW + 0.005), chassisY + 0.1, cabinZ + 0.25));
+    archCap(scene, kit, kit.bodyMat, `vehicle:carga-arch-f-${side}`, side * layout.halfTrack, layout.front, wheelRadius, wheelWidth);
+    kit.parts.push(box(scene, `vehicle:carga-side-glass-${side}`, kit.glassMat, 0.035, 0.32, cabinL * 0.36, side * (cabinW / 2 - 0.005), cabinY + 0.04, cabinZ));
+    kit.parts.push(box(scene, `vehicle:carga-mirror-${side}`, kit.trimMat, 0.12, 0.1, 0.16, side * (halfW + 0.04), cabinY + 0.08, hoodZ - 0.1));
+  }
+  const shield = box(scene, 'vehicle:carga-windshield', kit.glassMat, cabinW * 0.82, 0.38, 0.04, 0, cabinY + 0.04, cabinZ + cabinL / 2 - 0.01);
+  shield.rotation.x = -0.05;
+  kit.parts.push(shield);
+  kit.parts.push(box(scene, 'vehicle:carga-bumper-f', kit.trimMat, width * 0.95, 0.18, 0.22, 0, wheelRadius + 0.1, frontFace + 0.08));
+  kit.parts.push(box(scene, 'vehicle:carga-bumper-r', kit.trimMat, width * 0.95, 0.18, 0.22, 0, wheelRadius + 0.1, rearFace - 0.08));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:carga-taillamp-${side}`, kit.lampMat, 0.12, 0.2, 0.06, side * (halfW - 0.12), chassisY + 0.12, rearFace + 0.01));
+    archCap(scene, kit, kit.bodyMat, `vehicle:carga-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
+  }
+  spareRear(scene, kit, wheelRadius, 0, chassisY + 0.18, rearFace - 0.08);
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'carga', wheelWidth);
+}
+
+// Citroën AX: 3 puertas compacto estrecho y bajo, capó corto, hatch inclinado, molduras negras, rojo.
+function buildExploradorCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.68, 0.15, 0.12), new Color3(0.11, 0.17, 0.2));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.95);
+  const halfW = width / 2;
+  const length = size.lengthM * 0.92;
+  const frontFace = length / 2;
+  const rearFace = -length / 2;
+  const chassisY = wheelRadius + 0.3;
+  kit.parts.push(slopedBox(scene, 'vehicle:explorador-body', kit.bodyMat, width, length, width * 0.9, length * 0.94, 0.4, 0, chassisY, 0, 0.06, 0.02));
+  const cabinL = length * 0.48;
+  const cabinW = width * 0.84;
+  const cabinY = chassisY + 0.4;
+  const cabinZ = -0.3;
+  // Cabina en cuña: parabrisas tendido y luneta de hatch en un solo volumen.
+  kit.parts.push(slopedBox(scene, 'vehicle:explorador-cabin', kit.bodyMat, cabinW, cabinL, width * 0.68, cabinL * 0.78, 0.42, 0, cabinY, cabinZ, 0.1, 0.06));
+  const hoodD = length * 0.18;
+  const hoodZ = length * 0.36;
+  kit.parts.push(slopedBox(scene, 'vehicle:explorador-hood', kit.bodyMat, width * 0.88, hoodD, width * 0.78, length * 0.14, 0.12, 0, chassisY + 0.24, hoodZ, 0.08, 0));
+  const shield = box(scene, 'vehicle:explorador-windshield', kit.glassMat, cabinW * 0.74, 0.32, 0.035, 0, cabinY + 0.06, cabinZ + cabinL * 0.42);
+  shield.rotation.x = -0.34;
+  kit.parts.push(shield);
+  // Portón hatch inclinado: luna trasera muy tendida, embutida en la cuña.
+  const hatch = box(scene, 'vehicle:explorador-hatch', kit.glassMat, cabinW * 0.7, 0.4, 0.035, 0, cabinY + 0.04, cabinZ - cabinL * 0.44);
+  hatch.rotation.x = 0.5;
+  kit.parts.push(hatch);
+  for (const side of [-1, 1] as const) {
+    // 3 puertas: luna lateral larga de una pieza + moldura negra ancha.
+    kit.parts.push(box(scene, `vehicle:explorador-side-${side}`, kit.glassMat, 0.03, 0.28, cabinL * 0.6, side * (cabinW / 2 - 0.005), cabinY + 0.06, cabinZ + 0.02));
+    kit.parts.push(box(scene, `vehicle:explorador-molding-${side}`, kit.trimMat, 0.04, 0.1, length * 0.62, side * (halfW + 0.005), chassisY + 0.05, -0.1));
+    kit.parts.push(box(scene, `vehicle:explorador-bumper-mold-${side}`, kit.trimMat, 0.06, 0.12, 0.3, side * (halfW - 0.05), chassisY - 0.02, frontFace - 0.15));
+    archCap(scene, kit, kit.trimMat, `vehicle:explorador-arch-f-${side}`, side * layout.halfTrack, layout.front, wheelRadius, wheelWidth);
+    archCap(scene, kit, kit.trimMat, `vehicle:explorador-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
+  }
+  kit.parts.push(box(scene, 'vehicle:explorador-bumper-f', kit.trimMat, width * 0.92, 0.16, 0.2, 0, wheelRadius + 0.06, frontFace - 0.04));
+  kit.parts.push(box(scene, 'vehicle:explorador-bumper-r', kit.trimMat, width * 0.92, 0.16, 0.2, 0, wheelRadius + 0.06, rearFace + 0.04));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:explorador-headlamp-${side}`, kit.lampMat, 0.3, 0.1, 0.04, side * width * 0.28, chassisY + 0.12, frontFace - 0.005));
+    kit.parts.push(box(scene, `vehicle:explorador-taillamp-${side}`, kit.lampMat, 0.1, 0.18, 0.04, side * (halfW - 0.1), chassisY + 0.1, rearFace + 0.005));
+  }
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'explorador', wheelWidth);
+}
+
+// Audi A4 B5: berlina baja, morro largo, 3 volúmenes, 4 puertas con marcos, gris/plata.
+function buildTurismoCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.68, 0.7, 0.72), new Color3(0.12, 0.18, 0.22));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.96);
+  const halfW = width / 2;
+  const length = size.lengthM;
+  const frontFace = length / 2;
+  const rearFace = -length / 2;
+  const chassisY = wheelRadius + 0.28;
+  kit.parts.push(slopedBox(scene, 'vehicle:turismo-body', kit.bodyMat, width, length, width * 0.92, length * 0.96, 0.38, 0, chassisY, 0, 0.05, 0.03));
+  // Tres volúmenes: morro largo en cuña + cabina con corona + baúl con cola caída.
+  const hoodD = length * 0.28;
+  const hoodZ = length * 0.32;
+  kit.parts.push(slopedBox(scene, 'vehicle:turismo-hood', kit.bodyMat, width * 0.9, hoodD, width * 0.8, length * 0.24, 0.14, 0, chassisY + 0.2, hoodZ, 0.09, 0));
+  const cabinL = length * 0.4;
+  const cabinW = width * 0.84;
+  const cabinY = chassisY + 0.38;
+  const cabinZ = -0.15;
+  kit.parts.push(slopedBox(scene, 'vehicle:turismo-cabin', kit.bodyMat, cabinW, cabinL, width * 0.66, cabinL * 0.8, 0.4, 0, cabinY, cabinZ, 0.05, 0.05));
+  const trunkD = length * 0.24;
+  const trunkZ = rearFace + 0.02 + trunkD / 2;
+  kit.parts.push(slopedBox(scene, 'vehicle:turismo-trunk', kit.bodyMat, width * 0.9, trunkD, width * 0.84, length * 0.22, 0.18, 0, chassisY + 0.26, trunkZ, 0.01, 0.07));
+  // Labio de tapa de baúl: rompe la trasera plana vista desde atrás.
+  kit.parts.push(box(scene, 'vehicle:turismo-trunk-lip', kit.bodyMat, width * 0.7, 0.05, 0.1, 0, chassisY + 0.3, rearFace + 0.12));
+  const shield = box(scene, 'vehicle:turismo-windshield', kit.glassMat, cabinW * 0.76, 0.3, 0.035, 0, cabinY + 0.06, cabinZ + cabinL * 0.44);
+  shield.rotation.x = -0.35;
+  kit.parts.push(shield);
+  const rearGlass = box(scene, 'vehicle:turismo-backlight', kit.glassMat, cabinW * 0.72, 0.26, 0.035, 0, cabinY + 0.06, cabinZ - cabinL * 0.44);
+  rearGlass.rotation.x = 0.35;
+  kit.parts.push(rearGlass);
+  for (const side of [-1, 1] as const) {
+    // Cuatro puertas: dos lunas por lado con marco y pilar B.
+    kit.parts.push(box(scene, `vehicle:turismo-glass-f-${side}`, kit.glassMat, 0.03, 0.26, 0.52, side * (cabinW / 2 - 0.005), cabinY + 0.06, 0.12));
+    kit.parts.push(box(scene, `vehicle:turismo-glass-r-${side}`, kit.glassMat, 0.03, 0.26, 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.06, -0.48));
+    kit.parts.push(box(scene, `vehicle:turismo-frame-f-${side}`, kit.trimMat, 0.04, 0.3, 0.56, side * (cabinW / 2 + 0.005), cabinY + 0.06, 0.12));
+    kit.parts.push(box(scene, `vehicle:turismo-pillar-b-${side}`, kit.trimMat, 0.04, 0.3, 0.07, side * (cabinW / 2 + 0.005), cabinY + 0.06, -0.18));
+    kit.parts.push(box(scene, `vehicle:turismo-handle-f-${side}`, kit.trimMat, 0.035, 0.05, 0.14, side * (halfW + 0.005), chassisY + 0.22, 0.1));
+    kit.parts.push(box(scene, `vehicle:turismo-handle-r-${side}`, kit.trimMat, 0.035, 0.05, 0.14, side * (halfW + 0.005), chassisY + 0.22, -0.45));
+    kit.parts.push(box(scene, `vehicle:turismo-seam-${side}`, kit.trimMat, 0.025, 0.34, 0.025, side * (halfW - 0.005), chassisY + 0.16, -0.18));
+    archCap(scene, kit, kit.bodyMat, `vehicle:turismo-arch-f-${side}`, side * layout.halfTrack, layout.front, wheelRadius, wheelWidth);
+    archCap(scene, kit, kit.bodyMat, `vehicle:turismo-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
+  }
+  kit.parts.push(box(scene, 'vehicle:turismo-grille', kit.trimMat, 0.6, 0.12, 0.04, 0, chassisY + 0.06, frontFace - 0.005));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:turismo-headlamp-${side}`, kit.lampMat, 0.32, 0.1, 0.04, side * width * 0.3, chassisY + 0.1, frontFace - 0.005));
+    // Trasera ancha B5: piloto exterior + tira central en una sola barra de luz.
+    kit.parts.push(box(scene, `vehicle:turismo-taillamp-${side}`, kit.lampMat, 0.34, 0.1, 0.04, side * (halfW - 0.2), chassisY + 0.22, rearFace + 0.005));
+    // Doble escape embutido en el faldón trasero.
+    kit.parts.push(box(scene, `vehicle:turismo-exhaust-${side}`, kit.trimMat, 0.09, 0.07, 0.1, side * 0.28, wheelRadius + 0.02, rearFace + 0.02));
+  }
+  kit.parts.push(box(scene, 'vehicle:turismo-lightbar', kit.lampMat, width * 0.34, 0.08, 0.03, 0, chassisY + 0.22, rearFace + 0.008));
+  kit.parts.push(box(scene, 'vehicle:turismo-bumper-f', kit.trimMat, width * 0.96, 0.16, 0.2, 0, wheelRadius + 0.04, frontFace - 0.04));
+  kit.parts.push(box(scene, 'vehicle:turismo-valance-r', kit.trimMat, width * 0.96, 0.16, 0.2, 0, wheelRadius + 0.04, rearFace + 0.04));
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'turismo', wheelWidth);
+}
+
+// Tesla Model 3: berlina EV aerodinámica, morro cerrado, parabrisas y techo de vidrio largos, blanco/azul.
+function buildRallyCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  const kit = catalogKit(scene, new Color3(0.86, 0.88, 0.9), new Color3(0.25, 0.38, 0.5));
+  const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.96);
+  const halfW = width / 2;
+  const length = size.lengthM;
+  const frontFace = length / 2;
+  const rearFace = -length / 2;
+  const chassisY = wheelRadius + 0.26;
+  // Perfiles lisos: bajos redondeados con cuña de morro y cola.
+  kit.parts.push(slopedBox(scene, 'vehicle:rally-body', kit.bodyMat, width, length, width * 0.88, length * 0.9, 0.36, 0, chassisY, 0, 0.08, 0.05));
+  const noseD = length * 0.2;
+  const noseZ = length * 0.38;
+  kit.parts.push(slopedBox(scene, 'vehicle:rally-nose', kit.bodyMat, width * 0.86, noseD, width * 0.74, length * 0.14, 0.14, 0, chassisY + 0.18, noseZ, 0.1, 0));
+  const cabinL = length * 0.55;
+  const cabinW = width * 0.82;
+  const cabinY = chassisY + 0.32;
+  const cabinZ = -0.25;
+  kit.parts.push(slopedBox(scene, 'vehicle:rally-cabin', kit.bodyMat, cabinW, cabinL, width * 0.68, cabinL * 0.82, 0.34, 0, cabinY, cabinZ, 0.06, 0.06));
+  // Parabrisas y techo de vidrio largos en una banda continua.
+  const shield = box(scene, 'vehicle:rally-windshield', kit.glassMat, cabinW * 0.74, 0.34, 0.035, 0, cabinY + 0.1, cabinZ + cabinL * 0.36);
+  shield.rotation.x = -0.42;
+  kit.parts.push(shield);
+  kit.parts.push(box(scene, 'vehicle:rally-glass-roof', kit.glassMat, cabinW * 0.72, 0.035, cabinL * 0.52, 0, cabinY + 0.16, cabinZ - 0.05));
+  const rearGlass = box(scene, 'vehicle:rally-backlight', kit.glassMat, cabinW * 0.7, 0.3, 0.035, 0, cabinY + 0.1, cabinZ - cabinL * 0.4);
+  rearGlass.rotation.x = 0.42;
+  kit.parts.push(rearGlass);
+  for (const side of [-1, 1] as const) {
+    // Sin molduras: solo manillas enrasadas y faldones lisos.
+    kit.parts.push(box(scene, `vehicle:rally-side-glass-${side}`, kit.glassMat, 0.03, 0.24, cabinL * 0.5, side * (cabinW / 2 - 0.005), cabinY + 0.08, cabinZ - 0.03));
+    kit.parts.push(box(scene, `vehicle:rally-flush-handle-${side}`, kit.trimMat, 0.03, 0.03, 0.16, side * (halfW - 0.005), chassisY + 0.24, -0.2));
+    kit.parts.push(box(scene, `vehicle:rally-skirt-${side}`, kit.bodyMat, 0.08, 0.1, length * 0.5, side * (halfW - 0.02), chassisY - 0.08, -0.1));
+    archCap(scene, kit, kit.bodyMat, `vehicle:rally-arch-f-${side}`, side * layout.halfTrack, layout.front, wheelRadius, wheelWidth);
+    archCap(scene, kit, kit.bodyMat, `vehicle:rally-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
+  }
+  // Morro sin parrilla abierta: solo toma baja y faros finos.
+  kit.parts.push(box(scene, 'vehicle:rally-intake', kit.trimMat, width * 0.6, 0.07, 0.04, 0, chassisY - 0.04, frontFace - 0.005));
+  for (const side of [-1, 1] as const) {
+    kit.parts.push(box(scene, `vehicle:rally-headlamp-${side}`, kit.lampMat, 0.34, 0.07, 0.04, side * width * 0.28, chassisY + 0.12, frontFace - 0.01));
+    kit.parts.push(box(scene, `vehicle:rally-taillamp-${side}`, kit.lampMat, 0.3, 0.06, 0.04, side * (halfW - 0.2), chassisY + 0.14, rearFace + 0.005));
+  }
+  // Barra de luz trasera de ancho completo + labio de baúl.
+  kit.parts.push(box(scene, 'vehicle:rally-lightbar', kit.lampMat, width * 0.5, 0.06, 0.03, 0, chassisY + 0.14, rearFace + 0.008));
+  kit.parts.push(box(scene, 'vehicle:rally-lip', kit.bodyMat, width * 0.7, 0.05, 0.18, 0, chassisY + 0.16, rearFace + 0.06));
+  return assembleCatalogBody(scene, kit, layout, wheelRadius, 'rally', wheelWidth);
+}
+
+function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+  switch (visual) {
+    case 'estandar':
+      return buildEstandarCatalog(scene, layout, wheelRadius, size, wheelWidth);
+    case 'patrulla':
+      return buildPatrullaCatalog(scene, layout, wheelRadius, size, wheelWidth);
+    case 'carga':
+      return buildCargaCatalog(scene, layout, wheelRadius, size, wheelWidth);
+    case 'explorador':
+      return buildExploradorCatalog(scene, layout, wheelRadius, size, wheelWidth);
+    case 'turismo':
+      return buildTurismoCatalog(scene, layout, wheelRadius, size, wheelWidth);
+    case 'rally':
+      return buildRallyCatalog(scene, layout, wheelRadius, size, wheelWidth);
+  }
 }
 
 export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadius: number, wheelWidth = 0.32,
   visual?: FourWheelVisual, bodySize?: VehicleBodySize): VehicleModel {
-  if (visual && bodySize && (visual === 'explorador' || visual === 'turismo' || visual === 'rally')) {
-    return createCatalogBody(scene, layout, wheelRadius, visual, bodySize);
+  if (visual && bodySize) {
+    return createCatalogBody(scene, layout, wheelRadius, visual, bodySize, wheelWidth);
   }
   const root = new TransformNode('vehicle:root', scene);
 

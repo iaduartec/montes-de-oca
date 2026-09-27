@@ -17,10 +17,29 @@ const ids = VEHICLE_CATALOG.map((vehicle) => vehicle.id);
 assert.equal(VEHICLE_CATALOG.length, 8);
 assert.equal(new Set(ids).size, 8);
 assert.deepEqual(['todoterreno', 'coche', 'moto'].map((category) =>
-  VEHICLE_CATALOG.filter((vehicle) => vehicle.category === category).length), [4, 2, 2]);
+  VEHICLE_CATALOG.filter((vehicle) => vehicle.category === category).length), [3, 3, 2]);
 assert.deepEqual(ids, ['estandar', 'patrulla', 'carga', 'explorador', 'turismo', 'rally', 'trail', 'enduro']);
 assert.equal(DEFAULT_VEHICLE_ID, 'estandar');
 assert.equal(vehicleById('bogus'), undefined);
+// Nombres visibles con marca/modelo real (selector, storage y query siguen por ID).
+const expectedNames = {
+  estandar: ['montero'],
+  patrulla: ['patrol'],
+  carga: ['wrangler'],
+  explorador: ['ax'],
+  turismo: ['audi', 'a4'],
+  rally: ['tesla', 'model 3'],
+};
+for (const [id, tokens] of Object.entries(expectedNames)) {
+  const name = String(vehicleById(id)?.name ?? '');
+  const lowered = name.toLowerCase();
+  assert.ok(tokens.some((token) => lowered.includes(token)),
+    `${id}.name debe mencionar marca/modelo (${tokens.join('/')}): "${name}"`);
+}
+// Categorías finales: 3 todoterrenos, 3 coches, 2 motos; explorador ya es coche.
+assert.equal(vehicleById('explorador').category, 'coche');
+assert.equal(vehicleById('turismo').category, 'coche');
+assert.equal(vehicleById('rally').category, 'coche');
 for (const vehicle of VEHICLE_CATALOG) {
   assert.equal(vehicleById(vehicle.id), vehicle);
   assert.ok(vehicle.name && vehicle.summary && vehicle.visual);
@@ -38,4 +57,4 @@ assert.deepEqual(vehicleById('carga').params, {
   mass: 2400, dragCoefficient: 0.95, brakeForce: 16000, maxDriveForce: 10000,
   maxSpeed: 22, steerMax: 0.4,
 });
-console.log('PASS vehicle catalog: eight unique entries, 4/2/2 categories, legacy values and dimensions');
+console.log('PASS vehicle catalog: eight unique entries, 3/3/2 categories, real names, legacy values and dimensions');
