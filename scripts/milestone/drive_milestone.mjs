@@ -41,6 +41,7 @@ const BUDGET_S = Number(arg('--budget-s', '300'));
 const CHROME = arg('--chrome', 'google-chrome');
 const DO_BUILD = !flag('--no-build');
 const BLOCK_VEGETATION = flag('--block-vegetation');
+const PAGE_QUERY = arg('--page-query', '');
 const LOG_PREFIX = '[milestone]';
 
 // Los valores de diseño del bucle salen de src/gameplay/mission.ts (no se
@@ -486,7 +487,9 @@ async function main() {
     let ready = false;
     for (let attempt = 0; attempt < 2 && !ready; attempt++) {
       const errorsBefore = cdp.errors.length;
-      await cdp.send('Page.navigate', { url: `${BASE}/` });
+      const pageUrl = new URL(`${BASE}/`);
+      for (const [key, value] of new URLSearchParams(PAGE_QUERY)) pageUrl.searchParams.set(key, value);
+      await cdp.send('Page.navigate', { url: pageUrl.toString() });
       ready = await waitApi();
       if (!ready && attempt === 0) {
         const aborted = await cdp.evaluate("document.body.innerText.includes('ERROR\\nFailed to fetch')").catch(() => false);

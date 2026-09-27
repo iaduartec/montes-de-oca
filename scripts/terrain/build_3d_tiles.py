@@ -14,9 +14,10 @@ Conventions (fixed, shared with the runtime):
     logical Z north, heights absolute metres, worldScale = 1.
   * Mesh vertices are stored in Babylon RIGHT-HANDED world coordinates:
     (logical x, logical height - verticalDatum, -logical z).
-  * UVs map into the shared north-up PNOA atlas (`orthophoto.webp`, image
+  * UVs map into the shared north-up PNOA atlas (`tiles/orthophoto.jpg`, image
     row 0 = north edge). glTF UV origin is top-left, so v = 1 - z/6000.
-    The image is referenced EXTERNALLY; no pixel bytes are embedded.
+    The external JPEG is derived from the same pinned PNOA quadrants; no pixel
+    bytes are embedded in the GLBs.
   * Triangles keep the SW->NE split of the authoritative heightfield sampler
     (`src/heightfield.ts`), re-wound for the RH frame so faces point up.
   * OSM building geometry is NOT baked into the tiles: buildings stay a
@@ -32,8 +33,8 @@ Conventions (fixed, shared with the runtime):
     heightfield (central differences across the seam), so exact-height
     border vertices have equal normalized normals. Only the outer world
     border uses one-sided differences.
-  * Geometry payloads are self-contained binary GLB 2.0 (JSON + BIN
-    chunks); the PNOA webp stays an external URI. All indices fit uint16.
+  * Geometry payloads are binary GLB 2.0 (JSON + BIN chunks) with one shared
+    external JPEG atlas. All indices fit uint16.
 
 Determinism: sorted keys, compact separators, no timestamps, no absolute
 paths, no network access. `build_3d_tiles.py --check` rebuilds into a
@@ -84,9 +85,10 @@ OVERVIEW_ID = "overview"
 OVERVIEW_URI = f"tiles/{OVERVIEW_ID}.glb"
 GLOBAL_NODES_PER_SIDE = TILES_PER_SIDE * (NODES_PER_SIDE - 1) + 1  # 1201
 
-# Content lives in <out>/tiles/; the atlas lives at /terrain/orthophoto.webp.
-ORTHOPHOTO_URI = "../../orthophoto.webp"
-ORTHOPHOTO_PUBLIC_URL = "/terrain/orthophoto.webp"
+# Babylon's GLTF loader rejects parent-traversal URIs. Keep the atlas external and
+# address it from the app root so this also works for GLBs loaded from nested URLs.
+ORTHOPHOTO_URI = "orthophoto.jpg"
+ORTHOPHOTO_PUBLIC_URL = "/terrain/3d-tiles/tiles/orthophoto.jpg"
 
 TILE_IDS = [f"tile_{ix}_{iz}" for iz in range(TILES_PER_SIDE) for ix in range(TILES_PER_SIDE)]
 
@@ -323,7 +325,7 @@ def pack_glb(
         "asset": {"generator": GENERATOR, "version": "2.0"},
         "bufferViews": views,
         "buffers": [{"byteLength": len(blob)}],
-        "images": [{"uri": ORTHOPHOTO_URI, "mimeType": "image/webp"}],
+        "images": [{"uri": ORTHOPHOTO_URI, "mimeType": "image/jpeg"}],
         "materials": [
             {
                 "name": f"{tile_id}-pnoa",
@@ -373,6 +375,10 @@ def build_tileset(out_dir: Path) -> dict:
     out_dir = Path(out_dir)
     tiles_dir = out_dir / "tiles"
     tiles_dir.mkdir(parents=True, exist_ok=True)
+    ortho_path = PUBLIC_TERRAIN / "3d-tiles" / "tiles" / "orthophoto.jpg"
+    if not ortho_path.exists():
+        raise SystemExit(f"missing glTF-compatible external PNOA atlas: {ortho_path}")
+    (tiles_dir / "orthophoto.jpg").write_bytes(ortho_path.read_bytes())
 
     grids = {tile_id: load_source_grid(tile_id) for tile_id in TILE_IDS}
     global_heights = build_global_heights(grids)
@@ -457,10 +463,12 @@ def build_tileset(out_dir: Path) -> dict:
     ortho_manifest = PUBLIC_TERRAIN / "orthophoto.json"
     sources["terrain/orthophoto.json"] = sha256_bytes(ortho_manifest.read_bytes())
     sources["terrain/orthophoto.webp"] = sha256_bytes((PUBLIC_TERRAIN / "orthophoto.webp").read_bytes())
+    sources["terrain/3d-tiles/tiles/orthophoto.jpg"] = sha256_bytes(ortho_path.read_bytes())
 
     content_rels = [OVERVIEW_URI] + [e["uri"] for e in tile_entries]
+    external_rels = ["tiles/orthophoto.jpg"]
     outputs: dict[str, str] = {}
-    for rel in ["tileset.json", "manifest.json"] + content_rels:
+    for rel in ["tileset.json", "manifest.json"] + content_rels + external_rels:
         outputs[rel] = sha256_bytes((out_dir / rel).read_bytes()) if (out_dir / rel).exists() else ""
 
     manifest = {
@@ -502,7 +510,7 @@ def build_tileset(out_dir: Path) -> dict:
         "orthophoto": {
             "uri": ORTHOPHOTO_URI,
             "resolvesTo": ORTHOPHOTO_PUBLIC_URL,
-            "mimeType": "image/webp",
+            "mimeType": "image/jpeg",
             "note": "External reference only; no PNOA pixel bytes are embedded in any GLB.",
         },
         "geometricError": {"root": lod_error, "leaf": 0.0},
@@ -538,7 +546,7 @@ def check_against_public() -> int:
         manifest = build_tileset(derived)
         failures = []
         expected_rels = (
-            ["tileset.json", "manifest.json", OVERVIEW_URI]
+            ["tileset.json", "manifest.json", OVERVIEW_URI, "tiles/orthophoto.jpg"]
             + [f"tiles/{tid}.glb" for tid in TILE_IDS]
         )
         for rel in expected_rels:

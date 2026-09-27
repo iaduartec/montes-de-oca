@@ -31,6 +31,14 @@
     "quality": 82
   },
   "generator": "scripts/terrain/build_terrain_orthophoto.py",
+  "gltfAsset": {
+    "bytes": 10630803,
+    "mimeType": "image/jpeg",
+    "note": "JPEG derivative of the same pinned PNOA quadrants for core glTF compatibility.",
+    "quality": 90,
+    "sha256": "bf33d4ab0dfadd4c1ec227c0caca52632c9c5692d2f317c978f350be11944a59",
+    "url": "/terrain/3d-tiles/tiles/orthophoto.jpg"
+  },
   "pillowVersion": "12.3.0",
   "schemaVersion": 1,
   "source": {

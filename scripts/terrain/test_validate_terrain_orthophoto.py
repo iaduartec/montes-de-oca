@@ -155,6 +155,14 @@ def make_fixture_root(flipped: bool = False) -> Path:
 
     webp = _encode_webp_from_quadrants(flipped=flipped)
     (public_dir / "orthophoto.webp").write_bytes(webp)
+    from PIL import Image
+
+    gltf_dir = public_dir / "3d-tiles" / "tiles"
+    gltf_dir.mkdir(parents=True)
+    jpeg_buffer = io.BytesIO()
+    Image.open(io.BytesIO(webp)).convert("RGB").save(jpeg_buffer, format="JPEG", quality=90)
+    gltf_jpeg = jpeg_buffer.getvalue()
+    (gltf_dir / "orthophoto.jpg").write_bytes(gltf_jpeg)
 
     manifest = {
         "schemaVersion": 1,
@@ -167,6 +175,12 @@ def make_fixture_root(flipped: bool = False) -> Path:
             "height": ATLAS_PX,
             "bytes": len(webp),
             "sha256": hashlib.sha256(webp).hexdigest(),
+        },
+        "gltfAsset": {
+            "url": "/terrain/3d-tiles/tiles/orthophoto.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": len(gltf_jpeg),
+            "sha256": hashlib.sha256(gltf_jpeg).hexdigest(),
         },
         "coverage": {
             "crs": "EPSG:25830",
@@ -249,7 +263,7 @@ def test_valid_fixture_passes() -> None:
 
 
 def test_missing_manifest_fields_fail() -> None:
-    for field in ("schemaVersion", "asset", "coverage", "source", "budgets"):
+    for field in ("schemaVersion", "asset", "gltfAsset", "coverage", "source", "budgets"):
         root = make_fixture_root()
         _rewrite_manifest(root, lambda m, f=field: m.pop(f, None))
         _expect_fail(root, field)

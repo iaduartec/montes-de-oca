@@ -63,8 +63,9 @@ heightfields MDT05 ya publicados (`tiles/tile_*.json`):
   exterior del mundo usa diferencias unilaterales.
 - Cargas binarias GLB 2.0 autocontenidas (chunk JSON + chunk BIN, índices
   uint16, enlaces PBR de textura/material preservados). La ortofoto PNOA se
-  referencia como imagen EXTERNA (`../../orthophoto.webp` →
-  `/terrain/orthophoto.webp`); ningún GLB incorpora píxeles PNOA.
+  referencia como imagen JPEG EXTERNA (`tiles/orthophoto.jpg`), derivada de las
+  mismas cuadrantes fijadas que el atlas WebP y compatible con glTF básico;
+  ningún GLB incorpora píxeles PNOA.
 - La geometría de edificios OSM **no** está horneada en las teselas: sigue
   como capa separada del runtime con sus huellas/alturas existentes.
 - Atribución aplicable a este derivado: MDT © IGN-CNIG CC BY 4.0 y obra

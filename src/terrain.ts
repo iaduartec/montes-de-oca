@@ -216,11 +216,15 @@ function buildTileMesh(
   return {
     id: tile.id,
     mesh,
-    min: new Vector3(grid.x0, tileMinMeters - verticalDatum, grid.z0),
+    min: new Vector3(
+      grid.x0,
+      tileMinMeters - verticalDatum,
+      scene.useRightHandedSystem ? -(grid.z0 + (rows - 1) * grid.dz) : grid.z0,
+    ),
     max: new Vector3(
       grid.x0 + (columns - 1) * grid.dx,
       tileMaxMeters - verticalDatum,
-      grid.z0 + (rows - 1) * grid.dz,
+      scene.useRightHandedSystem ? -grid.z0 : grid.z0 + (rows - 1) * grid.dz,
     ),
     triangles: (columns - 1) * (rows - 1) * 2,
   };

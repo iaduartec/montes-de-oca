@@ -38,7 +38,7 @@ OVERVIEW_NODES = 151
 OVERVIEW_VERTEX_COUNT = OVERVIEW_NODES * OVERVIEW_NODES
 OVERVIEW_INDEX_COUNT = (OVERVIEW_NODES - 1) * (OVERVIEW_NODES - 1) * 6
 OVERVIEW_SAMPLING_M = 40.0
-ORTHOPHOTO_URI = "../../orthophoto.webp"
+ORTHOPHOTO_URI = "orthophoto.jpg"
 
 TILE_IDS = [f"tile_{ix}_{iz}" for iz in range(TILES_PER_SIDE) for ix in range(TILES_PER_SIDE)]
 
@@ -334,8 +334,8 @@ def check_content(
     images = gltf.get("images", [])
     if len(images) != 1 or images[0].get("uri") != ORTHOPHOTO_URI:
         fail(f"{label}: PNOA image must be the external uri {ORTHOPHOTO_URI}")
-    if images[0].get("mimeType") != "image/webp":
-        fail(f"{label}: PNOA mimeType must be image/webp")
+    if images[0].get("mimeType") != "image/jpeg":
+        fail(f"{label}: PNOA mimeType must be image/jpeg for core glTF support")
     if "data:" in json.dumps(gltf):
         fail(f"{label}: embedded bytes forbidden (GLB JSON must not use data: uris)")
     buffers = gltf.get("buffers", [])
@@ -345,8 +345,8 @@ def check_content(
         fail(f"{label}: buffer byteLength must match the BIN chunk")
     if sum(v.get("byteLength", 0) for v in gltf.get("bufferViews", [])) != len(blob):
         fail(f"{label}: bufferViews must tile the BIN chunk exactly")
-    if not (PUBLIC_TERRAIN / "orthophoto.webp").exists():
-        fail(f"{label}: referenced orthophoto.webp is missing")
+    if not (out / "tiles" / "orthophoto.jpg").exists():
+        fail(f"{label}: referenced tiles/orthophoto.jpg is missing")
     mesh = gltf["meshes"][0]["primitives"][0]
     if mesh.get("material") != 0 or mesh.get("mode") != 4:
         fail(f"{label}: mesh must keep the PBR TRIANGLES material link")

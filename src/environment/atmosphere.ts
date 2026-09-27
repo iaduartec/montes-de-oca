@@ -208,11 +208,16 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
   scene.fogDensity = options.dense ? FOG_DENSITY_DENSE : FOG_DENSITY;
 
   // --- Luces (mismos valores que las de main.ts) ----------------------------
-  const ambient = new HemisphericLight('luz-ambiente', new Vector3(0.25, 1, 0.2), scene);
+  const reflectZ = scene.useRightHandedSystem ? -1 : 1;
+  const ambient = new HemisphericLight('luz-ambiente', new Vector3(0.25, 1, 0.2 * reflectZ), scene);
   ambient.intensity = 0.65;
   ambient.groundColor = new Color3(0.28, 0.3, 0.26);
 
-  const sun = new DirectionalLight('sol', new Vector3(SUN_TRAVEL_RAW.x, SUN_TRAVEL_RAW.y, SUN_TRAVEL_RAW.z), scene);
+  const sun = new DirectionalLight(
+    'sol',
+    new Vector3(SUN_TRAVEL_RAW.x, SUN_TRAVEL_RAW.y, SUN_TRAVEL_RAW.z * reflectZ),
+    scene,
+  );
   sun.intensity = 0.95;
   sun.diffuse = new Color3(1, 0.97, 0.9);
 
@@ -248,7 +253,7 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
 
   const follow = (x: number, z: number): void => {
     const position = sunPositionFor(x, z);
-    sun.position.set(position.x, position.y, position.z);
+    sun.position.set(position.x, position.y, position.z * reflectZ);
   };
 
   return {

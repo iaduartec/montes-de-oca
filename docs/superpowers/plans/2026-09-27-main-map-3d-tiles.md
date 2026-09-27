@@ -34,7 +34,7 @@
 - `src/render-coordinates.ts` owns pure logical↔Babylon RH coordinate, direction and yaw conversion. It must not import terrain or alter source data.
 - `scripts/terrain/build_3d_tiles.py` and `scripts/terrain/validate_3d_tiles.py` build and validate a reproducible coarse 6 km overview plus 36 full-resolution 1 km children from the existing MDT05 tiles and PNOA atlas; generated GLB output and provenance live under `public/terrain/3d-tiles/`.
 - `src/terrain-3d-tiles.ts` owns `TilesRenderer`, loading/error counters and disposal. `src/terrain.ts` continues to own existing heightfield sampling and fallback terrain meshes.
-- `src/main.ts` owns the `?renderFrame=rh` migration switch, camera/render-loop integration and the final default activation gate. The ordinary game launch stays in its current frame until every rendered layer has migrated.
+- `src/main.ts` owns the RH render frame (default; `?renderFrame=lh` is the diagnostic opt-out), camera/render-loop integration and the 3D Tiles/fallback lifecycle.
 - `src/road-visuals.ts`, `src/environment/{village,vegetation,water,village-landmarks}.ts`, `src/vehicle/*.ts`, `src/player/index.ts` and `src/gameplay/objective.ts` migrate visible geometry/actors through the shared conversion boundary; their simulation inputs stay logical.
 - `scripts/terrain/test_render_coordinates.mjs`, `scripts/terrain/test_3d_tiles_builder.py`, `scripts/terrain/validate_3d_tiles.py`, existing domain validators and `scripts/milestone/drive_milestone.mjs` provide focused proof.
 - `scripts/terrain/capture_3d_tiles_map.mjs` saves at most seven named images for aerial overview, village, road, water/reservoir, vehicle pursuit, on-foot controls and mission completion under `output/3d-tiles-map/`.
@@ -49,11 +49,11 @@
 - `logicalYawToRender(yawRad: number): number` and `renderYawToLogical(yawRad: number): number` preserve the forward direction under the Z reflection.
 - Direction/normal helpers reflect Z and normalize only when the caller requests normalized output; physics data is never passed through them.
 
-- [ ] **Step 1: Add failing checks** `roundTripsLogicalPosition`, `northMapsToNegativeRenderZ`, `eastAndUpRemainUnchanged`, `yawKeepsForwardVector`, and `rejectsNonFiniteInput` to `scripts/terrain/test_render_coordinates.mjs`.
-- [ ] **Step 2: Run** `node scripts/terrain/test_render_coordinates.mjs`. Expected: FAIL because the conversion module or exports are missing.
-- [ ] **Step 3: Implement the typed conversion functions** in `src/render-coordinates.ts`; keep the implementation independent from Babylon classes so the pure contract is executable in Node.
-- [ ] **Step 4: Run** `node scripts/terrain/test_render_coordinates.mjs` and `npm run build`. Expected: all conversion assertions pass and TypeScript/Vite build succeeds.
-- [ ] **Step 5: Commit** as `feat(cartography): define render coordinate boundary`.
+- [x] **Step 1: Add failing checks** `roundTripsLogicalPosition`, `northMapsToNegativeRenderZ`, `eastAndUpRemainUnchanged`, `yawKeepsForwardVector`, and `rejectsNonFiniteInput` to `scripts/terrain/test_render_coordinates.mjs`.
+- [x] **Step 2: Run** `node scripts/terrain/test_render_coordinates.mjs`. Expected: FAIL because the conversion module or exports are missing.
+- [x] **Step 3: Implement the typed conversion functions** in `src/render-coordinates.ts`; keep the implementation independent from Babylon classes so the pure contract is executable in Node.
+- [x] **Step 4: Run** `node scripts/terrain/test_render_coordinates.mjs` and `npm run build`. Expected: all conversion assertions pass and TypeScript/Vite build succeeds.
+- [x] **Step 5: Commit** as `feat(cartography): define render coordinate boundary`.
 
 ### Task 2: Build deterministic local 3D Tiles contents
 
@@ -64,12 +64,12 @@
 - `build_3d_tiles.py --check` derives to temporary output and compares deterministically without rewriting public files or accessing network resources.
 - Validator exits nonzero for missing tiles, invalid bounds/CRS/origin/datum, wrong PNOA path, invalid GLB chunks/hierarchy, hash drift, seam-normal mismatch or absent attribution.
 
-- [ ] **Step 1: Add fixtures/checks** `all_36_tiles_match_config_extent`, `neighbor_edges_share_identical_height_samples`, `neighbor_tile_normals_match_at_shared_edges`, `mesh_winding_and_normals_face_up`, `north_uv_maps_to_atlas_top`, `overview_lod_error_matches_mdt`, `glb_payload_is_binary_with_external_pnoa`, and `check_mode_is_deterministic`.
-- [ ] **Step 2: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`. Expected: FAIL because the builder contract is absent.
-- [ ] **Step 3: Implement the builder** using all existing `public/terrain/tiles/tile_*.json`; calculate shared-edge normals from neighboring height samples, emit a 40 m overview and 5 m 1 km children as GLB, and measure the overview's maximum deviation against MDT05. Reuse the PNOA atlas URI; do not copy pixels into GLBs.
-- [ ] **Step 4: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: all 36 leaves and the measured overview validate, shared seam normals match, and repeated derivation has identical hashes.
-- [ ] **Step 5: Register** `test:3d-tiles-data` and include it in `npm test`; record IGN/CNIG and OSM attribution in the runtime attribution surface and asset manifest.
-- [ ] **Step 6: Commit** as `feat(terrain): build local 3d tiles map`.
+- [x] **Step 1: Add fixtures/checks** `all_36_tiles_match_config_extent`, `neighbor_edges_share_identical_height_samples`, `neighbor_tile_normals_match_at_shared_edges`, `mesh_winding_and_normals_face_up`, `north_uv_maps_to_atlas_top`, `overview_lod_error_matches_mdt`, `glb_payload_is_binary_with_external_pnoa`, and `check_mode_is_deterministic`.
+- [x] **Step 2: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`. Expected: FAIL because the builder contract is absent.
+- [x] **Step 3: Implement the builder** using all existing `public/terrain/tiles/tile_*.json`; calculate shared-edge normals from neighboring height samples, emit a 40 m overview and 5 m 1 km children as GLB, and measure the overview's maximum deviation against MDT05. Reuse the PNOA atlas URI; do not copy pixels into GLBs.
+- [x] **Step 4: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: all 36 leaves and the measured overview validate, shared seam normals match, and repeated derivation has identical hashes.
+- [x] **Step 5: Register** `test:3d-tiles-data` and include it in `npm test`; record IGN/CNIG and OSM attribution in the runtime attribution surface and asset manifest.
+- [x] **Step 6: Commit** as `feat(terrain): build local 3d tiles map`.
 
 ### Task 3: Add a contained Babylon TilesRenderer runtime
 
@@ -81,11 +81,11 @@
 - Tiles are updated once per rendered frame; no second scene or independent camera is created.
 - The adapter is only created when its supplied scene already has `useRightHandedSystem === true`; `main.ts` integration waits for Task 5.
 
-- [ ] **Step 1: Add runtime checks** `updates_renderer_each_frame`, `reports_failed_tile_with_url_and_id`, `dispose_removes_observer`, and `heightfield_remains_usable_after_load_error`.
-- [ ] **Step 2: Run** `node scripts/terrain/test_3d_tiles_runtime.mjs`. Expected: FAIL before the runtime adapter exists.
-- [ ] **Step 3: Implement the adapter** with Babylon's required RH scene, the supplied camera and explicit observer cleanup. Reject an LH scene with a descriptive error.
-- [ ] **Step 4: Run** `node scripts/terrain/test_3d_tiles_runtime.mjs` and `npm run build`; test local tile loading in the existing RH POC harness, with no external tile/image URLs.
-- [ ] **Step 5: Commit** as `feat(terrain): add babylon 3d tiles runtime`.
+- [x] **Step 1: Add runtime checks** `updates_renderer_each_frame`, `reports_failed_tile_with_url_and_id`, `dispose_removes_observer`, and `heightfield_remains_usable_after_load_error`.
+- [x] **Step 2: Run** `node scripts/terrain/test_3d_tiles_runtime.mjs`. Expected: FAIL before the runtime adapter exists.
+- [x] **Step 3: Implement the adapter** with Babylon's required RH scene, the supplied camera and explicit observer cleanup. Reject an LH scene with a descriptive error.
+- [x] **Step 4: Run** `node scripts/terrain/test_3d_tiles_runtime.mjs` and `npm run build`; test local tile loading in the existing RH POC harness, with no external tile/image URLs.
+- [x] **Step 5: Commit** as `feat(terrain): add babylon 3d tiles runtime`.
 
 ### Task 4: Migrate static map layers at the render boundary
 
@@ -93,15 +93,15 @@
 
 **Interfaces:**
 - Render geometry receives converted positions/directions only at mesh creation/update; generated files, logical anchors, `heightAt`, `normalAt` and geographic projection remain unchanged.
-- Each layer uses the ordinary Babylon frame by default and applies the shared conversion only when main starts with `?renderFrame=rh`; the switch is fixed before layer construction and is never toggled mid-scene.
+- Each layer applies the shared conversion in the default RH frame; `?renderFrame=lh` keeps the diagnostic legacy frame. The frame is fixed before layer construction and is never toggled mid-scene.
 - Each layer exposes the same public logical query and update interface it exposes before this migration.
 
-- [ ] **Step 1: Add parity assertions** for known east/north anchors, landmark base heights, water sample locations, road clearance and one instance from each vegetation tier; assert expected render Z is the negated logical Z.
-- [ ] **Step 2: Run the affected validators** and confirm the new render-frame assertions fail while existing logical-data checks still pass.
-- [ ] **Step 3: Migrate layer mesh vertices, normals, triangle winding, instance transforms and culling bounds** in small domain commits; preserve the existing terrain fallback mesh but ensure it is generated in the same RH frame.
-- [ ] **Step 4: Run** `npm run test:terrain`, `npm run test:roads`, `npm run test:village`, `npm run test:vegetation`, `npm run test:water`, `npm run test:focal-sites`, and `npm run build`. Expected: all logical data parity checks pass and surfaces remain outward-facing.
-- [ ] **Step 5: Compare** generated logical anchors and RH mesh bounds against the current frame; defer integrated visual captures until Task 5 has migrated all live actors and camera.
-- [ ] **Step 6: Commit** as `feat(cartography): migrate static map layers to rh`.
+- [x] **Step 1: Add parity assertions** for known east/north anchors, landmark base heights, water sample locations, road clearance and one instance from each vegetation tier; assert expected render Z is the negated logical Z.
+- [x] **Step 2: Run the affected validators** and confirm the new render-frame assertions fail while existing logical-data checks still pass.
+- [x] **Step 3: Migrate layer mesh vertices, normals, triangle winding, instance transforms and culling bounds** in small domain commits; preserve the existing terrain fallback mesh but ensure it is generated in the same RH frame.
+- [x] **Step 4: Run** `npm run test:terrain`, `npm run test:roads`, `npm run test:village`, `npm run test:vegetation`, `npm run test:water`, `npm run test:focal-sites`, and `npm run build`. Expected: all logical data parity checks pass and surfaces remain outward-facing.
+- [x] **Step 5: Compare** generated logical anchors and RH mesh bounds against the current frame; defer integrated visual captures until Task 5 has migrated all live actors and camera.
+- [x] **Step 6: Commit** as `feat(cartography): migrate static map layers to rh`.
 
 ### Task 5: Migrate camera and live actors, then enable one RH scene
 
@@ -110,25 +110,25 @@
 **Interfaces:**
 - Vehicle/player state, route state and objective anchors remain logical; model-root positions, yaw, camera targets, camera collision rays, light directions, shadows and render culling use converted render values.
 - Minimap continues to consume logical position and heading and remains north-up.
-- `main.ts` sets `scene.useRightHandedSystem` at construction when `?renderFrame=rh` is present; normal launch stays in the current frame until Task 6 acceptance. In RH mode, it enables either 3D Tiles or fallback terrain, never both at once.
+- `main.ts` sets `scene.useRightHandedSystem` before scene construction; normal launch uses RH 3D Tiles, while `?terrain=fallback` selects the RH fallback and `?renderFrame=lh` opts out. It enables either 3D Tiles or fallback terrain, never both at once.
 
-- [ ] **Step 1: Add failing checks** `vehicleForwardRemainsLogicalNorth`, `playerForwardRemainsLogicalNorth`, `chaseCameraFollowsWithoutMirroring`, `minimapRemainsNorthUp`, and `lightDirectionIsReflectedOnce`.
-- [ ] **Step 2: Run** focused actor checks, `npm run test:mission`, `npm run test:vehicle-models`, and `npm run test:minimap`; establish expected baseline and ensure the new RH-specific checks fail before conversion.
-- [ ] **Step 3: Convert actor root positions/yaw and camera target/collision inputs at their Babylon boundary.** Keep physics, controller, camera chase calculations and minimap inputs in logical coordinates.
-- [ ] **Step 4: Add the `?renderFrame=rh` scene-construction option, convert lighting/shadow inputs once, and add the atomic terrain-mode switch:** on successful tileset readiness hide fallback; on load failure or `?terrain=fallback` show fallback. Keep normal launch in its existing mode.
-- [ ] **Step 5: Run** `npm run test:vehicle-models`, `npm run test:mission`, `npm run test:minimap`, `npm run test:water`, and `npm run build`. Expected: new heading/camera checks pass, logical mission completion remains unchanged, and only one ground surface is visible.
-- [ ] **Step 6: Commit** as `feat(gameplay): preserve actors in rh map scene`.
+- [x] **Step 1: Add failing checks** `vehicleForwardRemainsLogicalNorth`, `playerForwardRemainsLogicalNorth`, `chaseCameraFollowsWithoutMirroring`, `minimapRemainsNorthUp`, and `lightDirectionIsReflectedOnce`.
+- [x] **Step 2: Run** focused actor checks, `npm run test:mission`, `npm run test:vehicle-models`, and `npm run test:minimap`; establish expected baseline and ensure the new RH-specific checks fail before conversion.
+- [x] **Step 3: Convert actor root positions/yaw and camera target/collision inputs at their Babylon boundary.** Keep physics, controller, camera chase calculations and minimap inputs in logical coordinates.
+- [x] **Step 4: Add the `?renderFrame=rh` scene-construction option, convert lighting/shadow inputs once, and add the atomic terrain-mode switch:** on successful tileset readiness hide fallback; on load failure or `?terrain=fallback` show fallback. Keep normal launch in its existing mode.
+- [x] **Step 5: Run** `npm run test:vehicle-models`, `npm run test:mission`, `npm run test:minimap`, `npm run test:water`, and `npm run build`. Expected: new heading/camera checks pass, logical mission completion remains unchanged, and only one ground surface is visible.
+- [x] **Step 6: Commit** as `feat(gameplay): preserve actors in rh map scene`.
 
 ### Task 6: Verify the integrated map and make it the default
 
 **Files:** Create `scripts/terrain/capture_3d_tiles_map.mjs` and an integrated validator if needed; modify `src/main.ts` default terrain mode and remove `tiles-poc.html`, `src/tiles-poc.ts`, `src/tiles-poc.css`, `scripts/terrain/build_3d_tiles_poc.py`, `public/tiles-poc/` and the prototype-only package configuration after their assets are replaced by the production builder.
 
-- [ ] **Step 1: Run** `npm test`, `npm run build`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: every domain validator, deterministic data check and production build passes.
-- [ ] **Step 2: Capture up to seven browser views** with `scripts/terrain/capture_3d_tiles_map.mjs`: overview, village, road, water/reservoir, vehicle pursuit, on-foot controls and completed mission. Use a task-specific browser profile and write only to `output/3d-tiles-map/`.
-- [ ] **Step 3: Verify** zero console errors/404s, correct tile activation while orbiting and zooming, fallback after an intentionally missing tile, 0.01 m tile/heightfield agreement, no visible terrain overlaps, north-up minimap and `COMPLETED` mission report.
-- [ ] **Step 4: Fix each screenshot-visible reflection, mismatch, missing layer or seam at its owning task, rerun its focused checks and repeat the integrated capture.** Do not make the tiles default until every acceptance check passes.
-- [ ] **Step 5: Set `?renderFrame=rh` and 3D Tiles as the default renderer** only after those checks pass; retain `?terrain=fallback` as the documented debug option.
-- [ ] **Step 6: Commit** as `feat(cartography): integrate 3d tiles in playable map`.
+- [x] **Step 1: Run** `npm test`, `npm run build`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: every domain validator, deterministic data check and production build passes.
+- [x] **Step 2: Capture up to seven browser views** with `scripts/terrain/capture_3d_tiles_map.mjs`: overview, village, road, water/reservoir, vehicle pursuit, on-foot controls and completed mission. Use a task-specific browser profile and write only to `output/3d-tiles-map/`.
+- [x] **Step 3: Verify** zero console errors/404s, correct tile activation while orbiting and zooming, fallback after an intentionally missing tile, 0.01 m tile/heightfield agreement, no visible terrain overlaps, north-up minimap and `COMPLETED` mission report.
+- [x] **Step 4: Fix each screenshot-visible reflection, mismatch, missing layer or seam at its owning task, rerun its focused checks and repeat the integrated capture.** Do not make the tiles default until every acceptance check passes.
+- [x] **Step 5: Set the RH frame and 3D Tiles as the default renderer** after those checks pass; retain `?terrain=fallback` and `?renderFrame=lh` as debug options.
+- [x] **Step 6: Commit** as `feat(cartography): integrate 3d tiles in playable map`.
 
 ## Final Handoff
 

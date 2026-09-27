@@ -1,5 +1,6 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
 import { Ray } from '@babylonjs/core/Culling/ray';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -51,6 +52,9 @@ import {
 } from './gameplay/mission';
 import { createInteractor, type Interactor } from './gameplay/interact';
 import { createRepeaterObjective, type Objective } from './gameplay/objective';
+import { logicalToRender, renderToLogical } from './render-coordinates';
+import { createTerrain3DTiles, type TerrainTilesError } from './terrain-3d-tiles';
+import { createBabylonTerrainTilesRenderer } from './terrain-3d-tiles-babylon';
 
 const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
@@ -147,14 +151,51 @@ const engine = new Engine(canvas, true, {
   antialias: true,
 });
 
+const params = new URLSearchParams(window.location.search);
+const useRightHandedMap = params.get('renderFrame') !== 'lh';
 const scene = new Scene(engine);
+scene.useRightHandedSystem = useRightHandedMap;
 scene.clearColor = new Color4(0.53, 0.68, 0.82, 1);
+const mapRenderRoot = useRightHandedMap ? new TransformNode('map-logical-to-rh', scene) : null;
+if (mapRenderRoot) mapRenderRoot.scaling.z = -1;
+
+function snapshotMapRenderContent(): { readonly meshes: Set<object>; readonly nodes: Set<object> } {
+  return { meshes: new Set(scene.meshes), nodes: new Set(scene.transformNodes) };
+}
+
+function attachNewMapRenderContent(before: { readonly meshes: Set<object>; readonly nodes: Set<object> }): void {
+  if (!mapRenderRoot) return;
+  const added = new Set<object>([
+    ...scene.transformNodes.filter((node) => !before.nodes.has(node)),
+    ...scene.meshes.filter((mesh) => !before.meshes.has(mesh)),
+  ]);
+  for (const node of added) {
+    const transform = node as TransformNode;
+    if (transform.parent && added.has(transform.parent)) continue;
+    transform.unfreezeWorldMatrix();
+    transform.parent = mapRenderRoot;
+    transform.computeWorldMatrix(true);
+  }
+}
+
+function toSceneVector(point: Vector3): Vector3 {
+  if (!useRightHandedMap) return point.clone();
+  const rendered = logicalToRender(point);
+  return new Vector3(rendered.x, rendered.y, rendered.z);
+}
+
+function toLogicalVector(point: Vector3): Vector3 {
+  if (!useRightHandedMap) return point.clone();
+  const logical = renderToLogical(point);
+  return new Vector3(logical.x, logical.y, logical.z);
+}
 
 // Iluminación y atmósfera: las crea `createAtmosphere` al final del bootstrap, cuando
 // ya existen las mallas que proyectan sombra. Un solo dueño de las luces — si además
 // se crearan acá, habría dos juegos sumando intensidad.
 
 const camera = new UniversalCamera('camara-libre', new Vector3(0, 80, -160), scene);
+scene.activeCamera = camera;
 camera.attachControl(canvas, true);
 camera.speed = 6;
 camera.angularSensibility = 4000;
@@ -256,14 +297,19 @@ function routeCorridors(route: FirstRoute): VegetationCorridor[] {
   return corridors;
 }
 
-function formatSnapshot(snapshot: DiagnosticsSnapshot, terrain: WorldTerrain): string {
+function formatSnapshot(
+  snapshot: DiagnosticsSnapshot,
+  terrain: WorldTerrain,
+  tiles: { readonly visibleTriangles: number } | null = null,
+): string {
   const center = terrain.center();
   return [
     `FPS        ${snapshot.fps.toFixed(0)}`,
     `frame      ${snapshot.frameTimeMs.toFixed(2)} ms`,
     `draw calls ${snapshot.drawCalls.toFixed(0)}`,
     `triángulos ${snapshot.triangles.toFixed(0)}`,
-    `en vista   ${terrain.activeTriangles().toFixed(0)} (radio ${terrain.viewRadius.toFixed(0)} m)`,
+    `en vista   ${(tiles?.visibleTriangles ?? terrain.activeTriangles()).toFixed(0)} ` +
+      `(${tiles ? '3D Tiles' : `radio ${terrain.viewRadius.toFixed(0)} m`})`,
     `vértices   ${snapshot.vertices.toFixed(0)}`,
     `mallas     ${snapshot.activeMeshes}`,
     `tiles      ${terrain.samplers.length}`,
@@ -284,8 +330,23 @@ function formatPlayerHud(t: PlayerTelemetry): string {
 /** API de depuración/medición expuesta en `window.__game` para CDP. */
 interface DebugApi {
   terrainHeightAt(x: number, z: number): number;
+  terrainRender(): {
+    frame: 'rh' | 'lh';
+    totalFallbackMeshes: number;
+    enabledFallbackMeshes: number;
+  };
   terrainNormalAt(x: number, z: number): { x: number; y: number; z: number };
   perf(): DiagnosticsSnapshot;
+  terrain3DTiles(): {
+    status: string;
+    mode: 'tiles' | 'fallback';
+    visibleTiles: number;
+    activeTiles: number;
+    visibleTriangles: number;
+    childMeshes: number;
+    groupEnabled: boolean;
+    visibleTileIds: string[];
+  } | null;
   auditDatum(): { verticalDatum: number; maxAbsDiffM: number; ok: boolean; samples: readonly unknown[] };
   vehicle: {
     telemetry(): VehicleActorTelemetry;
@@ -369,12 +430,13 @@ async function bootstrap(): Promise<void> {
     hud.textContent = 'Cargando terreno…';
   }
   const config = await loadTerrainConfig(fetch, publicUrl(TERRAIN_CONFIG_PATH));
+  const terrainSnapshot = snapshotMapRenderContent();
   const terrain = await loadTerrain(scene, {
     ...config,
     tiles: config.tiles.map((tile) => ({ ...tile, url: publicUrl(tile.url) })),
   });
+  attachNewMapRenderContent(terrainSnapshot);
 
-  const params = new URLSearchParams(window.location.search);
   // Ayuda y diagnóstico comparten conmutador: en estado normal sólo queda una pista
   // compacta y F3 revela las teclas de control y el panel de instrumentación.
   let ayudaVisible = params.get('debug') === '1';
@@ -467,7 +529,9 @@ async function bootstrap(): Promise<void> {
       spawn: { x: pose.x, z: pose.z, yaw: pose.yaw },
       ...(controls ? { controls } : {}),
     };
-    return createVehicle(options, definition);
+    const actor = createVehicle(options, definition);
+    if (mapRenderRoot) actor.root.parent = mapRenderRoot;
+    return actor;
   };
 
   /** Muestreo de huella del destino para las reglas de espacio, agua y bajada. */
@@ -628,11 +692,13 @@ async function bootstrap(): Promise<void> {
   let landmarks: VillageLandmarks | null = null;
   const landmarksEnabled = params.get('landmarks') !== '0';
   if (landmarksEnabled) {
+    const layerSnapshot = snapshotMapRenderContent();
     try {
       landmarks = await loadVillageLandmarks(scene, terrain, { baseUrl: publicUrl('/village/focal-sites/') });
     } catch (error) {
       console.warn('[hitos] no se pudieron cargar; se mantienen los elementos base', error);
     }
+    attachNewMapRenderContent(layerSnapshot);
   }
   if (roadsEnabled) {
     // Dominio real del terreno: evita que `heightAt` devuelva el "0 absoluto"
@@ -648,6 +714,7 @@ async function bootstrap(): Promise<void> {
       minZ = Math.min(minZ, extent.minZ);
       maxZ = Math.max(maxZ, extent.maxZ);
     }
+    const layerSnapshot = snapshotMapRenderContent();
     roads = await loadRoadNetwork(scene, terrain, {
       url: publicUrl('/roads/roads.json'),
       bounds: { minX, maxX, minZ, maxZ },
@@ -656,6 +723,7 @@ async function bootstrap(): Promise<void> {
       // El faldón de mezcla de la pista se dibuja solo a lo largo de la ruta jugable.
       trackBlendCorridor: { points: FIRST_ROUTE.polyline, radiusM: 30 },
     });
+    attachNewMapRenderContent(layerSnapshot);
     console.info(
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
@@ -670,6 +738,7 @@ async function bootstrap(): Promise<void> {
   const waterEnabled = aguaParam === null || !(aguaParam === '0' || aguaParam.toLowerCase() === 'false');
   let water: Water | null = null;
   if (waterEnabled) {
+    const layerSnapshot = snapshotMapRenderContent();
     try {
       water = await loadWater(scene, terrain, {
         url: publicUrl('/water/water.json'),
@@ -682,6 +751,7 @@ async function bootstrap(): Promise<void> {
       water = null; // decorativo: si falla, el juego arranca igual
       console.warn('[agua] no se pudo cargar la capa decorativa', error);
     }
+    attachNewMapRenderContent(layerSnapshot);
   }
 
   // ----- Pueblo low-poly (FASE E) -----
@@ -701,6 +771,7 @@ async function bootstrap(): Promise<void> {
         dx: station.dx,
         dz: station.dz,
       })) ?? [];
+    const layerSnapshot = snapshotMapRenderContent();
     const village = await loadVillage(scene, terrain, {
       url: publicUrl('/village/buildings.json'),
       buildingHeightGridUrl: publicUrl('/village/building_height_grid.json'),
@@ -710,6 +781,7 @@ async function bootstrap(): Promise<void> {
       keepClearRadiusM: 12,
       roadClearance,
     });
+    attachNewMapRenderContent(layerSnapshot);
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
   }
@@ -727,6 +799,7 @@ async function bootstrap(): Promise<void> {
     // La vegetación es DECORATIVA: si su carga falla, el juego arranca igual. Por eso
     // el try/catch envuelve SÓLO el await: un fallo de datos no puede tumbar el bootstrap.
     try {
+      const layerSnapshot = snapshotMapRenderContent();
       vegetation = await loadVegetation(scene, terrain, {
         url: publicUrl('/vegetation/vegetation.json'),
         corridors: routeCorridors(FIRST_ROUTE),
@@ -735,6 +808,7 @@ async function bootstrap(): Promise<void> {
           { x: FIRST_ROUTE.target.x, z: FIRST_ROUTE.target.z, radiusM: FIRST_ROUTE.targetClearRadiusM },
         ],
       });
+      attachNewMapRenderContent(layerSnapshot);
     } catch (error: unknown) {
       vegetation = null;
       console.warn(
@@ -757,9 +831,9 @@ async function bootstrap(): Promise<void> {
   const yaw = queryNumber(params, 'vyaw') ?? FIRST_ROUTE.startYaw;
 
   if (freeCamera) {
-    camera.position = new Vector3(px ?? spawnX, py ?? groundY + 100, pz ?? spawnZ - 40);
+    camera.position = toSceneVector(new Vector3(px ?? spawnX, py ?? groundY + 100, pz ?? spawnZ - 40));
     const target = new Vector3(tx ?? spawnX, ty ?? groundY - 15, tz ?? spawnZ + 480);
-    camera.setTarget(target);
+    camera.setTarget(toSceneVector(target));
   } else {
     camera.detachControl();
 
@@ -948,22 +1022,29 @@ async function bootstrap(): Promise<void> {
         spawn: { x: salidaInicial.x, z: salidaInicial.z, yaw },
         ...(controlsForPlayer ? { controls: controlsForPlayer } : {}),
       });
+      if (mapRenderRoot) player.root.parent = mapRenderRoot;
     }
 
     // ----- Objetivo, interacción y misión (FASES G y H) -----
     // El objetivo vive en el fondo de pista que eligió el generador de la ruta, y el
     // radio de despeje sale de la ruta: así la vegetación y el pueblo no lo tapan.
+    const objectiveSnapshot = snapshotMapRenderContent();
     objective = createRepeaterObjective(scene, terrain, {
       at: { x: FIRST_ROUTE.target.x, z: FIRST_ROUTE.target.z, yaw: FIRST_ROUTE.targetYaw },
       clearRadiusM: FIRST_ROUTE.targetClearRadiusM,
     });
+    attachNewMapRenderContent(objectiveSnapshot);
     interactor = createInteractor([objective.interactable]);
     // El radio de reparación sale del PROPIO repetidor (`radiusM`): el aviso de E y
     // el progreso de la misión no pueden divergir porque son el mismo número.
     mission = createMission(FIRST_ROUTE, { repairRadiusM: objective.interactable.radiusM });
 
     // Posición de cámara inicial detrás del vehículo.
-    camera.position = new Vector3(startX - Math.sin(yaw) * 7.5, terrain.heightAt(startX, startZ) + 2.4, startZ - Math.cos(yaw) * 7.5);
+    camera.position = toSceneVector(new Vector3(
+      startX - Math.sin(yaw) * 7.5,
+      terrain.heightAt(startX, startZ) + 2.4,
+      startZ - Math.cos(yaw) * 7.5,
+    ));
     camera.minZ = 0.3;
   }
 
@@ -1002,6 +1083,7 @@ async function bootstrap(): Promise<void> {
     shadowReceivers: [...terrain.meshes],
   });
   atmosphere = atmosphereBuilt;
+  if (params.get('fog') === '0') scene.fogMode = Scene.FOGMODE_NONE;
 
   window.addEventListener('resize', () => engine.resize());
 
@@ -1009,6 +1091,36 @@ async function bootstrap(): Promise<void> {
   let hudTick = 0;
 
   terrain.cull(camera);
+  let terrainTilesFailed = false;
+  let terrainTilesActive = false;
+  let tilesRenderer: ReturnType<typeof createBabylonTerrainTilesRenderer> | null = null;
+  const terrainTiles = useRightHandedMap && params.get('terrain') !== 'fallback'
+    ? createTerrain3DTiles(scene, camera, {
+      ...(params.has('tileset') ? { url: params.get('tileset')! } : {}),
+      rendererFactory: (url, targetScene) => {
+        tilesRenderer = createBabylonTerrainTilesRenderer(url, targetScene);
+        tilesRenderer.group.setEnabled(false);
+        return tilesRenderer;
+      },
+      onModelLoaded: (event) => {
+        for (const mesh of event.scene?.getChildMeshes() ?? []) {
+          mesh.receiveShadows = true;
+          mesh.isPickable = false;
+        }
+        if (terrainTilesFailed || !event.tile?.content?.uri?.endsWith('overview.glb')) return;
+        terrainTilesActive = true;
+        tilesRenderer?.group.setEnabled(true);
+        for (const mesh of terrain.meshes) mesh.setEnabled(false);
+      },
+      onError: (error: TerrainTilesError) => {
+        terrainTilesFailed = true;
+        terrainTilesActive = false;
+        tilesRenderer?.group.setEnabled(false);
+        for (const mesh of terrain.meshes) mesh.setEnabled(true);
+        console.warn(`[terrain-3d-tiles] fallback activado: ${error.message}`);
+      },
+    })
+    : null;
 
   // ----- Panel de misión -----
   // La estructura se arma UNA vez desde una plantilla constante y después sólo se
@@ -1061,7 +1173,7 @@ async function bootstrap(): Promise<void> {
     const length = offset.length();
     return length > 0
       ? scene.pickWithRay(
-        new Ray(from, offset.scale(1 / length), length),
+        new Ray(toSceneVector(from), toSceneVector(offset).scale(1 / length), length),
         (mesh) => cameraOccluders.has(mesh),
       )
       : null;
@@ -1133,19 +1245,21 @@ async function bootstrap(): Promise<void> {
         const offset = chosen.subtract(cameraAnchor);
         const length = offset.length();
         // Never place the camera inside the vehicle while the street is occluded.
-        const safeDistance = Math.max(3.2, Vector3.Distance(cameraAnchor, hit.pickedPoint) - 0.45);
+        const safeDistance = Math.max(3.2, Vector3.Distance(cameraAnchor, toLogicalVector(hit.pickedPoint)) - 0.45);
         chosen = cameraAnchor.add(offset.scale(safeDistance / length));
       }
     }
     const k = 1 - Math.exp(-dt * (walking ? 7 : 5));
-    camera.position = cameraHit(cameraAnchor, camera.position)?.hit
+    const currentCameraPosition = toLogicalVector(camera.position);
+    const nextCameraPosition = cameraHit(cameraAnchor, currentCameraPosition)?.hit
       ? chosen
-      : Vector3.Lerp(camera.position, chosen, k);
+      : Vector3.Lerp(currentCameraPosition, chosen, k);
     // El lerp puede acercar la cámara a una ladera ya atravesada: se sostiene la cota
     // mínima también sobre la pose actual.
-    const cotaMinima = terrain.heightAt(camera.position.x, camera.position.z) + 0.5;
-    if (camera.position.y < cotaMinima) camera.position.y = cotaMinima;
-    camera.setTarget(new Vector3(body.x + fx * lookAhead, body.y + lookHeight, body.z + fz * lookAhead));
+    const cotaMinima = terrain.heightAt(nextCameraPosition.x, nextCameraPosition.z) + 0.5;
+    if (nextCameraPosition.y < cotaMinima) nextCameraPosition.y = cotaMinima;
+    camera.position.copyFrom(toSceneVector(nextCameraPosition));
+    camera.setTarget(toSceneVector(new Vector3(body.x + fx * lookAhead, body.y + lookHeight, body.z + fz * lookAhead)));
   };
 
   /**
@@ -1382,16 +1496,21 @@ async function bootstrap(): Promise<void> {
     const anclaSombra = player ? player.root.position : active?.root.position;
     if (anclaSombra) atmosphereBuilt.follow(anclaSombra.x, anclaSombra.z);
     terrain.cull(camera);
+    if (terrainTilesActive) for (const mesh of terrain.meshes) mesh.setEnabled(false);
     // El LOD se recalcula con la cámara YA movida por la persecución y antes de
     // dibujar: al revés, la vegetación vería la pose del frame anterior.
-    vegetation?.update(camera.position);
+    vegetation?.update(toLogicalVector(camera.position));
     scene.render();
     hudTick++;
     if (hudTick % 5 === 0) {
       updateActionPrompt();
       if (ultimaMision) updateMissionHud(ultimaMision);
       if (hud && !hud.hidden) {
-        const perf = formatSnapshot(diagnostics.snapshot(), terrain);
+        const perf = formatSnapshot(
+          diagnostics.snapshot(),
+          terrain,
+          terrainTilesActive && terrainTiles ? terrainTiles.stats() : null,
+        );
         const veh = active ? formatActorHud(active) : '';
         const jug = player ? formatPlayerHud(player.telemetry()) : '';
         hud.textContent = [perf, veh, jug].filter((block) => block.length > 0).join('\n\n');
@@ -1460,11 +1579,29 @@ async function bootstrap(): Promise<void> {
 
   window.__game = {
     terrainHeightAt: (x, z) => terrain.heightAt(x, z),
+    terrainRender: () => ({
+      frame: useRightHandedMap ? 'rh' : 'lh',
+      totalFallbackMeshes: terrain.meshes.length,
+      enabledFallbackMeshes: terrain.meshes.filter((mesh) => mesh.isEnabled()).length,
+    }),
     terrainNormalAt: (x, z) => {
       const n = terrain.normalAt(x, z);
       return { x: n.x, y: n.y, z: n.z };
     },
     perf: () => diagnostics.snapshot(),
+    terrain3DTiles: terrainTiles
+      ? () => ({
+        status: terrainTiles.state().status,
+        mode: terrainTilesActive ? 'tiles' : 'fallback',
+        ...terrainTiles.stats(),
+        childMeshes: tilesRenderer?.group.getChildMeshes(false).length ?? 0,
+        groupEnabled: tilesRenderer?.group.isEnabled() ?? false,
+        fallbackEnabledMeshes: terrain.meshes.filter((mesh) => mesh.isEnabled()).length,
+        visibleTileIds: tilesRenderer
+          ? [...tilesRenderer.visibleTiles].map((tile) => tile.content?.uri ?? 'root').sort()
+          : [],
+      })
+      : () => null,
     auditDatum: () => ({
       verticalDatum: datumAudit.verticalDatum,
       maxAbsDiffM: datumAudit.maxAbsDiffM,
@@ -1547,6 +1684,7 @@ async function bootstrap(): Promise<void> {
     water?.dispose();
     landmarks?.dispose();
     vegetation?.dispose();
+    terrainTiles?.dispose();
     diagnostics.dispose();
     terrain.dispose();
     engine.dispose();

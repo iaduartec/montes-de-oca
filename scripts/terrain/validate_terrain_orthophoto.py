@@ -301,12 +301,15 @@ def validate(root: str | Path = PROJECT_ROOT) -> dict:
     # --- schema and required top-level sections -------------------------
     _require(manifest, "schemaVersion", "orthophoto.json", SCHEMA_VERSION)
     asset = _require(manifest, "asset", "orthophoto.json")
+    gltf_asset = _require(manifest, "gltfAsset", "orthophoto.json")
     coverage = _require(manifest, "coverage", "orthophoto.json")
     source = _require(manifest, "source", "orthophoto.json")
     budgets = _require(manifest, "budgets", "orthophoto.json")
     for section, label in ((asset, "asset"), (coverage, "coverage"), (source, "source"), (budgets, "budgets")):
         if not isinstance(section, dict):
             _fail(f"{label} debe ser un objeto en orthophoto.json")
+    if not isinstance(gltf_asset, dict):
+        _fail("gltfAsset debe ser un objeto en orthophoto.json")
 
     # --- asset: URL, MIME, dimensions, bytes, SHA-256 -------------------
     _require(asset, "url", "asset", ATLAS_URL)
@@ -333,6 +336,25 @@ def validate(root: str | Path = PROJECT_ROOT) -> dict:
         )
     if (image_width, image_height) != (ATLAS_PX, ATLAS_PX):
         _fail(f"el atlas debe ser {ATLAS_PX}x{ATLAS_PX}; mide {image_width}x{image_height}")
+
+    gltf_path = public_dir / "3d-tiles" / "tiles" / "orthophoto.jpg"
+    _require(gltf_asset, "url", "gltfAsset", "/terrain/3d-tiles/tiles/orthophoto.jpg")
+    _require(gltf_asset, "mimeType", "gltfAsset", "image/jpeg")
+    if not gltf_path.exists():
+        _fail(f"falta el JPEG externo para glTF: {gltf_path}")
+    gltf_bytes = gltf_path.stat().st_size
+    if gltf_bytes > FILE_BUDGET_BYTES:
+        _fail(f"orthophoto.jpg pesa {gltf_bytes} bytes; excede el límite absoluto de 35 MiB")
+    if gltf_asset.get("bytes") != gltf_bytes:
+        _fail(f"gltfAsset.bytes = {gltf_asset.get('bytes')} no coincide con orthophoto.jpg ({gltf_bytes} bytes)")
+    gltf_sha = _sha256(gltf_path)
+    if gltf_asset.get("sha256") != gltf_sha:
+        _fail("gltfAsset.sha256 no coincide con orthophoto.jpg")
+    if gltf_path.read_bytes()[:2] != b"\xff\xd8":
+        _fail("orthophoto.jpg no tiene cabecera JPEG")
+    jpeg_width, jpeg_height = _image_dimensions(gltf_path)
+    if (jpeg_width, jpeg_height) != (ATLAS_PX, ATLAS_PX):
+        _fail(f"orthophoto.jpg debe ser {ATLAS_PX}x{ATLAS_PX}; mide {jpeg_width}x{jpeg_height}")
 
     # --- coverage: exact CRS, bounds and pixel scale --------------------
     _require(coverage, "crs", "coverage", CRS)
@@ -421,6 +443,8 @@ def validate(root: str | Path = PROJECT_ROOT) -> dict:
         "ok": True,
         "asset": {"url": asset["url"], "mimeType": asset["mimeType"], "width": image_width, "height": image_height,
                    "bytes": actual_bytes, "sha256": actual_sha},
+        "gltfAsset": {"url": gltf_asset["url"], "mimeType": gltf_asset["mimeType"],
+                      "width": jpeg_width, "height": jpeg_height, "bytes": gltf_bytes, "sha256": gltf_sha},
         "coverage": {"crs": coverage["crs"], "eMin": coverage["eMin"], "eMax": coverage["eMax"],
                       "nMin": coverage["nMin"], "nMax": coverage["nMax"], "pixelSizeM": coverage["pixelSizeM"]},
         "source": {"service": source["service"], "layer": source["layer"], "dates": list(dates),
@@ -454,6 +478,8 @@ def main(argv: list[str]) -> int:
         f"[ok] orthophoto.webp {asset['width']}x{asset['height']} {asset['mimeType']} "
         f"{asset['bytes']} bytes sha256={asset['sha256']}"
     )
+    gltf_asset = report["gltfAsset"]
+    print(f"[ok] orthophoto.jpg {gltf_asset['width']}x{gltf_asset['height']} {gltf_asset['bytes']} bytes glTF-compatible")
     print(
         f"[ok] coverage {report['coverage']['crs']} "
         f"E[{report['coverage']['eMin']},{report['coverage']['eMax']}] "

@@ -29,7 +29,7 @@ N = 201
 OVERVIEW_URI = "tiles/overview.glb"
 OVERVIEW_NODES = 151
 OVERVIEW_STEP_M = 40.0
-ORTHOPHOTO_URI = "../../orthophoto.webp"
+ORTHOPHOTO_URI = "orthophoto.jpg"
 
 
 def build_tmp(test: unittest.TestCase) -> Path:
@@ -333,7 +333,7 @@ class TilesBuilderTest(unittest.TestCase):
             images = gltf.get("images", [])
             self.assertEqual(len(images), 1, rel)
             self.assertEqual(images[0]["uri"], ORTHOPHOTO_URI, rel)
-            self.assertEqual(images[0]["mimeType"], "image/webp", rel)
+            self.assertEqual(images[0]["mimeType"], "image/jpeg", rel)
             self.assertNotIn("buffers", json.dumps(images))
             buffers = gltf["buffers"]
             self.assertEqual(len(buffers), 1, rel)
@@ -359,7 +359,7 @@ class TilesBuilderTest(unittest.TestCase):
                 self.assertEqual(vcount, counts[stem], rel)
             else:
                 self.assertEqual(vcount, OVERVIEW_NODES * OVERVIEW_NODES, rel)
-        self.assertTrue((PROJECT_ROOT / "public" / "terrain" / "orthophoto.webp").exists())
+        self.assertTrue((PROJECT_ROOT / "public" / "terrain" / "3d-tiles" / "tiles" / "orthophoto.jpg").exists())
 
     def test_orthophoto_reference_is_external(self) -> None:
         """PNOA atlas is an EXTERNAL image URI; no pixels embedded in GLB."""
@@ -371,10 +371,10 @@ class TilesBuilderTest(unittest.TestCase):
             uri = images[0]["uri"]
             self.assertEqual(uri, ORTHOPHOTO_URI, tid)
             self.assertFalse(uri.startswith("data:"), tid)
-            self.assertEqual(images[0]["mimeType"], "image/webp", tid)
+            self.assertEqual(images[0]["mimeType"], "image/jpeg", tid)
         gltf_o, _ = parse_glb(out / OVERVIEW_URI)
         self.assertEqual(gltf_o["images"][0]["uri"], ORTHOPHOTO_URI)
-        self.assertTrue((PROJECT_ROOT / "public" / "terrain" / "orthophoto.webp").exists())
+        self.assertTrue((PROJECT_ROOT / "public" / "terrain" / "3d-tiles" / "tiles" / "orthophoto.jpg").exists())
 
     def test_check_mode_is_deterministic(self) -> None:
         """Two derivations produce identical bytes/hashes (stable --check)."""

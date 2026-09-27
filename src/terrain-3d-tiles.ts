@@ -11,8 +11,9 @@ export interface TerrainTilesError {
 }
 
 export interface TerrainTilesEvent {
+  scene?: TransformNode;
   tile?: { content?: { uri?: string } };
-  url?: string;
+  url?: string | URL;
   error?: unknown;
 }
 
@@ -32,6 +33,7 @@ export interface TerrainTilesOptions {
   rendererFactory: TerrainTilesRendererFactory;
   url?: string;
   onError?: (error: TerrainTilesError) => void;
+  onModelLoaded?: (event: TerrainTilesEvent) => void;
 }
 
 export interface TerrainTilesStats {
@@ -65,13 +67,15 @@ export function createTerrain3DTiles(scene: Scene, camera: Camera, options: Terr
     options.onError?.(lastError);
   }
 
-  const onLoadModel = () => {
-    if (status !== 'disposed') status = 'ready';
+  const onLoadModel = (event: TerrainTilesEvent) => {
+    if (status === 'disposed') return;
+    status = 'ready';
+    options.onModelLoaded?.(event);
   };
   const onLoadError = (event: TerrainTilesEvent) => {
     if (status === 'disposed') return;
     const tileId = event.tile?.content?.uri ?? null;
-    const url = event.url ?? null;
+    const url = event.url === undefined ? null : String(event.url);
     const reason = event.error instanceof Error ? event.error.message : String(event.error ?? 'unknown error');
     const error: TerrainTilesError = {
       tileId,
@@ -80,7 +84,7 @@ export function createTerrain3DTiles(scene: Scene, camera: Camera, options: Terr
       cause: event.error,
     };
     lastError = error;
-    if (status === 'loading') status = 'error';
+    status = 'error';
     console.error(`[terrain-3d-tiles] ${error.message}`);
     options.onError?.(error);
   };

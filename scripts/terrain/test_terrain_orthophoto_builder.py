@@ -120,6 +120,14 @@ def test_manifest_hash_source_and_budgets() -> None:
     assert manifest["asset"]["mimeType"] == "image/webp"
     assert manifest["asset"]["bytes"] == len(data), "asset bytes must match file"
     assert manifest["asset"]["sha256"] == hashlib.sha256(data).hexdigest(), "asset sha256 must match file"
+    gltf_path = PUBLIC_DIR / "3d-tiles" / "tiles" / "orthophoto.jpg"
+    gltf_data = gltf_path.read_bytes()
+    gltf_asset = manifest["gltfAsset"]
+    assert gltf_asset["url"] == "/terrain/3d-tiles/tiles/orthophoto.jpg"
+    assert gltf_asset["mimeType"] == "image/jpeg"
+    assert gltf_asset["bytes"] == len(gltf_data)
+    assert gltf_asset["sha256"] == hashlib.sha256(gltf_data).hexdigest()
+    assert len(gltf_data) <= FILE_BUDGET_BYTES
     assert len(data) <= FILE_BUDGET_BYTES, f"WebP {len(data)} bytes exceeds 35 MiB"
     w, h = manifest["asset"]["width"], manifest["asset"]["height"]
     decoded = w * h * 4
@@ -148,6 +156,10 @@ def test_check_rederives_identical_webp() -> None:
     manifest = json.loads((PUBLIC_DIR / "orthophoto.json").read_text(encoding="utf-8"))
     assert hashlib.sha256(first).hexdigest() == manifest["asset"]["sha256"]
     assert len(first) == manifest["asset"]["bytes"]
+    jpeg1 = B.derive_gltf_jpeg_bytes()
+    jpeg2 = B.derive_gltf_jpeg_bytes()
+    assert jpeg1 == jpeg2, "glTF JPEG derivative must be byte-deterministic"
+    assert hashlib.sha256(jpeg1).hexdigest() == manifest["gltfAsset"]["sha256"]
     proc = subprocess.run(
         [sys.executable, str(SCRIPTS_TERRAIN / "build_terrain_orthophoto.py"), "--check"],
         capture_output=True,

@@ -38,6 +38,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_DIR = PROJECT_ROOT / "data" / "terrain" / "raw" / "pnoa_orthophoto"
 PUBLIC_DIR = PROJECT_ROOT / "public" / "terrain"
 WEBP_PATH = PUBLIC_DIR / "orthophoto.webp"
+GLTF_JPEG_PATH = PUBLIC_DIR / "3d-tiles" / "tiles" / "orthophoto.jpg"
 MANIFEST_PATH = PUBLIC_DIR / "orthophoto.json"
 
 CRS = "EPSG:25830"
@@ -53,6 +54,7 @@ SCHEMA_VERSION = 1
 # Fixed encoder settings: deterministic output for identical inputs.
 WEBP_QUALITY = 82
 WEBP_METHOD = 4
+GLTF_JPEG_QUALITY = 90
 
 FILE_BUDGET_BYTES = 35 * 1024 * 1024
 DECODED_BUDGET_BYTES = 200 * 1024 * 1024
@@ -142,11 +144,34 @@ def encode_webp(atlas) -> bytes:
     return buf.getvalue()
 
 
+def encode_gltf_jpeg(atlas) -> bytes:
+    """Deterministic JPEG twin for core glTF loaders (external GLB atlas)."""
+    import io
+
+    buf = io.BytesIO()
+    atlas.save(
+        buf,
+        format="JPEG",
+        quality=GLTF_JPEG_QUALITY,
+        subsampling=2,
+        optimize=False,
+        progressive=False,
+    )
+    return buf.getvalue()
+
+
 def derive_atlas_bytes() -> bytes:
     """Full offline derivation: load pinned quadrants -> assemble -> encode."""
     quads = {name: load_quadrant(name) for name in QUADRANT_ORDER}
     atlas = assemble_atlas(quads["nw"], quads["ne"], quads["sw"], quads["se"])
     return encode_webp(atlas)
+
+
+def derive_gltf_jpeg_bytes() -> bytes:
+    """Derive a JPEG from the same pinned original PNOA quadrants."""
+    quads = {name: load_quadrant(name) for name in QUADRANT_ORDER}
+    atlas = assemble_atlas(quads["nw"], quads["ne"], quads["sw"], quads["se"])
+    return encode_gltf_jpeg(atlas)
 
 
 def decoded_budgets(width: int, height: int) -> dict:
@@ -160,7 +185,7 @@ def decoded_budgets(width: int, height: int) -> dict:
     }
 
 
-def build_manifest(webp_bytes: bytes) -> dict:
+def build_manifest(webp_bytes: bytes, gltf_jpeg_bytes: bytes | None = None) -> dict:
     src_manifest = load_source_manifest()
     src_bytes = (SOURCE_DIR / "source_manifest.json").read_bytes()
     centers = src_manifest.get("tile_centers", [])
@@ -180,6 +205,14 @@ def build_manifest(webp_bytes: bytes) -> dict:
             "height": ATLAS_PX,
             "bytes": len(webp_bytes),
             "sha256": hashlib.sha256(webp_bytes).hexdigest(),
+        },
+        "gltfAsset": {
+            "url": "/terrain/3d-tiles/tiles/orthophoto.jpg",
+            "mimeType": "image/jpeg",
+            "bytes": len(gltf_jpeg_bytes) if gltf_jpeg_bytes is not None else None,
+            "sha256": hashlib.sha256(gltf_jpeg_bytes).hexdigest() if gltf_jpeg_bytes is not None else None,
+            "quality": GLTF_JPEG_QUALITY,
+            "note": "JPEG derivative of the same pinned PNOA quadrants for core glTF compatibility.",
         },
         "coverage": {
             "crs": CRS,
@@ -230,16 +263,23 @@ def build_manifest(webp_bytes: bytes) -> dict:
 
 
 def write_outputs() -> dict:
-    webp_bytes = derive_atlas_bytes()
-    manifest = build_manifest(webp_bytes)
+    quads = {name: load_quadrant(name) for name in QUADRANT_ORDER}
+    atlas = assemble_atlas(quads["nw"], quads["ne"], quads["sw"], quads["se"])
+    webp_bytes = encode_webp(atlas)
+    gltf_jpeg_bytes = encode_gltf_jpeg(atlas)
+    manifest = build_manifest(webp_bytes, gltf_jpeg_bytes)
     PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+    GLTF_JPEG_PATH.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix="orthophoto-stage-", dir=str(PUBLIC_DIR)))
     try:
         (staging / "orthophoto.webp").write_bytes(webp_bytes)
+        (staging / "orthophoto.jpg").write_bytes(gltf_jpeg_bytes)
         text = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
         (staging / "orthophoto.json").write_text(text, encoding="utf-8")
         Path(f"{staging / 'orthophoto.webp'}").replace(WEBP_PATH)
+        Path(f"{staging / 'orthophoto.jpg'}").replace(GLTF_JPEG_PATH)
         Path(f"{staging / 'orthophoto.json'}").replace(MANIFEST_PATH)
+        (PUBLIC_DIR / "orthophoto.jpg").unlink(missing_ok=True)
     finally:
         import shutil
 
@@ -248,8 +288,8 @@ def write_outputs() -> dict:
 
 
 def check_outputs() -> int:
-    if not WEBP_PATH.exists() or not MANIFEST_PATH.exists():
-        print("[error] faltan public/terrain/orthophoto.webp u orthophoto.json; ejecuta el builder sin --check", file=sys.stderr)
+    if not WEBP_PATH.exists() or not GLTF_JPEG_PATH.exists() or not MANIFEST_PATH.exists():
+        print("[error] faltan orthophoto.webp, orthophoto.jpg u orthophoto.json; ejecuta el builder sin --check", file=sys.stderr)
         return 1
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     published = WEBP_PATH.read_bytes()
@@ -262,11 +302,22 @@ def check_outputs() -> int:
             file=sys.stderr,
         )
         return 1
+    published_jpeg = GLTF_JPEG_PATH.read_bytes()
+    rederived_jpeg = derive_gltf_jpeg_bytes()
+    if rederived_jpeg != published_jpeg:
+        print("[error] el JPEG glTF re-derivado difiere del publicado", file=sys.stderr)
+        return 1
     if manifest.get("asset", {}).get("sha256") != hashlib.sha256(published).hexdigest():
         print("[error] el manifiesto no coincide con orthophoto.webp publicado", file=sys.stderr)
         return 1
     if manifest.get("asset", {}).get("bytes") != len(published):
         print("[error] bytes del manifiesto no coinciden con orthophoto.webp", file=sys.stderr)
+        return 1
+    if manifest.get("gltfAsset", {}).get("sha256") != hashlib.sha256(published_jpeg).hexdigest():
+        print("[error] el manifiesto no coincide con orthophoto.jpg", file=sys.stderr)
+        return 1
+    if manifest.get("gltfAsset", {}).get("bytes") != len(published_jpeg):
+        print("[error] bytes del manifiesto no coinciden con el JPEG para glTF", file=sys.stderr)
         return 1
     print(
         f"[ok] --check identical: {len(published)} bytes "
