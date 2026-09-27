@@ -43,6 +43,12 @@ SPAWN = (3087.53, 3935.05)
 FALDON_M = 1.5
 MIN_LIDAR_SAMPLES = 4
 GABLE_ELONGATION = 1.35
+# Roof-shape override justified by the dated, georeferenced PNOA 2023
+# orthophoto (see assets/environment/real-structures/evidence.json). These two
+# near-square Calle Mayor row houses carry a long two-slope gable roof in the
+# image; the isotropic elongation heuristic would otherwise pick the compact
+# hip/pyramid that visibly disagrees with the photograph.
+PNOA_GABLE_IDS = frozenset({474364247, 474364248})
 BODY_COLOR = {
     'piedra': (0.50, 0.46, 0.40),
     'revoco': (0.82, 0.76, 0.66),
@@ -100,6 +106,11 @@ def principal_axis(points):
     return (cx, cz), (ux, uz), half_u, half_v
 
 
+def roof_is_gable(building_id, half_u, half_v):
+    """Two-slope gable decision: PNOA-observed override or elongated footprint."""
+    return building_id in PNOA_GABLE_IDS or (half_v > 0.5 and half_u / half_v >= GABLE_ELONGATION)
+
+
 def inside_polygon(points, x, z):
     inside = False
     j = len(points) - 1
@@ -140,7 +151,7 @@ def lidar_wall_height(building, grid, values, terrain_config):
         return None, len(samples), None
     roof_height = samples[math.floor((len(samples) - 1) * 0.95)]
     _, _, half_u, half_v = principal_axis(points)
-    gable = half_v > 0.5 and half_u / half_v >= GABLE_ELONGATION
+    gable = roof_is_gable(building['id'], half_u, half_v)
     roof_rise = min(max(0.5 * half_v, 0.4), 3) if gable else 0
     wall_height = roof_height - roof_rise
     if wall_height < 2 or wall_height > 60:
@@ -318,7 +329,7 @@ def build_building(building, tags, terrain_samplers, terrain_config, lidar_grid,
     area = abs(signed_area(points))
     axis = principal_axis(points)
     _, _, half_u, half_v = axis
-    elongated = half_v > 0.5 and half_u / half_v >= GABLE_ELONGATION
+    elongated = roof_is_gable(building['id'], half_u, half_v)
     height, lidar_samples, lidar_roof = lidar_wall_height(building, lidar_grid, lidar_values, terrain_config)
     if height is None:
         height = building['heightM']
@@ -499,6 +510,7 @@ def main():
         source_objects.append(obj)
         triangles = sum(len(face) - 2 for face in geometry.faces)
         triangle_count += triangles
+        _, (ux, uz), half_u, half_v = principal_axis([tuple(point) for point in building['footprint']])
         records.append({
             'osmWayId': osm_id,
             'building': tags.get('building'),
@@ -511,6 +523,8 @@ def main():
             'lidarRoofP95M': lidar_roof,
             'bodyKindHeuristic': building['materialKind'],
             'roofKindHeuristic': building['roofKind'],
+            'roofShape': 'gable' if roof_is_gable(osm_id, half_u, half_v) else 'hip',
+            'ridgeAzimuthDeg': round(math.degrees(math.atan2(uz, ux)), 1),
             'facadeTreatment': 'reconstruccion estilizada aproximada',
             'triangles': triangles,
         })
