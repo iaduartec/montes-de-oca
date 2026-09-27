@@ -300,6 +300,8 @@ interface DebugApi {
     preset(): string;
     /** Cambia a un id del catálogo, lo persiste y devuelve false si no existe o no se puede. */
     setPreset(id: string): boolean;
+    /** Recupera una moto caída; false para cuatro ruedas o si no hay apoyo válido. */
+    recover(): boolean;
     step(seconds: number, dt?: number): void;
     reset(): void;
   } | null;
@@ -1374,6 +1376,10 @@ async function bootstrap(): Promise<void> {
         },
         preset: () => currentVehicleId,
         setPreset: (id: string) => cambiarVehiculo(id),
+        recover: () => {
+          const active = vehicleRef!.current as VehicleActor & { recover?: () => boolean };
+          return active.recover ? active.recover() : false;
+        },
         step: (seconds: number, dt = 1 / 60) => {
           manualStep = true;
           const steps = Math.max(1, Math.round(seconds / dt));

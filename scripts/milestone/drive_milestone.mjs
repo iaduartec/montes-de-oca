@@ -465,16 +465,33 @@ async function main() {
       await cdp.send('Network.setBlockedURLs', { urls: ['*vegetation/vegetation.json*'] });
     }
 
+    // El primer arranque puede abortar una carga por la red del entorno (pasa
+    // también en el baseline). Si el cuerpo muestra ese ERROR, se reintenta una vez.
+    const probeApi = '!!(window.__game && window.__game.route && window.__game.player && window.__game.mission && window.__game.vehicle)';
+    const waitApi = async () => {
+      for (let i = 0; i < 120; i++) {
+        await wait(1000);
+        try {
+          if (await cdp.evaluate(probeApi)) return true;
+        } catch {
+          // la página aún no responde: se sigue esperando
+        }
+      }
+      return false;
+    };
     log(`navegando a ${BASE}/ (personaje + misión)`);
-    await cdp.send('Page.navigate', { url: `${BASE}/` });
-
-    // 1. Espera de API de depuración.
     let ready = false;
-    for (let i = 0; i < 120 && !ready; i++) {
-      await wait(1000);
-      try {
-        ready = await cdp.evaluate('!!(window.__game && window.__game.route && window.__game.player && window.__game.mission && window.__game.vehicle)');
-      } catch { ready = false; }
+    for (let attempt = 0; attempt < 2 && !ready; attempt++) {
+      const errorsBefore = cdp.errors.length;
+      await cdp.send('Page.navigate', { url: `${BASE}/` });
+      ready = await waitApi();
+      if (!ready && attempt === 0) {
+        const aborted = await cdp.evaluate("document.body.innerText.includes('ERROR\\nFailed to fetch')").catch(() => false);
+        if (!aborted) break;
+        // El intento abortado no es la app que se mide: sus errores se descartan.
+        cdp.errors.length = errorsBefore;
+        log('carga abortada en el primer arranque; se reintenta una vez');
+      }
     }
     if (!ready) {
       const partial = await cdp.evaluate('Object.keys(window.__game || {})').catch(() => null);

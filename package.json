@@ -27,6 +27,7 @@
     "test:vehicle-presets": "node scripts/vehicle/validate_presets.mjs",
     "test:vehicle-catalog": "node scripts/vehicle/validate_catalog.mjs",
     "test:vehicle-switch": "node scripts/vehicle/validate_switch.mjs",
+    "drive:vehicle-catalog": "node scripts/vehicle/drive_catalog.mjs",
     "test:vehicle-selector": "node scripts/vehicle/validate_selector.mjs",
     "test:vehicle-models": "node scripts/vehicle/validate_models.mjs",
     "test:minimap": "node scripts/ui/validate_minimap.mjs",
