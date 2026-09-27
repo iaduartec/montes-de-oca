@@ -14,15 +14,15 @@ export interface VehiclePreset {
 export const VEHICLE_PRESETS: readonly VehiclePreset[] = [
   {
     id: 'estandar',
-    name: 'Estándar',
-    summary: 'Carrocería rural corta con baca y defensa.',
+    name: 'Mitsubishi Montero V20',
+    summary: 'Montero V20 corto 3 puertas: volumen alto, techo recto y repuesto trasera.',
     visual: 'estandar',
     params: {},
   },
   {
     id: 'patrulla',
-    name: 'Patrulla',
-    summary: 'Carrocería clara con baliza de servicio.',
+    name: 'Nissan Patrol GR Y61',
+    summary: 'Patrol GR Y61 5 puertas: largo y cuadrado, techo alto y guardabarros anchos.',
     visual: 'patrulla',
     params: {
       mass: 1200,
@@ -34,8 +34,8 @@ export const VEHICLE_PRESETS: readonly VehiclePreset[] = [
   },
   {
     id: 'carga',
-    name: 'Carga',
-    summary: 'Caja trasera abierta con carga visible.',
+    name: 'Jeep Wrangler TJ',
+    summary: 'Wrangler TJ 2 puertas: frontal vertical, parrilla de 7 ranuras y repuesto exterior.',
     visual: 'carga',
     params: {
       mass: 2400,

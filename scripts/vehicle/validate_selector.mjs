@@ -9,7 +9,7 @@
 //      desde `VEHICLE_CATALOG` (sin <img: no hay miniaturas falsas);
 //   4. `src/main.ts` cablea KeyV y el cambio atómico (`cambiarVehiculo`) para la UI
 //      y la API de depuración, y las tres ayudas de teclas mencionan V;
-//   5. el catálogo tiene 8 ids únicos en 3 categorías (4/2/2).
+//   5. el catálogo tiene 8 ids únicos en 3 categorías (3/3/2).
 //
 // Uso: node scripts/vehicle/validate_selector.mjs
 import { readFileSync } from 'node:fs';
@@ -76,7 +76,7 @@ const counts = definitions.reduce((acc, definition) => {
   acc[definition.category] = (acc[definition.category] ?? 0) + 1;
   return acc;
 }, {});
-check('3 grupos: 4 todoterrenos, 2 coches, 2 motos', JSON.stringify(counts) === JSON.stringify({ todoterreno: 4, coche: 2, moto: 2 }), JSON.stringify(counts));
+check('3 grupos: 3 todoterrenos, 3 coches, 2 motos', JSON.stringify(counts) === JSON.stringify({ todoterreno: 3, coche: 3, moto: 2 }), JSON.stringify(counts));
 check('default estandar presente', ids.includes(catalog.DEFAULT_VEHICLE_ID), catalog.DEFAULT_VEHICLE_ID);
 
 if (failures.length > 0) {

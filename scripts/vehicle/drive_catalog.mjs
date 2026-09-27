@@ -329,8 +329,9 @@ async function main() {
     );
 
     // ---- G. capturas por categoría (hasta 3) ----
+    // 4x4: estandar (Mitsubishi Montero) · coche: turismo (Audi A4) · moto: trail (Honda).
     const shots = [
-      { id: 'explorador', file: '01_todoterreno.png' },
+      { id: 'estandar', file: '01_todoterreno.png' },
       { id: 'turismo', file: '02_coche.png' },
       { id: 'trail', file: '03_moto.png' },
     ];

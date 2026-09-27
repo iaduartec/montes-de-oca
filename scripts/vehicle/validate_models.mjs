@@ -22,6 +22,11 @@ for (const marker of [
 ]) {
   if (!model.includes(marker)) throw new Error(`Falta en model.ts: ${marker}`);
 }
+// Silueta legible desde juego normal: cuñas de capó/cabina/baúl (slopedBox),
+// ancho atado a tamaño y pisada (catalogBodyWidth) y guardabarros por rueda.
+for (const marker of ['slopedBox', 'catalogBodyWidth', 'arch-f-', 'arch-r-', 'frontDrop']) {
+  if (!model.includes(marker)) throw new Error(`Falta geometría en model.ts: ${marker}`);
+}
 // El selector construye cada vehículo desde el catálogo y lo cambia por el camino
 // atómico (`switch`): ya no se muta la apariencia de un actor fijo en `main.ts`.
 if (!integration.includes('cambiarVehiculo')) throw new Error('main.ts no cablea el cambio de vehículo');
@@ -37,6 +42,8 @@ const bundle = async (entry) => (await build({
 })).outputFiles[0].contents;
 const actorModule = await import(`data:text/javascript;base64,${Buffer.from(await bundle('src/vehicle/four-wheel.ts')).toString('base64')}`);
 const catalogModule = await import(`data:text/javascript;base64,${Buffer.from(await bundle('src/vehicle/catalog.ts')).toString('base64')}`);
+const physicsModule = await import(`data:text/javascript;base64,${Buffer.from(await bundle('src/vehicle/physics.ts')).toString('base64')}`);
+const DEFAULTS = physicsModule.DEFAULT_VEHICLE_PARAMS;
 const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine.js');
 const { Scene } = await import('@babylonjs/core/scene.js');
 const expectedParams = {
@@ -47,9 +54,45 @@ const expectedParams = {
   rally: { mass: 1250, wheelBase: 2.55 },
 };
 const silhouettes = new Set();
+const signatures = new Map();
 const engine = new NullEngine();
 const scene = new Scene(engine);
 const terrain = { heightAt: () => 0, normalAt: () => ({ x: 0, y: 1, z: 0 }), sampleSurface: () => ({ height: 0, normal: { x: 0, y: 1, z: 0 } }) };
+// Firma geométrica real: no depende del name, sino de la geometría fusionada
+// (vértices cuantizados a 5 mm + bbox + triángulos). Reutilizar la misma caja
+// con otro color da la misma firma y falla.
+function geometricSignature(root) {
+  const meshes = root.getChildMeshes().filter((mesh) => !mesh.name.startsWith('vehicle:wheel-') && !mesh.name.startsWith('vehicle:hub-cap-'));
+  let triangles = 0;
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  let checksum = 0;
+  for (const mesh of meshes) {
+    const positions = mesh.getVerticesData('position') ?? [];
+    const indices = mesh.getIndices() ?? [];
+    triangles += indices.length / 3;
+    for (let i = 0; i < positions.length; i += 3) {
+      const qx = Math.round(positions[i] * 200);
+      const qy = Math.round(positions[i + 1] * 200);
+      const qz = Math.round(positions[i + 2] * 200);
+      // Suma ponderada por posición local del mesh para captar perfil/cabina/frontal/trasera.
+      const lx = Math.round(mesh.position.x * 200);
+      const lz = Math.round(mesh.position.z * 200);
+      checksum = (checksum + qx * 31 + qy * 131 + qz * 17 + lx * 7 + lz * 13 + i) | 0;
+      const wx = positions[i] + mesh.position.x;
+      const wy = positions[i + 1] + mesh.position.y;
+      const wz = positions[i + 2] + mesh.position.z;
+      if (wx < minX) minX = wx;
+      if (wy < minY) minY = wy;
+      if (wz < minZ) minZ = wz;
+      if (wx > maxX) maxX = wx;
+      if (wy > maxY) maxY = wy;
+      if (wz > maxZ) maxZ = wz;
+    }
+  }
+  const bbox = [minX, minY, minZ, maxX, maxY, maxZ].map((v) => v.toFixed(2)).join(',');
+  return `tri=${triangles}|bbox=${bbox}|sum=${checksum}`;
+}
 for (const definition of catalogModule.VEHICLE_CATALOG.filter((entry) => entry.category !== 'moto')) {
   const beforeMeshes = scene.meshes.length;
   const beforeMaterials = scene.materials.length;
@@ -72,14 +115,42 @@ for (const definition of catalogModule.VEHICLE_CATALOG.filter((entry) => entry.c
   const body = vehicle.root.getChildMeshes().find((mesh) => mesh.name.startsWith('vehicle:body-'));
   assert.ok(body, `${definition.id} body`);
   silhouettes.add(body.name);
+  const signature = geometricSignature(vehicle.root);
+  assert.ok(!signatures.has(signature), `${definition.id} silhouette collides geometrically with ${signatures.get(signature)} (same box reused?)`);
+  signatures.set(signature, definition.id);
   const activeMeshes = scene.meshes.length - beforeMeshes;
   const triangles = vehicle.root.getChildMeshes().reduce((sum, mesh) => sum + (mesh.getTotalIndices() / 3), 0);
-  console.log(`${definition.id}: meshes=${activeMeshes} triangles=${triangles}`);
+  console.log(`${definition.id}: meshes=${activeMeshes} triangles=${triangles} sig=${signature.slice(0, 80)}`);
+  // Ruedas con volumen: tapacubos presentes y pisada (ancho de rueda > 0.2).
+  const hubCaps = vehicle.root.getChildMeshes().filter((mesh) => mesh.name.startsWith('vehicle:hub-cap-'));
+  assert.equal(hubCaps.length, 4, `${definition.id} hubcaps`);
+  // Geometría atada a tamaño y pisada (bbox real de la firma):
+  // la carrocería cubre el exterior del neumático sin pasarse del tamaño
+  // (efecto kart), llega a los ejes y no pierde la cabina ni el techo.
+  const merged = { ...DEFAULTS, ...definition.params };
+  const halfTrack = merged.track / 2;
+  const axle = merged.wheelBase / 2;
+  const [minX, , minZ, maxX, maxY, maxZ] = signature.split('|')[1].slice(5).split(',').map(Number);
+  assert.ok(maxX >= halfTrack + 0.16 - 0.03, `${definition.id} body covers outer tyre`);
+  assert.ok(maxX <= definition.bodySize.widthM / 2 + 0.16, `${definition.id} width tied to size`);
+  assert.ok(maxZ >= axle + merged.wheelRadius - 0.05, `${definition.id} nose reaches front axle`);
+  assert.ok(minZ <= -axle, `${definition.id} tail reaches rear axle`);
+  assert.ok(maxY <= definition.bodySize.heightM + 0.12, `${definition.id} height tied to size`);
+  assert.ok(maxY >= definition.bodySize.heightM * 0.6, `${definition.id} cabin present`);
+  // Fusión por material: sin llamadas ni triángulos de más.
+  assert.ok(activeMeshes <= 16, `${definition.id} mesh budget`);
+  assert.ok(triangles < 1600, `${definition.id} triangle budget`);
   vehicle.dispose();
   assert.equal(scene.meshes.length, beforeMeshes, `${definition.id} disposes meshes`);
   assert.equal(scene.materials.length, beforeMaterials, `${definition.id} disposes materials`);
 }
 assert.equal(silhouettes.size, 6, 'six distinct active silhouettes');
+assert.equal(signatures.size, 6, 'six geometrically distinct silhouettes (profile/cabin/front/rear)');
+// Explorador ya es coche: 3 todoterrenos + 3 coches en el adapter.
+assert.deepEqual(
+  catalogModule.VEHICLE_CATALOG.filter((entry) => entry.category !== 'moto').map((entry) => `${entry.id}:${entry.category}`).sort(),
+  ['carga:todoterreno', 'estandar:todoterreno', 'explorador:coche', 'patrulla:todoterreno', 'rally:coche', 'turismo:coche'].sort(),
+);
 const legacy = actorModule.createVehicle({ scene, terrain, spawn: { x: 0, z: 0 } });
 legacy.setAppearance('patrulla');
 assert.equal(legacy.root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:variant-patrulla').isEnabled(), true);
