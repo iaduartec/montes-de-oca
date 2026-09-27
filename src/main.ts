@@ -1,6 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
+import { Ray } from '@babylonjs/core/Culling/ray';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color4 } from '@babylonjs/core/Maths/math.color';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
@@ -1047,6 +1048,25 @@ async function bootstrap(): Promise<void> {
    * pie: son dos encuadres distintos porque el ojo está a otra altura y a otra
    * distancia. Con el mismo encuadre, el personaje tapa media pantalla.
    */
+  const cameraOccluders = new Set(scene.meshes.filter((mesh) =>
+    mesh.isPickable && (
+      mesh.name.startsWith('pueblo:cuerpo:') ||
+      mesh.name.startsWith('pueblo:tejado:') ||
+      mesh.name === 'pueblo:detalle' ||
+      mesh.name === 'pueblo:piloto:casas'
+    ),
+  ));
+  const cameraHit = (from: Vector3, to: Vector3) => {
+    const offset = to.subtract(from);
+    const length = offset.length();
+    return length > 0
+      ? scene.pickWithRay(
+        new Ray(from, offset.scale(1 / length), length),
+        (mesh) => cameraOccluders.has(mesh),
+      )
+      : null;
+  };
+
   const updateChaseCamera = (dt: number): void => {
     const active = activeVehicle();
     if (!active) return;
@@ -1066,12 +1086,61 @@ async function bootstrap(): Promise<void> {
     const lookAhead = walking ? 1.6 : 1.8;
     const lookHeight = walking ? 1.5 : 0.85;
 
+    const cameraAnchor = new Vector3(body.x, body.y + lookHeight, body.z);
     const desired = new Vector3(body.x - fx * distance, body.y + height, body.z - fz * distance);
     // La pista trepa 21,8°: sin este tope la cámara queda enterrada en la ladera y la
     // pantalla se llena de terreno (la persecución no tiene colisión propia).
     desired.y = Math.max(desired.y, terrain.heightAt(desired.x, desired.z) + 0.7);
+    const side = new Vector3(fz, 0, -fx);
+    const cameraSight = (candidate: Vector3) => [-1.2, 0, 1.2].map((offset) =>
+      cameraHit(cameraAnchor.add(side.scale(offset)), candidate),
+    );
+    let chosen = desired;
+    let hit = cameraHit(cameraAnchor, desired);
+    if (hit?.hit) {
+      let bestBlockedDistance = hit.distance ?? 0;
+      let clear = false;
+      const backDistances = [distance, distance * 0.72, distance * 0.48];
+      const sideOffsets = [0, -2.5, 2.5, -5, 5, -7.5, 7.5, -10, 10];
+      search: for (const backDistance of backDistances) {
+        for (const sideOffset of sideOffsets) {
+          if (backDistance === distance && sideOffset === 0) continue;
+          const candidate = new Vector3(
+            body.x - fx * backDistance + side.x * sideOffset,
+            body.y + height + (sideOffset === 0 ? 0 : 2),
+            body.z - fz * backDistance + side.z * sideOffset,
+          );
+          candidate.y = Math.max(candidate.y, terrain.heightAt(candidate.x, candidate.z) + 0.7);
+          const candidateHits = cameraSight(candidate);
+          const blockedHits = candidateHits.filter((candidateHit) => candidateHit?.hit);
+          if (blockedHits.length === 0) {
+            chosen = candidate;
+            hit = null;
+            clear = true;
+            break search;
+          }
+          const clearance = Math.min(...blockedHits.map((candidateHit) => candidateHit?.distance ?? 0));
+          if (clearance > bestBlockedDistance) {
+            bestBlockedDistance = clearance;
+            if (candidateHits[1]?.hit) {
+              chosen = candidate;
+              hit = candidateHits[1];
+            }
+          }
+        }
+      }
+      if (!clear && hit?.hit && hit.pickedPoint) {
+        const offset = chosen.subtract(cameraAnchor);
+        const length = offset.length();
+        // Never place the camera inside the vehicle while the street is occluded.
+        const safeDistance = Math.max(3.2, Vector3.Distance(cameraAnchor, hit.pickedPoint) - 0.45);
+        chosen = cameraAnchor.add(offset.scale(safeDistance / length));
+      }
+    }
     const k = 1 - Math.exp(-dt * (walking ? 7 : 5));
-    camera.position = Vector3.Lerp(camera.position, desired, k);
+    camera.position = cameraHit(cameraAnchor, camera.position)?.hit
+      ? chosen
+      : Vector3.Lerp(camera.position, chosen, k);
     // El lerp puede acercar la cámara a una ladera ya atravesada: se sostiene la cota
     // mínima también sobre la pose actual.
     const cotaMinima = terrain.heightAt(camera.position.x, camera.position.z) + 0.5;

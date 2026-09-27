@@ -1618,7 +1618,11 @@ function createMesh(scene: Scene, name: string, group: GroupBuffers, material: S
   vertexData.applyToMesh(mesh, false);
   mesh.useVertexColors = true;
   mesh.material = material;
-  mesh.isPickable = false;
+  // Queried by the chase camera's filtered occlusion ray; no pointer selection
+  // is used by the game.
+  mesh.isPickable = name.startsWith('pueblo:cuerpo:') ||
+    name.startsWith('pueblo:tejado:') ||
+    name === 'pueblo:detalle';
   mesh.receiveShadows = true;
   mesh.freezeWorldMatrix();
   return mesh;
@@ -1757,7 +1761,8 @@ export async function loadVillage(
         mesh.refreshBoundingInfo(true);
         mesh.computeWorldMatrix(true);
         mesh.name = 'pueblo:piloto:casas';
-        mesh.isPickable = false;
+        // The chase camera needs to see the imported village shells as occluders.
+        mesh.isPickable = true;
         mesh.checkCollisions = false;
       }
       pilotContainer.addAllToScene();

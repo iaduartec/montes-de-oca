@@ -46,6 +46,9 @@ const LOG_PREFIX = '[milestone]';
 // Los valores de diseño del bucle salen de src/gameplay/mission.ts (no se
 // adivinan): reachRadiusM = 25, repairSeconds = 2. Se leen del snapshot real.
 const ASSUMED_REACH_RADIUS_M = 25;
+// El arnés mueve cientos de metros en una llamada síncrona. Deja que la cámara
+// real alcance al jugador antes de guardar la evidencia visual.
+const CAPTURE_SETTLE_MS = 5000;
 
 function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -577,7 +580,7 @@ async function main() {
       report.metricas[label] = r;
       if (r.reason === 'stuck') stuckSegment = { label, r };
       if (shotName) {
-        await wait(1400);
+        await wait(CAPTURE_SETTLE_MS);
         await cdp.screenshot(resolve(OUT_DIR, shotName));
         report.capturas.push(shotName);
       }
@@ -612,10 +615,12 @@ async function main() {
     const exitCar = await cdp.evaluate(`(function () { var g = window.__game; g.player.step(0.2, 1/60); return { mode: g.player.mode(), distObj: g.mission.snapshot().distanceToTargetM, canEnter: g.player.telemetry().canEnter }; })()`);
     check('FASE F: baja del 4x4 -> on-foot', exitCar.mode === 'on-foot', exitCar, "mode='on-foot'");
 
-    const walked = await cdp.evaluate(`window.__harness.walk({ x: ${tgt.x}, z: ${tgt.z}, stopDist: 3.5, maxSim: 60, run: true })`);
+    // El punto de reparación está junto al armario y fuera de la losa/mástil.
+    // Queda dentro del radio real de interacción (6 m) sin atravesar la estructura.
+    const walked = await cdp.evaluate(`window.__harness.walk({ x: ${tgt.x}, z: ${tgt.z}, stopDist: 5.2, maxSim: 60, run: true })`);
     report.caminata = walked;
-    check('FASE F: caminando entra en el radio del objetivo', walked.mission.distanceToTargetM <= ASSUMED_REACH_RADIUS_M, +walked.mission.distanceToTargetM.toFixed(2), `<= ${ASSUMED_REACH_RADIUS_M}`);
-    await wait(1200);
+    check('FASE F: caminando queda en el radio real del repetidor', walked.mission.distanceToTargetM <= 6, +walked.mission.distanceToTargetM.toFixed(2), '<= 6 m');
+    await wait(CAPTURE_SETTLE_MS);
     await cdp.screenshot(resolve(OUT_DIR, '06_interaction.png'));
     report.capturas.push('06_interaction.png');
 
@@ -645,7 +650,7 @@ async function main() {
     report.metricas = report.metricas || {};
     report.metricas.return = rReturn;
     log(`tramo regreso: ${rReturn.reason} en ${rReturn.simSeconds.toFixed(1)} s sim · s=${rReturn.projS.toFixed(0)}/${rReturn.trackTotal.toFixed(0)} · estado=${rReturn.missionState} · d_vuelta=${rReturn.distanceToReturnM.toFixed(0)} m`);
-    await wait(1400);
+    await wait(CAPTURE_SETTLE_MS);
     await cdp.screenshot(resolve(OUT_DIR, '07_return.png'));
     report.capturas.push('07_return.png');
 
