@@ -244,29 +244,68 @@ def make_plaza(collection, road, source):
 
 
 def make_dam(collection, raw):
-    """Build a low-poly full replacement for the generic wall; details are approximate."""
+    """Low-poly full replacement for the generic wall, following the mapped crest.
+
+    The Alba dam is an arch dam: the OSM way 168459142 bows ~45 m over its 189 m
+    chord, so the straight a-b box used before visibly disagreed with the PNOA
+    2023 orthophoto. The concrete body now sweeps that published crest polyline
+    (`public/water/water.json` -> dam.crest); levels and width stay sourced.
+    """
     dam = raw['dam']
     ax, az = dam['a']
     bx, bz = dam['b']
-    dx, dz = bx - ax, bz - az
-    length = math.hypot(dx, dz)
     anchor = ((ax + bx) / 2, (az + bz) / 2)
     height = dam['crestM'] - dam['baseM']
+    half_width = dam['widthM'] / 2
+    crest = dam.get('crest') or [dam['a'], dam['b']]
+    # Local frame = world minus anchor. The loader restores the anchor and the
+    # authored frame survives the glTF round-trip, so no extra yaw is required.
+    local = [(x - anchor[0], z - anchor[1]) for x, z in crest]
     batch = MeshBatch()
-    # Long, broad concrete body retains the measured water.json endpoints and levels.
-    batch.box(0, 0, height / 2, length, dam['widthM'], height, STONE_SHADE, STONE_LIGHT)
-    # Buttresses and a low crest cap are deliberately stylized, not claimed as surveyed.
-    count = max(3, round(length / 22))
-    for i in range(1, count):
-        x = -length / 2 + length * i / count
-        batch.box(x, -dam['widthM'] * 0.72, height * 0.28, 2.0, dam['widthM'] * 0.48, height * 0.56, STONE, STONE_LIGHT)
-    batch.box(0, 0, height + 0.35, length, dam['widthM'] + 0.9, 0.7, STONE, STONE_LIGHT)
+
+    def normal_at(index):
+        prev = local[max(0, index - 1)]
+        nxt = local[min(len(local) - 1, index + 1)]
+        dx, dz = nxt[0] - prev[0], nxt[1] - prev[1]
+        length = math.hypot(dx, dz) or 1.0
+        return (-dz / length, dx / length)
+
+    for i in range(len(local) - 1):
+        x0, y0 = local[i]
+        x1, y1 = local[i + 1]
+        n0 = normal_at(i)
+        n1 = normal_at(i + 1)
+        # Two sloped faces join one crest node to the next, downstream/upstream.
+        a0, b0 = (x0 + n0[0] * half_width, y0 + n0[1] * half_width), (x0 - n0[0] * half_width, y0 - n0[1] * half_width)
+        a1, b1 = (x1 + n1[0] * half_width, y1 + n1[1] * half_width), (x1 - n1[0] * half_width, y1 - n1[1] * half_width)
+        batch.face([(a0[0], a0[1], 0.0), (a1[0], a1[1], 0.0), (a1[0], a1[1], height), (a0[0], a0[1], height)], STONE_SHADE)
+        batch.face([(b0[0], b0[1], 0.0), (b0[0], b0[1], height), (b1[0], b1[1], height), (b1[0], b1[1], 0.0)], STONE_SHADE)
+        # A slightly wider low parapet caps the crest; explicitly stylized.
+        cap = half_width + 0.4
+        ca0, cb0 = (x0 + n0[0] * cap, y0 + n0[1] * cap), (x0 - n0[0] * cap, y0 - n0[1] * cap)
+        ca1, cb1 = (x1 + n1[0] * cap, y1 + n1[1] * cap), (x1 - n1[0] * cap, y1 - n1[1] * cap)
+        batch.face([(ca0[0], ca0[1], height), (ca1[0], ca1[1], height), (ca1[0], ca1[1], height + 0.45), (ca0[0], ca0[1], height + 0.45)], STONE)
+        batch.face([(cb0[0], cb0[1], height), (cb0[0], cb0[1], height + 0.45), (cb1[0], cb1[1], height + 0.45), (cb1[0], cb1[1], height)], STONE)
+        batch.face([(ca0[0], ca0[1], height + 0.45), (ca1[0], ca1[1], height + 0.45), (cb1[0], cb1[1], height + 0.45), (cb0[0], cb0[1], height + 0.45)], STONE_LIGHT)
+    # Close both ends of the body.
+    end_a = normal_at(0)
+    end_b = normal_at(len(local) - 1)
+    xa, ya = local[0]
+    xb, yb = local[-1]
+    batch.face([(xa + end_a[0] * half_width, ya + end_a[1] * half_width, 0.0),
+                (xa + end_a[0] * half_width, ya + end_a[1] * half_width, height),
+                (xa - end_a[0] * half_width, ya - end_a[1] * half_width, height),
+                (xa - end_a[0] * half_width, ya - end_a[1] * half_width, 0.0)], STONE)
+    batch.face([(xb + end_b[0] * half_width, yb + end_b[1] * half_width, 0.0),
+                (xb - end_b[0] * half_width, yb - end_b[1] * half_width, 0.0),
+                (xb - end_b[0] * half_width, yb - end_b[1] * half_width, height),
+                (xb + end_b[0] * half_width, yb + end_b[1] * half_width, height)], STONE)
     obj = batch.create_object('focal:dam', collection)
     obj['osm_way_id'] = 168459142
-    obj['geometry_source'] = 'public/water/water.json endpoints and crest/base levels'
-    obj['architectural_details'] = 'stylized approximate buttresses and crest cap; not photo-verified'
-    yaw = math.atan2(dz, -dx)
-    return obj, anchor, yaw
+    obj['geometry_source'] = 'public/water/water.json dam.crest (OSM way 168459142) + IGN levels'
+    obj['architectural_details'] = 'curved crest from the mapped way; parapet stylized, not photo-verified'
+    return obj, anchor, 0.0
+
 
 
 def reset_scene():
@@ -329,7 +368,7 @@ def main():
             'triangles': triangles,
             'meshes': 1,
             'osmWayIds': [90614388] if site_id == 'church' else [645040295, 741760074],
-            **({'osmWayIds': [168459142], 'yawRad': round(dam_yaw, 8), 'baseM': water['dam']['baseM']} if site_id == 'dam' else {}),
+            **({'osmWayIds': [168459142], 'yawRad': round(dam_yaw, 8), 'baseM': water['dam']['baseM'], 'crestPoints': len(water['dam']['crest'])} if site_id == 'dam' else {}),
             'reconstruction': 'stylized approximation',
             'rasterTextures': 0,
         }

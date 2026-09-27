@@ -96,8 +96,8 @@
         3067.357,
         3976.874
       ],
-      "bytes": 30100,
-      "sha256": "02317d61ef848b8f02560baeb15f0ba9600284347bcc493cbafb3891a84aad62",
+      "bytes": 30040,
+      "sha256": "bda76441866971c8b94e4d905cab103f856cd818321869dbe6355424b79d3e40",
       "triangles": 424,
       "meshes": 1,
       "osmWayIds": [
@@ -113,8 +113,8 @@
         3063.04,
         4012.346
       ],
-      "bytes": 12816,
-      "sha256": "3dcb2ab4e09151ff43f596a484ef325e23772e1417342568e5dea2c0e57a6be1",
+      "bytes": 12752,
+      "sha256": "b4c0f4d7a3b370a1d0eab2b696a28b6446a9ba725ed55ec2e630dda8f6ca6cd6",
       "triangles": 168,
       "meshes": 1,
       "osmWayIds": [
@@ -131,15 +131,16 @@
         2434.565,
         1523.295
       ],
-      "bytes": 9628,
-      "sha256": "cbf02db49591c47bb32adb9d15951067e6d5fe36f4cb2f924bf0924e227fbb77",
-      "triangles": 120,
+      "bytes": 13356,
+      "sha256": "a050fdaf3cd015396d1c9c4090c82fa3d77625e6f30bd3cd8a4daac306d7df2c",
+      "triangles": 174,
       "meshes": 1,
       "osmWayIds": [
         168459142
       ],
-      "yawRad": -2.38742497,
+      "yawRad": 0.0,
       "baseM": 1004,
+      "crestPoints": 18,
       "reconstruction": "stylized approximation",
       "rasterTextures": 0
     }

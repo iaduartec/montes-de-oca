@@ -1124,6 +1124,9 @@ def build_dam(
         {
             "a": a,
             "b": b,
+            # Coronación real del way waterway=dam: la presa de Alba es un arco
+            # (≈45 m de flecha sobre 189 m de cuerda), no la cuerda recta a-b.
+            "crest": [[round(x, 2), round(z, 2)] for (x, z) in pts],
             "crestM": round(level + 0.6, 2),
             "baseM": round(base, 2),
             "widthM": DAM_WIDTH_M,
@@ -1238,6 +1241,17 @@ def derive() -> tuple[dict, dict]:
             "crestM": dam["crestM"],
             "largoM": round(
                 math.hypot(dam["b"][0] - dam["a"][0], dam["b"][1] - dam["a"][1]), 1
+            ),
+            "crestPuntos": len(dam["crest"]),
+            "largoRealM": round(
+                sum(
+                    math.hypot(
+                        dam["crest"][i + 1][0] - dam["crest"][i][0],
+                        dam["crest"][i + 1][1] - dam["crest"][i][1],
+                    )
+                    for i in range(len(dam["crest"]) - 1)
+                ),
+                1,
             ),
         },
         "cintas": {
