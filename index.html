@@ -573,6 +573,73 @@
         Terreno y alturas LiDAR: © <a href="https://centrodedescargas.cnig.es/CentroDescargas/home" target="_blank" rel="noreferrer">IGN/CNIG</a> (CC BY 4.0).
       </div>
     </details>
+    <script>
+      (() => {
+        const retryKey = 'montes-de-oca:chunk-reload-at';
+        const retryWindowMs = 30_000;
+
+        function showReloadNotice() {
+          if (document.getElementById('chunk-reload-notice')) return;
+
+          const notice = document.createElement('div');
+          notice.id = 'chunk-reload-notice';
+          notice.setAttribute('role', 'alert');
+          Object.assign(notice.style, {
+            position: 'fixed',
+            zIndex: '100',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            maxWidth: 'min(420px, calc(100vw - 32px))',
+            padding: '20px',
+            border: '1px solid rgba(231, 195, 138, 0.55)',
+            borderRadius: '12px',
+            background: 'rgba(18, 23, 25, 0.96)',
+            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+            color: '#f3eee5',
+            font: '15px/1.5 system-ui, sans-serif',
+            textAlign: 'center',
+          });
+
+          const message = document.createElement('p');
+          message.textContent = 'El juego se ha actualizado. Recarga la página para continuar.';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = 'Recargar ahora';
+          Object.assign(button.style, {
+            marginTop: '8px',
+            padding: '9px 14px',
+            border: '1px solid rgba(231, 195, 138, 0.6)',
+            borderRadius: '8px',
+            background: '#d8c3a2',
+            color: '#18201d',
+            font: '600 14px system-ui, sans-serif',
+            cursor: 'pointer',
+          });
+          button.addEventListener('click', () => window.location.reload());
+          notice.append(message, button);
+          document.body.append(notice);
+        }
+
+        window.addEventListener('vite:preloadError', (event) => {
+          event.preventDefault();
+
+          try {
+            const lastAttempt = Number(sessionStorage.getItem(retryKey));
+            const elapsed = Date.now() - lastAttempt;
+            if (Number.isFinite(lastAttempt) && lastAttempt > 0 && elapsed >= 0 && elapsed < retryWindowMs) {
+              showReloadNotice();
+              return;
+            }
+
+            sessionStorage.setItem(retryKey, String(Date.now()));
+            window.location.reload();
+          } catch {
+            showReloadNotice();
+          }
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
