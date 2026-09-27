@@ -42,3 +42,30 @@ WebP. La fórmula abreviada de atribución es:
 
 El reconocimiento abreviado sigue la fórmula indicada por la
 [licencia de productos y servicios geográficos del IGN/CNIG](https://www.ign.es/resources/licencia/Condiciones_licenciaUso_IGN.pdf).
+
+## Teselas 3D locales (3D Tiles 1.0)
+
+El directorio `public/terrain/3d-tiles/` contiene un tileset generado de forma
+determinista y offline por `scripts/terrain/build_3d_tiles.py` desde los 36
+heightfields MDT05 ya publicados (`tiles/tile_*.json`):
+
+- Jerarquía LOD `REPLACE` de dos niveles: la raíz lleva un resumen real de
+  6 km muestreado a 40 m (`tiles/overview.glb`, 151 × 151 vértices desde los
+  MDT05 existentes, sin relieve inventado ni datos de terceros) y los 36
+  hijos son las hojas de 1 km a plena resolución (`tiles/tile_<ix>_<iz>.glb`,
+  201 × 201 vértices). El `geometricError` de la raíz es la desviación
+  vertical máxima medida de la superficie triangular del resumen contra cada
+  muestra MDT05 de 5 m (ver `manifest.json`, campos `lod` y
+  `overviewErrorM`); las hojas tienen `geometricError` 0.
+- Las normales de bordes compartidos se calculan con diferencias centradas
+  sobre el heightfield global cosido (ambos vecinos), de modo que los
+  vértices de borde con igual altura tienen normales iguales; solo el borde
+  exterior del mundo usa diferencias unilaterales.
+- Cargas binarias GLB 2.0 autocontenidas (chunk JSON + chunk BIN, índices
+  uint16, enlaces PBR de textura/material preservados). La ortofoto PNOA se
+  referencia como imagen EXTERNA (`../../orthophoto.webp` →
+  `/terrain/orthophoto.webp`); ningún GLB incorpora píxeles PNOA.
+- La geometría de edificios OSM **no** está horneada en las teselas: sigue
+  como capa separada del runtime con sus huellas/alturas existentes.
+- Atribución aplicable a este derivado: MDT © IGN-CNIG CC BY 4.0 y obra
+  derivada de PNOA 2023-09 CC-BY 4.0 scne.es, como se detalla arriba.

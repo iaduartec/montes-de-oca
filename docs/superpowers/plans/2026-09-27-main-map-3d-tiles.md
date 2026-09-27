@@ -32,7 +32,7 @@
 ## Files and ownership
 
 - `src/render-coordinates.ts` owns pure logical↔Babylon RH coordinate, direction and yaw conversion. It must not import terrain or alter source data.
-- `scripts/terrain/build_3d_tiles.py` and `scripts/terrain/validate_3d_tiles.py` build and validate a reproducible six-by-six set of 1 km contents from the existing 36 MDT05 tiles and PNOA atlas; generated output and provenance live under `public/terrain/3d-tiles/`.
+- `scripts/terrain/build_3d_tiles.py` and `scripts/terrain/validate_3d_tiles.py` build and validate a reproducible coarse 6 km overview plus 36 full-resolution 1 km children from the existing MDT05 tiles and PNOA atlas; generated GLB output and provenance live under `public/terrain/3d-tiles/`.
 - `src/terrain-3d-tiles.ts` owns `TilesRenderer`, loading/error counters and disposal. `src/terrain.ts` continues to own existing heightfield sampling and fallback terrain meshes.
 - `src/main.ts` owns the `?renderFrame=rh` migration switch, camera/render-loop integration and the final default activation gate. The ordinary game launch stays in its current frame until every rendered layer has migrated.
 - `src/road-visuals.ts`, `src/environment/{village,vegetation,water,village-landmarks}.ts`, `src/vehicle/*.ts`, `src/player/index.ts` and `src/gameplay/objective.ts` migrate visible geometry/actors through the shared conversion boundary; their simulation inputs stay logical.
@@ -60,14 +60,14 @@
 **Files:** Create `scripts/terrain/build_3d_tiles.py`, `scripts/terrain/test_3d_tiles_builder.py`, `scripts/terrain/validate_3d_tiles.py`, and generated `public/terrain/3d-tiles/`; update `package.json` focused scripts and `public/terrain/ATTRIBUTION.md`.
 
 **Interfaces:**
-- Normal builder mode writes 36 1 km GLTF contents, external image references to the existing PNOA atlas, tileset hierarchy/index and a manifest with source/output hashes, extents, sample spacing, generation parameters and attribution.
+- Normal builder mode writes a 40 m sampled 6 km overview GLB plus 36 full-resolution 1 km child GLBs, external image references to the existing PNOA atlas, a `REPLACE` hierarchy and a manifest with source/output hashes, extents, sample spacing, measured maximum vertical error and attribution.
 - `build_3d_tiles.py --check` derives to temporary output and compares deterministically without rewriting public files or accessing network resources.
-- Validator exits nonzero for missing tiles, invalid bounds/CRS/origin/datum, wrong PNOA path, invalid hierarchy, hash drift or absent attribution.
+- Validator exits nonzero for missing tiles, invalid bounds/CRS/origin/datum, wrong PNOA path, invalid GLB chunks/hierarchy, hash drift, seam-normal mismatch or absent attribution.
 
-- [ ] **Step 1: Add fixtures/checks** `all_36_tiles_match_config_extent`, `neighbor_edges_share_identical_height_samples`, `mesh_heights_use_config_vertical_datum`, `orthophoto_reference_is_external`, and `check_mode_is_deterministic`.
+- [ ] **Step 1: Add fixtures/checks** `all_36_tiles_match_config_extent`, `neighbor_edges_share_identical_height_samples`, `neighbor_tile_normals_match_at_shared_edges`, `mesh_winding_and_normals_face_up`, `north_uv_maps_to_atlas_top`, `overview_lod_error_matches_mdt`, `glb_payload_is_binary_with_external_pnoa`, and `check_mode_is_deterministic`.
 - [ ] **Step 2: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`. Expected: FAIL because the builder contract is absent.
-- [ ] **Step 3: Implement the builder** using all existing `public/terrain/tiles/tile_*.json`; create matching tile bounds and adjacent edge samples, with measured LOD/geometric error rather than placeholder values. Reuse the PNOA atlas URI; do not copy pixels into tile GLTFs.
-- [ ] **Step 4: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: all 36 outputs validate and repeated derivation has identical hashes.
+- [ ] **Step 3: Implement the builder** using all existing `public/terrain/tiles/tile_*.json`; calculate shared-edge normals from neighboring height samples, emit a 40 m overview and 5 m 1 km children as GLB, and measure the overview's maximum deviation against MDT05. Reuse the PNOA atlas URI; do not copy pixels into GLBs.
+- [ ] **Step 4: Run** `python3 scripts/terrain/test_3d_tiles_builder.py`, `python3 scripts/terrain/build_3d_tiles.py --check`, and `python3 scripts/terrain/validate_3d_tiles.py`. Expected: all 36 leaves and the measured overview validate, shared seam normals match, and repeated derivation has identical hashes.
 - [ ] **Step 5: Register** `test:3d-tiles-data` and include it in `npm test`; record IGN/CNIG and OSM attribution in the runtime attribution surface and asset manifest.
 - [ ] **Step 6: Commit** as `feat(terrain): build local 3d tiles map`.
 
