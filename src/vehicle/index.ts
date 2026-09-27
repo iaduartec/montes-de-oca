@@ -7,6 +7,11 @@ export { createFourWheelVehicle, createMotorcycle };
 export type { Vehicle, VehicleTelemetry, VehicleTerrain, CreateVehicleOptions } from './four-wheel';
 export type { Motorcycle, MotorcycleTelemetry } from './motorcycle';
 
+/** Un actor de categoría no-moto cumple el contrato completo de cuatro ruedas. */
+export function isFourWheel(actor: VehicleActor): actor is Vehicle {
+  return actor.category !== 'moto';
+}
+
 export function createVehicle(options: CreateVehicleOptions): Vehicle;
 export function createVehicle(options: CreateVehicleOptions, definition: MotorcycleDefinition): Motorcycle;
 export function createVehicle(options: CreateVehicleOptions, definition: FourWheelDefinition): Vehicle;

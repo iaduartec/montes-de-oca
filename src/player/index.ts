@@ -22,7 +22,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { Vehicle } from '../vehicle/index';
+import type { VehicleActor } from '../vehicle/types';
+import type { VehicleRef } from '../vehicle/switch';
 import {
   createCharacterState,
   exitPosition,
@@ -64,7 +65,8 @@ export interface Player {
 export interface CreatePlayerOptions {
   readonly scene: Scene;
   readonly terrain: MovementTerrain;
-  readonly vehicle: Vehicle;
+  /** Referencia única al vehículo activo: el personaje la lee en cada paso. */
+  readonly vehicleRef: VehicleRef;
   readonly spawn: { readonly x: number; readonly z: number; readonly yaw?: number };
   readonly controls?: PlayerControls;
   /** Distancia máxima al 4x4 para poder entrar, en metros. Por defecto 4,5. */
@@ -240,21 +242,23 @@ function createCharacterModel(scene: Scene): {
 }
 
 export function createPlayer(options: CreatePlayerOptions): Player {
-  const { scene, terrain, vehicle } = options;
+  const { scene, terrain, vehicleRef } = options;
   const controls = options.controls;
   const enterRadiusM = options.enterRadiusM ?? DEFAULT_ENTER_RADIUS_M;
+  /** El actor activo puede cambiar en caliente: SIEMPRE se lee por la referencia. */
+  const vehicle = (): VehicleActor => vehicleRef.current;
 
   const model = createCharacterModel(scene);
 
   // Arranca A PIE, al costado del 4x4: nunca dentro del coche. Si el spawn
   // pedido está lejos del coche (p. ej. > radio de entrada), igual aparece al
   // lado del 4x4, sobre el terreno, que es lo que pide el guion.
-  const exit = exitPosition(vehicle.state.x, vehicle.state.z, vehicle.state.yaw, terrain);
+  const exit = exitPosition(vehicle().state.x, vehicle().state.z, vehicle().state.yaw, terrain);
   const spawnNearVehicle =
     Math.hypot(options.spawn.x - exit.x, options.spawn.z - exit.z) <= enterRadiusM;
   const spawnX = spawnNearVehicle ? options.spawn.x : exit.x;
   const spawnZ = spawnNearVehicle ? options.spawn.z : exit.z;
-  const spawnYaw = options.spawn.yaw ?? vehicle.state.yaw;
+  const spawnYaw = options.spawn.yaw ?? vehicle().state.yaw;
 
   let state: CharacterState = createCharacterState(spawnX, spawnZ, spawnYaw, terrain);
   let mode: PlayerMode = 'on-foot';
@@ -283,17 +287,18 @@ export function createPlayer(options: CreatePlayerOptions): Player {
     },
     canEnterVehicle: (): boolean => {
       if (mode !== 'on-foot') return false;
-      const dx = state.x - vehicle.state.x;
-      const dz = state.z - vehicle.state.z;
+      const dx = state.x - vehicle().state.x;
+      const dz = state.z - vehicle().state.z;
       return Math.hypot(dx, dz) <= enterRadiusM;
     },
     toggleVehicle: (): PlayerMode => {
       if (mode === 'driving') {
         // Bajar: siempre se puede. Aparece al costado, sobre el terreno.
-        const p = exitPosition(vehicle.state.x, vehicle.state.z, vehicle.state.yaw, terrain);
-        placeOnFoot(p.x, p.z, vehicle.state.yaw);
+        const v = vehicle();
+        const p = exitPosition(v.state.x, v.state.z, v.state.yaw, terrain);
+        placeOnFoot(p.x, p.z, v.state.yaw);
         // El coche deja de recibir input del jugador al bajar.
-        vehicle.setInput(null);
+        v.setInput(null);
         return mode;
       }
       if (player.canEnterVehicle()) {
@@ -305,12 +310,13 @@ export function createPlayer(options: CreatePlayerOptions): Player {
     },
     step: (dt: number): void => {
       if (mode === 'driving') {
+        const v = vehicle();
         const input = controls ? controls.readVehicular() : { throttle: 0, steer: 0, handbrake: false, neutral: false };
-        vehicle.setInput(input);
-        vehicle.step(dt);
+        v.setInput(input);
+        v.step(dt);
         // El jugador sigue al vehículo: una sola posición.
-        model.root.position.copyFrom(vehicle.root.position);
-        model.root.rotation.set(0, vehicle.state.yaw, 0);
+        model.root.position.copyFrom(v.root.position);
+        model.root.rotation.set(0, v.state.yaw, 0);
         return;
       }
 
@@ -323,12 +329,13 @@ export function createPlayer(options: CreatePlayerOptions): Player {
       model.advanceGait(state.speed * Math.max(0, Math.min(dt, 0.1)));
     },
     telemetry: (): PlayerTelemetry => {
+      const v = vehicle();
       const driving = mode === 'driving';
-      const x = driving ? vehicle.state.x : state.x;
-      const z = driving ? vehicle.state.z : state.z;
-      const y = driving ? vehicle.root.position.y : state.y;
-      const yaw = driving ? vehicle.state.yaw : state.yaw;
-      const speed = driving ? vehicle.state.speed : state.speed;
+      const x = driving ? v.state.x : state.x;
+      const z = driving ? v.state.z : state.z;
+      const y = driving ? v.root.position.y : state.y;
+      const yaw = driving ? v.state.yaw : state.yaw;
+      const speed = driving ? v.state.speed : state.speed;
       const onFootInput = controls && !driving ? controls.readOnFoot() : null;
       return {
         mode,
@@ -338,18 +345,19 @@ export function createPlayer(options: CreatePlayerOptions): Player {
         yawDeg: (yaw * 180) / Math.PI,
         speedMps: speed,
         running: onFootInput ? onFootInput.run : false,
-        moving: driving ? Math.abs(vehicle.state.speed) > 0.1 : state.moving,
+        moving: driving ? Math.abs(v.state.speed) > 0.1 : state.moving,
         interact: controls ? controls.interact : false,
-        distanceToVehicleM: Math.hypot(x - vehicle.state.x, z - vehicle.state.z),
+        distanceToVehicleM: Math.hypot(x - v.state.x, z - v.state.z),
         canEnter: player.canEnterVehicle(),
       };
     },
     teleport: (x: number, z: number, yaw: number): void => {
       if (mode === 'driving') {
-        vehicle.teleport(x, z, yaw);
-        vehicle.setInput(null);
-        model.root.position.copyFrom(vehicle.root.position);
-        model.root.rotation.set(0, vehicle.state.yaw, 0);
+        const v = vehicle();
+        v.teleport(x, z, yaw);
+        v.setInput(null);
+        model.root.position.copyFrom(v.root.position);
+        model.root.rotation.set(0, v.state.yaw, 0);
         return;
       }
       placeOnFoot(x, z, yaw);

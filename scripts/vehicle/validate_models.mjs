@@ -22,9 +22,11 @@ for (const marker of [
 ]) {
   if (!model.includes(marker)) throw new Error(`Falta en model.ts: ${marker}`);
 }
-if (!integration.includes('vehicle.setAppearance(preset.visual)')) throw new Error('aplicarPreset no sincroniza la carrocería');
-if (!/applyPreset\(vehicle\.params, preset\);\s*vehicle\.setAppearance\(preset\.visual\);/.test(integration)) {
-  throw new Error('La apariencia no se aplica en el mismo flujo que la afinación física');
+// El selector construye cada vehículo desde el catálogo y lo cambia por el camino
+// atómico (`switch`): ya no se muta la apariencia de un actor fijo en `main.ts`.
+if (!integration.includes('cambiarVehiculo')) throw new Error('main.ts no cablea el cambio de vehículo');
+if (!integration.includes('createVehicle(options, definition)')) {
+  throw new Error('main.ts no crea actores desde el catálogo');
 }
 console.log('OK modelos de vehículo: tres identidades y kits intercambiables sin tocar la física');
 

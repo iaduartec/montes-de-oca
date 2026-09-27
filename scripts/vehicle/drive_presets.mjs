@@ -160,10 +160,11 @@ window.__harnessPresets = (function () {
 
   // Gas a fondo sobre la pista; mide velocidad tope y 0->15 m/s.
   function recta(id, seconds) {
-    var aplicado = g.vehicle.setPreset(id);
     var p = pista();
+    // El cambio de vehículo exige el actor detenido: se frena ANTES de cambiar.
     g.vehicle.teleport(p.x, p.z, p.yaw);
     g.vehicle.setState({ speed: 0, lateral: 0 });
+    var aplicado = g.vehicle.setPreset(id);
     var antes = g.vehicle.params();
     g.vehicle.setInput({ throttle: 1, steer: 0, handbrake: false, neutral: false });
     var t = 0, vmax = 0, t15 = null, muestras = [];
@@ -299,8 +300,8 @@ async function main() {
     check('(b-sec) 0→15 m/s: carga la más lenta con margen', tOk, `carga=${tCarga}s estandar=${tEstandar}s patrulla=${tPatrulla}s`);
 
     // ---- (c): volver a estandar restaura EXACTAMENTE los defaults. ----
-    await cdp.evaluate("window.__game.vehicle.setPreset('patrulla')");
-    const restaurado = await cdp.evaluate("window.__game.vehicle.setPreset('estandar'); ({ preset: window.__game.vehicle.preset(), params: window.__game.vehicle.params() })");
+    await cdp.evaluate("window.__game.vehicle.setState({ speed: 0, lateral: 0 }); window.__game.vehicle.setPreset('patrulla')");
+    const restaurado = await cdp.evaluate("window.__game.vehicle.setState({ speed: 0, lateral: 0 }); window.__game.vehicle.setPreset('estandar'); ({ preset: window.__game.vehicle.preset(), params: window.__game.vehicle.params() })");
     report.restaurado_preset = restaurado.preset;
     check("(c) setPreset('estandar') devuelve preset estandar", restaurado.preset === 'estandar', restaurado.preset);
     check(
