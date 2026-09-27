@@ -322,8 +322,10 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   cargoKit.isPickable = false;
   cargoKit.receiveShadows = false;
 
+  // Cada actor expone su carrocería base como `vehicle:body-<id>`: la llamada
+  // legada sin definición sigue siendo `estandar`; las variantes conservan su id.
+  root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:static-0')!.name = `vehicle:body-${visual ?? 'estandar'}`;
   if (visual && bodySize) {
-    root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:static-0')!.name = `vehicle:body-${visual}`;
     if (visual !== 'patrulla') patrolKit.dispose();
     if (visual !== 'carga') cargoKit.dispose();
     if (visual === 'patrulla') patrolKit.setEnabled(true);
