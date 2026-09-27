@@ -223,7 +223,9 @@ async function main() {
       `[agua] stats: ${report.stats.sheets} láminas · ${report.stats.ribbons} cintas · ` +
         `${report.stats.meshes} mallas · ${report.stats.triangles} tris · ${report.stats.dataBytes} B`,
     );
-    check('agua: 3 mallas', report.stats.meshes === 3, `${report.stats.meshes} mallas`);
+    check('agua: mallas dentro del límite (2 con presa reemplazada, 3 con presa procedural)',
+      report.stats.meshes >= 2 && report.stats.meshes <= 3,
+      `${report.stats.meshes} mallas`);
     // Cotas INFERIORES: sin ellas, un fallo de carga (sheets/ribbons vacíos)
     // pasaría todos los checks (residual=0 muestras, triángulos bajo el tope).
     check(
@@ -312,6 +314,20 @@ async function main() {
     const gVado = await groundAt(VADOS[0][0], VADOS[0][1]);
     await capture('water_vado', {
       px: VADOS[0][0] - 55, py: gVado + 20, pz: VADOS[0][1] - 55, tx: VADOS[0][0], ty: gVado, tz: VADOS[0][1],
+    });
+
+    // (d) tramo del salto de cota detectado en la auditoría del Oca.
+    const gOca = await groundAt(2838, 298);
+    await capture('water_oca_salto', {
+      px: 2895, py: gOca + 55, pz: 245,
+      tx: 2838, ty: gOca, tz: 298,
+    });
+
+    // (e) corredor del Desfiladero de la Hoz donde el cauce se aproxima a un camino.
+    const gCamino = await groundAt(2485, 1650);
+    await capture('water_oca_camino', {
+      px: 2545, py: gCamino + 45, pz: 1690,
+      tx: 2485, ty: gCamino, tz: 1650,
     });
 
     // (d) un arroyo (punto medio del más largo).

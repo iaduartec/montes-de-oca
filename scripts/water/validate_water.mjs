@@ -104,8 +104,7 @@ check('sha256 del crudo del anillo coincide con su manifiesto',
   createHash('sha256').update(ringRawBytes).digest('hex') === ringManifest.sha256,
   `${String(ringManifest.sha256).slice(0, 12)}… (${ringManifest.members} ways, ${ringManifest.nodes} nodos)`);
 const ringFromRaw = ringRaw.ring.map(([lon, lat]) => [
-  (lon - terrainCfg.origin.lon) * terrainCfg.projection.metersPerDegreeLon,
-  (lat - terrainCfg.origin.lat) * terrainCfg.projection.metersPerDegreeLat,
+  ...wgs84ToWorld(lon, lat),
 ]);
 const reservoirSheet = water.sheets.find((s) => s.id === 'embalse-alba');
 check('el anillo del embalse sale del crudo versionado (mismo orden, <5 cm)',
@@ -365,14 +364,47 @@ check('cada cinta detalla un way dibujable real (no wastewater/dam/túnel)',
   detalle.length === water.ribbons.length && detalle.every((d) => idsDibujables.has(d.osmId)),
   `${detalle.length} detalles`);
 const damRaw = rawWater.elements.find((e) => e.type === 'way' && e.tags?.waterway === 'dam');
-const damPts = damRaw.geometry.map((pt) => [
-  (pt.lon - terrainCfg.origin.lon) * terrainCfg.projection.metersPerDegreeLon,
-  (pt.lat - terrainCfg.origin.lat) * terrainCfg.projection.metersPerDegreeLat,
-]);
+function wgs84ToWorld(lon, lat) {
+  const a = 6378137;
+  const e2 = 0.0066943799901413165;
+  const ep2 = e2 / (1 - e2);
+  const k0 = 0.9996;
+  const phi = lat * Math.PI / 180;
+  const lambda = lon * Math.PI / 180;
+  const lambda0 = -3 * Math.PI / 180;
+  const sinPhi = Math.sin(phi);
+  const cosPhi = Math.cos(phi);
+  const tanPhi = Math.tan(phi);
+  const n = a / Math.sqrt(1 - e2 * sinPhi * sinPhi);
+  const t = tanPhi * tanPhi;
+  const c = ep2 * cosPhi * cosPhi;
+  const aa = cosPhi * (lambda - lambda0);
+  const e4 = e2 * e2;
+  const e6 = e4 * e2;
+  const m = a * (
+    (1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi
+    - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * phi)
+    + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * phi)
+    - (35 * e6 / 3072) * Math.sin(6 * phi)
+  );
+  const easting = 500000 + k0 * n * (
+    aa + (1 - t + c) * aa ** 3 / 6
+      + (5 - 18 * t + t * t + 72 * c - 58 * ep2) * aa ** 5 / 120
+  );
+  const northing = k0 * (m + n * tanPhi * (
+    aa * aa / 2 + (5 - t + 9 * c + 4 * c * c) * aa ** 4 / 24
+      + (61 - 58 * t + t * t + 600 * c - 330 * ep2) * aa ** 6 / 720
+  ));
+  return [
+    (easting - terrainCfg.bounds.e[0]) * terrainCfg.worldScale,
+    (northing - terrainCfg.bounds.n[0]) * terrainCfg.worldScale,
+  ];
+}
+const damPts = damRaw.geometry.map((pt) => wgs84ToWorld(pt.lon, pt.lat));
 check('el muro sale del way waterway=dam del crudo (<5 cm en extremos)',
   Math.hypot(water.dam.a[0] - damPts[0][0], water.dam.a[1] - damPts[0][1]) < 0.05 &&
     Math.hypot(water.dam.b[0] - damPts[damPts.length - 1][0], water.dam.b[1] - damPts[damPts.length - 1][1]) < 0.05,
-  `way ${damRaw.id} (${damPts.length} nodos)`);
+  `way ${damRaw.id} (${damPts.length} nodos), EPSG:25830`);
 
 // ------------------------------------- 11. cinta sobre el terreno (todo el eje)
 // Invariante de la corrección de la Tarea 3: la superficie de la cinta (lerp
@@ -463,6 +495,40 @@ check('superficie de cinta ≥ terreno + 0,02 m en todo el eje (> 10 000 muestra
   `${muestrasCinta} muestras, peor holgura ${peorHolgura.toFixed(4)} m (` +
     Object.entries(holguraMin).map(([k, v]) => `${k} ${v.toFixed(4)}`).join(', ') +
     `), ${cintasSinDEM} sin DEM`);
+
+// ------------------------------------------- 12. marco y cota del eje del Oca
+// El orden de nodos OSM no declara dirección de flujo y contiene nacimientos,
+// confluencias y saltos reales del MDT. La invariante fiable para descartar
+// falsos resaltes es que cada vértice de agua use la cota del mismo punto UTM
+// del DEM, dentro del redondeo publicado, no una elevación muestreada en otra
+// proyección.
+console.log('\n=== 12. el eje del Oca usa el mismo marco UTM y cota que el DEM ===');
+const ocaRibbons = water.ribbons.filter((r) => r.kind === 'river' && r.name === 'Río Oca');
+let maxOcaTerrainError = 0;
+let maxOcaTerrainErrorAt = null;
+let maxOcaRise = 0;
+let ocaPointCount = 0;
+for (const r of ocaRibbons) {
+  for (let i = 0; i + 1 < r.points.length; i++) {
+    const rise = r.points[i + 1][2] - r.points[i][2];
+    if (rise > maxOcaRise) maxOcaRise = rise;
+  }
+  for (const [x, z, y] of r.points) {
+    const ground = surfaceAt(x, z);
+    if (ground === null) continue;
+    const error = Math.abs(y - ground);
+    ocaPointCount++;
+    if (error > maxOcaTerrainError) {
+      maxOcaTerrainError = error;
+      maxOcaTerrainErrorAt = [x, z];
+    }
+  }
+}
+check('vértices del Oca a la cota triangular del DEM (±0,02 m, no vacío)',
+  ocaRibbons.length > 0 && ocaPointCount > 1000 && maxOcaTerrainError <= 0.02,
+  `${ocaPointCount} puntos, error máx ${maxOcaTerrainError.toFixed(3)} m en ${JSON.stringify(maxOcaTerrainErrorAt)}`);
+console.log(`[agua] ascenso local máximo muestreado del Oca: ${maxOcaRise.toFixed(2)} m por estación; ` +
+  'se conserva porque la cota coincide con el MDT y el sentido de flujo no está en OSM.');
 
 // ------------------------------------------------------------------ resumen
 const total = pass + fails.length;

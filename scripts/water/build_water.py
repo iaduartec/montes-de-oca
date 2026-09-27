@@ -100,16 +100,65 @@ def load_reservoir_ring(proj: dict, origin: dict) -> list[tuple[float, float]]:
 
 # ---------------------------------------------------------------- proyección
 def load_projection() -> tuple[dict, dict]:
-    """Lee origen y proyección del config del terreno (esquina SW del mundo)."""
+    """Lee proyección UTM y origen del config del terreno."""
     cfg = json.loads(CONFIG.read_text())
-    return cfg["projection"], cfg["origin"]
+    if cfg.get("crs") != "EPSG:25830":
+        raise ValueError(f"proyección de agua no soportada: {cfg.get('crs')}")
+    proj = {
+        **cfg["projection"],
+        "eastingOrigin": cfg["bounds"]["e"][0],
+        "northingOrigin": cfg["bounds"]["n"][0],
+        "worldScale": cfg.get("worldScale", 1.0),
+    }
+    return proj, cfg["origin"]
 
 
 def to_world(lon: float, lat: float, proj: dict, origin: dict) -> tuple[float, float]:
-    """Pasa lon/lat a metros de mundo (x = E - 471500, z = N - 4689000)."""
+    """Proyecta WGS84 a EPSG:25830, el mismo marco del DEM y las carreteras."""
+    a = 6378137.0
+    e2 = 0.0066943799901413165
+    ep2 = e2 / (1.0 - e2)
+    k0 = 0.9996
+    phi = math.radians(lat)
+    lam = math.radians(lon)
+    lam0 = math.radians(-3.0)  # meridiano central de UTM 30N
+    sin_phi = math.sin(phi)
+    cos_phi = math.cos(phi)
+    tan_phi = math.tan(phi)
+    n = a / math.sqrt(1.0 - e2 * sin_phi * sin_phi)
+    t = tan_phi * tan_phi
+    c = ep2 * cos_phi * cos_phi
+    aa = cos_phi * (lam - lam0)
+    e4 = e2 * e2
+    e6 = e4 * e2
+    m = a * (
+        (1.0 - e2 / 4.0 - 3.0 * e4 / 64.0 - 5.0 * e6 / 256.0) * phi
+        - (3.0 * e2 / 8.0 + 3.0 * e4 / 32.0 + 45.0 * e6 / 1024.0)
+        * math.sin(2.0 * phi)
+        + (15.0 * e4 / 256.0 + 45.0 * e6 / 1024.0) * math.sin(4.0 * phi)
+        - (35.0 * e6 / 3072.0) * math.sin(6.0 * phi)
+    )
+    easting = 500000.0 + k0 * n * (
+        aa
+        + (1.0 - t + c) * aa**3 / 6.0
+        + (5.0 - 18.0 * t + t * t + 72.0 * c - 58.0 * ep2) * aa**5 / 120.0
+    )
+    northing = k0 * (
+        m
+        + n
+        * tan_phi
+        * (
+            aa * aa / 2.0
+            + (5.0 - t + 9.0 * c + 4.0 * c * c) * aa**4 / 24.0
+            + (61.0 - 58.0 * t + t * t + 600.0 * c - 330.0 * ep2)
+            * aa**6
+            / 720.0
+        )
+    )
+    scale = proj["worldScale"]
     return (
-        (lon - origin["lon"]) * proj["metersPerDegreeLon"],
-        (lat - origin["lat"]) * proj["metersPerDegreeLat"],
+        (easting - proj["eastingOrigin"]) * scale,
+        (northing - proj["northingOrigin"]) * scale,
     )
 
 
@@ -852,6 +901,12 @@ def build_sheets(
 OCA_SNAP_BOXES = [
     {"x0": 3040.0, "x1": 3140.0, "z0": 3680.0, "z1": 3840.0, "radio": 30.0},
     {"x0": 2440.0, "x1": 2660.0, "z0": 1560.0, "z1": 1760.0, "radio": 30.0},
+    # La proyección equirectangular anterior desplazaba este quiebro fuera del
+    # eje del cauce. Tras pasar a UTM se puede ajustar el tramo al talweg local.
+    {"x0": 2720.0, "x1": 2960.0, "z0": 0.0, "z1": 620.0, "radio": 45.0},
+    # El primer lomo del mismo tramo queda fuera de la caja anterior; el MDT
+    # muestra el talweg unos 10 m al oeste y hasta 3,6 m más bajo.
+    {"x0": 2910.0, "x1": 3040.0, "z0": 0.0, "z1": 220.0, "radio": 25.0},
 ]
 OCA_SNAP_RAMPA_M = 25.0  # rampa de entrada/salida en el borde de cada caja
 OCA_SNAP_PASO_M = 2.5  # muestreo transversal (paso del DEM y de la cinta)
