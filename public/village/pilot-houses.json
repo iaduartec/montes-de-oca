@@ -7,9 +7,9 @@
   "facadeStatus": "approximate stylized reconstruction; no surveyed facade photos were used for individual houses",
   "glb": {
     "file": "pilot-houses.glb",
-    "bytes": 182384,
-    "sha256": "4c4ad1cf2dae6e35d11722f68c76ff6b7ef22daa6b0e64e1e3c97e3aeff0dd6e",
-    "triangles": 1867,
+    "bytes": 195892,
+    "sha256": "ab5ddc7d0f9e828fdbd5dcb5a76e3935103e2c78097d3e89394d63fbac2fd48b",
+    "triangles": 1945,
     "meshCount": 1
   },
   "blend": "assets/environment/village-pilot/village-pilot.blend",
@@ -19,30 +19,34 @@
       "building": "house",
       "levels": "2",
       "heightSource": "lidar",
-      "heightM": 8,
+      "heightM": 5,
       "baseY": 74.446,
       "footprintAreaM2": 124.2,
       "lidarSampleCount": 20,
       "lidarRoofP95M": 8,
       "bodyKindHeuristic": "piedra",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": -66.3,
       "facadeTreatment": "reconstruccion estilizada aproximada",
-      "triangles": 176
+      "triangles": 218
     },
     {
       "osmWayId": 474364248,
       "building": "residential",
       "levels": "2",
       "heightSource": "lidar",
-      "heightM": 8,
+      "heightM": 5,
       "baseY": 74.764,
       "footprintAreaM2": 124.3,
       "lidarSampleCount": 19,
       "lidarRoofP95M": 8,
       "bodyKindHeuristic": "teja",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": -73.4,
       "facadeTreatment": "reconstruccion estilizada aproximada",
-      "triangles": 160
+      "triangles": 196
     },
     {
       "osmWayId": 818885678,
@@ -56,6 +60,8 @@
       "lidarRoofP95M": 7,
       "bodyKindHeuristic": "teja",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": -9.5,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 240
     },
@@ -71,6 +77,8 @@
       "lidarRoofP95M": 7,
       "bodyKindHeuristic": "revoco",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": 73.9,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 238
     },
@@ -86,6 +94,8 @@
       "lidarRoofP95M": 7,
       "bodyKindHeuristic": "revoco",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": 13.2,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 210
     },
@@ -101,6 +111,8 @@
       "lidarRoofP95M": 9,
       "bodyKindHeuristic": "piedra",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": 1.6,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 285
     },
@@ -116,6 +128,8 @@
       "lidarRoofP95M": 8,
       "bodyKindHeuristic": "piedra",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": -89.0,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 289
     },
@@ -131,6 +145,8 @@
       "lidarRoofP95M": 8,
       "bodyKindHeuristic": "teja",
       "roofKindHeuristic": "teja",
+      "roofShape": "gable",
+      "ridgeAzimuthDeg": 84.8,
       "facadeTreatment": "reconstruccion estilizada aproximada",
       "triangles": 269
     }

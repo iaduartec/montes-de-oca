@@ -5,12 +5,14 @@
 // Prueba contra la APP REAL, en modo misión normal (a pie, no ?player=0: el
 // selector es UI y debe funcionar en el juego tal cual arranca):
 //   1. arranque: chip visible con "Estándar", panel oculto;
-//   2. V abre el panel: 3 tarjetas (las de VEHICLE_PRESETS), activa = estándar,
+//   2. V abre el panel: 8 tarjetas en 3 grupos (catálogo), activa = estándar,
 //      foco dentro del panel, chip con aria-expanded=true;
 //   3. clic en la tarjeta "carga": preset carga (mass 2400), chip "Carga",
 //      tarjeta marcada, panel cerrado y foco devuelto al canvas;
 //   4. V reabre, Escape cierra;
 //   5. vía teclado: V, foco a "patrulla", Enter → preset patrulla y cierra;
+//   5b. moto "trail": categoría moto, chip "Moto · Trail" y cambio en movimiento
+//       rechazado sin tocar tarjeta ni storage;
 //   6. recarga con localStorage `selectedVehicleId=carga`: chip y tarjeta en carga;
 //   7. el botón táctil `data-code="KeyV"` existe en el DOM;
 //   8. consola sin errores. Reporte en output/vehicle_selector.json.
@@ -124,6 +126,7 @@ async function waitReady(cdp, probe) {
 
 async function navigateReady(cdp, url, probe) {
   for (let attempt = 0; attempt < 2; attempt++) {
+    const errorsBefore = cdp.errors.length;
     await cdp.send('Page.navigate', { url });
     try {
       await waitReady(cdp, probe);
@@ -131,6 +134,10 @@ async function navigateReady(cdp, url, probe) {
     } catch (error) {
       const fetchAborted = await cdp.evaluate("document.body.innerText.includes('ERROR\\nFailed to fetch')").catch(() => false);
       if (!fetchAborted || attempt > 0) throw error;
+      // El primer arranque puede abortar una carga por la red del entorno (pasa
+      // también en el baseline). Esos errores son del intento descartado, no de
+      // la app que se mide: se limpian y el reintento es la medición real.
+      cdp.errors.length = errorsBefore;
       console.warn('[selector] carga de datos abortada en el primer arranque; se reintenta una vez');
     }
   }
@@ -146,6 +153,7 @@ const ESTADO_UI = `(() => {
     chipExpanded: chip ? chip.getAttribute('aria-expanded') : null,
     panelOculto: panel ? panel.hidden : null,
     tarjetas: cards.map((c) => c.dataset.preset),
+    grupos: panel ? Array.from(panel.querySelectorAll('.vehiculo-grupo')).map((g) => g.dataset.categoria) : [],
     activa: activa ? activa.dataset.preset : null,
     focoEnPanel: panel ? panel.contains(document.activeElement) : false,
     focoEnCanvas: document.activeElement ? document.activeElement.id === 'render-canvas' : false,
@@ -215,7 +223,8 @@ async function main() {
     const abierto = await cdp.evaluate(ESTADO_UI);
     report.abierto = abierto;
     check('V abre el panel', abierto.panelOculto === false, JSON.stringify(abierto.panelOculto));
-    check('3 tarjetas (las de VEHICLE_PRESETS)', JSON.stringify(abierto.tarjetas) === JSON.stringify(['estandar', 'patrulla', 'carga']), JSON.stringify(abierto.tarjetas));
+    check('8 tarjetas (catálogo)', JSON.stringify(abierto.tarjetas) === JSON.stringify(['estandar', 'patrulla', 'carga', 'explorador', 'turismo', 'rally', 'trail', 'enduro']), JSON.stringify(abierto.tarjetas));
+    check('3 grupos por categoría', JSON.stringify(abierto.grupos) === JSON.stringify(['todoterreno', 'coche', 'moto']), JSON.stringify(abierto.grupos));
     check('activa = estandar', abierto.activa === 'estandar', JSON.stringify(abierto.activa));
     check('foco dentro del panel', abierto.focoEnPanel === true, JSON.stringify(abierto.focoEnPanel));
     check('chip con aria-expanded=true', abierto.chipExpanded === 'true', JSON.stringify(abierto.chipExpanded));
@@ -256,6 +265,27 @@ async function main() {
     report.tras_enter_patrulla = { preset: trasEnter.preset, mass: trasEnter.mass, panelOculto: trasEnter.panelOculto };
     check('Enter aplica el preset patrulla', trasEnter.preset === 'patrulla' && trasEnter.mass === 1200, `preset=${trasEnter.preset} mass=${trasEnter.mass}`);
     check('Enter cierra el panel', trasEnter.panelOculto === true, JSON.stringify(trasEnter.panelOculto));
+
+    // ---- 5b. moto: categoría, HUD y rechazo con el vehículo en movimiento. ----
+    await cdp.key('KeyV', 'v');
+    await wait(400);
+    await cdp.evaluate("document.querySelector('.vehiculo-tarjeta[data-preset=\"trail\"]').focus()");
+    await cdp.key('Enter', 'Enter');
+    await wait(600);
+    const moto = await cdp.evaluate(
+      `(() => { const ui = (${ESTADO_UI}); return { ...ui, preset: window.__game.vehicle.preset(), category: window.__game.vehicle.category(), params: window.__game.vehicle.params() }; })()`,
+    );
+    report.tras_enter_trail = { preset: moto.preset, category: moto.category, chip: moto.chip, params: moto.params };
+    check('seleccionar trail pasa a categoría moto', moto.preset === 'trail' && moto.category === 'moto', `preset=${moto.preset} category=${moto.category}`);
+    check('chip muestra Moto · Trail', (moto.chip ?? '').includes('Moto') && (moto.chip ?? '').includes('Trail'), JSON.stringify(moto.chip));
+    check('params() no aplica a una moto', moto.params === null, JSON.stringify(moto.params));
+
+    await cdp.evaluate("window.__game.vehicle.setState({ speed: 6, lateral: 0 }); document.querySelector('.vehiculo-tarjeta[data-preset=\"estandar\"]').click()");
+    await wait(300);
+    const rechazo = await cdp.evaluate("({ preset: window.__game.vehicle.preset(), storage: window.localStorage.getItem('selectedVehicleId') })");
+    report.rechazo_en_movimiento = rechazo;
+    check('cambio en movimiento rechazado sin tocar storage', rechazo.preset === 'trail' && rechazo.storage === 'trail', JSON.stringify(rechazo));
+    await cdp.evaluate("window.__game.vehicle.setState({ speed: 0, lateral: 0 })");
 
     // ---- 6. persistencia: recarga con localStorage=carga. ----
     await cdp.evaluate("window.localStorage.setItem('selectedVehicleId', 'carga')");

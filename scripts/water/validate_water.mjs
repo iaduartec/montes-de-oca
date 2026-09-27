@@ -198,6 +198,19 @@ check('extremos dentro de la ventana', [water.dam.a, water.dam.b]
   .every(([x, z]) => x >= 0 && x <= 6000 && z >= 0 && z <= 6000),
   `a ${water.dam.a} b ${water.dam.b}`);
 check('ancho positivo', water.dam.widthM > 0, `${water.dam.widthM} m`);
+const crest = water.dam.crest;
+check('crest publica la coronación del way (≥ 3 nodos)', Array.isArray(crest) && crest.length >= 3,
+  `${Array.isArray(crest) ? crest.length : 0} nodos`);
+const crestEnds = Array.isArray(crest) && crest.length >= 2
+  && Math.hypot(crest[0][0] - water.dam.a[0], crest[0][1] - water.dam.a[1]) < 0.01
+  && Math.hypot(crest[crest.length - 1][0] - water.dam.b[0], crest[crest.length - 1][1] - water.dam.b[1]) < 0.01;
+check('crest arranca y termina en a y b', crestEnds);
+const crestLength = Array.isArray(crest) && crest.length >= 2
+  ? crest.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - crest[i][0], p[1] - crest[i][1]), 0)
+  : 0;
+const chordLength = Math.hypot(water.dam.b[0] - water.dam.a[0], water.dam.b[1] - water.dam.a[1]);
+check('la coronación es un arco (largo real > cuerda + 1 m)', crestLength > chordLength + 1,
+  `${crestLength.toFixed(1)} m reales vs ${chordLength.toFixed(1)} m de cuerda`);
 
 // --------------------------------- 7. cota sobre el terreno (AGUA.md §6)
 // Invariante: cota de lámina ≥ nivel del terreno debajo, para cada celda con

@@ -48,7 +48,7 @@
     },
     "dam": {
       "name": "Presa de Alba",
-      "osm": { "type": "way", "id": 168459142, "source": "data/roads/raw/osm_highways_window.json" },
+      "osm": { "type": "way", "id": 168459142, "source": "data/water/raw/osm_water_window.json" },
       "geometrySource": "public/water/water.json",
       "reconstruction": "stylized low-poly approximation; architectural details without a reusable photo source are not claimed as literal"
     }

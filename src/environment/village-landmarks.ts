@@ -43,9 +43,9 @@ interface LandmarkAsset {
 }
 
 const ASSETS: readonly LandmarkAsset[] = [
-  { name: 'iglesia', file: 'church.glb', anchorX: 3067.357, anchorZ: 3976.874, bytes: 30100, coveredBuildingId: 90614388 },
-  { name: 'plaza', file: 'plaza.glb', anchorX: 3063.04, anchorZ: 4012.346, bytes: 12816 },
-  { name: 'presa', file: 'dam.glb', anchorX: 2434.565, anchorZ: 1523.295, bytes: 9628, yawRad: -2.38742497, baseM: 1004, replacesDam: true },
+  { name: 'iglesia', file: 'church.glb', anchorX: 3067.357, anchorZ: 3976.874, bytes: 30040, coveredBuildingId: 90614388 },
+  { name: 'plaza', file: 'plaza.glb', anchorX: 3063.04, anchorZ: 4012.346, bytes: 12752 },
+  { name: 'presa', file: 'dam.glb', anchorX: 2434.565, anchorZ: 1523.295, bytes: 13356, baseM: 1004, replacesDam: true },
 ];
 
 function resetAndPlace(container: AssetContainer, asset: LandmarkAsset, terrain: WorldTerrain): number {

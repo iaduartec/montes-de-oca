@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "make:dev-terrain": "node scripts/make-dev-terrain.mjs",
-    "test": "npm run typecheck && node scripts/roads/test_road_visuals.mjs && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check && node scripts/environment/validate_building_height_grid.mjs && node scripts/environment/test_roof_shape.mjs && node scripts/environment/test_roof_clearance.mjs && node scripts/environment/test_building_tint.mjs && node scripts/environment/test_vegetation_color.mjs && node scripts/environment/build_vegetation.mjs --check && node scripts/environment/validate_village_pilot.mjs && npm run test:focal-sites && npm run test:minimap && npm run test:vehicle-models && npm run test:water && npm run test:vehicle-presets && npm run test:vehicle-selector",
+    "test": "npm run typecheck && node scripts/roads/test_road_visuals.mjs && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check && node scripts/environment/validate_building_height_grid.mjs && node scripts/environment/test_roof_shape.mjs && node scripts/environment/test_roof_clearance.mjs && node scripts/environment/test_building_tint.mjs && node scripts/environment/test_vegetation_color.mjs && node scripts/environment/build_vegetation.mjs --check && node scripts/environment/validate_village_pilot.mjs && npm run test:focal-sites && npm run test:real-structures && npm run test:minimap && npm run test:vehicle-models && npm run test:water && npm run test:vehicle-presets && npm run test:vehicle-catalog && npm run test:vehicle-switch && npm run test:vehicle-selector && npm run test:motorcycle",
     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
     "test:terrain": "node scripts/terrain/validate_terrain.mjs",
     "test:roads": "python3 scripts/roads/validate_roads.py",
@@ -25,12 +25,18 @@
     "test:building-heights": "node scripts/environment/validate_building_height_grid.mjs",
     "test:vegetation": "node scripts/environment/build_vegetation.mjs --check",
     "test:vehicle-presets": "node scripts/vehicle/validate_presets.mjs",
+    "test:vehicle-catalog": "node scripts/vehicle/validate_catalog.mjs",
+    "test:vehicle-switch": "node scripts/vehicle/validate_switch.mjs",
+    "drive:vehicle-catalog": "node scripts/vehicle/drive_catalog.mjs",
     "test:vehicle-selector": "node scripts/vehicle/validate_selector.mjs",
     "test:vehicle-models": "node scripts/vehicle/validate_models.mjs",
     "test:minimap": "node scripts/ui/validate_minimap.mjs",
     "test:focal-sites": "node scripts/environment/validate_focal_sites.mjs",
+    "test:real-structures": "node scripts/environment/validate_real_structure_evidence.mjs --phase=source",
+    "test:real-structures:final": "node scripts/environment/validate_real_structure_evidence.mjs --phase=final",
     "test:vegetation-color": "node scripts/environment/test_vegetation_color.mjs",
-    "test:water": "python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs"
+    "test:water": "python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs",
+    "test:motorcycle": "node scripts/vehicle/validate_motorcycle.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^8.0.0",

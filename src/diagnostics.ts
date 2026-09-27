@@ -1,5 +1,7 @@
 import { SceneInstrumentation } from '@babylonjs/core/Instrumentation/sceneInstrumentation';
 import type { Scene } from '@babylonjs/core/scene';
+import type { VehicleActor } from './vehicle/types';
+import type { MotorcycleTelemetry } from './vehicle/motorcycle';
 import type { VehicleTelemetry } from './vehicle/index';
 
 /** Foto instantánea de rendimiento para el overlay. */
@@ -82,4 +84,24 @@ export function formatVehicleHud(t: VehicleTelemetry): string {
     `modo       ${mode.length > 0 ? mode.join(' + ') : 'marcha'}${t.rolloverRisk ? '  ⚠ RIESGO VUELCO' : ''}`,
     `odómetro   ${t.distance.toFixed(1)} m`,
   ].join('\n');
+}
+
+/** HUD de una moto: la inclinación y la caída reemplazan a los campos de 4 ruedas. */
+export function formatMotorcycleHud(t: MotorcycleTelemetry): string {
+  const grados = (t.leanRad * 180) / Math.PI;
+  return [
+    `— MOTO —`,
+    `velocidad  ${t.speedKmh.toFixed(1)} km/h (${t.speed.toFixed(2)} m/s)`,
+    `inclinación ${grados.toFixed(1)}°${t.fallen ? '  ⚠ CAÍDA' : ''}`,
+    `guiñada    ${((t.yawRate * 180) / Math.PI).toFixed(1)}°/s`,
+    `Y mundo    ${t.y.toFixed(3)} m`,
+    `posición   x=${t.x.toFixed(1)} z=${t.z.toFixed(1)}  yaw=${t.yawDeg.toFixed(0)}°`,
+    `ruedas     residual máx ${t.wheelResidualMaxM.toFixed(3)} m`,
+  ].join('\n');
+}
+
+/** HUD del actor activo, sea coche, todoterreno o moto. */
+export function formatActorHud(actor: VehicleActor): string {
+  if (actor.category === 'moto') return formatMotorcycleHud(actor.telemetry() as MotorcycleTelemetry);
+  return formatVehicleHud(actor.telemetry() as VehicleTelemetry);
 }

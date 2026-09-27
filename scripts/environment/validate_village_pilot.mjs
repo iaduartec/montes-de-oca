@@ -24,6 +24,13 @@ assert.ok(ids.every((id) => rawIds.has(id) && processedIds.has(id)), 'pilot ID m
 assert.ok(manifest.buildings.every((building) => building.lidarSampleCount >= 4), 'pilot house lacks sufficient LiDAR samples');
 assert.ok(manifest.buildings.every((building) => building.heightSource === 'lidar'), 'pilot height did not resolve from LiDAR');
 assert.ok(manifest.buildings.every((building) => building.facadeTreatment.includes('aproximada')), 'facade is not marked approximate');
+const pnoaGableIds = new Set([474364247, 474364248]);
+assert.ok(
+  manifest.buildings.filter((building) => pnoaGableIds.has(building.osmWayId)).every((building) => building.roofShape === 'gable'),
+  'PNOA-observed Calle Mayor row houses must keep a two-slope gable roof',
+);
+assert.ok(manifest.buildings.every((building) => building.roofShape === 'gable' || building.roofShape === 'hip'), 'unexpected roof shape');
+assert.ok(manifest.buildings.every((building) => Number.isFinite(building.ridgeAzimuthDeg)), 'roof ridge azimuth missing from pilot manifest');
 assert.equal(manifest.glb.meshCount, 1, 'GLB must remain one batched mesh');
 assert.ok(manifest.glb.triangles <= 3000, 'pilot exceeds triangle budget');
 assert.ok(manifest.glb.bytes <= 250_000, 'pilot exceeds download budget');

@@ -3,9 +3,10 @@ import { Scene } from '@babylonjs/core/scene';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color4 } from '@babylonjs/core/Maths/math.color';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { loadTerrainConfig, TERRAIN_CONFIG_PATH, wgs84ToWorld } from './config';
 import { publicUrl } from './public-url';
-import { createDiagnostics, formatVehicleHud, type DiagnosticsSnapshot } from './diagnostics';
+import { createDiagnostics, formatActorHud, type DiagnosticsSnapshot } from './diagnostics';
 import { auditVerticalDatum, loadTerrain, type WorldTerrain } from './terrain';
 import { gridExtent } from './heightfield';
 import { loadWater, type Water, type WaterStats } from './environment/water';
@@ -18,7 +19,7 @@ import {
   type VegetationCorridor,
   type VegetationStats,
 } from './environment/vegetation';
-import { createAtmosphere } from './environment/atmosphere';
+import { createAtmosphere, type Atmosphere } from './environment/atmosphere';
 import {
   loadRoadNetwork,
   type RoadAuditReport,
@@ -27,10 +28,12 @@ import {
   type RoadProbe,
   type RoadStation,
 } from './road-draping';
-import { createVehicle, type Vehicle, type VehicleTelemetry } from './vehicle/index';
+import { createVehicle, isFourWheel, type CreateVehicleOptions } from './vehicle/index';
 import { createVehicleControls } from './vehicle/controls';
 import type { VehicleInput, VehicleParams } from './vehicle/physics';
-import { applyPreset, DEFAULT_PRESET_ID, presetById } from './vehicle/presets';
+import { DEFAULT_VEHICLE_ID, vehicleById, type VehicleDefinition } from './vehicle/catalog';
+import { switchVehicle, type PreparedRebind, type SwitchContext, type VehicleRef } from './vehicle/switch';
+import type { VehicleActor, VehicleActorTelemetry, VehiclePose } from './vehicle/types';
 import { createVehicleSelector, type VehicleSelector } from './vehicle/selector';
 import { createMinimap, type Minimap } from './ui/minimap';
 import { FIRST_ROUTE } from './gameplay/first-route';
@@ -284,16 +287,21 @@ interface DebugApi {
   perf(): DiagnosticsSnapshot;
   auditDatum(): { verticalDatum: number; maxAbsDiffM: number; ok: boolean; samples: readonly unknown[] };
   vehicle: {
-    telemetry(): VehicleTelemetry;
+    telemetry(): VehicleActorTelemetry;
+    /** Categoría del actor activo (`todoterreno` | `coche` | `moto`). */
+    category(): string;
     setInput(input: VehicleInput | null): void;
     teleport(x: number, z: number, yaw: number): void;
     setState(partial: Partial<{ x: number; z: number; yaw: number; speed: number; lateral: number }>): void;
-    setParams(partial: Partial<VehicleParams>): void;
-    params(): VehicleParams;
-    /** Id del preset aplicado (`estandar` por defecto). */
+    /** Sólo cuatro ruedas: devuelve false si el activo es una moto. */
+    setParams(partial: Partial<VehicleParams>): boolean;
+    params(): VehicleParams | null;
+    /** Id del vehículo activo (`estandar` por defecto). */
     preset(): string;
-    /** Aplica un preset por id, lo persiste y devuelve false si no existe. */
+    /** Cambia a un id del catálogo, lo persiste y devuelve false si no existe o no se puede. */
     setPreset(id: string): boolean;
+    /** Recupera una moto caída; false para cuatro ruedas o si no hay apoyo válido. */
+    recover(): boolean;
     step(seconds: number, dt?: number): void;
     reset(): void;
   } | null;
@@ -429,26 +437,146 @@ async function bootstrap(): Promise<void> {
     throw new Error(`Auditoría de datum FALLÓ (diff max ${datumAudit.maxAbsDiffM} m)`);
   }
 
-  let vehicle: Vehicle | null = null;
+  let vehicleRef: VehicleRef | null = null;
   let minimap: Minimap | null = null;
   let controls: ReturnType<typeof createVehicleControls> | null = null;
   let player: Player | null = null;
-  /** Preset aplicado al 4x4 (`estandar` por defecto; `?vehicle=` gana a localStorage). */
-  let currentPresetId = DEFAULT_PRESET_ID;
+  /** Id del vehículo activo (`estandar` por defecto; `?vehicle=` gana a localStorage). */
+  let currentVehicleId: string = DEFAULT_VEHICLE_ID;
   // Selector de vehículo (FASE 2): se crea con el 4x4; el listener de KeyV
   // (registrado arriba) lo usa si ya existe. `null` durante la carga.
   let selectorVehiculo: VehicleSelector | null = null;
+  // Atmósfera (niebla + sombras). Se crea al final del bootstrap, cuando ya hay
+  // mallas que proyectan; acá se declara porque el cambio de vehículo re-vincula
+  // sus casters dentro de `prepareRebind`.
+  let atmosphere: Atmosphere | null = null;
 
-  /** Aplica un preset por id, lo persiste y refresca el selector. `false` si no existe. */
-  function aplicarPreset(id: string): boolean {
-    if (!vehicle) return false;
-    const preset = presetById(id);
-    if (!preset) return false;
-    applyPreset(vehicle.params, preset);
-    vehicle.setAppearance(preset.visual);
-    currentPresetId = preset.id;
-    writeStoredVehicleId(preset.id);
-    selectorVehiculo?.setCurrent(preset.id);
+  /** Actor activo; `null` durante la carga o en modo cámara libre. */
+  const activeVehicle = (): VehicleActor | null => vehicleRef?.current ?? null;
+
+  /** Meshes del actor que proyectan sombra (los bujes son un detalle de llanta). */
+  const castersOf = (actor: VehicleActor | null): AbstractMesh[] =>
+    actor ? actor.root.getChildMeshes().filter((mesh) => !mesh.name.startsWith('vehicle:hub-cap-')) : [];
+
+  /** Fábrica única de actores: selector, API de depuración y cambio comparten esto. */
+  const createActor = (definition: VehicleDefinition, pose: VehiclePose): VehicleActor => {
+    const options: CreateVehicleOptions = {
+      scene,
+      terrain,
+      spawn: { x: pose.x, z: pose.z, yaw: pose.yaw },
+      ...(controls ? { controls } : {}),
+    };
+    return createVehicle(options, definition);
+  };
+
+  /** Muestreo de huella del destino para las reglas de espacio, agua y bajada. */
+  const footprintSamples = (target: VehicleDefinition, pose: VehiclePose): VehiclePose[] => {
+    const fx = Math.sin(pose.yaw);
+    const fz = Math.cos(pose.yaw);
+    const halfLength = target.bodySize.lengthM / 2;
+    if (target.category === 'moto') {
+      return [halfLength, -halfLength].map((sign) => ({ x: pose.x + fx * sign, z: pose.z + fz * sign, yaw: pose.yaw }));
+    }
+    const rx = Math.cos(pose.yaw);
+    const rz = -Math.sin(pose.yaw);
+    const halfWidth = target.bodySize.widthM / 2;
+    return [
+      [-halfWidth, halfLength],
+      [halfWidth, halfLength],
+      [-halfWidth, -halfLength],
+      [halfWidth, -halfLength],
+    ].map(([side, front]) => ({
+      x: pose.x + side! * rx + front! * fx,
+      z: pose.z + side! * rz + front! * fz,
+      yaw: pose.yaw,
+    }));
+  };
+
+  /** Rebinding transaccional: sombras del vehículo + cámara y HUD restaurables. */
+  const prepareRebind = (next: VehicleActor, previous: VehicleActor): PreparedRebind => {
+    const cameraPosition = camera.position.clone();
+    const cameraTarget = camera.target ? camera.target.clone() : null;
+    const hudText = hud ? hud.textContent : null;
+    const previousCasters = castersOf(previous);
+    const nextCasters = castersOf(next);
+    const swapCasters = (enable: AbstractMesh[], disable: AbstractMesh[]): void => {
+      const generator = atmosphere?.shadowGenerator;
+      if (!generator) return;
+      for (const mesh of disable) generator.removeShadowCaster(mesh, true);
+      for (const mesh of enable) generator.addShadowCaster(mesh, true);
+    };
+    let applied = false;
+    return {
+      commit: () => {
+        swapCasters(nextCasters, previousCasters);
+        applied = true;
+      },
+      rollback: () => {
+        // Idempotente: sólo revierte lo que el commit llegó a aplicar.
+        if (applied) swapCasters(previousCasters, nextCasters);
+        camera.position.copyFrom(cameraPosition);
+        if (cameraTarget) camera.setTarget(cameraTarget);
+        if (hud && hudText !== null) hud.textContent = hudText;
+        applied = false;
+      },
+    };
+  };
+
+  /**
+   * Reglas del mundo para el cambio de vehículo. Esta milestone NO modela colisión
+   * con edificios: el espacio se valida contra el claro del repetidor y el terreno;
+   * el agua y la bajada usan la huella real del destino.
+   */
+  const switchContext: SwitchContext = {
+    terrain,
+    canPlace: (target, pose) => {
+      const blockedRadius =
+        (objective?.interactable.radiusM ?? FIRST_ROUTE.targetClearRadiusM) +
+        Math.max(target.bodySize.lengthM, target.bodySize.widthM) / 2;
+      if (Math.hypot(pose.x - FIRST_ROUTE.target.x, pose.z - FIRST_ROUTE.target.z) < blockedRadius) return false;
+      return Number.isFinite(terrain.heightAt(pose.x, pose.z));
+    },
+    waterSafe: (target, pose) => {
+      if (!water) return true;
+      return footprintSamples(target, pose).every((point) => water!.depthAt(point.x, point.z) <= AGUA_VADEO_M);
+    },
+    canExit: (target, pose) => {
+      const sideX = pose.x + Math.cos(pose.yaw) * target.exitOffsetM;
+      const sideZ = pose.z - Math.sin(pose.yaw) * target.exitOffsetM;
+      const height = terrain.heightAt(sideX, sideZ);
+      const normal = terrain.normalAt(sideX, sideZ);
+      if (!Number.isFinite(height) || !Number.isFinite(normal.y) || normal.y < 0.5) return false;
+      return !water || water.depthAt(sideX, sideZ) === 0;
+    },
+    create: createActor,
+    prepareRebind,
+    persist: (id) => {
+      currentVehicleId = id;
+      writeStoredVehicleId(id);
+      selectorVehiculo?.setCurrent(id);
+    },
+  };
+
+  /**
+   * Cambia al vehículo `id` (si es distinto) por el camino atómico. Devuelve false
+   * y deja todo como estaba si el id no existe o la pose de destino es inválida.
+   */
+  function cambiarVehiculo(id: string): boolean {
+    if (!vehicleRef) return false;
+    const definition = vehicleById(id);
+    if (!definition) {
+      selectorVehiculo?.setCurrent(currentVehicleId);
+      return false;
+    }
+    if (definition.id === currentVehicleId) {
+      selectorVehiculo?.setCurrent(currentVehicleId);
+      return true;
+    }
+    const result = switchVehicle(vehicleRef, definition, switchContext);
+    if (!result.ok) {
+      selectorVehiculo?.setCurrent(currentVehicleId);
+      return false;
+    }
     return true;
   }
   let playerControls: PlayerControls | null = null;
@@ -647,8 +775,9 @@ async function bootstrap(): Promise<void> {
     const resetToStartFn = (): void => {
       manualInput = false;
       manualStep = false;
-      vehicle?.setInput(null);
-      vehicle?.teleport(startX, startZ, yaw);
+      const active = activeVehicle();
+      active?.setInput(null);
+      active?.teleport(startX, startZ, yaw);
       player?.teleport(salidaInicial.x, salidaInicial.z, yaw);
       // La misión TAMBIÉN vuelve a cero. Sin esto, después de reparar podías apretar
       // R — que te devuelve al punto de partida, que es el objetivo del regreso — y
@@ -774,23 +903,16 @@ async function bootstrap(): Promise<void> {
       controls = createVehicleControls({ onReset: resetToStart });
     }
 
-    vehicle = createVehicle({
-      scene,
-      terrain,
-      spawn: { x: startX, z: startZ, yaw },
-      controls: controls ?? undefined,
-    });
-
-    // ----- Preset del vehículo (FASE 1: datos; FASE 2: + UI) -----
-    // `?vehicle=<id>` gana sobre localStorage; id desconocido → default. El
-    // default reproduce exactamente DEFAULT_VEHICLE_PARAMS: la misión no cambia.
+    // Vehículo activo inicial: `?vehicle=<id>` gana sobre localStorage; id
+    // desconocido → default. El default reproduce exactamente DEFAULT_VEHICLE_PARAMS.
     {
-      const wanted = params.get('vehicle') ?? readStoredVehicleId() ?? DEFAULT_PRESET_ID;
-      aplicarPreset(presetById(wanted) ? wanted : DEFAULT_PRESET_ID);
+      const wanted = params.get('vehicle') ?? readStoredVehicleId() ?? DEFAULT_VEHICLE_ID;
+      currentVehicleId = vehicleById(wanted) ? wanted : DEFAULT_VEHICLE_ID;
+      vehicleRef = { current: createActor(vehicleById(currentVehicleId)!, { x: startX, z: startZ, yaw }) };
     }
 
     // ----- Selector de vehículo (FASE 2: chip + panel de tarjetas) -----
-    // Las tarjetas salen de VEHICLE_PRESETS; elegir aplica al instante, persiste
+    // Las tarjetas salen del catálogo; elegir pasa por el cambio atómico, persiste
     // y cierra el panel. Si el DOM no trae los elementos, el juego sigue sin selector.
     {
       const panel = document.getElementById('vehiculos-panel');
@@ -801,9 +923,9 @@ async function bootstrap(): Promise<void> {
           panel,
           chip,
           canvas,
-          initialId: currentPresetId,
+          initialId: currentVehicleId,
           onSelect: (id) => {
-            if (aplicarPreset(id)) selectorVehiculo?.toggle(false);
+            if (cambiarVehiculo(id)) selectorVehiculo?.toggle(false);
           },
         });
         // El botón táctil usa click directo: el modelo press-and-hold de
@@ -821,7 +943,7 @@ async function bootstrap(): Promise<void> {
       player = createPlayer({
         scene,
         terrain,
-        vehicle,
+        vehicleRef: vehicleRef!,
         spawn: { x: salidaInicial.x, z: salidaInicial.z, yaw },
         ...(controlsForPlayer ? { controls: controlsForPlayer } : {}),
       });
@@ -867,10 +989,10 @@ async function bootstrap(): Promise<void> {
   // Se crea ACÁ y no al principio porque necesita las mallas que proyectan (4x4,
   // personaje, repetidor) y las que reciben (terreno, vías): antes de existir no hay
   // nada que anclar al shadow map. El sol conserva la dirección que ya tenía la escena.
-  const atmosphere = createAtmosphere(scene, {
+  const atmosphereBuilt = createAtmosphere(scene, {
     shadowCasters: [
       // Los bujes son un detalle de llanta; no necesitan emitir sombras propias.
-      ...(vehicle ? vehicle.root.getChildMeshes().filter((mesh) => !mesh.name.startsWith('vehicle:hub-cap-')) : []),
+      ...castersOf(activeVehicle()),
       ...(player ? player.root.getChildMeshes() : []),
       ...(objective ? objective.root.getChildMeshes() : []),
     ],
@@ -878,6 +1000,7 @@ async function bootstrap(): Promise<void> {
     // terrain receives shadows, so the vehicle remains grounded in the scene.
     shadowReceivers: [...terrain.meshes],
   });
+  atmosphere = atmosphereBuilt;
 
   window.addEventListener('resize', () => engine.resize());
 
@@ -925,13 +1048,14 @@ async function bootstrap(): Promise<void> {
    * distancia. Con el mismo encuadre, el personaje tapa media pantalla.
    */
   const updateChaseCamera = (dt: number): void => {
-    if (!vehicle) return;
+    const active = activeVehicle();
+    if (!active) return;
     const walking = player !== null && player.mode === 'on-foot';
 
-    const yawRad = walking ? (player!.telemetry().yawDeg * Math.PI) / 180 : vehicle.state.yaw;
+    const yawRad = walking ? (player!.telemetry().yawDeg * Math.PI) / 180 : active.state.yaw;
     const fx = Math.sin(yawRad);
     const fz = Math.cos(yawRad);
-    const body = walking ? player!.root.position : vehicle.root.position;
+    const body = walking ? player!.root.position : active.root.position;
 
     // En vertical (móvil) el 4x4 tapa media pantalla con el encuadre de escritorio:
     // el encuadre se abre con la relación de aspecto en vez de quedar fijo.
@@ -1015,20 +1139,21 @@ async function bootstrap(): Promise<void> {
 
   /** Teleport a la orilla segura, velocidad 0 y calado 0 (§5.3.3/§5.3.4). */
   const volverALaOrilla = (): void => {
-    if (!water || !vehicle) return;
-    const destino = water.nearestSafeShore(vehicle.state.x, vehicle.state.z) ?? ultimaPosicionSeca;
+    const active = activeVehicle();
+    if (!water || !active) return;
+    const destino = water.nearestSafeShore(active.state.x, active.state.z) ?? ultimaPosicionSeca;
     if (destino) {
       // En conducción el teleport pasa por el jugador para que personaje y 4x4
       // sigan siendo una sola posición; si no, directo al vehículo.
-      if (player && player.mode === 'driving') player.teleport(destino.x, destino.z, vehicle.state.yaw);
-      else vehicle.teleport(destino.x, destino.z, vehicle.state.yaw);
+      if (player && player.mode === 'driving') player.teleport(destino.x, destino.z, active.state.yaw);
+      else active.teleport(destino.x, destino.z, active.state.yaw);
       ultimaPosicionSeca = { x: destino.x, z: destino.z };
     } else {
       // Sin punto seguro ni última posición seca: se detiene acá (§5.3.4 pide
       // nunca bloquear; el próximo frame lo vuelve a intentar).
-      vehicle.state.speed = 0;
-      vehicle.state.lateral = 0;
-      vehicle.applyPose();
+      active.state.speed = 0;
+      active.state.lateral = 0;
+      active.applyPose();
     }
     caladoAgua = 0;
     hundimientoS = 0;
@@ -1045,7 +1170,8 @@ async function bootstrap(): Promise<void> {
    * Con `?water=0` (o si falló la carga) no hay reglas ni aviso.
    */
   const reglasAgua = (dt: number): void => {
-    if (!water || !vehicle) {
+    const active = activeVehicle();
+    if (!water || !active) {
       estadoAgua = 'seco';
       return;
     }
@@ -1057,11 +1183,11 @@ async function bootstrap(): Promise<void> {
       caladoAgua = Math.max(0, caladoAgua - dt * 0.8);
       return;
     }
-    const x = vehicle.state.x;
-    const z = vehicle.state.z;
+    const x = active.state.x;
+    const z = active.state.z;
     const prof = water.depthAt(x, z);
     if (prof === 0) ultimaPosicionSeca = { x, z };
-    const velocidad = Math.abs(vehicle.state.speed);
+    const velocidad = Math.abs(active.state.speed);
     const gas = leerGasConduciendo();
 
     if (water.isMuddy(x, z) && velocidad < AGUA_ENFANGADO_VELOCIDAD_MPS && gas > 0) enfangadoS += dt;
@@ -1097,11 +1223,11 @@ async function bootstrap(): Promise<void> {
 
     // Límite de velocidad objetivo post-paso, sin tocar la física.
     if (velocidadMaximaAgua < Infinity) {
-      if (vehicle.state.speed > velocidadMaximaAgua) vehicle.state.speed = velocidadMaximaAgua;
-      else if (vehicle.state.speed < -velocidadMaximaAgua) vehicle.state.speed = -velocidadMaximaAgua;
+      if (active.state.speed > velocidadMaximaAgua) active.state.speed = velocidadMaximaAgua;
+      else if (active.state.speed < -velocidadMaximaAgua) active.state.speed = -velocidadMaximaAgua;
     }
     // Calado visual: el modelo baja respecto de su pose; la física no cambia.
-    if (caladoAgua > 0) vehicle.root.position.y -= caladoAgua;
+    if (caladoAgua > 0) active.root.position.y -= caladoAgua;
   };
 
   /**
@@ -1121,16 +1247,17 @@ async function bootstrap(): Promise<void> {
     // guardado y dispare solo cuando te acercás.
     if (player && controlsForPlayer?.consumeToggle()) player.toggleVehicle();
 
+    const active = activeVehicle();
     if (player) {
       player.step(dt);
       // Bajarse con el 4x4 en movimiento NO lo congela: sigue rodando sin input y
       // frena solo. Congelado, volver a subir devolvía intacta la velocidad guardada
       // — o sea, salir del coche era un freno instantáneo y entrar, un teletransporte.
-      if (player.mode === 'on-foot' && vehicle && Math.abs(vehicle.telemetry().speed) > 0.05) {
-        vehicle.step(dt);
+      if (player.mode === 'on-foot' && active && Math.abs(active.telemetry().speed) > 0.05) {
+        active.step(dt);
       }
-    } else if (vehicle) {
-      vehicle.step(dt);
+    } else if (active) {
+      active.step(dt);
     }
 
     // Reglas del agua (AGUA §5): post-paso, con el mundo ya avanzado. El `dt` se
@@ -1155,16 +1282,17 @@ async function bootstrap(): Promise<void> {
 
   engine.runRenderLoop(() => {
     const dt = engine.getDeltaTime() / 1000;
+    const active = activeVehicle();
     // Tres caminos, en este orden y no en otro:
     //  1. `manualStep`: el guion ya avanzó el mundo con `step()`.
     //  2. `manualInput`: el guion manda el vehículo con `setInput`; el personaje no
     //     debe pisarlo. La misión no avanza: ese camino es el legado de medición.
     //  3. El jugador, que resuelve a pie o conduciendo.
     if (!manualStep) {
-      if (manualInput && vehicle) {
-        vehicle.step(dt);
+      if (manualInput && active) {
+        active.step(dt);
         reglasAgua(Math.min(dt, 0.1));
-      } else if (player || vehicle) stepSimulation(dt);
+      } else if (player || active) stepSimulation(dt);
     }
     // La cámara de persecución NO se toca en modo cámara libre: si se deja correr,
     // reencuadra al jugador en el primer frame y las capturas de medición salen con la
@@ -1172,18 +1300,18 @@ async function bootstrap(): Promise<void> {
     if (!freeCamera) updateChaseCamera(dt);
     if (minimap) {
       const walking = player !== null && player.mode === 'on-foot';
-      const body = walking ? player!.root.position : vehicle?.root.position ?? { x: startX, z: startZ };
+      const body = walking ? player!.root.position : active?.root.position ?? { x: startX, z: startZ };
       if (body) {
         const headingRad = walking
           ? ((player!.telemetry().yawDeg * Math.PI) / 180)
-          : (vehicle?.state.yaw ?? yaw);
+          : (active?.state.yaw ?? yaw);
         minimap.update({ x: body.x, z: body.z, headingRad });
       }
     }
     // El shadow map sigue al jugador: con el ancla fija en el origen, la sombra se
     // cortaba a 100 m y el 4x4 dejaba de proyectar apenas te alejabas del spawn.
-    const anclaSombra = player ? player.root.position : vehicle?.root.position;
-    if (anclaSombra) atmosphere.follow(anclaSombra.x, anclaSombra.z);
+    const anclaSombra = player ? player.root.position : active?.root.position;
+    if (anclaSombra) atmosphereBuilt.follow(anclaSombra.x, anclaSombra.z);
     terrain.cull(camera);
     // El LOD se recalcula con la cámara YA movida por la persecución y antes de
     // dibujar: al revés, la vegetación vería la pose del frame anterior.
@@ -1195,7 +1323,7 @@ async function bootstrap(): Promise<void> {
       if (ultimaMision) updateMissionHud(ultimaMision);
       if (hud && !hud.hidden) {
         const perf = formatSnapshot(diagnostics.snapshot(), terrain);
-        const veh = vehicle ? formatVehicleHud(vehicle.telemetry()) : '';
+        const veh = active ? formatActorHud(active) : '';
         const jug = player ? formatPlayerHud(player.telemetry()) : '';
         hud.textContent = [perf, veh, jug].filter((block) => block.length > 0).join('\n\n');
       }
@@ -1209,7 +1337,7 @@ async function bootstrap(): Promise<void> {
               ? player.mode === 'driving'
                 ? TECLAS_CONDUCIENDO
                 : TECLAS_A_PIE
-              : vehicle
+              : active
                 ? TECLAS_CONDUCIENDO
                 : CONTROLES_LIBRE) + ' · F3 ocultar ayuda'
           : PISTA_AYUDA;
@@ -1218,31 +1346,44 @@ async function bootstrap(): Promise<void> {
   });
 
   // ----- API de medición (CDP / capturas) -----
-  const debugVehicle = vehicle
+  const debugVehicle = vehicleRef
     ? {
-        telemetry: () => vehicle!.telemetry(),
+        telemetry: () => vehicleRef!.current.telemetry(),
+        category: () => vehicleRef!.current.category,
         setInput: (input: VehicleInput | null) => {
           manualInput = input !== null;
-          vehicle!.setInput(input);
+          vehicleRef!.current.setInput(input);
         },
-        teleport: (x: number, z: number, yaw: number) => vehicle!.teleport(x, z, yaw),
+        teleport: (x: number, z: number, yaw: number) => vehicleRef!.current.teleport(x, z, yaw),
         setState: (partial: Partial<{ x: number; z: number; yaw: number; speed: number; lateral: number }>) => {
-          const s = vehicle!.state;
+          const s = vehicleRef!.current.state;
           if (partial.x !== undefined) s.x = partial.x;
           if (partial.z !== undefined) s.z = partial.z;
           if (partial.yaw !== undefined) s.yaw = partial.yaw;
           if (partial.speed !== undefined) s.speed = partial.speed;
           if (partial.lateral !== undefined) s.lateral = partial.lateral;
-          vehicle!.applyPose();
+          vehicleRef!.current.applyPose();
         },
-        setParams: (partial: Partial<VehicleParams>) => Object.assign(vehicle!.params, partial),
-        params: () => ({ ...vehicle!.params }),
-        preset: () => currentPresetId,
-        setPreset: (id: string) => aplicarPreset(id),
+        setParams: (partial: Partial<VehicleParams>) => {
+          const active = vehicleRef!.current;
+          if (!isFourWheel(active)) return false;
+          Object.assign(active.params, partial);
+          return true;
+        },
+        params: () => {
+          const active = vehicleRef!.current;
+          return isFourWheel(active) ? { ...active.params } : null;
+        },
+        preset: () => currentVehicleId,
+        setPreset: (id: string) => cambiarVehiculo(id),
+        recover: () => {
+          const active = vehicleRef!.current as VehicleActor & { recover?: () => boolean };
+          return active.recover ? active.recover() : false;
+        },
         step: (seconds: number, dt = 1 / 60) => {
           manualStep = true;
           const steps = Math.max(1, Math.round(seconds / dt));
-          for (let i = 0; i < steps; i++) vehicle!.step(dt);
+          for (let i = 0; i < steps; i++) vehicleRef!.current.step(dt);
         },
         reset: () => resetToStart(),
       }
@@ -1331,7 +1472,7 @@ async function bootstrap(): Promise<void> {
     player?.dispose();
     objective?.dispose();
     controls?.dispose();
-    vehicle?.dispose();
+    activeVehicle()?.dispose();
     minimap?.dispose();
     roads?.dispose();
     water?.dispose();

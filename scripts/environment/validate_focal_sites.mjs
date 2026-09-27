@@ -64,6 +64,10 @@ const runtimeLoader = readFileSync(resolve(root, 'src/environment/village-landma
 assert.match(manifest.reconstruction, /stylized approximation/);
 assert.ok(manifest.assets.church && manifest.assets.plaza, 'church and plaza GLBs are required');
 assert.ok(!manifest.assets.parking, 'unverified parking geometry must not be exported');
+const waterDam = JSON.parse(readFileSync(resolve(root, 'public/water/water.json'), 'utf8')).dam;
+assert.ok(manifest.assets.dam.crestPoints >= 3, 'dam GLB must record the curved OSM crest');
+assert.equal(manifest.assets.dam.crestPoints, waterDam.crest.length, 'dam crest point count must match water.json');
+assert.equal(manifest.assets.dam.yawRad, 0, 'dam is authored in anchor-local coordinates, no yaw');
 let totalBytes = 0;
 let totalTriangles = 0;
 for (const [id, asset] of Object.entries(manifest.assets)) {

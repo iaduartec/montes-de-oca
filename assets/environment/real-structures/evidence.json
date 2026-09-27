@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "manual audit against PNOA 2023; checked by scripts/environment/validate_real_structure_evidence.mjs",
+  "source": {
+    "name": "PNOA 2023 (PNOA MA 2023)",
+    "provider": "IGN / CNIG",
+    "license": "CC BY 4.0",
+    "captureYear": 2023,
+    "gsdM": 0.35,
+    "service": "https://www.ign.es/wms-inspire/pnoa-ma",
+    "layer": "OI.OrthoimageCoverage",
+    "metadataRecord": "https://www.idee.es/csw-codsi-idee/srv/api/records/spaignPNOA2023",
+    "coverage": "Vuelo de 2023 para Castilla y Leon; ortofoto definitiva de maxima actualidad para Villafranca Montes de Oca (Burgos).",
+    "note": "La ortofoto solo respalda planta y cubierta. No hay fotografia de suelo de estos objetivos, asi que no se reclaman fachadas ni detalles verticales."
+  },
+  "targets": [
+    {
+      "id": "house-474364247",
+      "kind": "pilot-house",
+      "osmWayIds": [474364247],
+      "status": "corrected",
+      "confidence": "observado",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3091463,42.3880182,-3.3087063,42.3883582&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [474364247],
+        "wgs84Bounds": [-3.309021, 42.388133, -3.308879, 42.388261],
+        "crs": "EPSG:4326"
+      },
+      "visibleFeature": "Cubierta a dos aguas con cumbrera larga orientada ~NNO-SSE, paralela a la fachada de Calle Mayor; dos faldones que se encuentran en una sola linea de cumbrera.",
+      "before": "El builder tomaba la rama hip compacta (planta casi cuadrada, half_u/half_v = 1.06 por debajo del umbral 1.35), uniendo cada arista de la huella a un unico apice central, asi que la cubierta se leia como una piramide baja en vez de un faldon a dos aguas.",
+      "proposedCorrection": "Forzar la rama a dos aguas para que la cumbrera siga el eje principal de la huella OSM.",
+      "after": "Override PNOA_GABLE_IDS en scripts/environment/build_village_pilot.py; el manifiesto regenerado registra roofShape='gable' y ridgeAzimuthDeg=-66.3.",
+      "comparison": {
+        "beforeView": "output/real_structures/model/house_474364247.png",
+        "afterView": "output/real_structures/model/after_house_474364247.png"
+      }
+    },
+    {
+      "id": "house-474364248",
+      "kind": "pilot-house",
+      "osmWayIds": [474364248],
+      "status": "corrected",
+      "confidence": "observado",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3091751,42.3879131,-3.3087351,42.3882531&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [474364248],
+        "wgs84Bounds": [-3.309047, 42.388024, -3.3089, 42.388148],
+        "crs": "EPSG:4326"
+      },
+      "visibleFeature": "Cubierta a dos aguas con cumbrera larga inclinada ~NNO-SSE siguiendo la alineacion de la calle; el faldon cubre toda la crujia.",
+      "before": "Igual que 474364247: planta casi cuadrada (ratio 1.07) que caia en la rama hip/pyramid de un solo apice, visiblemente distinta del faldon a dos aguas de la ortofoto.",
+      "proposedCorrection": "Forzar la rama a dos aguas con la cumbrera sobre el eje principal de la huella.",
+      "after": "Override PNOA_GABLE_IDS en scripts/environment/build_village_pilot.py; el manifiesto regenerado registra roofShape='gable' y ridgeAzimuthDeg=-73.4.",
+      "comparison": {
+        "beforeView": "output/real_structures/model/house_474364248.png",
+        "afterView": "output/real_structures/model/after_house_474364248.png"
+      }
+    },
+    {
+      "id": "house-818885678",
+      "kind": "pilot-house",
+      "osmWayIds": [818885678],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3092136,42.3878509,-3.3087736,42.3881909&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [818885678],
+        "wgs84Bounds": [-3.309058, 42.388004, -3.308933, 42.388043],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "La PNOA 2023 muestra una cubierta a dos aguas alineada con el mismo eje que ya produce el builder (manifest roofShape='gable'). A 0,35 m/px no se demuestra una discrepancia atribuible al asset, asi que no se reclama edicion."
+    },
+    {
+      "id": "house-1509797545",
+      "kind": "pilot-house",
+      "osmWayIds": [1509797545],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3092353,42.3877586,-3.3087953,42.3880986&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [1509797545],
+        "wgs84Bounds": [-3.309081, 42.387809, -3.308937, 42.38802],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "Cubierta a dos aguas sobre la crujia N-S; coincide en planta y eje con el builder actual. Sin discrepancia demostrable en la ortofoto."
+    },
+    {
+      "id": "house-1509797544",
+      "kind": "pilot-house",
+      "osmWayIds": [1509797544],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3092868,42.3876148,-3.3088467,42.3879547&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [1509797544],
+        "wgs84Bounds": [-3.309156, 42.387738, -3.308974, 42.387813],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "Cubierta a dos aguas coherente con el builder; la posible diferencia en el remate no es resoluble a la resolucion de la ortofoto y no se atribuye al asset."
+    },
+    {
+      "id": "house-305647007",
+      "kind": "pilot-house",
+      "osmWayIds": [305647007],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3092735,42.3875434,-3.3088335,42.3878834&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [305647007],
+        "wgs84Bounds": [-3.309164, 42.387679, -3.308981, 42.387742],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "El faldon visible no se separa de forma fiable del edificio vecino con cubierta a cuatro aguas; sin discrepancia atribuible al asset."
+    },
+    {
+      "id": "house-310458426",
+      "kind": "pilot-house",
+      "osmWayIds": [310458426],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3088568,42.3875693,-3.3084168,42.3879093&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [310458426],
+        "wgs84Bounds": [-3.308702, 42.387693, -3.308598, 42.38783],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "Cubierta a dos aguas alineada con el eje de la huella; coincide con el builder actual. Sin discrepancia demostrable."
+    },
+    {
+      "id": "house-433198559",
+      "kind": "pilot-house",
+      "osmWayIds": [433198559],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3088863,42.3874961,-3.3084463,42.3878361&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [433198559],
+        "wgs84Bounds": [-3.308708, 42.387593, -3.308611, 42.387698],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "La huella OSM cubre el ala oeste; la cubierta visible no difiere del faldon a dos aguas actual de forma demostrable en la ortofoto."
+    },
+    {
+      "id": "church-90614388",
+      "kind": "church",
+      "osmWayIds": [90614388],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3093467,42.3883895,-3.3086667,42.3889095&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [90614388],
+        "wgs84Bounds": [-3.3092084, 42.3885488, -3.3087825, 42.388768],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "La PNOA 2023 muestra una cubierta a dos aguas CRUZADAS (nave N-S + crucero E-O) con un faldon visible; el asset es un unico faldon estilizado y no hay fotografia de suelo que justifique las vertientes faltantes. Reorientar un solo faldon seria adivinar, asi que no se reclama edicion."
+    },
+    {
+      "id": "plaza-645040295-741760074",
+      "kind": "plaza",
+      "osmWayIds": [645040295, 741760074],
+      "status": "blocked",
+      "confidence": "sin evidencia",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3092268,42.3886780,-3.3085468,42.3891980&WIDTH=512&HEIGHT=512",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [645040295, 741760074],
+        "wgs84Bounds": [-3.3092356, 42.3887259, -3.3086786, 42.3891821],
+        "crs": "EPSG:4326"
+      },
+      "blockerReason": "El asset de la plaza son cuatro muebles genericos de bajo poligonaje; la ortofoto solo muestra la superficie pavimentada y no puede justificar geometria ni colocacion de mobiliario. Sin discrepancia respaldable."
+    },
+    {
+      "id": "dam-168459142",
+      "kind": "dam",
+      "osmWayIds": [168459142],
+      "status": "corrected",
+      "confidence": "observado",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3172827,42.3658843,-3.3161827,42.3667243&WIDTH=640&HEIGHT=640",
+      "author": "Instituto Geografico Nacional (IGN/CNIG)",
+      "license": "CC BY 4.0",
+      "capturedAt": "2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)",
+      "locatedBy": {
+        "osmWayIds": [168459142],
+        "wgs84Bounds": [-3.3173329, 42.3658641, -3.3156499, 42.3670366],
+        "crs": "EPSG:4326"
+      },
+      "visibleFeature": "Presa en arco: la coronacion de hormigon se curva ~45 m sobre una cuerda de 189 m, con el embalse (agua verde) aguas arriba de la curva.",
+      "before": "make_dam emitia un cajon recto sobre la cuerda a-b (water.json solo publicaba los extremos), asi que la coronacion era una barra recta que no seguia el arco real.",
+      "proposedCorrection": "Publicar la polilinea real de la coronacion (way OSM 168459142) en water.json y barrer el cuerpo de hormigon a lo largo de ella.",
+      "after": "public/water/water.json dam.crest (18 nodos; 216,4 m reales vs 188,9 m de cuerda); build_focal_sites.py make_dam la barre; el manifiesto focal registra crestPoints=18 y yawRad=0.",
+      "comparison": {
+        "beforeView": "output/real_structures/model/dam.png",
+        "afterView": "output/real_structures/model/after_dam.png"
+      }
+    }
+  ]
+}
