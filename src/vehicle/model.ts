@@ -17,6 +17,9 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { WheelLayout } from './attitude';
+import type { VehicleBodySize } from './types';
+
+export type FourWheelVisual = 'estandar' | 'patrulla' | 'carga' | 'explorador' | 'turismo' | 'rally';
 
 export interface VehicleModel {
   readonly root: TransformNode;
@@ -24,7 +27,7 @@ export interface VehicleModel {
   readonly wheels: readonly TransformNode[];
   /** Aplica el giro de rueda (rad) y el ángulo de dirección (rad). */
   setWheelPose(spin: number, steer: number): void;
-  setAppearance(id: 'estandar' | 'patrulla' | 'carga'): void;
+  setAppearance(id: FourWheelVisual): void;
   dispose(): void;
 }
 
@@ -90,7 +93,92 @@ function taperedBox(
   return mesh;
 }
 
-export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadius: number, wheelWidth = 0.32): VehicleModel {
+function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, size: VehicleBodySize): VehicleModel {
+  const root = new TransformNode('vehicle:root', scene);
+  const palettes: Record<string, Color3> = {
+    explorador: new Color3(0.28, 0.43, 0.31),
+    turismo: new Color3(0.33, 0.42, 0.54),
+    rally: new Color3(0.72, 0.3, 0.2),
+  };
+  const bodyMat = material(scene, 'vehicle:body', palettes[visual] ?? new Color3(0.4, 0.43, 0.32));
+  const glassMat = material(scene, 'vehicle:glass', new Color3(0.1, 0.17, 0.22), 0.3);
+  const trimMat = material(scene, 'vehicle:trim', new Color3(0.12, 0.12, 0.13));
+  const wheelMat = material(scene, 'vehicle:wheel', new Color3(0.09, 0.09, 0.1));
+  const mats = [bodyMat, glassMat, trimMat, wheelMat];
+  const parts: Mesh[] = [];
+  const width = size.widthM * 0.78;
+  const length = size.lengthM;
+  const chassisY = wheelRadius + (visual === 'explorador' ? 0.43 : 0.29);
+  parts.push(taperedBox(scene, `vehicle:${visual}-chassis`, bodyMat, width, length, width * 0.94, length * 0.97, 0.42, 0, chassisY, 0));
+  const cabinLength = visual === 'explorador' ? length * 0.48 : length * 0.45;
+  const cabinHeight = Math.max(0.35, size.heightM - chassisY - 0.3);
+  parts.push(taperedBox(scene, `vehicle:${visual}-cabin`, bodyMat, width * 0.86, cabinLength,
+    width * (visual === 'explorador' ? 0.8 : 0.65), cabinLength * 0.82, cabinHeight,
+    0, chassisY + 0.21 + cabinHeight / 2, visual === 'explorador' ? -0.22 : -0.15));
+  parts.push(box(scene, `vehicle:${visual}-windshield`, glassMat, width * 0.63, cabinHeight * 0.43, 0.04,
+    0, chassisY + 0.25 + cabinHeight * 0.56, cabinLength * 0.4 - 0.15));
+  for (const side of [-1, 1] as const) {
+    parts.push(box(scene, `vehicle:${visual}-side-glass-${side}`, glassMat, 0.035, cabinHeight * 0.35,
+      cabinLength * 0.48, side * width * 0.39, chassisY + 0.25 + cabinHeight * 0.58, -0.18));
+  }
+  if (visual === 'explorador') {
+    parts.push(box(scene, 'vehicle:explorador-roof-rack', trimMat, width * 0.68, 0.06, cabinLength * 0.68,
+      0, chassisY + cabinHeight + 0.45, -0.22));
+    parts.push(box(scene, 'vehicle:explorador-front-guard', trimMat, width * 0.85, 0.22, 0.13,
+      0, chassisY, length / 2 + 0.04));
+  } else if (visual === 'turismo') {
+    parts.push(taperedBox(scene, 'vehicle:turismo-trunk', bodyMat, width * 0.94, length * 0.24,
+      width * 0.88, length * 0.22, 0.16, 0, chassisY + 0.28, -length * 0.37));
+  } else {
+    parts.push(box(scene, 'vehicle:rally-spoiler', trimMat, width * 0.75, 0.08, 0.26,
+      0, chassisY + 0.65, -length * 0.47));
+    parts.push(box(scene, 'vehicle:rally-roof-scoop', trimMat, 0.43, 0.13, 0.5,
+      0, chassisY + cabinHeight + 0.42, -0.17));
+  }
+  for (const side of [-1, 1] as const) {
+    parts.push(box(scene, `vehicle:${visual}-headlight-${side}`, glassMat, 0.25, 0.12, 0.04,
+      side * width * 0.32, chassisY + 0.13, length / 2));
+  }
+  const byMaterial = new Map<StandardMaterial, Mesh[]>();
+  for (const part of parts) {
+    const group = byMaterial.get(part.material as StandardMaterial) ?? [];
+    group.push(part);
+    byMaterial.set(part.material as StandardMaterial, group);
+  }
+  let groupIndex = 0;
+  for (const group of byMaterial.values()) {
+    const merged = group.length === 1 ? group[0]! : Mesh.MergeMeshes(group, true, true, undefined, false, false);
+    if (!merged) throw new Error(`Could not merge ${visual} body`);
+    merged.name = groupIndex++ === 0 ? `vehicle:body-${visual}` : `vehicle:detail-${visual}-${groupIndex}`;
+    merged.parent = root;
+  }
+  const offsets: readonly (readonly [number, number])[] = [
+    [-layout.halfTrack, layout.front], [layout.halfTrack, layout.front],
+    [-layout.halfTrack, -layout.rear], [layout.halfTrack, -layout.rear],
+  ];
+  const wheels = offsets.map(([x, z], i) => {
+    const hub = new TransformNode(`vehicle:wheel-hub-${i}`, scene);
+    hub.parent = root;
+    hub.position.set(x, wheelRadius, z);
+    const tyre = CreateCylinder(`vehicle:wheel-${i}`, { height: 0.3, diameter: 2 * wheelRadius, tessellation: 16 }, scene);
+    tyre.material = wheelMat;
+    tyre.rotation.z = Math.PI / 2;
+    tyre.parent = hub;
+    return hub;
+  });
+  return {
+    root, wheels,
+    setWheelPose: (spin, steer) => wheels.forEach((hub, i) => hub.rotation.set(spin, i < 2 ? steer : 0, 0)),
+    setAppearance: () => {},
+    dispose: () => { root.dispose(false, true); mats.forEach((mat) => mat.dispose()); },
+  };
+}
+
+export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadius: number, wheelWidth = 0.32,
+  visual?: FourWheelVisual, bodySize?: VehicleBodySize): VehicleModel {
+  if (visual && bodySize && (visual === 'explorador' || visual === 'turismo' || visual === 'rally')) {
+    return createCatalogBody(scene, layout, wheelRadius, visual, bodySize);
+  }
   const root = new TransformNode('vehicle:root', scene);
 
   // Paleta de vehículo de trabajo rural: verde aceituna apagado, negro mate y
@@ -233,6 +321,17 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   cargoKit.setEnabled(false);
   cargoKit.isPickable = false;
   cargoKit.receiveShadows = false;
+
+  if (visual && bodySize) {
+    root.getChildMeshes().find((mesh) => mesh.name === 'vehicle:static-0')!.name = `vehicle:body-${visual}`;
+    if (visual !== 'patrulla') patrolKit.dispose();
+    if (visual !== 'carga') cargoKit.dispose();
+    if (visual === 'patrulla') patrolKit.setEnabled(true);
+    if (visual === 'carga') cargoKit.setEnabled(true);
+    bodyMat.diffuseColor = visual === 'patrulla'
+      ? new Color3(0.69, 0.7, 0.64)
+      : visual === 'carga' ? new Color3(0.48, 0.38, 0.25) : new Color3(0.4, 0.43, 0.32);
+  }
 
   const offsets: readonly (readonly [number, number])[] = [
     [-layout.halfTrack, layout.front],
