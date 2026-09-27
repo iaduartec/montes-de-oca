@@ -1,11 +1,13 @@
 import { DEFAULT_VEHICLE_PARAMS, type VehicleParams } from './physics';
 
-/** Preset de parámetros del vehículo (FASE 1: datos, sin UI). */
+/** Legacy four-wheel presets; the catalog reuses these exact values. */
+export type LegacyVehicleVisual = 'estandar' | 'patrulla' | 'carga';
+
 export interface VehiclePreset {
   id: string;
   name: string;
   summary: string;
-  visual: 'estandar' | 'patrulla' | 'carga';
+  visual: LegacyVehicleVisual;
   params: Partial<VehicleParams>;
 }
 
