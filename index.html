@@ -186,6 +186,8 @@
         font-family: system-ui, sans-serif;
         box-shadow: 0 8px 28px rgba(12, 17, 16, 0.4);
         backdrop-filter: blur(4px);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
       }
       #vehiculos-panel[hidden] {
         display: none;
@@ -243,6 +245,17 @@
       .vehiculo-lista {
         display: grid;
         gap: 8px;
+      }
+      .vehiculo-grupo + .vehiculo-grupo {
+        margin-top: 6px;
+      }
+      .vehiculo-grupo-titulo {
+        margin: 0 0 4px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(216, 195, 162, 0.85);
       }
       .vehiculo-tarjeta {
         display: block;
@@ -536,7 +549,7 @@
     <div id="vehiculos-panel" role="dialog" aria-label="Selector de vehículo" hidden>
       <h2>Vehículo <span class="vehiculo-cierre">V o Esc cierra</span></h2>
       <div class="vehiculo-lista"></div>
-      <p class="vehiculo-ayuda">Elegir aplica el preset al instante y lo recuerda.</p>
+      <p class="vehiculo-ayuda">Elegir cambia el vehículo al instante y lo recuerda.</p>
     </div>
     <div id="controls">
       F3: ayuda y diagnóstico
