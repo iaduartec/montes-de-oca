@@ -57,6 +57,8 @@ export interface TerrainConfig {
   /** Punto de aparición en WGS84 (el pueblo), o `null` si el config no lo trae. */
   readonly spawn: GeographicOrigin | null;
   readonly tiles: readonly TerrainTileRef[];
+  /** Optional local static orthophoto manifest; legacy configs omit it. */
+  readonly orthophotoManifestUrl?: string;
 }
 
 /** Ruta pública del config. Es la ÚNICA URL fijada por código. */
@@ -142,6 +144,11 @@ export function parseTerrainConfig(raw: unknown): TerrainConfig {
   if (raw.crs !== 'EPSG:25830') {
     throw new Error('config: "crs" debe ser EPSG:25830 (UTM 30N)');
   }
+  if (raw.orthophotoManifestUrl !== undefined &&
+      (typeof raw.orthophotoManifestUrl !== 'string' || !raw.orthophotoManifestUrl.trim() ||
+       !raw.orthophotoManifestUrl.trim().startsWith('/') || raw.orthophotoManifestUrl.trim().startsWith('//'))) {
+    throw new Error('config: "orthophotoManifestUrl" debe ser una ruta local absoluta si está presente');
+  }
   const bounds = parseProjectedBounds(raw.bounds);
   if (bounds.e[1] <= bounds.e[0] || bounds.n[1] <= bounds.n[0]) {
     throw new Error('config: los límites UTM deben estar en orden creciente');
@@ -157,6 +164,9 @@ export function parseTerrainConfig(raw: unknown): TerrainConfig {
     viewRadius,
     spawn: parseOptionalOrigin(raw.spawn),
     tiles: parseTiles(raw.tiles),
+    ...(typeof raw.orthophotoManifestUrl === 'string' && raw.orthophotoManifestUrl.trim()
+      ? { orthophotoManifestUrl: raw.orthophotoManifestUrl.trim() }
+      : {}),
   };
 }
 

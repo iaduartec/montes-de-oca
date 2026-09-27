@@ -311,6 +311,7 @@ def main() -> int:
         "viewRadius": 900,
         "crs": f"EPSG:{CRS_EPSG}",
         "bounds": {"e": [E0, E0 + SIDE_M], "n": [N0, N0 + SIDE_M], "sampling": sampling},
+        "orthophotoManifestUrl": "/terrain/orthophoto.json",
         "spawn": {"lon": village_lon, "lat": village_lat},
         "tiles": tile_refs,
     }

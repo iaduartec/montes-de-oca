@@ -1,0 +1,70 @@
+{
+  "asset": {
+    "bytes": 7590072,
+    "height": 6144,
+    "mimeType": "image/webp",
+    "sha256": "98501ed7a9766b3f72c5c8c039e61cdb980556c186d1231e59ddc40515227292",
+    "url": "/terrain/orthophoto.webp",
+    "width": 6144
+  },
+  "budgets": {
+    "decodedBudgetBytes": 209715200,
+    "decodedRgbaBytes": 150994944,
+    "decodedRgbaPlusMipsBytes": 201326580,
+    "decodedRgbaPlusMipsMiB": 192.0,
+    "fileBudgetBytes": 36700160,
+    "fileBytes": 7590072,
+    "fileMiB": 7.24
+  },
+  "coverage": {
+    "crs": "EPSG:25830",
+    "eMax": 477500,
+    "eMin": 471500,
+    "nMax": 4695000,
+    "nMin": 4689000,
+    "pixelSizeM": 0.9765625
+  },
+  "encoding": {
+    "format": "image/webp",
+    "method": 4,
+    "pillowVersion": "12.3.0",
+    "quality": 82
+  },
+  "generator": "scripts/terrain/build_terrain_orthophoto.py",
+  "pillowVersion": "12.3.0",
+  "schemaVersion": 1,
+  "source": {
+    "attribution": "Ortofoto PNOA Máxima Actualidad, IGN/CNIG",
+    "dates": [
+      "2023-09"
+    ],
+    "fetchedUtc": "2026-09-27T12:17:06.599281+00:00",
+    "layer": "OI.OrthoimageCoverage",
+    "license": "CC BY 4.0 scne.es",
+    "mosaicLayer": "OI.MosaicElement",
+    "quadrants": {
+      "ne": {
+        "bytes": 1660771,
+        "sha256": "dfbdf513fcce91ef068b8391894a8f07d28afab1c377351aa2305cd3cc78c675"
+      },
+      "nw": {
+        "bytes": 1779830,
+        "sha256": "05e13df9d10ecdcbb9ce7a8713968007b14fe78a29caecf8010e2e3fe0f804e9"
+      },
+      "se": {
+        "bytes": 1923117,
+        "sha256": "cfc669e5c237f3cd491af06c40f6747c22f958b3bf43d34413aad0db446d32b2"
+      },
+      "sw": {
+        "bytes": 1843093,
+        "sha256": "5855b0034e4bf9a27d77b26431c7af4364b32dec191b779d91d2c65a7b254c12"
+      }
+    },
+    "resolutions": [
+      "0.25"
+    ],
+    "service": "https://www.ign.es/wms-inspire/pnoa-ma",
+    "sourceManifestSha256": "b0fb3117fad5aa148b511a2c6198339ce6bc3b0b7af5f38170b5460f4c077ba0",
+    "tileCenterCount": 36
+  }
+}

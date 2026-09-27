@@ -3,11 +3,13 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { Frustum } from '@babylonjs/core/Maths/math.frustum';
 import type { Plane } from '@babylonjs/core/Maths/math.plane';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { Scene } from '@babylonjs/core/scene';
 import type { TerrainConfig } from './config';
+import { loadTerrainOrthophotoTexture, terrainTileOrthophotoUV, type TerrainTextureFactory } from './terrain-orthophoto';
 import {
   assertValidGrid,
   containsPoint,
@@ -119,6 +121,7 @@ function buildTileMesh(
   verticalDatum: number,
   globalMinMeters: number,
   globalMaxMeters: number,
+  orthophotoUVs: Float32Array | null,
 ): TileMeshEntry {
   const grid = tile.grid;
   const columns = grid.columns;
@@ -126,6 +129,7 @@ function buildTileMesh(
   const vertexCount = columns * rows;
   const datumOffset = verticalDatum * sampler.worldScale;
   const heightSpan = globalMaxMeters - globalMinMeters;
+  let orthoOffset = 0;
 
   const positions = new Float32Array(vertexCount * 3);
   const normals = new Float32Array(vertexCount * 3);
@@ -160,13 +164,13 @@ function buildTileMesh(
       const pasto = Math.max(0, 1 - alturaN * 2.2);
       const k = 1 + pasto * 0.11 * Math.sin(x * 0.078 + z * 0.122) * Math.cos(z * 0.094 - x * 0.066);
       const verdor = 1 + pasto * 0.07 * Math.cos(x * 0.046 - z * 0.038);
-      colors[c++] = rgb[0] * k;
-      colors[c++] = rgb[1] * k * verdor;
-      colors[c++] = rgb[2] * k * verdor;
+      colors[c++] = orthophotoUVs ? 1 : rgb[0] * k;
+      colors[c++] = orthophotoUVs ? 1 : rgb[1] * k * verdor;
+      colors[c++] = orthophotoUVs ? 1 : rgb[2] * k * verdor;
       colors[c++] = 1;
 
-      uvs[t++] = i / (columns - 1);
-      uvs[t++] = j / (rows - 1);
+      uvs[t++] = orthophotoUVs ? orthophotoUVs[orthoOffset++]! : i / (columns - 1);
+      uvs[t++] = orthophotoUVs ? orthophotoUVs[orthoOffset++]! : j / (rows - 1);
     }
   }
 
@@ -367,6 +371,7 @@ export async function loadTerrain(
   scene: Scene,
   config: TerrainConfig,
   fetchImpl: typeof fetch = fetch,
+  options: { readonly createTexture?: TerrainTextureFactory } = {},
 ): Promise<WorldTerrain> {
   const samplers: HeightfieldSampler[] = [];
   const tileData: TerrainTileData[] = [];
@@ -398,12 +403,31 @@ export async function loadTerrain(
   material.ambientColor = new Color3(0.2, 0.2, 0.2);
   // Winding del heightfield: se desactiva el back-face culling (un solo material).
   material.backFaceCulling = false;
+  let orthophotoLoaded = false;
+  if (config.orthophotoManifestUrl) {
+    const textureFactory: TerrainTextureFactory = options.createTexture ?? ((targetScene, url, onLoad, onError) =>
+      new Texture(url, targetScene, false, true, Texture.TRILINEAR_SAMPLINGMODE, onLoad, onError));
+    const texture = await loadTerrainOrthophotoTexture(scene, config.orthophotoManifestUrl, config.bounds, fetchImpl, textureFactory);
+    if (texture) {
+      material.diffuseTexture = texture;
+      orthophotoLoaded = true;
+    }
+  }
   material.freeze();
 
   const entries: TileMeshEntry[] = [];
   for (let i = 0; i < tileData.length; i++) {
     entries.push(
-      buildTileMesh(scene, tileData[i]!, samplers[i]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters),
+      buildTileMesh(
+        scene,
+        tileData[i]!,
+        samplers[i]!,
+        material,
+        config.verticalDatum,
+        globalMinMeters,
+        globalMaxMeters,
+        orthophotoLoaded ? terrainTileOrthophotoUV(tileData[i]!.grid, config.bounds) : null,
+      ),
     );
   }
 

@@ -20,3 +20,25 @@ asset derivado. Texto sugerido:
 
 El detalle de la descarga (URL exacta, SHA256 y dimensiones) está en
 `data/terrain/raw/fetch_manifest.json`.
+
+## Ortofoto PNOA Máxima Actualidad
+
+La textura `orthophoto.webp` es una obra derivada de la ortofoto PNOA Máxima
+Actualidad del mosaico de septiembre de 2023 (resolución oficial: 0,25 m),
+recortada a EPSG:25830, remuestreada a 0,9765625 m/píxel y codificada como
+WebP. La fórmula abreviada de atribución es:
+
+> Obra derivada de PNOA 2023-09 CC-BY 4.0 scne.es.
+
+- **Productores:** Instituto Geográfico Nacional (IGN) y Centro Nacional de
+  Información Geográfica (CNIG).
+- **Servicio/capa:** [WMS PNOA Máxima Actualidad](https://www.ign.es/wms-inspire/pnoa-ma),
+  `OI.OrthoimageCoverage`; metadatos de fecha y resolución de `OI.MosaicElement`.
+- **Licencia:** CC BY 4.0, compatible con la licencia de uso del IGN/CNIG:
+  https://creativecommons.org/licenses/by/4.0/.
+- **Procedencia, fechas por tesela y hashes:**
+  `data/terrain/raw/pnoa_orthophoto/source_manifest.json` y
+  `public/terrain/orthophoto.json`.
+
+El reconocimiento abreviado sigue la fórmula indicada por la
+[licencia de productos y servicios geográficos del IGN/CNIG](https://www.ign.es/resources/licencia/Condiciones_licenciaUso_IGN.pdf).

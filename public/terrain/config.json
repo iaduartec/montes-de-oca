@@ -13,6 +13,7 @@
   "verticalDatum": 870.0,
   "viewRadius": 900,
   "crs": "EPSG:25830",
+  "orthophotoManifestUrl": "/terrain/orthophoto.json",
   "bounds": {
     "e": [
       471500.0,
