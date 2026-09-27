@@ -126,6 +126,7 @@ async function waitReady(cdp, probe) {
 
 async function navigateReady(cdp, url, probe) {
   for (let attempt = 0; attempt < 2; attempt++) {
+    const errorsBefore = cdp.errors.length;
     await cdp.send('Page.navigate', { url });
     try {
       await waitReady(cdp, probe);
@@ -133,6 +134,10 @@ async function navigateReady(cdp, url, probe) {
     } catch (error) {
       const fetchAborted = await cdp.evaluate("document.body.innerText.includes('ERROR\\nFailed to fetch')").catch(() => false);
       if (!fetchAborted || attempt > 0) throw error;
+      // El primer arranque puede abortar una carga por la red del entorno (pasa
+      // también en el baseline). Esos errores son del intento descartado, no de
+      // la app que se mide: se limpian y el reintento es la medición real.
+      cdp.errors.length = errorsBefore;
       console.warn('[selector] carga de datos abortada en el primer arranque; se reintenta una vez');
     }
   }
