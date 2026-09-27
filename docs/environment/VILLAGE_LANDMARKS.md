@@ -27,3 +27,12 @@ Las vistas antes/después reproducibles (render cenital del GLB alineado al bbox
 - Capturas: vistas fijas reproducibles con `scripts/environment/capture_focal_sites.mjs` (iglesia, plaza, presa y vehículo) guardadas fuera del repositorio, por ejemplo `output/real-structures/browser/`. Las medidas de FPS proceden de Chrome con SwiftShader y sirven para detectar cambios en ese entorno de emulación; no predicen rendimiento en una GPU de escritorio ni en un móvil real.
 
 Verificación: `npm run test:focal-sites`, `npm run test:water`, `npm run build` y `npm test`. Para regenerar los GLB hace falta Blender; la versión verificada en el entorno fue Blender 4.0.2.
+
+## Verificación final del delivery conjunto
+
+- `npm test` → OK (typecheck + validadores, incluido `validate_real_structure_evidence.mjs --phase=source`: 116 checks, 3 corregidos, 8 blockers).
+- `npm run build` → OK.
+- `node scripts/vehicle/drive_catalog.mjs` con `npm run dev` → TODO OK: los 8 vehículos se conducen, las dos motos caen y se recuperan, el cambio en movimiento se rechaza sin tocar preset/storage, 11 cambios entre categorías con recursos gráficos estables (tri 674762, vert 1823402) y 0 errores de consola.
+- Vistas reproducibles en `output/real-structures/browser/` (iglesia, plaza, presa, vehículo) y renders cenitales en `output/real_structures/model/`.
+
+**Estado del delivery: INCOMPLETO.** `node scripts/environment/validate_real_structure_evidence.mjs --phase=final` falla con `sin release blockers`: 8 de los 11 objetivos (iglesia, plaza y seis casas) no tienen una corrección visible demostrable con la ortofoto PNOA 2023 y quedan como release blockers según la spec.
