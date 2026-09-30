@@ -1,29 +1,39 @@
-# Kit para mejorar un juego Babylon.js
+# Montes de Oca Offroad
 
-Instrucciones reutilizables para mejorar un videojuego 3D Babylon.js existente. Las reglas generales son concisas, las skills están separadas por especialidad y el objetivo operativo sirve para ejecutar una pasada de mejora visual.
+Videojuego 3D off-road ambientado en Villafranca Montes de Oca (Burgos). El objetivo es construir una experiencia jugable basada en el terreno y los elementos reales de la zona.
 
-## Contenido
+## Stack y mundo
 
-- `AGENTS.md`: reglas permanentes de ingeniería y calidad.
-- `.agents/skills/babylon-*/SKILL.md`: ocho guías específicas sobre fundamentos, renderizado, assets, vehículos, personajes, mundo, rendimiento y depuración.
-- `OBJECTIVE.md`: objetivo operativo para entregar al orquestador de código cuando quieras mejorar el juego actual.
+- Babylon.js 8, TypeScript y Vite.
+- Datos geográficos de MDT/IGN, ortofoto PNOA y OpenStreetMap (OSM), integrados en EPSG:25830.
+- Sistemas existentes: terreno, carreteras y pistas, pueblo, vegetación, agua, vehículos, personajes y NPC, minimapa y misión.
 
-## Cómo usarlo
+## Empezar
 
-1. Extrae o copia el contenido de este kit a la raíz del repositorio Babylon.js. Combínalo con las reglas existentes de `AGENTS.md`; conserva las instrucciones específicas de tu proyecto.
-2. Mantén `.agents/skills/` en esa misma raíz. Indica al agente que siga `AGENTS.md` y lea las skills pertinentes.
-3. Inicia una sesión diciendo: «Lee `OBJECTIVE.md` y ejecuta la pasada de mejora en este repositorio».
-4. Revisa el código resultante, la comparación visual, las comprobaciones y las limitaciones de assets/licencias o ejecución incluidas en el informe final.
+```bash
+npm install
+npm run dev
+```
 
-El kit no incluye assets de juego ni dependencias. Babylon.js evoluciona: verifica cada API con la versión instalada y la [documentación oficial](https://doc.babylonjs.com/).
+`npm run build` compila y genera la versión de producción. `npm test` ejecuta las comprobaciones del proyecto.
 
-## Referencias oficiales
+## Estructura
 
-- [Documentación de Babylon.js](https://doc.babylonjs.com/)
-- [Importación glTF](https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF)
-- [Personajes animados](https://doc.babylonjs.com/features/featuresDeepDive/animation/animatedCharacter/)
-- [Materiales](https://doc.babylonjs.com/features/featuresDeepDive/materials/)
-- [Luces](https://doc.babylonjs.com/features/featuresDeepDive/lights/)
-- [Instancias](https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances)
-- [Optimización de escenas](https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene/)
-- [Inspector](https://doc.babylonjs.com/)
+- `src/`: runtime y sistemas del juego.
+- `public/`: datos y recursos servidos por Vite.
+- `data/`: datos geográficos y manifiestos de origen.
+- `assets/`: recursos fuente.
+- `scripts/`: construcción, validación y utilidades.
+- `docs/`: documentación del proyecto.
+
+## Agentes y objetivo
+
+`AGENTS.md` contiene las reglas de desarrollo; `.agents/skills/` reúne las guías especializadas; `OBJECTIVE.md` describe el objetivo operativo del proyecto.
+
+## Fuentes y licencias
+
+Los manifiestos de `data/**/raw/` registran las fuentes y licencias de los datos. Los avisos `public/**/ATTRIBUTION.md` contienen atribuciones por capa: los datos IGN/PNOA indican CC BY 4.0 y los datos OSM, ODbL. Los recursos de `assets/` pueden tener licencias propias; consulta sus archivos de licencia antes de reutilizarlos. Estas condiciones se aplican por recurso y no implican una licencia única para todo el contenido del juego.
+
+## Estado
+
+Proyecto en desarrollo con sistemas de mundo, vehículos, personajes, minimapa y una primera misión ya implementados.
