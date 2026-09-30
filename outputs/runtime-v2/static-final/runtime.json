@@ -1,0 +1,5458 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "quality": "HIGH",
+  "backend": "Chrome headless SwiftShader; FPS not target GPU performance",
+  "views": [
+    {
+      "camera": {
+        "name": "village",
+        "px": 3090,
+        "py": 100,
+        "pz": 3900,
+        "tx": 3070,
+        "ty": 50,
+        "tz": 4020
+      },
+      "firstVisible": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1280000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 38707968,
+          "taskFrames": 21,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 326.1999999973923
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "loadAndSettleMs": 11926.185546,
+      "perf": {
+        "fps": 3.1608416869864517,
+        "frameTimeMs": 5.5,
+        "drawCalls": 53,
+        "triangles": 913661,
+        "vertices": 1101135,
+        "activeMeshes": 51
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1280000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 38707968,
+          "taskFrames": 23,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 326.1999999973923
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "heap": 284957352,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:5173/@vite/client",
+          "bytes": 179308,
+          "durationMs": 18.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/main.ts?t=1790777136987",
+          "bytes": 194608,
+          "durationMs": 19.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/vite/dist/client/env.mjs",
+          "bytes": 3778,
+          "durationMs": 4.300000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-facade-kits.ts",
+          "bytes": 12559,
+          "durationMs": 11.099999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Engines_engine.js?v=72040ac6",
+          "bytes": 11562,
+          "durationMs": 22.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_scene.js?v=72040ac6",
+          "bytes": 13240,
+          "durationMs": 22.700000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Cameras_universalCamera.js?v=72040ac6",
+          "bytes": 14932,
+          "durationMs": 22.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__vector.js?v=72040ac6",
+          "bytes": 3396,
+          "durationMs": 21.800000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__color.js?v=72040ac6",
+          "bytes": 2444,
+          "durationMs": 22
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Culling_ray.js?v=72040ac6",
+          "bytes": 16662,
+          "durationMs": 22.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/config.ts",
+          "bytes": 23935,
+          "durationMs": 37
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/public-url.ts",
+          "bytes": 1234,
+          "durationMs": 36
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/diagnostics.ts",
+          "bytes": 12544,
+          "durationMs": 47.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain.ts?t=1790776963374",
+          "bytes": 69987,
+          "durationMs": 48.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/heightfield.ts",
+          "bytes": 15367,
+          "durationMs": 72.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/water.ts",
+          "bytes": 100435,
+          "durationMs": 73.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village.ts",
+          "bytes": 236110,
+          "durationMs": 74
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-landmarks.ts",
+          "bytes": 20547,
+          "durationMs": 72.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-clearance.ts",
+          "bytes": 6164,
+          "durationMs": 73
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npcs.ts?t=1790777128868",
+          "bytes": 39058,
+          "durationMs": 72.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation.ts?t=1790774791426",
+          "bytes": 107135,
+          "durationMs": 88.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/atmosphere.ts?t=1790774832636",
+          "bytes": 32127,
+          "durationMs": 88.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-draping.ts?t=1790775583180",
+          "bytes": 129031,
+          "durationMs": 90
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/index.ts?t=1790776411597",
+          "bytes": 3447,
+          "durationMs": 87.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/controls.ts",
+          "bytes": 7376,
+          "durationMs": 88.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/catalog.ts?t=1790776114904",
+          "bytes": 12251,
+          "durationMs": 89.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/switch.ts",
+          "bytes": 17925,
+          "durationMs": 104.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/selector.ts?t=1790776114904",
+          "bytes": 15659,
+          "durationMs": 104.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/minimap.ts",
+          "bytes": 33927,
+          "durationMs": 104.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/mission-hud.ts",
+          "bytes": 6911,
+          "durationMs": 104.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/first-route.ts",
+          "bytes": 55677,
+          "durationMs": 104.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/index.ts",
+          "bytes": 51724,
+          "durationMs": 105.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/controls.ts",
+          "bytes": 15079,
+          "durationMs": 117.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/movement.ts",
+          "bytes": 12215,
+          "durationMs": 119.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/mission.ts",
+          "bytes": 18945,
+          "durationMs": 119.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/interact.ts",
+          "bytes": 4708,
+          "durationMs": 119.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/objective.ts",
+          "bytes": 32739,
+          "durationMs": 119.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/world/surfaces.ts",
+          "bytes": 12596,
+          "durationMs": 120.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-audio.ts?t=1790775634217",
+          "bytes": 14433,
+          "durationMs": 132.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-effects.ts",
+          "bytes": 19549,
+          "durationMs": 132.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/quality.ts?t=1790774791426",
+          "bytes": 6844,
+          "durationMs": 132.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3EUCVMJZ.js?v=72040ac6",
+          "bytes": 2127,
+          "durationMs": 99
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3SZUEJFY.js?v=72040ac6",
+          "bytes": 2103,
+          "durationMs": 99.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DDXCXL26.js?v=72040ac6",
+          "bytes": 2292,
+          "durationMs": 107.80000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-EVASD6F5.js?v=72040ac6",
+          "bytes": 279902,
+          "durationMs": 110.80000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MIVJKRRS.js?v=72040ac6",
+          "bytes": 601,
+          "durationMs": 107.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PZ5AY32C.js?v=72040ac6",
+          "bytes": 1494,
+          "durationMs": 109.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GCT36VBF.js?v=72040ac6",
+          "bytes": 11256,
+          "durationMs": 109.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-37MPHD6B.js?v=72040ac6",
+          "bytes": 56434,
+          "durationMs": 110.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z4FAR6FY.js?v=72040ac6",
+          "bytes": 132077,
+          "durationMs": 123.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QRJJTXA6.js?v=72040ac6",
+          "bytes": 39797,
+          "durationMs": 123.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NNQMBK3K.js?v=72040ac6",
+          "bytes": 1148,
+          "durationMs": 123
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BFB44CRD.js?v=72040ac6",
+          "bytes": 30776,
+          "durationMs": 126.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-YC7U4GEU.js?v=72040ac6",
+          "bytes": 4528,
+          "durationMs": 129.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4FYNTR3Z.js?v=72040ac6",
+          "bytes": 2060,
+          "durationMs": 123.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NOD22NBO.js?v=72040ac6",
+          "bytes": 513,
+          "durationMs": 129.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3ZKVCZEE.js?v=72040ac6",
+          "bytes": 999,
+          "durationMs": 131.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QPM3XWWN.js?v=72040ac6",
+          "bytes": 147962,
+          "durationMs": 139.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I2PO3XEU.js?v=72040ac6",
+          "bytes": 762,
+          "durationMs": 139.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5LTYGTJL.js?v=72040ac6",
+          "bytes": 1972,
+          "durationMs": 139.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SEUX6N3E.js?v=72040ac6",
+          "bytes": 5128,
+          "durationMs": 149.69999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AQOQYUCZ.js?v=72040ac6",
+          "bytes": 7409,
+          "durationMs": 150.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6BFOXB5O.js?v=72040ac6",
+          "bytes": 16810,
+          "durationMs": 150.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TAIHLZDD.js?v=72040ac6",
+          "bytes": 6109,
+          "durationMs": 150.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PXSRYJNC.js?v=72040ac6",
+          "bytes": 4464,
+          "durationMs": 151.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MAWRYBB7.js?v=72040ac6",
+          "bytes": 23246,
+          "durationMs": 165.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A2S6EVW2.js?v=72040ac6",
+          "bytes": 8517,
+          "durationMs": 166
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7XY2OFQB.js?v=72040ac6",
+          "bytes": 616,
+          "durationMs": 165.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5KVNGKEU.js?v=72040ac6",
+          "bytes": 1757,
+          "durationMs": 165.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7HEG4DX.js?v=72040ac6",
+          "bytes": 10732,
+          "durationMs": 166.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I4NFOKIT.js?v=72040ac6",
+          "bytes": 1352,
+          "durationMs": 165.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V6GX7P57.js?v=72040ac6",
+          "bytes": 187981,
+          "durationMs": 179.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CZRRPEW3.js?v=72040ac6",
+          "bytes": 1330,
+          "durationMs": 178.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FX6MN5HL.js?v=72040ac6",
+          "bytes": 1672,
+          "durationMs": 178.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OWCZTH5B.js?v=72040ac6",
+          "bytes": 667,
+          "durationMs": 178.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7JSVL6E.js?v=72040ac6",
+          "bytes": 1823,
+          "durationMs": 178.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-J4DZ2XK7.js?v=72040ac6",
+          "bytes": 3977,
+          "durationMs": 178.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JLJ75OD6.js?v=72040ac6",
+          "bytes": 37064,
+          "durationMs": 195.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S5B67JEI.js?v=72040ac6",
+          "bytes": 6159,
+          "durationMs": 195.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X26URDL3.js?v=72040ac6",
+          "bytes": 268759,
+          "durationMs": 207.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M4ZP5RIT.js?v=72040ac6",
+          "bytes": 1541,
+          "durationMs": 195.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5G2RIR6N.js?v=72040ac6",
+          "bytes": 5641,
+          "durationMs": 196.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-G7HOW2Y2.js?v=72040ac6",
+          "bytes": 33129,
+          "durationMs": 198.80000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SQHEYGS6.js?v=72040ac6",
+          "bytes": 6471,
+          "durationMs": 207.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CNBNNRO4.js?v=72040ac6",
+          "bytes": 19811,
+          "durationMs": 209.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RS6ZMCSI.js?v=72040ac6",
+          "bytes": 33184,
+          "durationMs": 212.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OGXTVTGN.js?v=72040ac6",
+          "bytes": 2310,
+          "durationMs": 206.69999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NQTGFE4G.js?v=72040ac6",
+          "bytes": 2919,
+          "durationMs": 209.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SZB5QSYK.js?v=72040ac6",
+          "bytes": 4271,
+          "durationMs": 226
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MGSE7LA2.js?v=72040ac6",
+          "bytes": 55616,
+          "durationMs": 226.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OJANHPM.js?v=72040ac6",
+          "bytes": 1507,
+          "durationMs": 220.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5BR36B43.js?v=72040ac6",
+          "bytes": 3673,
+          "durationMs": 225.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OU6ALNPO.js?v=72040ac6",
+          "bytes": 82417,
+          "durationMs": 236.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZHRMZPP.js?v=72040ac6",
+          "bytes": 39741,
+          "durationMs": 236.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPJJSAVF.js?v=72040ac6",
+          "bytes": 70162,
+          "durationMs": 237.30000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-35OXPTGO.js?v=72040ac6",
+          "bytes": 26235,
+          "durationMs": 237.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S6CJSI64.js?v=72040ac6",
+          "bytes": 31425,
+          "durationMs": 237.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UHCRB6Z7.js?v=72040ac6",
+          "bytes": 654,
+          "durationMs": 236.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Instrumentation_sceneInstrumentation.js?v=72040ac6",
+          "bytes": 20993,
+          "durationMs": 234.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh.js?v=72040ac6",
+          "bytes": 16692,
+          "durationMs": 235.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh__vertexData.js?v=72040ac6",
+          "bytes": 7250,
+          "durationMs": 242.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__frustum.js?v=72040ac6",
+          "bytes": 3440,
+          "durationMs": 242.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_PBR_pbrMaterial.js?v=72040ac6",
+          "bytes": 22752,
+          "durationMs": 243.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_texture.js?v=72040ac6",
+          "bytes": 8572,
+          "durationMs": 249
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain-orthophoto.ts",
+          "bytes": 14128,
+          "durationMs": 260
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/frame-task-queue.ts?t=1790775991403",
+          "bytes": 10628,
+          "durationMs": 260
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Buffers_buffer.js?v=72040ac6",
+          "bytes": 2354,
+          "durationMs": 227.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/facade-materials.ts",
+          "bytes": 23612,
+          "durationMs": 231.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Loading_sceneLoader.js?v=72040ac6",
+          "bytes": 16094,
+          "durationMs": 232.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_loaders_glTF.js?v=72040ac6",
+          "bytes": 87558,
+          "durationMs": 244.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-data.ts?t=1790773292183",
+          "bytes": 2481,
+          "durationMs": 241.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_transformNode.js?v=72040ac6",
+          "bytes": 4672,
+          "durationMs": 242.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_standardMaterial.js?v=72040ac6",
+          "bytes": 18144,
+          "durationMs": 244.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-navigation.ts",
+          "bytes": 38257,
+          "durationMs": 244.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-motion.ts",
+          "bytes": 7200,
+          "durationMs": 251.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/building-tint.ts",
+          "bytes": 3989,
+          "durationMs": 252.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-shape.ts",
+          "bytes": 1709,
+          "durationMs": 253.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-pilot.ts",
+          "bytes": 3525,
+          "durationMs": 253.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/four-wheel.ts?t=1790776411597",
+          "bytes": 27091,
+          "durationMs": 257.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle.ts?t=1790776114904",
+          "bytes": 11573,
+          "durationMs": 257.80000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_directionalLight.js?v=72040ac6",
+          "bytes": 10114,
+          "durationMs": 257.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_hemisphericLight.js?v=72040ac6",
+          "bytes": 9514,
+          "durationMs": 257.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGenerator.js?v=72040ac6",
+          "bytes": 17652,
+          "durationMs": 257.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_hdrCubeTexture.js?v=72040ac6",
+          "bytes": 46602,
+          "durationMs": 269.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGeneratorSceneComponent.js?v=72040ac6",
+          "bytes": 77677,
+          "durationMs": 269.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_boxBuilder.js?v=72040ac6",
+          "bytes": 17214,
+          "durationMs": 269.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_thinInstanceMesh.js?v=72040ac6",
+          "bytes": 16491,
+          "durationMs": 269.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation-profile.ts",
+          "bytes": 3655,
+          "durationMs": 269
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/presets.ts?t=1790776114904",
+          "bytes": 5142,
+          "durationMs": 269.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-visuals.ts?t=1790775583171",
+          "bytes": 16296,
+          "durationMs": 282.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/physics.ts?t=1790776114904",
+          "bytes": 38214,
+          "durationMs": 267.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_sphereBuilder.js?v=72040ac6",
+          "bytes": 17056,
+          "durationMs": 267.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_cylinderBuilder.js?v=72040ac6",
+          "bytes": 19196,
+          "durationMs": 267.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_discBuilder.js?v=72040ac6",
+          "bytes": 17024,
+          "durationMs": 250.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_dynamicTexture.js?v=72040ac6",
+          "bytes": 10118,
+          "durationMs": 239.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_EmitterTypes_boxParticleEmitter.js?v=72040ac6",
+          "bytes": 3822,
+          "durationMs": 251.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_baseParticleSystem.js?v=72040ac6",
+          "bytes": 7118,
+          "durationMs": 252.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_particleSystem.js?v=72040ac6",
+          "bytes": 191122,
+          "durationMs": 255.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WJN7F5PN.js?v=72040ac6",
+          "bytes": 80684,
+          "durationMs": 103
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VZQQJTYD.js?v=72040ac6",
+          "bytes": 53441,
+          "durationMs": 102.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPLABIWJ.js?v=72040ac6",
+          "bytes": 2038,
+          "durationMs": 105.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BLSW3OUL.js?v=72040ac6",
+          "bytes": 55769,
+          "durationMs": 113.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V4FLL5V7.js?v=72040ac6",
+          "bytes": 343640,
+          "durationMs": 113.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LY363FA7.js?v=72040ac6",
+          "bytes": 24738,
+          "durationMs": 115.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GECVJ2A6.js?v=72040ac6",
+          "bytes": 24581,
+          "durationMs": 115.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UFPULH7W.js?v=72040ac6",
+          "bytes": 56685,
+          "durationMs": 115.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKFRHE35.js?v=72040ac6",
+          "bytes": 2877,
+          "durationMs": 115.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7HNOZWTU.js?v=72040ac6",
+          "bytes": 37166,
+          "durationMs": 126.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H3ST3MC2.js?v=72040ac6",
+          "bytes": 1999,
+          "durationMs": 118.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LP545QTA.js?v=72040ac6",
+          "bytes": 36083,
+          "durationMs": 119.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XVJVFPZ3.js?v=72040ac6",
+          "bytes": 4193,
+          "durationMs": 119.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3TCQ52C3.js?v=72040ac6",
+          "bytes": 156501,
+          "durationMs": 120.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKJ27TAZ.js?v=72040ac6",
+          "bytes": 7348,
+          "durationMs": 124.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AZW336ON.js?v=72040ac6",
+          "bytes": 11377,
+          "durationMs": 128.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Y2W7AS27.js?v=72040ac6",
+          "bytes": 16105,
+          "durationMs": 129.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4LPEJUQY.js?v=72040ac6",
+          "bytes": 95504,
+          "durationMs": 129.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4U4OQIRL.js?v=72040ac6",
+          "bytes": 994,
+          "durationMs": 128.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6T6YVZWP.js?v=72040ac6",
+          "bytes": 1126,
+          "durationMs": 129
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UX43ZLLT.js?v=72040ac6",
+          "bytes": 2726,
+          "durationMs": 137.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z6W7Z5VN.js?v=72040ac6",
+          "bytes": 3740,
+          "durationMs": 138.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DH3HY34Z.js?v=72040ac6",
+          "bytes": 28734,
+          "durationMs": 138.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AFSPWOLS.js?v=72040ac6",
+          "bytes": 18610,
+          "durationMs": 138.3999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6LGLQG5A.js?v=72040ac6",
+          "bytes": 7620,
+          "durationMs": 140.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_rawTexture.js?v=72040ac6",
+          "bytes": 8890,
+          "durationMs": 130.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OQYSJXI.js?v=72040ac6",
+          "bytes": 43669,
+          "durationMs": 127.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4C3E335.js?v=72040ac6",
+          "bytes": 63479,
+          "durationMs": 119
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RFDEYUUI.js?v=72040ac6",
+          "bytes": 55620,
+          "durationMs": 118
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-334ZERJJ.js?v=72040ac6",
+          "bytes": 1126,
+          "durationMs": 117.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-44AHU22M.js?v=72040ac6",
+          "bytes": 1961,
+          "durationMs": 125.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LVF4HCP5.js?v=72040ac6",
+          "bytes": 29734,
+          "durationMs": 126.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-O7U4JNCR.js?v=72040ac6",
+          "bytes": 628312,
+          "durationMs": 137.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PD3J6Y65.js?v=72040ac6",
+          "bytes": 856,
+          "durationMs": 125.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3F6WI3CQ.js?v=72040ac6",
+          "bytes": 1614,
+          "durationMs": 126.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XCTVPLPB.js?v=72040ac6",
+          "bytes": 3347,
+          "durationMs": 134.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ALKEHB4B.js?v=72040ac6",
+          "bytes": 35543,
+          "durationMs": 134.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XTJ7JOUJ.js?v=72040ac6",
+          "bytes": 16841,
+          "durationMs": 135.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GB2JFOVF.js?v=72040ac6",
+          "bytes": 15516,
+          "durationMs": 135.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TV4A6RBV.js?v=72040ac6",
+          "bytes": 5656,
+          "durationMs": 138.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPZWQOFJ.js?v=72040ac6",
+          "bytes": 2864,
+          "durationMs": 138
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WAR2HNV4.js?v=72040ac6",
+          "bytes": 1786,
+          "durationMs": 143.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZSIEJAFY.js?v=72040ac6",
+          "bytes": 760,
+          "durationMs": 143.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UWDF4JN4.js?v=72040ac6",
+          "bytes": 26922,
+          "durationMs": 143.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KQ3KV7TT.js?v=72040ac6",
+          "bytes": 25984,
+          "durationMs": 144
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AKYHCFGA.js?v=72040ac6",
+          "bytes": 5328,
+          "durationMs": 149.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ANFO2YED.js?v=72040ac6",
+          "bytes": 32894,
+          "durationMs": 151.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-63CZ6QT6.js?v=72040ac6",
+          "bytes": 30260,
+          "durationMs": 151.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-L4CT2SQD.js?v=72040ac6",
+          "bytes": 56275,
+          "durationMs": 152.30000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AGDDCHZV.js?v=72040ac6",
+          "bytes": 13971,
+          "durationMs": 156.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TB7Z3U2U.js?v=72040ac6",
+          "bytes": 17012,
+          "durationMs": 158.30000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VH633WU4.js?v=72040ac6",
+          "bytes": 36866,
+          "durationMs": 161.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UTVGUKSK.js?v=72040ac6",
+          "bytes": 50635,
+          "durationMs": 161.30000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZECCSNQ7.js?v=72040ac6",
+          "bytes": 15199,
+          "durationMs": 160.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X7RAIEFM.js?v=72040ac6",
+          "bytes": 3455,
+          "durationMs": 161
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XRTNHQXM.js?v=72040ac6",
+          "bytes": 6443,
+          "durationMs": 169.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KWMBN5FP.js?v=72040ac6",
+          "bytes": 6516,
+          "durationMs": 169.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZLSOL6SA.js?v=72040ac6",
+          "bytes": 25993,
+          "durationMs": 169.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7ZWKUQSQ.js?v=72040ac6",
+          "bytes": 16953,
+          "durationMs": 169.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-IKMPEV4T.js?v=72040ac6",
+          "bytes": 12313,
+          "durationMs": 170.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QDMAASTC.js?v=72040ac6",
+          "bytes": 10351,
+          "durationMs": 175.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7GH4ZMHJ.js?v=72040ac6",
+          "bytes": 549,
+          "durationMs": 177.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XEXEY6DA.js?v=72040ac6",
+          "bytes": 4997,
+          "durationMs": 177.29999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6AHT7SMU.js?v=72040ac6",
+          "bytes": 24257,
+          "durationMs": 177.79999999981374
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-74C3MYQK.js?v=72040ac6",
+          "bytes": 12126,
+          "durationMs": 183
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/attitude.ts?t=1790773568173",
+          "bytes": 10618,
+          "durationMs": 161.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/suspension.ts?t=1790776114904",
+          "bytes": 9749,
+          "durationMs": 161.80000000074506
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/model.ts?t=1790773383862",
+          "bytes": 174451,
+          "durationMs": 172.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-physics.ts?t=1790776114904",
+          "bytes": 16943,
+          "durationMs": 172
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-model.ts",
+          "bytes": 30748,
+          "durationMs": 172.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JFBSDGFE.js?v=72040ac6",
+          "bytes": 13278,
+          "durationMs": 173.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZRTSRZM.js?v=72040ac6",
+          "bytes": 65687,
+          "durationMs": 172.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-57Z2GCTL.js?v=72040ac6",
+          "bytes": 11408,
+          "durationMs": 161.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GWU4PRWM.js?v=72040ac6",
+          "bytes": 23799,
+          "durationMs": 168.70000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PN7QJS5S.js?v=72040ac6",
+          "bytes": 30955,
+          "durationMs": 170.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-T2KPYHB2.js?v=72040ac6",
+          "bytes": 2933,
+          "durationMs": 164.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GFXF2AHA.js?v=72040ac6",
+          "bytes": 2614,
+          "durationMs": 164.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TOAF46MT.js?v=72040ac6",
+          "bytes": 1488,
+          "durationMs": 165.1000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6W4IL5BZ.js?v=72040ac6",
+          "bytes": 2556,
+          "durationMs": 167.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GJUHN7CQ.js?v=72040ac6",
+          "bytes": 728,
+          "durationMs": 170.69999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TXNJXLHN.js?v=72040ac6",
+          "bytes": 1419,
+          "durationMs": 172.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TTTM2ZA3.js?v=72040ac6",
+          "bytes": 1011,
+          "durationMs": 172.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4DCQ377.js?v=72040ac6",
+          "bytes": 5248,
+          "durationMs": 174
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M53QMGBN.js?v=72040ac6",
+          "bytes": 1784,
+          "durationMs": 174.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DHXLOY3R.js?v=72040ac6",
+          "bytes": 8520,
+          "durationMs": 175.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BEQRSHXA.js?v=72040ac6",
+          "bytes": 1777,
+          "durationMs": 177.20000000018626
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A4VRAJAD.js?v=72040ac6",
+          "bytes": 2987,
+          "durationMs": 167.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MR3JX2HB.js?v=72040ac6",
+          "bytes": 4858,
+          "durationMs": 171.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XHNTYOLR.js?v=72040ac6",
+          "bytes": 9841,
+          "durationMs": 172.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FLB2GYRX.js?v=72040ac6",
+          "bytes": 10764,
+          "durationMs": 172.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7K2NVX2Z.js?v=72040ac6",
+          "bytes": 5119,
+          "durationMs": 161.6000000005588
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-STXE5IOF.js?v=72040ac6",
+          "bytes": 18414,
+          "durationMs": 161.8999999994412
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_meshBuilder.js?v=72040ac6",
+          "bytes": 159418,
+          "durationMs": 26
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LZRF2ERT.js?v=72040ac6",
+          "bytes": 28690,
+          "durationMs": 2.199999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/config.json",
+          "bytes": 3991,
+          "durationMs": 2.6000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_0.json",
+          "bytes": 202422,
+          "durationMs": 4.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_0.json",
+          "bytes": 202425,
+          "durationMs": 3.7999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_0.json",
+          "bytes": 202425,
+          "durationMs": 3.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_0.json",
+          "bytes": 202425,
+          "durationMs": 3.099999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_0.json",
+          "bytes": 202425,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_0.json",
+          "bytes": 202425,
+          "durationMs": 3.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_1.json",
+          "bytes": 202425,
+          "durationMs": 3.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_1.json",
+          "bytes": 202428,
+          "durationMs": 2.7999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_1.json",
+          "bytes": 197178,
+          "durationMs": 2.7999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_1.json",
+          "bytes": 202427,
+          "durationMs": 3.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_1.json",
+          "bytes": 202428,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_1.json",
+          "bytes": 202428,
+          "durationMs": 2.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_2.json",
+          "bytes": 202425,
+          "durationMs": 3.099999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_2.json",
+          "bytes": 202428,
+          "durationMs": 3.3999999994412065
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_2.json",
+          "bytes": 190323,
+          "durationMs": 3.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_2.json",
+          "bytes": 190575,
+          "durationMs": 4.1000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_2.json",
+          "bytes": 200976,
+          "durationMs": 3.2000000001862645
+        }
+      ],
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 56,
+        "tiers": {
+          "FULL": 3,
+          "REDUCED": 7,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 135,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 0,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      },
+      "datum": {
+        "verticalDatum": 870,
+        "maxAbsDiffM": 0,
+        "ok": true,
+        "samples": [
+          {
+            "tile": "tile_0_0#0",
+            "x": 500,
+            "z": 500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_0#1",
+            "x": 1500,
+            "z": 500,
+            "absoluteM": 1127,
+            "worldY": 257,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_0#2",
+            "x": 2500,
+            "z": 500,
+            "absoluteM": 1072,
+            "worldY": 202,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_0#3",
+            "x": 3500,
+            "z": 500,
+            "absoluteM": 1060,
+            "worldY": 190,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_0#4",
+            "x": 4500,
+            "z": 500,
+            "absoluteM": 1138,
+            "worldY": 268,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_0#5",
+            "x": 5500,
+            "z": 500,
+            "absoluteM": 1115,
+            "worldY": 245,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_1#6",
+            "x": 500,
+            "z": 1500,
+            "absoluteM": 1140,
+            "worldY": 270,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_1#7",
+            "x": 1500,
+            "z": 1500,
+            "absoluteM": 1075,
+            "worldY": 205,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_1#8",
+            "x": 2500,
+            "z": 1500,
+            "absoluteM": 1022,
+            "worldY": 152,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_1#9",
+            "x": 3500,
+            "z": 1500,
+            "absoluteM": 1065,
+            "worldY": 195,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_1#10",
+            "x": 4500,
+            "z": 1500,
+            "absoluteM": 1105,
+            "worldY": 235,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_1#11",
+            "x": 5500,
+            "z": 1500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_2#12",
+            "x": 500,
+            "z": 2500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_2#13",
+            "x": 1500,
+            "z": 2500,
+            "absoluteM": 1092,
+            "worldY": 222,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_2#14",
+            "x": 2500,
+            "z": 2500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_2#15",
+            "x": 3500,
+            "z": 2500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_2#16",
+            "x": 4500,
+            "z": 2500,
+            "absoluteM": 1079,
+            "worldY": 209,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_2#17",
+            "x": 5500,
+            "z": 2500,
+            "absoluteM": 1084,
+            "worldY": 214,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_3#18",
+            "x": 500,
+            "z": 3500,
+            "absoluteM": 1134,
+            "worldY": 264,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_3#19",
+            "x": 1500,
+            "z": 3500,
+            "absoluteM": 1132,
+            "worldY": 262,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_3#20",
+            "x": 2500,
+            "z": 3500,
+            "absoluteM": 1011,
+            "worldY": 141,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3500,
+            "z": 3500,
+            "absoluteM": 986,
+            "worldY": 116,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_3#22",
+            "x": 4500,
+            "z": 3500,
+            "absoluteM": 1066,
+            "worldY": 196,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_3#23",
+            "x": 5500,
+            "z": 3500,
+            "absoluteM": 1044,
+            "worldY": 174,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_4#24",
+            "x": 500,
+            "z": 4500,
+            "absoluteM": 1099,
+            "worldY": 229,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_4#25",
+            "x": 1500,
+            "z": 4500,
+            "absoluteM": 1069,
+            "worldY": 199,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_4#26",
+            "x": 2500,
+            "z": 4500,
+            "absoluteM": 1009,
+            "worldY": 139,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_4#27",
+            "x": 3500,
+            "z": 4500,
+            "absoluteM": 939,
+            "worldY": 69,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_4#28",
+            "x": 4500,
+            "z": 4500,
+            "absoluteM": 977,
+            "worldY": 107,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_4#29",
+            "x": 5500,
+            "z": 4500,
+            "absoluteM": 990,
+            "worldY": 120,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_5#30",
+            "x": 500,
+            "z": 5500,
+            "absoluteM": 1094,
+            "worldY": 224,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_5#31",
+            "x": 1500,
+            "z": 5500,
+            "absoluteM": 1068,
+            "worldY": 198,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_5#32",
+            "x": 2500,
+            "z": 5500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_5#33",
+            "x": 3500,
+            "z": 5500,
+            "absoluteM": 913,
+            "worldY": 43,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_5#34",
+            "x": 4500,
+            "z": 5500,
+            "absoluteM": 928,
+            "worldY": 58,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_5#35",
+            "x": 5500,
+            "z": 5500,
+            "absoluteM": 905,
+            "worldY": 35,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3097.2583703002892,
+            "z": 3945.020086259581,
+            "absoluteM": 944.5483259399422,
+            "worldY": 74.54832593994217,
+            "diffM": 0
+          }
+        ]
+      }
+    },
+    {
+      "camera": {
+        "name": "track",
+        "px": 3670,
+        "py": 280,
+        "pz": 4100,
+        "tx": 3730,
+        "ty": 220,
+        "tz": 4150
+      },
+      "firstVisible": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 15,
+          "unloadedTiles": 21,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 3,
+          "cachedTiles": 12,
+          "residentTriangles": 1200000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 36288720,
+          "taskFrames": 34,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 362.99999999720603
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "loadAndSettleMs": 14163.739687000001,
+      "perf": {
+        "fps": 3.9133327245924017,
+        "frameTimeMs": 16.5,
+        "drawCalls": 34,
+        "triangles": 773257,
+        "vertices": 1060734,
+        "activeMeshes": 24
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 15,
+          "unloadedTiles": 21,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 3,
+          "cachedTiles": 12,
+          "residentTriangles": 1200000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 36288720,
+          "taskFrames": 34,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 362.99999999720603
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "heap": 276600898,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:5173/@vite/client",
+          "bytes": 300,
+          "durationMs": 15.100000000558794
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/main.ts?t=1790777136987",
+          "bytes": 300,
+          "durationMs": 15.399999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-facade-kits.ts",
+          "bytes": 300,
+          "durationMs": 19.899999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Engines_engine.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_scene.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Cameras_universalCamera.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Culling_ray.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__vector.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__color.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/config.ts",
+          "bytes": 300,
+          "durationMs": 18.899999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/public-url.ts",
+          "bytes": 300,
+          "durationMs": 22.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/diagnostics.ts",
+          "bytes": 300,
+          "durationMs": 24.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/heightfield.ts",
+          "bytes": 300,
+          "durationMs": 29.100000000558794
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain.ts?t=1790776963374",
+          "bytes": 300,
+          "durationMs": 31
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/water.ts",
+          "bytes": 300,
+          "durationMs": 37.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village.ts",
+          "bytes": 300,
+          "durationMs": 49.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-landmarks.ts",
+          "bytes": 300,
+          "durationMs": 32.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npcs.ts?t=1790777128868",
+          "bytes": 300,
+          "durationMs": 34.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-clearance.ts",
+          "bytes": 300,
+          "durationMs": 35.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/atmosphere.ts?t=1790774832636",
+          "bytes": 300,
+          "durationMs": 39.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation.ts?t=1790774791426",
+          "bytes": 300,
+          "durationMs": 39.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/index.ts?t=1790776411597",
+          "bytes": 300,
+          "durationMs": 40.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/controls.ts",
+          "bytes": 300,
+          "durationMs": 46.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-draping.ts?t=1790775583180",
+          "bytes": 300,
+          "durationMs": 49.10000000055879
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/catalog.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 47.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/switch.ts",
+          "bytes": 300,
+          "durationMs": 49.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/selector.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 49.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/minimap.ts",
+          "bytes": 300,
+          "durationMs": 51.39999999944121
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/mission-hud.ts",
+          "bytes": 300,
+          "durationMs": 52.10000000055879
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/first-route.ts",
+          "bytes": 300,
+          "durationMs": 52.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/controls.ts",
+          "bytes": 300,
+          "durationMs": 52.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/index.ts",
+          "bytes": 300,
+          "durationMs": 52.39999999944121
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/movement.ts",
+          "bytes": 300,
+          "durationMs": 52.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/mission.ts",
+          "bytes": 300,
+          "durationMs": 55.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/interact.ts",
+          "bytes": 300,
+          "durationMs": 56.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/objective.ts",
+          "bytes": 300,
+          "durationMs": 57
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/world/surfaces.ts",
+          "bytes": 300,
+          "durationMs": 59
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-audio.ts?t=1790775634217",
+          "bytes": 300,
+          "durationMs": 59.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-effects.ts",
+          "bytes": 300,
+          "durationMs": 61.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/quality.ts?t=1790774791426",
+          "bytes": 300,
+          "durationMs": 62.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/vite/dist/client/env.mjs",
+          "bytes": 300,
+          "durationMs": 63.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z4FAR6FY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QRJJTXA6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NNQMBK3K.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BFB44CRD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-YC7U4GEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4FYNTR3Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QPM3XWWN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NOD22NBO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3ZKVCZEE.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I2PO3XEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5LTYGTJL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SEUX6N3E.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AQOQYUCZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6BFOXB5O.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TAIHLZDD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-37MPHD6B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-EVASD6F5.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3EUCVMJZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3SZUEJFY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PXSRYJNC.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MAWRYBB7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A2S6EVW2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7XY2OFQB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5KVNGKEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7HEG4DX.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I4NFOKIT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V6GX7P57.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CZRRPEW3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FX6MN5HL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7JSVL6E.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OWCZTH5B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-J4DZ2XK7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DDXCXL26.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GCT36VBF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MIVJKRRS.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PZ5AY32C.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X26URDL3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JLJ75OD6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S5B67JEI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5G2RIR6N.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-G7HOW2Y2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M4ZP5RIT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SQHEYGS6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CNBNNRO4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RS6ZMCSI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OGXTVTGN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NQTGFE4G.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SZB5QSYK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MGSE7LA2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OJANHPM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5BR36B43.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OU6ALNPO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPJJSAVF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZHRMZPP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-35OXPTGO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S6CJSI64.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UHCRB6Z7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Instrumentation_sceneInstrumentation.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh__vertexData.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_PBR_pbrMaterial.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_texture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__frustum.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/frame-task-queue.ts?t=1790775991403",
+          "bytes": 300,
+          "durationMs": 35.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain-orthophoto.ts",
+          "bytes": 300,
+          "durationMs": 35.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V4FLL5V7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WJN7F5PN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VZQQJTYD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPLABIWJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BLSW3OUL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LY363FA7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GECVJ2A6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UFPULH7W.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKFRHE35.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7HNOZWTU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3TCQ52C3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LP545QTA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XVJVFPZ3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H3ST3MC2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKJ27TAZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AZW336ON.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4LPEJUQY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Y2W7AS27.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4U4OQIRL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6T6YVZWP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DH3HY34Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AFSPWOLS.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UX43ZLLT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z6W7Z5VN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6LGLQG5A.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Buffers_buffer.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/facade-materials.ts",
+          "bytes": 300,
+          "durationMs": 29.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Loading_sceneLoader.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_loaders_glTF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_transformNode.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-data.ts?t=1790773292183",
+          "bytes": 300,
+          "durationMs": 30.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-navigation.ts",
+          "bytes": 300,
+          "durationMs": 30
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-motion.ts",
+          "bytes": 300,
+          "durationMs": 33.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OQYSJXI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RFDEYUUI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-O7U4JNCR.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-334ZERJJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LVF4HCP5.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-44AHU22M.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PD3J6Y65.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3F6WI3CQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ALKEHB4B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XCTVPLPB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XTJ7JOUJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GB2JFOVF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TV4A6RBV.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPZWQOFJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UWDF4JN4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KQ3KV7TT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WAR2HNV4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZSIEJAFY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AKYHCFGA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ANFO2YED.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-63CZ6QT6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-L4CT2SQD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AGDDCHZV.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TB7Z3U2U.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VH633WU4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UTVGUKSK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZECCSNQ7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X7RAIEFM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XRTNHQXM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KWMBN5FP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZLSOL6SA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7ZWKUQSQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-IKMPEV4T.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QDMAASTC.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XEXEY6DA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7GH4ZMHJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6AHT7SMU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4C3E335.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-74C3MYQK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_standardMaterial.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_directionalLight.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_hemisphericLight.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGenerator.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGeneratorSceneComponent.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_hdrCubeTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_boxBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_thinInstanceMesh.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation-profile.ts",
+          "bytes": 300,
+          "durationMs": 29.600000000558794
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZRTSRZM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JFBSDGFE.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-T2KPYHB2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GFXF2AHA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TOAF46MT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6W4IL5BZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GJUHN7CQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TXNJXLHN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4DCQ377.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DHXLOY3R.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TTTM2ZA3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M53QMGBN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BEQRSHXA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-57Z2GCTL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GWU4PRWM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PN7QJS5S.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/four-wheel.ts?t=1790776411597",
+          "bytes": 300,
+          "durationMs": 27.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 27.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/presets.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 27.700000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-visuals.ts?t=1790775583171",
+          "bytes": 300,
+          "durationMs": 24.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/building-tint.ts",
+          "bytes": 300,
+          "durationMs": 24.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-shape.ts",
+          "bytes": 300,
+          "durationMs": 25.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-pilot.ts",
+          "bytes": 300,
+          "durationMs": 25.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/physics.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 26.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_cylinderBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_sphereBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FLB2GYRX.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MR3JX2HB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_discBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A4VRAJAD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_dynamicTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_baseParticleSystem.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_EmitterTypes_boxParticleEmitter.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_particleSystem.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XHNTYOLR.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-STXE5IOF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7K2NVX2Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_rawTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/attitude.ts?t=1790773568173",
+          "bytes": 300,
+          "durationMs": 4.900000000372529
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/suspension.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/model.ts?t=1790773383862",
+          "bytes": 300,
+          "durationMs": 5.800000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-physics.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 5.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-model.ts",
+          "bytes": 300,
+          "durationMs": 5.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_meshBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LZRF2ERT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/config.json",
+          "bytes": 300,
+          "durationMs": 3.900000000372529
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_0.json",
+          "bytes": 300,
+          "durationMs": 3.099999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_0.json",
+          "bytes": 300,
+          "durationMs": 2.7999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_0.json",
+          "bytes": 300,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_0.json",
+          "bytes": 300,
+          "durationMs": 2.8999999994412065
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_0.json",
+          "bytes": 300,
+          "durationMs": 2.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_0.json",
+          "bytes": 300,
+          "durationMs": 3.300000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_1.json",
+          "bytes": 300,
+          "durationMs": 3.1000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_1.json",
+          "bytes": 300,
+          "durationMs": 2.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_1.json",
+          "bytes": 300,
+          "durationMs": 2.800000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_1.json",
+          "bytes": 300,
+          "durationMs": 2.6000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_1.json",
+          "bytes": 300,
+          "durationMs": 3.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_1.json",
+          "bytes": 300,
+          "durationMs": 3.2999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_2.json",
+          "bytes": 300,
+          "durationMs": 2.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_2.json",
+          "bytes": 300,
+          "durationMs": 3.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_2.json",
+          "bytes": 300,
+          "durationMs": 2.8999999994412065
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_2.json",
+          "bytes": 300,
+          "durationMs": 2.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_2.json",
+          "bytes": 300,
+          "durationMs": 3.6000000005587935
+        }
+      ],
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 0,
+        "tiers": {
+          "FULL": 0,
+          "REDUCED": 0,
+          "VISUAL": 10,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 135,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 0,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      },
+      "datum": {
+        "verticalDatum": 870,
+        "maxAbsDiffM": 0,
+        "ok": true,
+        "samples": [
+          {
+            "tile": "tile_0_0#0",
+            "x": 500,
+            "z": 500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_0#1",
+            "x": 1500,
+            "z": 500,
+            "absoluteM": 1127,
+            "worldY": 257,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_0#2",
+            "x": 2500,
+            "z": 500,
+            "absoluteM": 1072,
+            "worldY": 202,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_0#3",
+            "x": 3500,
+            "z": 500,
+            "absoluteM": 1060,
+            "worldY": 190,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_0#4",
+            "x": 4500,
+            "z": 500,
+            "absoluteM": 1138,
+            "worldY": 268,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_0#5",
+            "x": 5500,
+            "z": 500,
+            "absoluteM": 1115,
+            "worldY": 245,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_1#6",
+            "x": 500,
+            "z": 1500,
+            "absoluteM": 1140,
+            "worldY": 270,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_1#7",
+            "x": 1500,
+            "z": 1500,
+            "absoluteM": 1075,
+            "worldY": 205,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_1#8",
+            "x": 2500,
+            "z": 1500,
+            "absoluteM": 1022,
+            "worldY": 152,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_1#9",
+            "x": 3500,
+            "z": 1500,
+            "absoluteM": 1065,
+            "worldY": 195,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_1#10",
+            "x": 4500,
+            "z": 1500,
+            "absoluteM": 1105,
+            "worldY": 235,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_1#11",
+            "x": 5500,
+            "z": 1500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_2#12",
+            "x": 500,
+            "z": 2500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_2#13",
+            "x": 1500,
+            "z": 2500,
+            "absoluteM": 1092,
+            "worldY": 222,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_2#14",
+            "x": 2500,
+            "z": 2500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_2#15",
+            "x": 3500,
+            "z": 2500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_2#16",
+            "x": 4500,
+            "z": 2500,
+            "absoluteM": 1079,
+            "worldY": 209,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_2#17",
+            "x": 5500,
+            "z": 2500,
+            "absoluteM": 1084,
+            "worldY": 214,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_3#18",
+            "x": 500,
+            "z": 3500,
+            "absoluteM": 1134,
+            "worldY": 264,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_3#19",
+            "x": 1500,
+            "z": 3500,
+            "absoluteM": 1132,
+            "worldY": 262,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_3#20",
+            "x": 2500,
+            "z": 3500,
+            "absoluteM": 1011,
+            "worldY": 141,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3500,
+            "z": 3500,
+            "absoluteM": 986,
+            "worldY": 116,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_3#22",
+            "x": 4500,
+            "z": 3500,
+            "absoluteM": 1066,
+            "worldY": 196,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_3#23",
+            "x": 5500,
+            "z": 3500,
+            "absoluteM": 1044,
+            "worldY": 174,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_4#24",
+            "x": 500,
+            "z": 4500,
+            "absoluteM": 1099,
+            "worldY": 229,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_4#25",
+            "x": 1500,
+            "z": 4500,
+            "absoluteM": 1069,
+            "worldY": 199,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_4#26",
+            "x": 2500,
+            "z": 4500,
+            "absoluteM": 1009,
+            "worldY": 139,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_4#27",
+            "x": 3500,
+            "z": 4500,
+            "absoluteM": 939,
+            "worldY": 69,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_4#28",
+            "x": 4500,
+            "z": 4500,
+            "absoluteM": 977,
+            "worldY": 107,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_4#29",
+            "x": 5500,
+            "z": 4500,
+            "absoluteM": 990,
+            "worldY": 120,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_5#30",
+            "x": 500,
+            "z": 5500,
+            "absoluteM": 1094,
+            "worldY": 224,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_5#31",
+            "x": 1500,
+            "z": 5500,
+            "absoluteM": 1068,
+            "worldY": 198,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_5#32",
+            "x": 2500,
+            "z": 5500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_5#33",
+            "x": 3500,
+            "z": 5500,
+            "absoluteM": 913,
+            "worldY": 43,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_5#34",
+            "x": 4500,
+            "z": 5500,
+            "absoluteM": 928,
+            "worldY": 58,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_5#35",
+            "x": 5500,
+            "z": 5500,
+            "absoluteM": 905,
+            "worldY": 35,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3097.2583703002892,
+            "z": 3945.020086259581,
+            "absoluteM": 944.5483259399422,
+            "worldY": 74.54832593994217,
+            "diffM": 0
+          }
+        ]
+      }
+    },
+    {
+      "camera": {
+        "name": "aerial",
+        "px": 3050,
+        "py": 800,
+        "pz": 3550,
+        "tx": 3050,
+        "ty": 50,
+        "tz": 4050
+      },
+      "firstVisible": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1280000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 38707968,
+          "taskFrames": 28,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 490.5000000009313
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "loadAndSettleMs": 14634.836759000002,
+      "perf": {
+        "fps": 2.92295758338873,
+        "frameTimeMs": 387,
+        "drawCalls": 46,
+        "triangles": 903900,
+        "vertices": 1101135,
+        "activeMeshes": 46
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1280000,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 38707968,
+          "taskFrames": 28,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 490.5000000009313
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD"
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "heap": 305180656,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:5173/@vite/client",
+          "bytes": 300,
+          "durationMs": 8.700000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/main.ts?t=1790777136987",
+          "bytes": 300,
+          "durationMs": 8.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/vite/dist/client/env.mjs",
+          "bytes": 300,
+          "durationMs": 3.400000000372529
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-facade-kits.ts",
+          "bytes": 300,
+          "durationMs": 3.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Engines_engine.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_scene.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Cameras_universalCamera.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Culling_ray.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__vector.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__color.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/public-url.ts",
+          "bytes": 300,
+          "durationMs": 10.400000000372529
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/config.ts",
+          "bytes": 300,
+          "durationMs": 10.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/heightfield.ts",
+          "bytes": 300,
+          "durationMs": 10.399999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/diagnostics.ts",
+          "bytes": 300,
+          "durationMs": 10.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain.ts?t=1790776963374",
+          "bytes": 300,
+          "durationMs": 16.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/water.ts",
+          "bytes": 300,
+          "durationMs": 16.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-landmarks.ts",
+          "bytes": 300,
+          "durationMs": 17.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npcs.ts?t=1790777128868",
+          "bytes": 300,
+          "durationMs": 17.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-clearance.ts",
+          "bytes": 300,
+          "durationMs": 18.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/atmosphere.ts?t=1790774832636",
+          "bytes": 300,
+          "durationMs": 24.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation.ts?t=1790774791426",
+          "bytes": 300,
+          "durationMs": 24.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village.ts",
+          "bytes": 300,
+          "durationMs": 31.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-draping.ts?t=1790775583180",
+          "bytes": 300,
+          "durationMs": 32.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/index.ts?t=1790776411597",
+          "bytes": 300,
+          "durationMs": 24.800000000745058
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/controls.ts",
+          "bytes": 300,
+          "durationMs": 26.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/catalog.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 27.600000000558794
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/switch.ts",
+          "bytes": 300,
+          "durationMs": 28.40000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/selector.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 28.90000000037253
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/minimap.ts",
+          "bytes": 300,
+          "durationMs": 33.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/ui/mission-hud.ts",
+          "bytes": 300,
+          "durationMs": 33.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/first-route.ts",
+          "bytes": 300,
+          "durationMs": 34.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/index.ts",
+          "bytes": 300,
+          "durationMs": 35.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/controls.ts",
+          "bytes": 300,
+          "durationMs": 35.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/player/movement.ts",
+          "bytes": 300,
+          "durationMs": 35.89999999944121
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/mission.ts",
+          "bytes": 300,
+          "durationMs": 36.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/interact.ts",
+          "bytes": 300,
+          "durationMs": 36.89999999944121
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/gameplay/objective.ts",
+          "bytes": 300,
+          "durationMs": 37.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/world/surfaces.ts",
+          "bytes": 300,
+          "durationMs": 39.19999999925494
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-audio.ts?t=1790775634217",
+          "bytes": 300,
+          "durationMs": 39.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/vehicle-effects.ts",
+          "bytes": 300,
+          "durationMs": 40
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/quality.ts?t=1790774791426",
+          "bytes": 300,
+          "durationMs": 40.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z4FAR6FY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QRJJTXA6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NNQMBK3K.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BFB44CRD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-YC7U4GEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4FYNTR3Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QPM3XWWN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NOD22NBO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3ZKVCZEE.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I2PO3XEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5LTYGTJL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SEUX6N3E.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AQOQYUCZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6BFOXB5O.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TAIHLZDD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-37MPHD6B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-EVASD6F5.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3EUCVMJZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3SZUEJFY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PXSRYJNC.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MAWRYBB7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A2S6EVW2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7XY2OFQB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5KVNGKEU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7HEG4DX.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-I4NFOKIT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V6GX7P57.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CZRRPEW3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FX6MN5HL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S7JSVL6E.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OWCZTH5B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-J4DZ2XK7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DDXCXL26.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GCT36VBF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MIVJKRRS.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PZ5AY32C.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X26URDL3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JLJ75OD6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S5B67JEI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5G2RIR6N.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-G7HOW2Y2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M4ZP5RIT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SQHEYGS6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CNBNNRO4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RS6ZMCSI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OGXTVTGN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-NQTGFE4G.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-SZB5QSYK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MGSE7LA2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OJANHPM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-5BR36B43.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OU6ALNPO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPJJSAVF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZHRMZPP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-35OXPTGO.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-S6CJSI64.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UHCRB6Z7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Instrumentation_sceneInstrumentation.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_mesh__vertexData.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_PBR_pbrMaterial.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_texture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Maths_math__frustum.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/runtime/frame-task-queue.ts?t=1790775991403",
+          "bytes": 300,
+          "durationMs": 23.200000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/terrain-orthophoto.ts",
+          "bytes": 300,
+          "durationMs": 23.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-V4FLL5V7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WJN7F5PN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VZQQJTYD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPLABIWJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BLSW3OUL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LY363FA7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GECVJ2A6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UFPULH7W.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKFRHE35.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7HNOZWTU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3TCQ52C3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LP545QTA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XVJVFPZ3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H3ST3MC2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-OKJ27TAZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AZW336ON.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4LPEJUQY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Y2W7AS27.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4U4OQIRL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6T6YVZWP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DH3HY34Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AFSPWOLS.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UX43ZLLT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-Z6W7Z5VN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6LGLQG5A.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_standardMaterial.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Buffers_buffer.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/facade-materials.ts",
+          "bytes": 300,
+          "durationMs": 20.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Loading_sceneLoader.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_loaders_glTF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_transformNode.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-data.ts?t=1790773292183",
+          "bytes": 300,
+          "durationMs": 20.09999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-navigation.ts",
+          "bytes": 300,
+          "durationMs": 21.59999999962747
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-npc-motion.ts",
+          "bytes": 300,
+          "durationMs": 23.299999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4C3E335.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-4OQYSJXI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RFDEYUUI.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-O7U4JNCR.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-334ZERJJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LVF4HCP5.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-44AHU22M.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PD3J6Y65.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-3F6WI3CQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ALKEHB4B.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XCTVPLPB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XTJ7JOUJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GB2JFOVF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TV4A6RBV.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-CPZWQOFJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UWDF4JN4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KQ3KV7TT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-WAR2HNV4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZSIEJAFY.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AKYHCFGA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ANFO2YED.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-63CZ6QT6.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-L4CT2SQD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-AGDDCHZV.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TB7Z3U2U.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-VH633WU4.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-UTVGUKSK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZECCSNQ7.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-X7RAIEFM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XRTNHQXM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-KWMBN5FP.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-ZLSOL6SA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7ZWKUQSQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-IKMPEV4T.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-QDMAASTC.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XEXEY6DA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7GH4ZMHJ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6AHT7SMU.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-74C3MYQK.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_directionalLight.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_hemisphericLight.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGenerator.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Lights_Shadows_shadowGeneratorSceneComponent.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_hdrCubeTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_boxBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_thinInstanceMesh.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/vegetation-profile.ts",
+          "bytes": 300,
+          "durationMs": 17.600000000558794
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 17.899999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/four-wheel.ts?t=1790776411597",
+          "bytes": 300,
+          "durationMs": 17.700000000186265
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RZRTSRZM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-JFBSDGFE.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-T2KPYHB2.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GFXF2AHA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TOAF46MT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-6W4IL5BZ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GJUHN7CQ.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TXNJXLHN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-H4DCQ377.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-DHXLOY3R.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TTTM2ZA3.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-M53QMGBN.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-BEQRSHXA.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-57Z2GCTL.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-GWU4PRWM.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-PN7QJS5S.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/presets.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 16.799999999813735
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/physics.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 17.899999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/building-tint.ts",
+          "bytes": 300,
+          "durationMs": 15.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/roof-shape.ts",
+          "bytes": 300,
+          "durationMs": 15.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/environment/village-pilot.ts",
+          "bytes": 300,
+          "durationMs": 16.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/road-visuals.ts?t=1790775583171",
+          "bytes": 300,
+          "durationMs": 16.899999999441206
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_cylinderBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_sphereBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-FLB2GYRX.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-MR3JX2HB.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_Builders_discBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-A4VRAJAD.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_dynamicTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_baseParticleSystem.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_EmitterTypes_boxParticleEmitter.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Particles_particleSystem.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-XHNTYOLR.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-STXE5IOF.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-7K2NVX2Z.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Materials_Textures_rawTexture.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-physics.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 4.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/motorcycle-model.ts",
+          "bytes": 300,
+          "durationMs": 5.2999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/attitude.ts?t=1790773568173",
+          "bytes": 300,
+          "durationMs": 4.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/suspension.ts?t=1790776114904",
+          "bytes": 300,
+          "durationMs": 4.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/src/vehicle/model.ts?t=1790773383862",
+          "bytes": 300,
+          "durationMs": 5.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/@babylonjs_core_Meshes_meshBuilder.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/node_modules/.vite/deps/chunk-LZRF2ERT.js?v=72040ac6",
+          "bytes": 0,
+          "durationMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/config.json",
+          "bytes": 300,
+          "durationMs": 2.6000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_0.json",
+          "bytes": 300,
+          "durationMs": 2.7000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_0.json",
+          "bytes": 300,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_0.json",
+          "bytes": 300,
+          "durationMs": 3.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_0.json",
+          "bytes": 300,
+          "durationMs": 3.7999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_0.json",
+          "bytes": 300,
+          "durationMs": 2.099999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_0.json",
+          "bytes": 300,
+          "durationMs": 3.8999999994412065
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_1.json",
+          "bytes": 300,
+          "durationMs": 2.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_1.json",
+          "bytes": 300,
+          "durationMs": 2.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_1.json",
+          "bytes": 300,
+          "durationMs": 3.2999999998137355
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_1.json",
+          "bytes": 300,
+          "durationMs": 2.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_1.json",
+          "bytes": 300,
+          "durationMs": 3.1000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_5_1.json",
+          "bytes": 300,
+          "durationMs": 2.5
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_0_2.json",
+          "bytes": 300,
+          "durationMs": 2.699999999254942
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_1_2.json",
+          "bytes": 300,
+          "durationMs": 2.599999999627471
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_2_2.json",
+          "bytes": 300,
+          "durationMs": 3.1000000005587935
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_3_2.json",
+          "bytes": 300,
+          "durationMs": 2.2000000001862645
+        },
+        {
+          "url": "http://127.0.0.1:5173/terrain/tiles/tile_4_2.json",
+          "bytes": 300,
+          "durationMs": 2.599999999627471
+        }
+      ],
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 0,
+        "tiers": {
+          "FULL": 0,
+          "REDUCED": 0,
+          "VISUAL": 10,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 135,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 0,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      },
+      "datum": {
+        "verticalDatum": 870,
+        "maxAbsDiffM": 0,
+        "ok": true,
+        "samples": [
+          {
+            "tile": "tile_0_0#0",
+            "x": 500,
+            "z": 500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_0#1",
+            "x": 1500,
+            "z": 500,
+            "absoluteM": 1127,
+            "worldY": 257,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_0#2",
+            "x": 2500,
+            "z": 500,
+            "absoluteM": 1072,
+            "worldY": 202,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_0#3",
+            "x": 3500,
+            "z": 500,
+            "absoluteM": 1060,
+            "worldY": 190,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_0#4",
+            "x": 4500,
+            "z": 500,
+            "absoluteM": 1138,
+            "worldY": 268,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_0#5",
+            "x": 5500,
+            "z": 500,
+            "absoluteM": 1115,
+            "worldY": 245,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_1#6",
+            "x": 500,
+            "z": 1500,
+            "absoluteM": 1140,
+            "worldY": 270,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_1#7",
+            "x": 1500,
+            "z": 1500,
+            "absoluteM": 1075,
+            "worldY": 205,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_1#8",
+            "x": 2500,
+            "z": 1500,
+            "absoluteM": 1022,
+            "worldY": 152,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_1#9",
+            "x": 3500,
+            "z": 1500,
+            "absoluteM": 1065,
+            "worldY": 195,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_1#10",
+            "x": 4500,
+            "z": 1500,
+            "absoluteM": 1105,
+            "worldY": 235,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_1#11",
+            "x": 5500,
+            "z": 1500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_2#12",
+            "x": 500,
+            "z": 2500,
+            "absoluteM": 1164,
+            "worldY": 294,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_2#13",
+            "x": 1500,
+            "z": 2500,
+            "absoluteM": 1092,
+            "worldY": 222,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_2#14",
+            "x": 2500,
+            "z": 2500,
+            "absoluteM": 1056,
+            "worldY": 186,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_2#15",
+            "x": 3500,
+            "z": 2500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_2#16",
+            "x": 4500,
+            "z": 2500,
+            "absoluteM": 1079,
+            "worldY": 209,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_2#17",
+            "x": 5500,
+            "z": 2500,
+            "absoluteM": 1084,
+            "worldY": 214,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_3#18",
+            "x": 500,
+            "z": 3500,
+            "absoluteM": 1134,
+            "worldY": 264,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_3#19",
+            "x": 1500,
+            "z": 3500,
+            "absoluteM": 1132,
+            "worldY": 262,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_3#20",
+            "x": 2500,
+            "z": 3500,
+            "absoluteM": 1011,
+            "worldY": 141,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3500,
+            "z": 3500,
+            "absoluteM": 986,
+            "worldY": 116,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_3#22",
+            "x": 4500,
+            "z": 3500,
+            "absoluteM": 1066,
+            "worldY": 196,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_3#23",
+            "x": 5500,
+            "z": 3500,
+            "absoluteM": 1044,
+            "worldY": 174,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_4#24",
+            "x": 500,
+            "z": 4500,
+            "absoluteM": 1099,
+            "worldY": 229,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_4#25",
+            "x": 1500,
+            "z": 4500,
+            "absoluteM": 1069,
+            "worldY": 199,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_4#26",
+            "x": 2500,
+            "z": 4500,
+            "absoluteM": 1009,
+            "worldY": 139,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_4#27",
+            "x": 3500,
+            "z": 4500,
+            "absoluteM": 939,
+            "worldY": 69,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_4#28",
+            "x": 4500,
+            "z": 4500,
+            "absoluteM": 977,
+            "worldY": 107,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_4#29",
+            "x": 5500,
+            "z": 4500,
+            "absoluteM": 990,
+            "worldY": 120,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_0_5#30",
+            "x": 500,
+            "z": 5500,
+            "absoluteM": 1094,
+            "worldY": 224,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_1_5#31",
+            "x": 1500,
+            "z": 5500,
+            "absoluteM": 1068,
+            "worldY": 198,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_2_5#32",
+            "x": 2500,
+            "z": 5500,
+            "absoluteM": 1028,
+            "worldY": 158,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_5#33",
+            "x": 3500,
+            "z": 5500,
+            "absoluteM": 913,
+            "worldY": 43,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_4_5#34",
+            "x": 4500,
+            "z": 5500,
+            "absoluteM": 928,
+            "worldY": 58,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_5_5#35",
+            "x": 5500,
+            "z": 5500,
+            "absoluteM": 905,
+            "worldY": 35,
+            "diffM": 0
+          },
+          {
+            "tile": "tile_3_3#21",
+            "x": 3097.2583703002892,
+            "z": 3945.020086259581,
+            "absoluteM": 944.5483259399422,
+            "worldY": 74.54832593994217,
+            "diffM": 0
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "controls": {
+    "widgetDoesNotMovePlayer": true,
+    "sound": {
+      "muted": {
+        "state": "locked",
+        "nodes": 0,
+        "sources": 0,
+        "enabled": false,
+        "procedural": true,
+        "surface": "ROAD"
+      },
+      "enabled": {
+        "state": "running",
+        "nodes": 9,
+        "sources": 2,
+        "enabled": true,
+        "procedural": true,
+        "surface": "ROAD"
+      }
+    }
+  },
+  "playable": {
+    "runtime": {
+      "terrain": {
+        "totalTiles": 36,
+        "residentGpuMeshes": 16,
+        "unloadedTiles": 20,
+        "queuedTiles": 0,
+        "loadingTiles": 0,
+        "activeTiles": 2,
+        "cachedTiles": 14,
+        "residentTriangles": 1280000,
+        "retainedCpuHeightSamples": 1454436,
+        "retainedCpuHeightBytesEstimate": 11635488,
+        "residentGpuGeometryBytesEstimate": 38707968,
+        "taskFrames": 36,
+        "taskSteps": 0,
+        "taskOvershootFrames": 0,
+        "lastTaskFrameMs": 0,
+        "maxTaskFrameMs": 0,
+        "initialGeometryBuildMs": 320.00000000279397
+      },
+      "queue": {
+        "executedSteps": 0,
+        "completedTasks": 0,
+        "pendingTasks": 0,
+        "spentMs": 0,
+        "overshotBudget": false
+      },
+      "quality": {
+        "id": "HIGH",
+        "renderScale": 1,
+        "shadowMapSize": 1024,
+        "shadowRadiusM": 100,
+        "vegetationRadii": {
+          "arbol": [
+            110,
+            320,
+            900
+          ],
+          "arbusto": [
+            90,
+            250,
+            500
+          ],
+          "hierba": [
+            45,
+            120,
+            220
+          ]
+        }
+      },
+      "audio": {
+        "state": "running",
+        "nodes": 9,
+        "sources": 2,
+        "enabled": true,
+        "procedural": true,
+        "surface": "ROAD"
+      },
+      "effects": {
+        "systems": 1,
+        "activeParticles": 0,
+        "capacity": 96,
+        "emitRate": 0,
+        "emitting": false,
+        "sceneNodeAllocations": 0,
+        "textures": 1,
+        "disposed": false
+      },
+      "textures": 42,
+      "shadowCasters": 65,
+      "renderWidth": 1280,
+      "renderHeight": 720,
+      "surface": {
+        "type": "ROAD",
+        "grip": 1,
+        "lateralGrip": 1,
+        "brakingGrip": 1,
+        "rollingResistance": 0.65,
+        "roughness": 0.08,
+        "dust": 0,
+        "suspensionNoise": 0.08,
+        "wheelAudio": 0.08,
+        "skidAudio": 0.5
+      }
+    },
+    "npc": {
+      "characters": 10,
+      "meshes": 10,
+      "triangles": 16040,
+      "animations": 18,
+      "animationSamples": 56,
+      "tiers": {
+        "FULL": 6,
+        "REDUCED": 4,
+        "VISUAL": 0,
+        "SLEEP": 0
+      },
+      "routeValidation": {
+        "candidatesPassed": 135,
+        "sampleStepM": 0.25,
+        "rejected": {
+          "road": 62,
+          "building": 36,
+          "wall": 37,
+          "water": 0,
+          "terrain": 0,
+          "anchor": 175,
+          "spacing": 37
+        }
+      }
+    }
+  }
+}
