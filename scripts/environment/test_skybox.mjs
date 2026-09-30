@@ -18,7 +18,8 @@ try {
       target: ts.ScriptTarget.ES2022,
       verbatimModuleSyntax: false,
     },
-  }).outputText.replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1');
+  }).outputText.replace("../runtime/quality", "./quality.mjs").replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1');
+  writeFileSync(resolve(temp, 'quality.mjs'), ts.transpileModule(readFileSync(resolve(root, 'src/runtime/quality.ts'), 'utf8'), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText);
   const modulePath = resolve(temp, 'atmosphere.mjs');
   writeFileSync(modulePath, output);
   const { createEnvironmentSkybox } = await import(`file://${modulePath}`);

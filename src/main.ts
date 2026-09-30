@@ -39,6 +39,7 @@ import { switchVehicle, type PreparedRebind, type SwitchContext, type VehicleRef
 import type { VehicleActor, VehicleActorTelemetry, VehiclePose } from './vehicle/types';
 import { createVehicleSelector, type VehicleSelector } from './vehicle/selector';
 import { createMinimap, type Minimap } from './ui/minimap';
+import { createMissionHud } from './ui/mission-hud';
 import { FIRST_ROUTE } from './gameplay/first-route';
 import type { FirstRoute, RouteLeg, RoutePoint } from './gameplay/route-types';
 import { createPlayer, type Player, type PlayerTelemetry } from './player/index';
@@ -49,10 +50,13 @@ import {
   createMission,
   type Mission,
   type MissionSnapshot,
-  type MissionState,
 } from './gameplay/mission';
 import { createInteractor, type Interactor } from './gameplay/interact';
 import { createRepeaterObjective, type Objective } from './gameplay/objective';
+import { createSurfaceResolver, SURFACES, type SurfaceDefinition } from './world/surfaces';
+import { createVehicleAudio } from './runtime/vehicle-audio';
+import { createVehicleEffects } from './runtime/vehicle-effects';
+import { getGraphicsQualityPreset, type GraphicsQualitySettings } from './runtime/quality';
 
 const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
@@ -102,20 +106,6 @@ const AGUA_ENFANGADO_S = 3;
 const AGUA_ENFANGADO_VELOCIDAD_MPS = 0.4;
 /** El aviso se muestra este tiempo; el juego no se pausa (§5.3.3). */
 const AVISO_HUNDIDO_MS = 4000;
-
-const ETIQUETA_ESTADO: Record<MissionState, string> = {
-  NOT_STARTED: 'SIN EMPEZAR',
-  ACTIVE: 'EN MARCHA',
-  TARGET_REACHED: 'EN EL REPETIDOR',
-  REPAIRED: 'ENLACE RESTABLECIDO',
-  RETURNING: 'REGRESANDO',
-  COMPLETED: 'COMPLETADA',
-};
-
-function formatMinutos(seconds: number): string {
-  const total = Math.max(0, Math.round(seconds));
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
-}
 
 /**
  * Entrada inyectada por un guion de medición, en lugar del teclado.
@@ -288,6 +278,10 @@ interface DebugApi {
   terrainHeightAt(x: number, z: number): number;
   terrainNormalAt(x: number, z: number): { x: number; y: number; z: number };
   perf(): DiagnosticsSnapshot;
+  runtime(): { terrain: ReturnType<WorldTerrain['residencyStats']>; queue: ReturnType<WorldTerrain['runDeferredTasks']>; surface: SurfaceDefinition;
+    quality: GraphicsQualitySettings; audio: ReturnType<ReturnType<typeof createVehicleAudio>['stats']>;
+    effects: ReturnType<ReturnType<typeof createVehicleEffects>['stats']>;
+    textures: number; shadowCasters: number; renderWidth: number; renderHeight: number };
   auditDatum(): { verticalDatum: number; maxAbsDiffM: number; ok: boolean; samples: readonly unknown[] };
   vehicle: {
     telemetry(): VehicleActorTelemetry;
@@ -379,6 +373,24 @@ async function bootstrap(): Promise<void> {
   });
 
   const params = new URLSearchParams(window.location.search);
+  let savedQuality: string | null = null;
+  try { savedQuality = localStorage.getItem('montes.graphics-quality'); } catch { /* Storage is optional. */ }
+  const quality = getGraphicsQualityPreset(params.get('quality') ?? savedQuality);
+  engine.setHardwareScalingLevel(1 / quality.renderScale);
+  const qualityControl = document.querySelector<HTMLSelectElement>('#graphics-quality');
+  if (qualityControl) qualityControl.value = quality.id;
+  const changeQuality = () => {
+    const next = getGraphicsQualityPreset(qualityControl?.value);
+    try { localStorage.setItem('montes.graphics-quality', next.id); } catch { /* URL also carries the choice. */ }
+    const url = new URL(window.location.href);
+    url.searchParams.set('quality', next.id);
+    window.location.assign(url);
+  };
+  qualityControl?.addEventListener('change', changeQuality);
+  const settingsPanel = document.getElementById('runtime-settings');
+  // Native widget keys must not also accelerate, steer or enter a vehicle.
+  const settingsKeyDown = (event: KeyboardEvent) => event.stopPropagation();
+  settingsPanel?.addEventListener('keydown', settingsKeyDown);
   // Ayuda y diagnóstico comparten conmutador: en estado normal sólo queda una pista
   // compacta y F3 revela las teclas de control y el panel de instrumentación.
   let ayudaVisible = params.get('debug') === '1';
@@ -458,6 +470,7 @@ async function bootstrap(): Promise<void> {
 
   /** Actor activo; `null` durante la carga o en modo cámara libre. */
   const activeVehicle = (): VehicleActor | null => vehicleRef?.current ?? null;
+  let surfaceAt: (x: number, z: number) => SurfaceDefinition = () => SURFACES.GRASS;
 
   /** Meshes del actor que proyectan sombra (los bujes son un detalle de llanta). */
   const castersOf = (actor: VehicleActor | null): AbstractMesh[] =>
@@ -468,7 +481,7 @@ async function bootstrap(): Promise<void> {
     let actor: VehicleActor | null = null;
     const options: CreateVehicleOptions = {
       scene,
-      terrain,
+      terrain: { heightAt: terrain.heightAt, normalAt: terrain.normalAt, surfaceAt: (x, z) => surfaceAt(x, z) },
       spawn: { x: pose.x, z: pose.z, yaw: pose.yaw },
       ...(controls ? { controls } : {}),
       onVisualMeshesReplaced: (removed, added) => {
@@ -698,6 +711,13 @@ async function bootstrap(): Promise<void> {
     }
   }
 
+  surfaceAt = createSurfaceResolver(roads?.mapLines() ?? [], (x, z) => {
+    // A shallow mapped water contact provides a wet response; ROCK remains
+    // available for authored areas rather than inferred from elevation/color.
+    const depth = water?.depthAt(x, z) ?? 0;
+    return depth > 0 && depth <= AGUA_VADEO_M ? 'MUD' : 'GRASS';
+  });
+
   // ----- Pueblo low-poly (FASE E) -----
   // `?pueblo=0` lo apaga, igual que `?drape=0`: permite medir draw calls y triángulos
   // "con y sin" en la MISMA build, sin tocar una línea de código.
@@ -729,7 +749,15 @@ async function bootstrap(): Promise<void> {
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
     try {
-      villageNpcs = await loadVillageNpcs(scene, terrain, publicUrl('/characters/field-player.glb'));
+      villageNpcs = await loadVillageNpcs(scene, terrain, publicUrl('/characters/field-player.glb'), {
+        roads: roads?.mapLines() ?? [],
+        buildingsUrl: publicUrl('/village/buildings.json'),
+        mappedWallsUrl: publicUrl('/village/mapped-walls.json'),
+        waterDepthAt: (x, z) => {
+          if (!water) throw new Error('NPC: agua no disponible para verificar los recorridos');
+          return water.depthAt(x, z);
+        },
+      });
     } catch (error) {
       console.warn('[pueblo NPC] no se pudieron cargar los vecinos animados', error);
     }
@@ -749,6 +777,7 @@ async function bootstrap(): Promise<void> {
     // el try/catch envuelve SÓLO el await: un fallo de datos no puede tumbar el bootstrap.
     try {
       vegetation = await loadVegetation(scene, terrain, {
+        quality,
         url: publicUrl('/vegetation/vegetation.json'),
         corridors: routeCorridors(FIRST_ROUTE),
         clearings: [
@@ -1012,11 +1041,13 @@ async function bootstrap(): Promise<void> {
   // personaje, repetidor) y las que reciben (terreno, vías): antes de existir no hay
   // nada que anclar al shadow map. El sol conserva la dirección que ya tenía la escena.
   const atmosphereBuilt = createAtmosphere(scene, {
+    quality,
     environmentUrl: publicUrl('/environment/hdri/farmland_overcast_1k.hdr'),
     shadowCasters: [
       // Los bujes son un detalle de llanta; no necesitan emitir sombras propias.
       ...castersOf(activeVehicle()),
       ...(player ? player.root.getChildMeshes() : []),
+      ...(villageNpcs?.shadowCasters ?? []),
       ...(objective ? objective.root.getChildMeshes() : []),
     ],
     // Road meshes and terrain receive shadows, so the 4x4 remains grounded while
@@ -1029,41 +1060,21 @@ async function bootstrap(): Promise<void> {
 
   const diagnostics = createDiagnostics(scene);
   let hudTick = 0;
+  let queueStats = terrain.runDeferredTasks(0);
+  const vehicleAudio = createVehicleAudio();
+  const vehicleEffects = createVehicleEffects(scene);
+  const soundControl = document.querySelector<HTMLButtonElement>('#sound-toggle');
+  const toggleSound = () => {
+    const enabled = !vehicleAudio.stats().enabled;
+    vehicleAudio.setEnabled(enabled);
+    soundControl?.setAttribute('aria-pressed', String(enabled));
+    if (soundControl) soundControl.textContent = enabled ? 'Sonido: sí' : 'Sonido: no';
+  };
+  soundControl?.addEventListener('click', toggleSound);
 
   terrain.cull(camera);
 
-  // ----- Panel de misión -----
-  // La estructura se arma UNA vez desde una plantilla constante y después sólo se
-  // escriben `textContent`: los datos de la misión no se interpolan en HTML.
-  if (misionEl) {
-    misionEl.innerHTML =
-      '<div class="mision-titulo"></div><div class="mision-estado"></div>' +
-      '<div class="mision-pista"></div><div class="mision-progreso" hidden><i></i></div>';
-  }
-  const misionTitulo = misionEl?.querySelector<HTMLElement>('.mision-titulo') ?? null;
-  const misionEstado = misionEl?.querySelector<HTMLElement>('.mision-estado') ?? null;
-  const misionPista = misionEl?.querySelector<HTMLElement>('.mision-pista') ?? null;
-  const misionProgreso = misionEl?.querySelector<HTMLElement>('.mision-progreso') ?? null;
-  const misionBarra = misionEl?.querySelector<HTMLElement>('.mision-progreso > i') ?? null;
-
-  const updateMissionHud = (snap: MissionSnapshot): void => {
-    if (!misionEl || !misionTitulo || !misionEstado || !misionPista) return;
-    misionEl.hidden = false;
-    misionEl.classList.toggle('mision-completada', snap.completed);
-    misionTitulo.textContent = MISSION_NAME;
-
-    // La distancia que importa es siempre la del PRÓXIMO paso, no una fija.
-    const volviendo = snap.state === 'REPAIRED' || snap.state === 'RETURNING' || snap.completed;
-    const metros = volviendo ? snap.distanceToReturnM : snap.distanceToTargetM;
-    misionEstado.textContent = `${ETIQUETA_ESTADO[snap.state]} · ${metros.toFixed(0)} m`;
-    misionPista.textContent = snap.completed ? `Completada en ${formatMinutos(snap.elapsedS)}` : snap.hint;
-
-    if (misionProgreso && misionBarra) {
-      const reparando = snap.repairProgress > 0 && snap.repairProgress < 1;
-      misionProgreso.hidden = !reparando;
-      misionBarra.style.width = `${Math.round(snap.repairProgress * 100)}%`;
-    }
-  };
+  const updateMissionHud = createMissionHud(misionEl);
 
   /**
    * Cámara de persecución. Sigue al 4x4 cuando se conduce y al personaje cuando se va a
@@ -1404,9 +1415,19 @@ async function bootstrap(): Promise<void> {
     const anclaSombra = player ? player.root.position : active?.root.position;
     if (anclaSombra) atmosphereBuilt.follow(anclaSombra.x, anclaSombra.z);
     terrain.cull(camera);
+    queueStats = terrain.runDeferredTasks(3);
+    // Publish freshly uploaded geometry in the same frame.
+    if (queueStats.completedTasks > 0) terrain.cull(camera);
     // El LOD se recalcula con la cámara YA movida por la persecución y antes de
     // dibujar: al revés, la vegetación vería la pose del frame anterior.
     vegetation?.update(camera.position);
+    villageNpcs?.update(camera.position, Math.min(dt, 0.1));
+    vehicleAudio.update({ speed: active?.state.speed ?? 0, load: leerGasConduciendo(),
+      slip: Boolean(active && isFourWheel(active) && (active.state.slipping || active.state.skidding)), driving: player?.mode === 'driving',
+      surface: surfaceAt(active?.state.x ?? startX, active?.state.z ?? startZ) });
+    vehicleEffects.update({ position: active?.root.position ?? camera.position, yaw: active?.state.yaw ?? 0,
+      speed: active?.state.speed ?? 0, slip: Boolean(active && isFourWheel(active) && (active.state.slipping || active.state.skidding)),
+      driving: player?.mode === 'driving', surface: surfaceAt(active?.state.x ?? startX, active?.state.z ?? startZ) });
     scene.render();
     hudTick++;
     if (hudTick % 5 === 0) {
@@ -1514,6 +1535,11 @@ async function bootstrap(): Promise<void> {
       return { x: n.x, y: n.y, z: n.z };
     },
     perf: () => diagnostics.snapshot(),
+    runtime: () => ({ terrain: terrain.residencyStats(), queue: queueStats,
+      quality, audio: vehicleAudio.stats(), effects: vehicleEffects.stats(), textures: scene.textures.length,
+      shadowCasters: atmosphere?.shadowGenerator?.getShadowMap()?.renderList?.length ?? 0,
+      renderWidth: engine.getRenderWidth(), renderHeight: engine.getRenderHeight(),
+      surface: surfaceAt(activeVehicle()?.state.x ?? FIRST_ROUTE.start.x, activeVehicle()?.state.z ?? FIRST_ROUTE.start.z) }),
     auditDatum: () => ({
       verticalDatum: datumAudit.verticalDatum,
       maxAbsDiffM: datumAudit.maxAbsDiffM,
@@ -1594,6 +1620,11 @@ async function bootstrap(): Promise<void> {
     activeVehicle()?.dispose();
     minimap?.dispose();
     roads?.dispose();
+    vehicleAudio.dispose();
+    vehicleEffects.dispose();
+    soundControl?.removeEventListener('click', toggleSound);
+    qualityControl?.removeEventListener('change', changeQuality);
+    settingsPanel?.removeEventListener('keydown', settingsKeyDown);
     water?.dispose();
     landmarks?.dispose();
     villageNpcs?.dispose();

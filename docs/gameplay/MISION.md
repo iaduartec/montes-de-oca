@@ -21,7 +21,11 @@ Instalación FICTICIA, sin infraestructura real.
 - `npm run typecheck` · `npm run build`
 - `node scripts/gameplay/test_mission.mjs` (flujo feliz + caminos negativos)
 - `node scripts/gameplay/capture_objective.mjs` (capturas CDP; requiere dev server)
-## Integración pendiente (orquestador)
-`window.__game` aún NO expone la misión/objetivo: `main.ts` debe instanciar
-`createRepeaterObjective(...)` y `createMission(FIRST_ROUTE)`, pasar por frame
-`{x,z,driving,onFoot,interact,dt}` y aplicar `objective.setRepairProgress(...)`.
+## Integración
+La misión y el repetidor ya están conectados en `main.ts`: se crean desde
+`FIRST_ROUTE`, reciben la telemetría del jugador en cada paso de simulación y el
+progreso actualiza la baliza con `objective.setRepairProgress(...)`. El aviso de
+acción ofrece `E` solo durante `TARGET_REACHED` y dentro del radio del repetidor;
+tras reparar, vuelve a ofrecer `F` para entrar al 4x4. El HUD muestra fase, pista
+y distancias. El recorrido completo se verificó en el juego desde Villafranca,
+incluida la reparación a pie y el regreso.

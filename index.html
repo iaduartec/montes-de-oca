@@ -335,6 +335,15 @@
         line-height: 1.5;
         pointer-events: none;
       }
+      #runtime-settings {
+        position: fixed; left: 12px; bottom: 36px; z-index: 10;
+        display: flex; gap: 8px; align-items: center; color: #f7efe2;
+        font: 11px system-ui, sans-serif;
+      }
+      #runtime-settings button, #runtime-settings select {
+        background: rgba(8, 12, 18, 0.8); color: #f7efe2;
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; padding: 5px;
+      }
       #datos {
         position: fixed;
         right: 12px;
@@ -375,6 +384,10 @@
         display: none;
       }
       @media (pointer: coarse), (max-width: 760px) {
+        #runtime-settings {
+          bottom: max(215px, calc(env(safe-area-inset-bottom) + 215px));
+          max-width: calc(100vw - 24px);
+        }
         #mision {
           top: max(8px, env(safe-area-inset-top));
           min-width: 0;
@@ -553,6 +566,15 @@
     </div>
     <div id="controls">
       F3: ayuda y diagnóstico
+    </div>
+    <div id="runtime-settings">
+      <button id="sound-toggle" type="button" aria-pressed="true">Sonido: sí</button>
+      <label>Calidad (reinicia partida)
+        <select id="graphics-quality" aria-label="Calidad gráfica; cambiar reinicia la partida">
+          <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option>
+          <option value="HIGH" selected>HIGH</option><option value="ULTRA">ULTRA</option>
+        </select>
+      </label>
     </div>
     <div id="mobile-controls" role="group" aria-label="Controles táctiles">
       <div id="mobile-joystick" class="mobile-joystick" role="group" aria-label="Joystick: inclina para avanzar y girar" aria-roledescription="joystick">

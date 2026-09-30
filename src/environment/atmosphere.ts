@@ -22,12 +22,12 @@
  *     El color de niebla es el MISMO que `scene.clearColor`, así el terreno lejano
  *     se funde con el cielo en vez de cortarse contra él.
  *
- *  2. UN ShadowGenerator sobre el sol, de 1024², con PCF y calidad LOW. Sin sombras
- *     por malla, sin SSAO, sin postprocess, sin node materials. El terreno (36 tiles)
+ *  2. UN ShadowGenerator sobre el sol, de 1024² en HIGH, con filtro PCF `QUALITY_LOW`. Sin
+ *     sombras por malla, sin SSAO, sin postprocess, sin node materials. El terreno (36 tiles)
  *     RECIBE y NUNCA proyecta: sólo entran al render list los `shadowCasters`.
  *
- *  3. FRUSTUM FIJO + `follow(x, z)`. Con `shadowFrustumSize` fijo el mapa cubre un
- *     cuadrado de 2·R = 200 m centrado en el jugador (radio R = 100 m), en vez de
+ *  3. FRUSTUM FIJO + `follow(x, z)`. En HIGH el mapa cubre un cuadrado de
+ *     2·R = 200 m centrado en el jugador (radio R = 100 m), en vez de
  *     auto-ajustarse a TODOS los casters (si los árboles son miles, eso distribuye
  *     1024 téxeles sobre kilómetros). Resolución: 200/1024 = 0,195 m/téxel: ~23
  *     téxeles sobre un 4x4 de 4,5 m.
@@ -40,6 +40,7 @@
  *          mundo ∈ [0, 324]. Anclando en 162 el peor corrimiento vertical es
  *          |Δy|·√(1−dirY²) = 162 · 0,4953 = 80,2 m < 100 m. El jugador siempre queda
  *          DENTRO del radio declarado, con 20 % de margen.
+ *     Los perfiles de calidad solo cambian resolución y radio dentro de este límite.
  *     La posición del sol es `ancla − dirección·250 m`; el punto del jugador cae
  *     sobre el eje de la vista (offset perpendicular 0) y por eso el mapa queda
  *     centrado en él.
@@ -72,6 +73,7 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
+import { DEFAULT_GRAPHICS_QUALITY, type GraphicsQualitySettings } from '../runtime/quality';
 
 /* ------------------------------------------------------------------------- *
  * API pública (la cabla el orquestador tal cual)
@@ -86,6 +88,8 @@ export interface AtmosphereOptions {
   dense?: boolean;
   /** URL pública del HDRI, con BASE_URL aplicado por el bootstrap. */
   environmentUrl?: string;
+  /** Presupuesto gráfico explícito; HIGH conserva los valores actuales. */
+  quality?: Pick<GraphicsQualitySettings, 'shadowMapSize' | 'shadowRadiusM'>;
 }
 
 export interface Atmosphere {
@@ -271,7 +275,9 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
 
   // Frustum FIJO: el auto-ajuste a todos los casters distribuiría 1024 téxeles
   // sobre kilómetros si hay miles de árboles. Ver el encabezado.
-  sun.shadowFrustumSize = 2 * SHADOW_RADIUS_M;
+  const shadowMapSize = options.quality?.shadowMapSize ?? DEFAULT_GRAPHICS_QUALITY.shadowMapSize;
+  const shadowRadiusM = options.quality?.shadowRadiusM ?? DEFAULT_GRAPHICS_QUALITY.shadowRadiusM;
+  sun.shadowFrustumSize = 2 * shadowRadiusM;
   sun.shadowMinZ = SHADOW_NEAR_Z;
   sun.shadowMaxZ = SHADOW_FAR_Z;
 
@@ -279,7 +285,7 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
   const casters = options.shadowCasters ?? [];
   let shadowGenerator: ShadowGenerator | null = null;
   if (casters.length > 0) {
-    const generator = new ShadowGenerator(SHADOW_MAP_SIZE, sun);
+    const generator = new ShadowGenerator(shadowMapSize, sun);
     // PCF (barato) en vez de ESM: el terreno es plano y no necesita el suavizado
     // exponencial, que además sangra luz en bordes finos.
     generator.usePercentageCloserFiltering = true;

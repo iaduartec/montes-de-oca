@@ -37,6 +37,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import { gridExtent } from '../heightfield';
 import type { WorldTerrain } from '../terrain';
 import { radialLobeScale, radialLobeScaleAtAngle, vegetationInstanceTint } from './vegetation-profile';
+import { DEFAULT_GRAPHICS_QUALITY, type GraphicsQualitySettings } from '../runtime/quality';
 
 /* ------------------------------------------------------------------------- *
  * Contrato (lo consume main.ts cuando el orquestador integre las capas)
@@ -79,6 +80,8 @@ export interface LoadVegetationOptions {
   readonly clearings: readonly VegetationClearing[];
   /** URL base de los datos. Por defecto `/vegetation/vegetation.json`. */
   readonly url?: string;
+  /** Distancia de las tres thin-instance bands; omitted means current HIGH values. */
+  readonly quality?: Pick<GraphicsQualitySettings, 'vegetationRadii'>;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -126,12 +129,6 @@ type Family = 'arbol' | 'arbusto' | 'hierba';
  * Coste: menos triangulos que con 1200 m en vista aerea y 0 draw calls extra
  * (siguen siendo 21 mallas como tope).
  */
-const LOD_RADII: Record<Family, readonly [number, number, number]> = {
-  arbol: [110, 320, 900],
-  arbusto: [90, 250, 500],
-  hierba: [45, 120, 220],
-};
-
 /**
  * Cuanto se hunde cada familia bajo la cota del terreno (metros). En una ladera
  * el borde del tronco queda POR ENCIMA del suelo en el lado cuesta abajo y se ve
@@ -790,6 +787,7 @@ export async function loadVegetation(
   options: LoadVegetationOptions,
 ): Promise<Vegetation> {
   const url = options.url ?? DEFAULT_URL;
+  const lodRadii = options.quality?.vegetationRadii ?? DEFAULT_GRAPHICS_QUALITY.vegetationRadii;
 
   const response = await fetch(url);
   if (!response.ok) throw new Error(`vegetacion: no se pudo cargar ${url} (HTTP ${response.status})`);
@@ -968,7 +966,7 @@ export async function loadVegetation(
     for (const group of groups.values()) {
       const list = buckets.get(group.type);
       if (!list) continue;
-      const radii = LOD_RADII[group.family];
+      const radii = lodRadii[group.family];
       const rNear = radii[0]! * radii[0]!;
       const rMid = radii[1]! * radii[1]!;
       const rFar = radii[2]! * radii[2]!;

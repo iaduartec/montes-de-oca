@@ -56,11 +56,12 @@ function transpile(relPath, outName) {
   }).outputText;
   writeFileSync(
     resolve(tmp, outName),
-    text.replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1').replace(/(['"])\.\/route-types\1/g, '$1./route-types.gen.mjs$1'),
+    text.replace("../runtime/quality", "./quality.gen.mjs").replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1').replace(/(['"])\.\/route-types\1/g, '$1./route-types.gen.mjs$1'),
   );
 }
 transpile('src/gameplay/route-types.ts', 'route-types.gen.mjs');
 transpile('src/gameplay/first-route.ts', 'first-route.gen.mjs');
+transpile('src/runtime/quality.ts', 'quality.gen.mjs');
 transpile('src/environment/atmosphere.ts', 'atmosphere.gen.mjs');
 
 let atmosphere;
