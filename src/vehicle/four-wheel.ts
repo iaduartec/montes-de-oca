@@ -12,12 +12,14 @@ import {
   clamp,
   createVehicleState,
   stepVehicle,
+  type VehicleSurfaceType,
   type VehicleInput,
   type VehicleParams,
   type VehicleState,
   type VehicleSurface,
 } from './physics';
 import { sampleAttitude, type WheelLayout } from './attitude';
+import { createSuspensionState, stepSuspension } from './suspension';
 import { createVehicleModel, type VehicleModel } from './model';
 import type { VehicleControls } from './controls';
 import type { FourWheelDefinition } from './catalog';
@@ -57,6 +59,10 @@ export interface VehicleTelemetry {
   wheelResidualMaxM: number;
   airborne: boolean;
   contacts: readonly number[];
+  wheelCompression: readonly number[];
+  /** Surface sampled at each contact in FL, FR, RL, RR order. */
+  wheelSurfaceTypes: readonly (VehicleSurfaceType | undefined)[];
+  suspensionVelocity: number;
 }
 
 export interface Vehicle extends VehicleActor {
@@ -94,7 +100,7 @@ export interface CreateVehicleOptions {
 
 /**
  * Residual vertical de cada rueda: `terreno(x,z) − (centro_rueda.y − radio)`.
- * 0 ⇒ la rueda toca; >0 ⇒ flota; <0 ⇒ atraviesa.
+ * 0 ⇒ la rueda toca; >0 ⇒ atraviesa; <0 ⇒ flota.
  */
 function measureWheelResidual(
   terrain: VehicleTerrain,
@@ -134,6 +140,10 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
   };
   const model = createVehicleModel(scene, layout, params.wheelRadius, 0.32, definition?.visual, definition?.bodySize, options.onVisualMeshesReplaced);
   const state = createVehicleState(spawn.x, spawn.z, spawn.yaw ?? 0);
+  const suspensionTravel = 0.24;
+  const suspensionTuning = { travel: suspensionTravel };
+  const initialSupport = sampleAttitude(terrain, state.x, state.z, state.yaw, layout);
+  let suspension = createSuspensionState(initialSupport.contacts, suspensionTuning, initialSupport.pitch, initialSupport.roll);
 
   let manualInput: VehicleInput | null = null;
   let lastResidual = 0;
@@ -141,9 +151,25 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
 
   const applyPose = (): number => {
     const attitude = sampleAttitude(terrain, state.x, state.z, state.yaw, layout);
-    model.root.position.set(state.x, attitude.centerY, state.z);
-    model.root.rotation.set(attitude.pitch, state.yaw, attitude.roll);
+    model.root.position.set(state.x, suspension.height, state.z);
+    model.root.rotation.set(suspension.pitch, state.yaw, suspension.roll);
     model.setWheelPose(state.wheelSpin, state.steer);
+    model.setWheelSuspension(suspension.compression, suspensionTravel);
+    model.root.computeWorldMatrix(true);
+    // The spring target is derived from the terrain-fitted plane, while the
+    // chassis attitude is intentionally damped. Correct unsprung wheel travel
+    // against the actual, current chassis pose so this lag cannot leave tires
+    // suspended above or buried below the terrain during a slope transition.
+    const contact = measureWheelResidual(terrain, model, params.wheelRadius);
+    const verticalPerTravel = Math.max(0.7, Math.cos(suspension.pitch) * Math.cos(suspension.roll));
+    for (let i = 0; i < 4; i++) {
+      suspension.compression[i] = clamp(
+        suspension.compression[i]! + contact.perWheel[i]! / verticalPerTravel,
+        0,
+        suspensionTravel,
+      );
+    }
+    model.setWheelSuspension(suspension.compression, suspensionTravel);
     model.root.computeWorldMatrix(true);
     lastContacts = attitude.contacts;
     lastResidual = measureWheelResidual(terrain, model, params.wheelRadius).maxAbs;
@@ -178,6 +204,14 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
     wheelResidualMaxM: lastResidual,
     airborne: state.airborne,
     contacts: lastContacts,
+    wheelCompression: [...suspension.compression],
+    wheelSurfaceTypes: model.wheels.map((hub) => {
+      if (!terrain.surfaceAt) return undefined;
+      hub.computeWorldMatrix(true);
+      const point = hub.getAbsolutePosition();
+      return terrain.surfaceAt(point.x, point.z).type;
+    }),
+    suspensionVelocity: suspension.verticalVelocity,
   });
 
   // Pose inicial.
@@ -204,7 +238,10 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
     step: (dt: number) => {
       const input = manualInput ?? options.controls?.read() ?? { throttle: 0, steer: 0, handbrake: false, neutral: false };
       model.setBrakeLights(input.handbrake || (input.throttle < 0 && state.speed > 1));
-      stepVehicle(state, input, clamp(dt, 0, 0.1), params, terrain);
+      const frameDt = clamp(dt, 0, 0.1);
+      stepVehicle(state, input, frameDt, params, terrain);
+      const support = sampleAttitude(terrain, state.x, state.z, state.yaw, layout);
+      stepSuspension(suspension, support.contacts, support.residuals, support.pitch, support.roll, frameDt, suspensionTuning);
       applyPose();
     },
     setInput: (input: VehicleInput | null) => {
@@ -218,6 +255,8 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
       state.lateral = 0;
       state.steer = 0;
       state.distance = 0;
+      const support = sampleAttitude(terrain, x, z, yaw, layout);
+      suspension = createSuspensionState(support.contacts, suspensionTuning, support.pitch, support.roll);
       model.setBrakeLights(false);
       applyPose();
     },

@@ -36,6 +36,8 @@ export interface AttitudeResult {
   readonly roll: number;
   /** Alturas de mundo en las 4 ruedas, en orden [FL, FR, RL, RR]. */
   readonly contacts: readonly [number, number, number, number];
+  /** Desvío firmado de cada rueda respecto al plano ajustado del chasis. */
+  readonly residuals: readonly [number, number, number, number];
   /**
    * Máximo desvío (m) entre la altura real de una rueda y el plano de apoyo que
    * definen las cuatro. Es la medida de "no flota / no atraviesa": si una rueda
@@ -92,12 +94,14 @@ export function sampleAttitude(
   const gx = (rightAvg - leftAvg) / track;
   let maxResidual = 0;
   const contacts: [number, number, number, number] = [c0, c1, c2, c3];
+  const residuals: [number, number, number, number] = [0, 0, 0, 0];
   for (let i = 0; i < 4; i++) {
     const [localX, localZ] = locals[i]!;
     const expected = centerY + gz * localZ + gx * localX;
-    const residual = Math.abs(contacts[i]! - expected);
-    if (residual > maxResidual) maxResidual = residual;
+    const residual = contacts[i]! - expected;
+    residuals[i] = residual;
+    if (Math.abs(residual) > maxResidual) maxResidual = Math.abs(residual);
   }
 
-  return { centerY, pitch, roll, contacts, maxResidual };
+  return { centerY, pitch, roll, contacts, residuals, maxResidual };
 }

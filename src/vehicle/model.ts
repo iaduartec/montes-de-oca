@@ -33,6 +33,8 @@ export interface VehicleModel {
   readonly wheels: readonly TransformNode[];
   /** Aplica el giro de rueda (rad) y el ángulo de dirección (rad). */
   setWheelPose(spin: number, steer: number): void;
+  /** Aplica el recorrido visual de las cuatro ruedas relativo a la carrocería. */
+  setWheelSuspension(compression: readonly number[], travel: number): void;
   /** Enciende las luces rojas al frenar o usar el freno de mano. */
   setBrakeLights(active: boolean): void;
   setAppearance(id: FourWheelVisual): void;
@@ -287,9 +289,13 @@ function assembleCatalogBody(scene: Scene, kit: CatalogKit, layout: WheelLayout,
     hubCap.receiveShadows = false;
     return hub;
   });
+  const wheelBaseY = wheels.map((wheel) => wheel.position.y);
   return {
     root: kit.root, wheels,
     setWheelPose: (spin, steer) => wheels.forEach((hub, i) => hub.rotation.set(spin, i < 2 ? steer : 0, 0)),
+    setWheelSuspension: (compression, travel) => wheels.forEach((hub, i) => {
+      hub.position.y = wheelBaseY[i]! + compression[i]! - travel;
+    }),
     setBrakeLights: (active) => setBrakeLightEmission(kit.brakeMat, active),
     setAppearance: () => {},
     dispose: () => { kit.root.dispose(false, true); kit.mats.forEach((mat) => mat.dispose()); },
@@ -663,6 +669,10 @@ function buildUtilityWithGlbFallback(scene: Scene, layout: WheelLayout, wheelRad
   };
   let container: Awaited<ReturnType<typeof SceneLoader.LoadAssetContainerAsync>> | null = null;
   let disposed = false;
+  let activeWheels: readonly TransformNode[] = fallback.wheels;
+  let glbWheelBaseY: number[] = [];
+  let currentTravel = 0.24;
+  let currentCompression: readonly number[] = [currentTravel / 2, currentTravel / 2, currentTravel / 2, currentTravel / 2];
 
   void SceneLoader.LoadAssetContainerAsync('', url, scene).then((loaded) => {
     if (disposed) {
@@ -710,6 +720,8 @@ function buildUtilityWithGlbFallback(scene: Scene, layout: WheelLayout, wheelRad
       wheel.rotation.set(0, 0, 0);
       glbWheels.push(wheel);
     }
+    glbWheelBaseY = glbWheels.map((wheel) => wheel.position.y);
+    activeWheels = glbWheels;
 
     // Transfer ownership of the visible shell to the GLB. Physics hubs remain
     // in place but their prototype tires/caps are removed to avoid duplicates.
@@ -717,6 +729,10 @@ function buildUtilityWithGlbFallback(scene: Scene, layout: WheelLayout, wheelRad
     for (const mesh of removed) mesh.dispose(false, false);
     assetRoot.setEnabled(true);
     applyGlbBrakeLights(braking);
+    fallback.setWheelSuspension(currentCompression, currentTravel);
+    for (let index = 0; index < glbWheels.length; index++) {
+      glbWheels[index]!.position.y = glbWheelBaseY[index]! + (currentCompression[index]! - currentTravel) / sourceScale.y;
+    }
     container = loaded;
     onMeshesReplaced?.(removed, fallback.root.getChildMeshes());
   }).catch((error: unknown) => {
@@ -725,10 +741,20 @@ function buildUtilityWithGlbFallback(scene: Scene, layout: WheelLayout, wheelRad
 
   return {
     ...fallback,
+    get wheels() { return activeWheels; },
     setWheelPose: (spin, steer) => {
       fallback.setWheelPose(spin, steer);
       for (let index = 0; index < glbWheels.length; index++) {
         glbWheels[index]!.rotation.set(spin, index < 2 ? steer : 0, 0);
+      }
+    },
+    setWheelSuspension: (compression, travel) => {
+      currentCompression = compression;
+      currentTravel = travel;
+      fallback.setWheelSuspension(compression, travel);
+      for (let index = 0; index < glbWheels.length; index++) {
+        const baseY = glbWheelBaseY[index];
+        if (baseY !== undefined) glbWheels[index]!.position.y = baseY + (compression[index]! - travel) / sourceScale.y;
       }
     },
     setBrakeLights: (active) => {
@@ -957,6 +983,7 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
 
     wheelHubs.push(hub);
   }
+  const wheelBaseY = wheelHubs.map((hub) => hub.position.y);
 
   return {
     root,
@@ -976,6 +1003,11 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
         const hub = wheelHubs[i]!;
         const steered = i < 2 ? steer : 0; // sólo las delanteras giran
         hub.rotation.set(spin, steered, 0);
+      }
+    },
+    setWheelSuspension: (compression: readonly number[], travel: number) => {
+      for (let i = 0; i < wheelHubs.length; i++) {
+        wheelHubs[i]!.position.y = wheelBaseY[i]! + compression[i]! - travel;
       }
     },
     dispose: () => {

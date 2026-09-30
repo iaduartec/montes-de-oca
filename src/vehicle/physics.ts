@@ -35,12 +35,12 @@
  *    primero derrapa; en ladera lateral fuerte el vuelco se marca como riesgo.
  *
  * Lo que este módulo NO modela (declarado a propósito):
- * - Dinámica vertical / saltos (airborne). El coche queda pegado al plano de
- *   apoyo salvo que el terreno sea discontinuo; no hay vuelo balístico.
+ * - Dinámica de ruedas rígidas / vuelos balísticos: el apoyo vertical se
+ *   resuelve aparte con cuatro muelles amortiguados en `suspension.ts`.
  * - Vuelco dinámico real (hay bandera `rolloverRisk`, no una simulación de
  *   voltereta).
- * - Fricción por superficie (ASPHALT/GRAVEL/DIRT/GRASS): no hay datos de
- *   superficies todavía. `grip` es un único coeficiente, parametrizable.
+ * - La respuesta material fina: los multiplicadores opcionales de `surfaceAt`
+ *   distinguen agarre, frenada y rodadura; efectos de audio/partículas viven fuera.
  *
  * Módulo PURO: no importa Babylon ni toca la escena. Se puede transpilar y
  * correr en Node (lo hace `scripts/vehicle/measure_physics.mjs`).
@@ -65,7 +65,20 @@ export interface Normal3 {
 export interface VehicleSurface {
   heightAt(x: number, z: number): number;
   normalAt(x: number, z: number): Normal3;
+  /** Optional multipliers supplied by the shared world surface system. */
+  surfaceAt?(x: number, z: number): VehicleSurfaceSample;
 }
+
+/** Structural subset of the world surface definition used by vehicle physics. */
+export interface VehicleSurfaceSample {
+  readonly type?: 'ROAD' | 'TRACK' | 'PATH' | 'GRASS' | 'MUD' | 'ROCK';
+  readonly grip: number;
+  readonly lateralGrip: number;
+  readonly brakingGrip: number;
+  readonly rollingResistance: number;
+}
+
+export type VehicleSurfaceType = NonNullable<VehicleSurfaceSample['type']>;
 
 /** Mandos del vehículo, normalizados. */
 export interface VehicleInput {
@@ -284,7 +297,10 @@ export function stepVehicleFixed(
   // --- Carga normal y límite de tracción ---
   // La normal es m·g/S: DISMINUYE con la pendiente. Ahí está la pérdida de agarre.
   const normalLoad = (params.mass * GRAVITY) / norm;
-  const tractionMax = params.grip * normalLoad;
+  // Aggregate the four tire footprints. Sampling just the chassis center makes
+  // the whole vehicle switch grip at once when only one axle crosses a seam.
+  const material = sampleContactSurfaces(state, params, surface);
+  const tractionMax = params.grip * (material?.grip ?? 1) * normalLoad;
   state.tractionLimitN = tractionMax;
 
   // --- Fuerzas longitudinales ---
@@ -293,11 +309,13 @@ export function stepVehicleFixed(
     if (throttle > 0) {
       active = throttle * driveForceAt(params, state.speed);
     } else if (throttle < 0) {
-      active = state.speed > 1 ? throttle * params.brakeForce : throttle * params.reverseForce;
+      active = state.speed > 1
+        ? throttle * params.brakeForce * (material?.brakingGrip ?? 1)
+        : throttle * params.reverseForce;
     }
   }
 
-  let resist = params.rollingResistance * normalLoad;
+  let resist = params.rollingResistance * (material?.rollingResistance ?? 1) * normalLoad;
   if (!input.neutral && throttle === 0) resist += params.engineBrakeForce;
   if (input.handbrake) resist += params.handbrakeForce;
 
@@ -349,7 +367,7 @@ export function stepVehicleFixed(
   }
 
   // --- Lateral: gravedad lateral + amortiguamiento del neumático ---
-  const latMax = params.gripLateral * normalLoad;
+  const latMax = params.gripLateral * (material?.lateralGrip ?? 1) * normalLoad;
   const latTire = -clamp(state.lateral * params.lateralDamp, -latMax, latMax);
   state.lateral += (aLatG + latTire / params.mass) * dt;
 
@@ -386,6 +404,31 @@ export function stepVehicleFixed(
   // Giro visual de rueda: cuando patina, gira de más (rueda loca).
   const spinGain = state.slipping && Math.abs(throttle) > 0 ? 2.2 : 1;
   state.wheelSpin += (state.speed / params.wheelRadius) * dt * spinGain;
+}
+
+/** Mean surface response over FL, FR, RL, RR; no resolver preserves legacy values. */
+export function sampleContactSurfaces(
+  state: Pick<VehicleState, 'x' | 'z' | 'yaw'>,
+  params: Pick<VehicleParams, 'wheelBase' | 'track'>,
+  surface: VehicleSurface,
+): VehicleSurfaceSample | undefined {
+  if (!surface.surfaceAt) return undefined;
+  const fx = Math.sin(state.yaw), fz = Math.cos(state.yaw);
+  const rx = Math.cos(state.yaw), rz = -Math.sin(state.yaw);
+  const samples = [
+    [-params.track / 2, params.wheelBase / 2], [params.track / 2, params.wheelBase / 2],
+    [-params.track / 2, -params.wheelBase / 2], [params.track / 2, -params.wheelBase / 2],
+  ].map(([side, front]) => surface.surfaceAt!(
+    state.x + side! * rx + front! * fx,
+    state.z + side! * rz + front! * fz,
+  ));
+  const mean = (key: 'grip' | 'lateralGrip' | 'brakingGrip' | 'rollingResistance') =>
+    samples.reduce((sum, sample) => sum + sample[key], 0) / samples.length;
+  return {
+    grip: mean('grip'), lateralGrip: mean('lateralGrip'),
+    brakingGrip: mean('brakingGrip'), rollingResistance: mean('rollingResistance'),
+    ...(samples[0]!.type && samples.every((sample) => sample.type === samples[0]!.type) ? { type: samples[0]!.type } : {}),
+  };
 }
 
 /**
