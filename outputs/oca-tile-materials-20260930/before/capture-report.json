@@ -1,0 +1,46 @@
+{
+  "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-09-30T02:57:00.243Z",
+  "views": [
+    {
+      "id": "oca",
+      "title": "Ermita Nuestra Señora de Oca",
+      "target": {
+        "x": 2819.074,
+        "z": 2121.861
+      },
+      "groundY": 102,
+      "camera": {
+        "px": 2796.324,
+        "py": 111.2,
+        "pz": 2116.661,
+        "tx": 2819.074,
+        "ty": 106,
+        "tz": 2121.861
+      },
+      "landmarks": true,
+      "perf": {
+        "fps": 2.749118664898275,
+        "frameTimeMs": 501.0999999977648,
+        "drawCalls": 33,
+        "triangles": 773726,
+        "vertices": 1892779,
+        "activeMeshes": 33
+      },
+      "water": {
+        "sheets": 5,
+        "ribbons": 60,
+        "meshes": 2,
+        "triangles": 33419,
+        "dataBytes": 415543
+      },
+      "minimap": {
+        "width": 186,
+        "height": 186,
+        "paintedPixels": 27036
+      },
+      "screenshot": "oca.png"
+    }
+  ]
+}

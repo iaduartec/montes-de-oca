@@ -1,0 +1,46 @@
+{
+  "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-09-30T03:58:24.767Z",
+  "views": [
+    {
+      "id": "plaza",
+      "title": "La Plaza",
+      "target": {
+        "x": 3063.04,
+        "z": 4012.346
+      },
+      "groundY": 77.86120000000005,
+      "camera": {
+        "px": 3084,
+        "py": 89.53620000000005,
+        "pz": 4012.2,
+        "tx": 3084,
+        "ty": 79.36120000000005,
+        "tz": 4004.5
+      },
+      "landmarks": true,
+      "perf": {
+        "fps": 4.745802930530162,
+        "frameTimeMs": 256.4000000022352,
+        "drawCalls": 33,
+        "triangles": 794930,
+        "vertices": 1901843,
+        "activeMeshes": 33
+      },
+      "water": {
+        "sheets": 5,
+        "ribbons": 60,
+        "meshes": 2,
+        "triangles": 33419,
+        "dataBytes": 415543
+      },
+      "minimap": {
+        "width": 186,
+        "height": 186,
+        "paintedPixels": 27036
+      },
+      "screenshot": "plaza.png"
+    }
+  ]
+}

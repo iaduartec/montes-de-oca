@@ -58,6 +58,8 @@ try {
   await test('test_bad_texture_keeps_vertex_colour_fallback', async () => {
     const sample = { x: 5, z: 5 };
     const outcomes = [];
+    const textureOutputs = [];
+    const { PBRMaterial } = await import('@babylonjs/core/Materials/PBR/pbrMaterial.js');
     for (const fail of [false, true]) {
       const engine = new (await import('@babylonjs/core/Engines/nullEngine.js')).NullEngine();
       engine.getCaps = () => ({ maxTextureSize: 8192 });
@@ -66,8 +68,9 @@ try {
       const cfg = { ...parseTerrainConfig(minimal), tiles: [{ id: 'fixture', url: '/tile.json' }], orthophotoManifestUrl: '/manifest.json' };
       const grid = { x0: 0, z0: 0, dx: 10, dz: 10, columns: 2, rows: 2, heights: [10, 20, 30, 40] };
       let textureAttempts = 0;
+      const mockTexture = { gammaSpace: false };
       const result = await terrain.loadTerrain(scene, cfg, async (url) => ({ ok: true, json: async () => url.includes('manifest') ? JSON.parse(readFileSync(resolve(root, 'public/terrain/orthophoto.json'), 'utf8')) : { schemaVersion: 1, id: 'fixture', grid } }), {
-        createTexture: (_scene, _url, onLoad, onError) => { textureAttempts++; if (fail) onError(); else onLoad(); return {}; },
+        createTexture: (_scene, _url, onLoad, onError) => { textureAttempts++; if (fail) onError(); else onLoad(); textureOutputs.push(mockTexture); return mockTexture; },
       });
       assert.equal(result.heightAt(sample.x, sample.z), 25 - cfg.verticalDatum);
       assert.equal(result.meshes.length, 1);
@@ -81,8 +84,15 @@ try {
       if (fail) assert.ok(textureAttempts > 0);
       if (fail) assert.ok(Array.from(outcomes.at(-1).colors).some((value) => value < 1), 'failed texture must retain height vertex colors');
       if (!fail) {
-        assert.ok(Array.from(outcomes.at(-1).colors).every((value) => value === 1), 'loaded texture must use white vertex colors');
-        assert.ok(result.meshes[0].material.diffuseTexture, 'loaded texture must be assigned to the shared material');
+        const terrainColor = Array.from(outcomes.at(-1).colors);
+        assert.ok(terrainColor.every((value) => value >= 0.92 && value <= 1.08), 'loaded orthophoto keeps bounded macro variation');
+        assert.ok(terrainColor.some((value) => Math.abs(value - 1) > 0.001), 'loaded orthophoto avoids a flat white vertex-color multiplier');
+        assert.ok(result.meshes[0].material instanceof PBRMaterial, 'terrain must use a physically based material');
+        assert.ok(result.meshes[0].material.albedoTexture, 'loaded orthophoto must be assigned as the PBR albedo');
+        assert.equal(result.meshes[0].material.metallic, 0, 'soil and vegetation are non-metallic');
+        assert.equal(result.meshes[0].material.roughness, 0.96, 'terrain remains broadly matte');
+        assert.equal(result.meshes[0].material.reflectivityColor.r, 0.04, 'soil retains a dielectric reflectance');
+        assert.equal(textureOutputs.at(-1).gammaSpace, true, 'orthophoto albedo is treated as sRGB');
       }
       result.dispose(); scene.dispose(); engine.dispose();
     }

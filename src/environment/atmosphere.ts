@@ -65,7 +65,12 @@ import { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator'
 import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { HDRCubeTexture } from '@babylonjs/core/Materials/Textures/hdrCubeTexture';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { Scene } from '@babylonjs/core/scene';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 
 /* ------------------------------------------------------------------------- *
@@ -79,15 +84,42 @@ export interface AtmosphereOptions {
   shadowReceivers?: AbstractMesh[];
   /** Niebla más densa (para pruebas A/B). */
   dense?: boolean;
+  /** URL pública del HDRI, con BASE_URL aplicado por el bootstrap. */
+  environmentUrl?: string;
 }
 
 export interface Atmosphere {
   readonly sun: DirectionalLight;
   readonly ambient: HemisphericLight;
   readonly shadowGenerator: ShadowGenerator | null;
+  readonly environment: HDRCubeTexture;
+  readonly skybox: Mesh | null;
   /** Centra el shadow map en el jugador para que la sombra no se corte a lo lejos. */
   follow(x: number, z: number): void;
   dispose(): void;
+}
+
+/** El cubo es infinito para la cámara; este tamaño también evita límites numéricos cercanos. */
+export const SKYBOX_SIZE_M = 10_000;
+
+/** Presenta el mismo HDRI que ilumina los materiales, sin reemplazar el env global. */
+export function createEnvironmentSkybox(scene: Scene, environment: HDRCubeTexture): Mesh | null {
+  const skybox = CreateBox('cielo-hdri', { size: SKYBOX_SIZE_M }, scene);
+  const material = new StandardMaterial('material-cielo-hdri', scene);
+  material.backFaceCulling = false;
+  material.reflectionTexture = environment.clone();
+  if (!material.reflectionTexture) {
+    skybox.dispose();
+    material.dispose();
+    return null;
+  }
+  material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+  material.disableLighting = true;
+  skybox.material = material;
+  skybox.isPickable = false;
+  skybox.infiniteDistance = true;
+  skybox.ignoreCameraMaxZ = true;
+  return skybox;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -216,6 +248,27 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
   sun.intensity = 0.95;
   sun.diffuse = new Color3(1, 0.97, 0.9);
 
+  // IBL para los materiales PBR del personaje, pueblo y futuros vehículos GLB.
+  // El panorama CC0 está reducido a 1K; el cubemap de 128 px limita memoria y
+  // tiempo de prefiltrado. La luz directa y la niebla existentes siguen mandando
+  // en la escena. HDRCubeTexture expone los niveles de roughness para PBR.
+  const environment = new HDRCubeTexture(
+    options.environmentUrl ?? '/environment/hdri/farmland_overcast_1k.hdr',
+    scene,
+    128,
+    false,
+    true,
+    false,
+    true,
+    () => console.info('[atmósfera] HDRI rural listo (Poly Haven, 1K → cubemap 128).'),
+    (message, exception) => console.error('[atmósfera] No se pudo cargar el HDRI rural.', message, exception),
+    false,
+    true,
+  );
+  scene.environmentTexture = environment;
+  scene.environmentIntensity = 0.7;
+  const skybox = createEnvironmentSkybox(scene, environment);
+
   // Frustum FIJO: el auto-ajuste a todos los casters distribuiría 1024 téxeles
   // sobre kilómetros si hay miles de árboles. Ver el encabezado.
   sun.shadowFrustumSize = 2 * SHADOW_RADIUS_M;
@@ -254,12 +307,18 @@ export function createAtmosphere(scene: Scene, options: AtmosphereOptions = {}):
   return {
     sun,
     ambient,
+    environment,
+    skybox,
     shadowGenerator,
     follow,
     dispose: () => {
       shadowGenerator?.dispose();
+      skybox?.dispose(false, true);
       sun.dispose();
       ambient.dispose();
+      if (scene.environmentTexture === environment) scene.environmentTexture = null;
+      environment.dispose();
+      scene.environmentIntensity = 1;
       scene.fogMode = Scene.FOGMODE_NONE;
       scene.fogDensity = 0;
     },

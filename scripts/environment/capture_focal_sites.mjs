@@ -20,10 +20,37 @@ const base = arg('--base', `http://127.0.0.1:${port}`);
 const landmarkMode = arg('--landmarks', '1');
 const vehicle = arg('--vehicle', '');
 const viewFilter = arg('--view', '');
+const cameraScale = Number(arg('--camera-scale', '1'));
+if (!(cameraScale > 0 && cameraScale <= 1)) throw new Error('--camera-scale must be in (0, 1]');
 const outDir = resolve(root, arg('--out-dir', 'output/focal-sites-before'));
 const profile = `/tmp/chrome-cdp-profile-focal-sites-${process.pid}`;
 const chromeBin = arg('--chrome', 'google-chrome');
 const views = [
+  {
+    id: 'retaining-wall', title: 'Muros de contención junto a la iglesia',
+    target: { x: 3044.5, z: 3984 },
+    cameraOffset: { x: -8, z: -8 }, cameraHeight: 6, targetHeight: 0.9,
+  },
+  {
+    id: 'retaining-wall-close', title: 'Encuentro de muros junto a la iglesia',
+    target: { x: 3041.9, z: 3978.4 },
+    cameraOffset: { x: -10, z: -11 }, cameraHeight: 13, targetHeight: 1.1,
+  },
+  {
+    id: 'facade-ground', title: 'Encuentro de fachada y terreno',
+    target: { x: 3117, z: 3961 },
+    cameraOffset: { x: -14, z: -13 }, cameraHeight: 4, targetHeight: 1.2,
+  },
+  {
+    id: 'oca', title: 'Ermita Nuestra Señora de Oca',
+    target: { x: 2819.074, z: 2121.861 },
+    cameraOffset: { x: -35, z: -8 }, cameraHeight: 12, targetHeight: 4,
+  },
+  {
+    id: 'campa-oca', title: 'Campa de Oca',
+    target: { x: 2835, z: 2158 },
+    cameraOffset: { x: -42, z: 35 }, cameraHeight: 30, targetHeight: 0.5,
+  },
   {
     id: 'church-facade',
     title: 'Iglesia de Santiago Apóstol',
@@ -45,7 +72,7 @@ const views = [
   {
     id: 'dam',
     title: 'Presa de Alba',
-    target: { x: 2434.565, z: 1523.295 },
+    target: { x: 2440.325, z: 1513.065 },
     cameraOffset: { x: 70, z: 75 },
     cameraHeight: 35,
     targetHeight: 5,
@@ -188,9 +215,9 @@ async function main() {
       const groundY = await cdp.evaluate(`window.__game.terrainHeightAt(${view.target.x}, ${view.target.z})`);
       const lookTarget = view.lookTarget ?? view.target;
       const camera = {
-        px: lookTarget.x + view.cameraOffset.x,
-        py: groundY + view.cameraHeight,
-        pz: lookTarget.z + view.cameraOffset.z,
+        px: lookTarget.x + view.cameraOffset.x * cameraScale,
+        py: groundY + view.targetHeight + (view.cameraHeight - view.targetHeight) * cameraScale,
+        pz: lookTarget.z + view.cameraOffset.z * cameraScale,
         tx: lookTarget.x,
         ty: groundY + view.targetHeight,
         tz: lookTarget.z,

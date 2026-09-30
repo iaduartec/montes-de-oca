@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>Villafranca · prototipo 3D Tiles</title>
+  </head>
+  <body>
+    <main id="viewer">
+      <canvas id="renderCanvas" aria-label="Mapa 3D de Villafranca Montes de Oca"></canvas>
+      <section class="panel">
+        <p class="eyebrow">PRUEBA CARTOGRÁFICA</p>
+        <h1>Villafranca Montes de Oca</h1>
+        <p class="subtitle">Terreno IGN · ortofoto PNOA · huellas de edificios OSM</p>
+        <p id="status" class="status">Cargando tesela…</p>
+      </section>
+      <p class="attribution">Terreno © IGN/CNIG · PNOA 2023 CC BY 4.0 · Edificios © OpenStreetMap contributors, ODbL</p>
+    </main>
+    <script type="module" src="/src/tiles-poc.ts"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
@@ -117,7 +117,7 @@ function buildTileMesh(
   scene: Scene,
   tile: TerrainTileData,
   sampler: HeightfieldSampler,
-  material: StandardMaterial,
+  material: PBRMaterial,
   verticalDatum: number,
   globalMinMeters: number,
   globalMaxMeters: number,
@@ -164,9 +164,13 @@ function buildTileMesh(
       const pasto = Math.max(0, 1 - alturaN * 2.2);
       const k = 1 + pasto * 0.11 * Math.sin(x * 0.078 + z * 0.122) * Math.cos(z * 0.094 - x * 0.066);
       const verdor = 1 + pasto * 0.07 * Math.cos(x * 0.046 - z * 0.038);
-      colors[c++] = orthophotoUVs ? 1 : rgb[0] * k;
-      colors[c++] = orthophotoUVs ? 1 : rgb[1] * k * verdor;
-      colors[c++] = orthophotoUVs ? 1 : rgb[2] * k * verdor;
+      // El ortofoto ya aporta detalle fino y color real. Una modulación neutra de
+      // baja frecuencia (~200–400 m) evita que la imagen se lea como un mosaico
+      // plano, sin repintar los datos ni crear costuras entre tiles.
+      const macro = 1 + 0.07 * Math.sin(x * 0.022 + z * 0.031) * Math.cos(z * 0.028 - x * 0.017);
+      colors[c++] = orthophotoUVs ? macro : rgb[0] * k;
+      colors[c++] = orthophotoUVs ? macro : rgb[1] * k * verdor;
+      colors[c++] = orthophotoUVs ? macro : rgb[2] * k * verdor;
       colors[c++] = 1;
 
       uvs[t++] = orthophotoUVs ? orthophotoUVs[orthoOffset++]! : i / (columns - 1);
@@ -397,10 +401,11 @@ export async function loadTerrain(
     }
   }
 
-  const material = new StandardMaterial('terrain:material', scene);
-  material.diffuseColor = new Color3(1, 1, 1);
-  material.specularColor = new Color3(0.03, 0.03, 0.03);
-  material.ambientColor = new Color3(0.2, 0.2, 0.2);
+  const material = new PBRMaterial('terrain:material', scene);
+  material.albedoColor = new Color3(1, 1, 1);
+  material.metallic = 0;
+  material.reflectivityColor = new Color3(0.04, 0.04, 0.04);
+  material.roughness = 0.96;
   // Winding del heightfield: se desactiva el back-face culling (un solo material).
   material.backFaceCulling = false;
   let orthophotoLoaded = false;
@@ -409,7 +414,9 @@ export async function loadTerrain(
       new Texture(url, targetScene, false, true, Texture.TRILINEAR_SAMPLINGMODE, onLoad, onError));
     const texture = await loadTerrainOrthophotoTexture(scene, config.orthophotoManifestUrl, config.bounds, fetchImpl, textureFactory);
     if (texture) {
-      material.diffuseTexture = texture;
+      // PNOA is color/albedo data. Keep it in sRGB while PBR lighting works in linear space.
+      texture.gammaSpace = true;
+      material.albedoTexture = texture;
       orthophotoLoaded = true;
     }
   }

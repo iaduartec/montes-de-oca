@@ -1,0 +1,14 @@
+{
+  "id": "farmland-overcast",
+  "title": "Farmland Overcast",
+  "author": "Grzegorz Wronkowski",
+  "source": "https://polyhaven.com/a/farmland_overcast",
+  "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/farmland_overcast_1k.hdr",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://polyhaven.com/license",
+  "originalResolution": "1K HDR equirectangular panorama",
+  "runtimeCubemapSize": 128,
+  "downloadedAt": "2026-09-28",
+  "file": "public/environment/hdri/farmland_overcast_1k.hdr",
+  "fileBytes": 1654770
+}

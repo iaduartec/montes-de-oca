@@ -19,7 +19,7 @@
 ## Runtime — `src/environment/village.ts`
 - Contrato: `loadVillage(scene, terrain, options?) → {stats, dispose}`; `keepClearAt`/`keepClearRadiusM` filtran en runtime.
 - Base SIEMPRE en `terrain.heightAt` por esquina, estirada hacia abajo `FALDON_M = 1.5` (constante duplicada y verificada por `--check`).
-- Las plantas alargadas usan cubierta a dos aguas; el subconjunto cercano al spawn añade variantes a cuatro aguas y de un agua. Las casas dentro de 90 m reciben detalles de fachada y alero.
+- Las plantas alargadas usan cubierta a dos aguas; el subconjunto cercano al spawn añade variantes a cuatro aguas y de un agua. Las casas dentro de 150 m del inicio y a 28 m del primer tramo ROAD reciben detalles de fachada y alero.
 - Las 322 casas fuera del piloto mantienen los grupos procedurales por material. Los ocho modelos Blender se cargan en una malla GLB; la escena del piloto queda en 11 mallas y 17.076 triángulos del pueblo. Si el GLB falta o una casa piloto cae dentro del radio a despejar, vuelve a los grupos procedurales. No hay una malla por detalle.
 - `backFaceCulling = false` (igual que terreno y vías); normales de muro orientadas por el signo del área.
 
@@ -32,3 +32,17 @@
 - Coste en la vista de calle: pasa de +9 a +10 draw calls y de +16.271 a +17.003 triángulos sobre el resto de la escena; el GLB pesa 182.384 bytes.
 - Auditoría de base por esquina: antes y después, 250 edificios, gap máx 0.0000 m. Spawn (3088,3935) libre a 27.9 m.
 - La auditoría actual eleva 3/65 alturas estimadas, con máximo 0,83 m; permanecen 9 intersecciones puntuales en alturas LiDAR medidas (máximo 1,18 m), sin modificar esas mediciones.
+
+## Perfiles compartidos de fachada
+
+`village-facade-kits.ts` selecciona tres perfiles estables por ID: calle, casa rural y casa con cuadra. Reutilizan los grupos por material para ventanas, contraventanas, esquinas de piedra, cursos de teja y chimeneas. Son perfiles artísticos; OSM no acredita sus fachadas. El piloto GLB cargado queda excluido de la decoración procedural. El corredor de fachadas no amplía los despejes de vías, patios ni mobiliario.
+
+Comparación del harness de pueblo (misma cámara, 2026-09-30): 67 → 143 casas detalladas; 17.154 → 26.446 triángulos; 11 mallas y 10 draw calls adicionales en ambos casos. Auditoría de bases: 250 edificios, cero mallas ausentes y desnivel máximo 0,000004 m. SwiftShader no acredita rendimiento en RTX 2070.
+
+## Materiales y muros documentados (2026-09-30)
+
+Piedra, revoco y ladrillo comparten mapas originales procedurales de albedo, normal y rugosidad, a escala métrica. Nueve mapas de 256²: unos 3 MiB con mipmaps, sin nuevas mallas. Son acabados artísticos, no fotografías de casas concretas; el piloto GLB conserva sus propios materiales.
+
+Las doce tapias decorativas sin trazado se sustituyen por 23 vías OSM `barrier=wall/retaining_wall`, en el mismo lote de piedra, ajustadas al MDT cada 2 m. `scripts/environment/build_mapped_walls.mjs --check` comprueba el derivado frente al snapshot. Las alturas no etiquetadas se estiman; solo way 476051609 tiene altura OSM de 3 m. Son geometría visual y conservan las reglas de colisión anteriores. El harness observa 11 mallas, 30.126 triángulos y 10 draw calls adicionales; los materiales no añaden geometría.
+
+Ajuste posterior de superficies: césped con manchas interpoladas periódicas, sin bandas sinusoidales; piedra con cursos ondulados suaves y bloques de anchura variable; ladrillo con repetición de 16 píxeles para cerrar el tile de 256. Se conservan albedo sRGB, normal/rugosidad lineales, tamaño y cantidad de mapas. Comparación de campa en la misma cámara: 31 draw calls y 778.368 triángulos en ambos casos. Evidencia: `outputs/material-adjustments-20260930/`. Tipos, comprobación de materiales y build pasan; FPS en GPU objetivo sigue sin medirse.

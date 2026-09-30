@@ -14,15 +14,15 @@ export interface VehiclePreset {
 export const VEHICLE_PRESETS: readonly VehiclePreset[] = [
   {
     id: 'estandar',
-    name: 'Mitsubishi Montero V20',
-    summary: 'Montero V20 corto 3 puertas: volumen alto, techo recto y repuesto trasera.',
+    name: 'SUV 4x4 utilitario',
+    summary: 'Todoterreno genérico de cuatro puertas con carrocería GLB y ruedas dirigibles.',
     visual: 'estandar',
     params: {},
   },
   {
     id: 'patrulla',
-    name: 'Nissan Patrol GR Y61',
-    summary: 'Patrol GR Y61 5 puertas: largo y cuadrado, techo alto y guardabarros anchos.',
+    name: 'Todoterreno de servicio',
+    summary: '4x4 genérico de cinco puertas para rutas rurales; modelo visual de referencia, no una reproducción de marca.',
     visual: 'patrulla',
     params: {
       mass: 1200,

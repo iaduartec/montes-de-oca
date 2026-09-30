@@ -1,3 +1,4 @@
+import { routePrefixToEndpoint } from './environment/village-facade-kits';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
@@ -13,6 +14,7 @@ import { gridExtent } from './heightfield';
 import { loadWater, type Water, type WaterStats } from './environment/water';
 import { loadVillage, type VillageStats } from './environment/village';
 import { loadVillageLandmarks, type VillageLandmarks } from './environment/village-landmarks';
+import { loadVillageNpcs, type VillageNpcStats, type VillageNpcs } from './environment/village-npcs';
 import { VILLAGE_ROAD_CLEARANCE_QUERY_RADIUS_M } from './environment/roof-clearance';
 import {
   loadVegetation,
@@ -125,7 +127,7 @@ function formatMinutos(seconds: number): string {
  */
 interface InjectedInput {
   readonly forward?: number;
-  readonly strafe?: number;
+  readonly turn?: number;
   readonly run?: boolean;
   readonly throttle?: number;
   readonly steer?: number;
@@ -327,6 +329,8 @@ interface DebugApi {
   } | null;
   /** El pueblo low-poly cargado (FASE E). `null` con `?pueblo=0`. */
   village: { stats(): VillageStats } | null;
+  /** Los peatones animados del pueblo. `null` con `?pueblo=0` o si falla el GLB. */
+  villageNpcs: { stats(): VillageNpcStats } | null;
   /** La vegetación procedural cargada (FASE D). `null` con `?vegetation=0`. */
   vegetation: { stats(): VegetationStats } | null;
   player: {
@@ -461,13 +465,22 @@ async function bootstrap(): Promise<void> {
 
   /** Fábrica única de actores: selector, API de depuración y cambio comparten esto. */
   const createActor = (definition: VehicleDefinition, pose: VehiclePose): VehicleActor => {
+    let actor: VehicleActor | null = null;
     const options: CreateVehicleOptions = {
       scene,
       terrain,
       spawn: { x: pose.x, z: pose.z, yaw: pose.yaw },
       ...(controls ? { controls } : {}),
+      onVisualMeshesReplaced: (removed, added) => {
+        if (!actor || activeVehicle()?.root !== actor.root) return;
+        const generator = atmosphere?.shadowGenerator;
+        if (!generator) return;
+        for (const mesh of removed) generator.removeShadowCaster(mesh);
+        for (const mesh of added) generator.addShadowCaster(mesh);
+      },
     };
-    return createVehicle(options, definition);
+    actor = createVehicle(options, definition);
+    return actor;
   };
 
   /** Muestreo de huella del destino para las reglas de espacio, agua y bajada. */
@@ -625,6 +638,7 @@ async function bootstrap(): Promise<void> {
   let roads: RoadNetwork | null = null;
   /** Stats del pueblo cargado (FASE E), para la API de depuración. */
   let villageStats: VillageStats | null = null;
+  let villageNpcs: VillageNpcs | null = null;
   let landmarks: VillageLandmarks | null = null;
   const landmarksEnabled = params.get('landmarks') !== '0';
   if (landmarksEnabled) {
@@ -709,9 +723,16 @@ async function bootstrap(): Promise<void> {
       keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
       keepClearRadiusM: 12,
       roadClearance,
+      mappedWallsUrl: publicUrl('/village/mapped-walls.json'),
+      facadeRoute: { points: routePrefixToEndpoint(FIRST_ROUTE.polyline, FIRST_ROUTE.trackEntry), radiusM: 28 },
     });
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
+    try {
+      villageNpcs = await loadVillageNpcs(scene, terrain, publicUrl('/characters/field-player.glb'));
+    } catch (error) {
+      console.warn('[pueblo NPC] no se pudieron cargar los vecinos animados', error);
+    }
   }
 
   // ----- Vegetación procedural (FASE D) -----
@@ -817,7 +838,7 @@ async function bootstrap(): Promise<void> {
             : realControls.readVehicular(),
         readOnFoot: () =>
           injected
-            ? { forward: injected.forward ?? 0, strafe: injected.strafe ?? 0, run: injected.run ?? false }
+            ? { forward: injected.forward ?? 0, turn: injected.turn ?? 0, run: injected.run ?? false }
             : realControls.readOnFoot(),
         get interact(): boolean {
           return injected ? injected.interact ?? false : realControls.interact;
@@ -830,7 +851,7 @@ async function bootstrap(): Promise<void> {
           return injected ? false : realControls.consumeToggle();
         },
         setVirtualKey: (code, pressed) => realControls.setVirtualKey(code, pressed),
-        setVirtualAxes: (forward, strafe) => realControls.setVirtualAxes(forward, strafe),
+        setVirtualAxes: (forward, turn) => realControls.setVirtualAxes(forward, turn),
         dispose: () => realControls.dispose(),
       };
 
@@ -991,15 +1012,16 @@ async function bootstrap(): Promise<void> {
   // personaje, repetidor) y las que reciben (terreno, vías): antes de existir no hay
   // nada que anclar al shadow map. El sol conserva la dirección que ya tenía la escena.
   const atmosphereBuilt = createAtmosphere(scene, {
+    environmentUrl: publicUrl('/environment/hdri/farmland_overcast_1k.hdr'),
     shadowCasters: [
       // Los bujes son un detalle de llanta; no necesitan emitir sombras propias.
       ...castersOf(activeVehicle()),
       ...(player ? player.root.getChildMeshes() : []),
       ...(objective ? objective.root.getChildMeshes() : []),
     ],
-    // Roads and vehicle panels stay unshadowed to avoid PCF acne/green slivers;
-    // terrain receives shadows, so the vehicle remains grounded in the scene.
-    shadowReceivers: [...terrain.meshes],
+    // Road meshes and terrain receive shadows, so the 4x4 remains grounded while
+    // crossing from one surface to the other. Vehicle panels remain unshadowed.
+    shadowReceivers: [...terrain.meshes, ...(roads?.meshes ?? [])],
   });
   atmosphere = atmosphereBuilt;
 
@@ -1182,7 +1204,7 @@ async function bootstrap(): Promise<void> {
 
   const TECLAS_CONDUCIENDO =
     'W/S acelerar-frenar · A/D girar · Espacio freno de mano · N punto muerto · F bajar del 4x4 · V vehículo · R reiniciar misión';
-  const TECLAS_A_PIE = 'WASD/flechas caminar · Shift correr · F entrar al 4x4 · V vehículo · R reiniciar misión';
+  const TECLAS_A_PIE = 'W/S avanzar/retroceder · A/D girar · Shift correr · F entrar al 4x4 · V vehículo · R reiniciar misión';
 
   /**
    * Nivel de gas actual en conducción, para la regla de enfangado. Lee el mismo
@@ -1449,6 +1471,33 @@ async function bootstrap(): Promise<void> {
           const active = vehicleRef!.current as VehicleActor & { recover?: () => boolean };
           return active.recover ? active.recover() : false;
         },
+        visualAudit: () => {
+          const active = vehicleRef!.current;
+          const nodes = active.root.getChildTransformNodes(false);
+          const meshes = active.root.getChildMeshes();
+          const glbRoot = nodes.find((node) => node.name === 'vehicle:estandar-glb-root' || node.name === 'vehicle:patrulla-glb-root');
+          const glbMeshes = glbRoot ? meshes.filter((mesh) => {
+            let node = mesh.parent;
+            while (node && node !== glbRoot) node = node.parent;
+            return node === glbRoot && mesh.getTotalVertices() > 0;
+          }) : [];
+          const renderList = atmosphere?.shadowGenerator?.getShadowMap()?.renderList ?? [];
+          const wheelNames = ['wheel-lf', 'wheel-rf', 'wheel-lr', 'wheel-rr'];
+          const wheelCenterClearanceM = wheelNames.flatMap((name) => {
+            const pivot = nodes.find((node) => node.name === name);
+            if (!pivot) return [];
+            pivot.computeWorldMatrix(true);
+            const point = pivot.getAbsolutePosition();
+            return [point.y - terrain.heightAt(point.x, point.z)];
+          });
+          return {
+            glbLoaded: Boolean(glbRoot?.isEnabled() && glbMeshes.length > 0),
+            glbMeshCount: glbMeshes.length,
+            unregisteredCasterMeshes: glbMeshes.filter((mesh) => !renderList.includes(mesh)).length,
+            wheelCenterClearanceM,
+            wheelRadiusM: isFourWheel(active) ? active.params.wheelRadius : null,
+          };
+        },
         step: (seconds: number, dt = 1 / 60) => {
           manualStep = true;
           const steps = Math.max(1, Math.round(seconds / dt));
@@ -1492,6 +1541,7 @@ async function bootstrap(): Promise<void> {
         }
       : null,
     village: villageStats ? { stats: () => villageStats! } : null,
+    villageNpcs: villageNpcs ? { stats: () => villageNpcs!.stats } : null,
     vegetation: vegetation ? { stats: () => vegetation!.stats } : null,
     player: player
       ? {
@@ -1546,7 +1596,9 @@ async function bootstrap(): Promise<void> {
     roads?.dispose();
     water?.dispose();
     landmarks?.dispose();
+    villageNpcs?.dispose();
     vegetation?.dispose();
+    atmosphereBuilt.dispose();
     diagnostics.dispose();
     terrain.dispose();
     engine.dispose();

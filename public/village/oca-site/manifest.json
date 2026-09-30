@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "crs": "EPSG:25830",
+  "verticalDatum": 870.0,
+  "source": "assets/environment/oca-site/source.json",
+  "reconstruction": "Mapped OSM footprint; elevations and colors stylized from 2017 ground photographs. Campa conservative PNOA trace; no perimeter walls inferred.",
+  "assets": {
+    "ermita": {
+      "glb": "public/village/oca-site/ermita.glb",
+      "anchor": {
+        "x": 2820.008064,
+        "z": 2122.016251
+      },
+      "baseM": 972.0,
+      "yawRad": 0,
+      "bytes": 156760,
+      "sha256": "e777eb795b0ee5a2601c7184c2d23ac870cfcc4a0531f6a96f344fcf1498cbd9",
+      "triangles": 2356,
+      "meshCount": 1,
+      "materialPrimitiveCount": 3
+    },
+    "campa": {
+      "glb": "public/village/oca-site/campa.glb",
+      "anchor": {
+        "x": 2834.475411,
+        "z": 2169.524367
+      },
+      "baseM": 972.0,
+      "yawRad": 0,
+      "bytes": 12868,
+      "sha256": "5802a4834cd5105260106648302c31fbee7adf13558833c4d88fc54dee3bb7b3",
+      "triangles": 228,
+      "meshCount": 1,
+      "materialPrimitiveCount": 1
+    }
+  }
+}

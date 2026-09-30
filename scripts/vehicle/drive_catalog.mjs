@@ -10,10 +10,10 @@
 //      tarjeta, preset ni storage);
 //   E. diez cambios entre categorías dejan los recursos gráficos en la línea base;
 //   F. entrar y salir funciona con un 4x4 y con una moto;
-//   G. consola sin errores. Reporte en output/vehicle_catalog.json y hasta tres
-//      capturas (una por categoría) en output/vehicle_catalog/.
+//   G. consola sin errores. Reporte y hasta tres capturas (una por categoría)
+//      en el directorio elegido con --out-dir.
 //
-// Uso: node scripts/vehicle/drive_catalog.mjs [--base http://127.0.0.1:5173]
+// Uso: node scripts/vehicle/drive_catalog.mjs [--out-dir output/vehicle_catalog] [--base http://127.0.0.1:5173]
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -106,6 +106,23 @@ async function connect(wsUrl) {
   return new Cdp(ws);
 }
 
+/** Let asynchronous GLB/HDR loads settle before comparing whole-scene geometry. */
+async function waitForStableResources(cdp, label) {
+  await wait(3000);
+  let previous = '';
+  let stableSamples = 0;
+  let snapshot;
+  for (let sample = 1; sample <= 80; sample++) {
+    snapshot = await cdp.evaluate('window.__game.perf()');
+    const signature = `${snapshot.drawCalls}/${snapshot.triangles}/${snapshot.vertices}`;
+    stableSamples = signature === previous ? stableSamples + 1 : 0;
+    if (stableSamples >= 4) return { snapshot, samples: sample, stableSamples: stableSamples + 1 };
+    previous = signature;
+    await wait(250);
+  }
+  throw new Error(`${label}: scene resources did not stabilize; last sample=${previous}`);
+}
+
 async function waitReady(cdp, probe) {
   let ready = false;
   for (let i = 0; i < 150 && !ready; i++) {
@@ -186,7 +203,7 @@ async function main() {
     await cdp.send('Runtime.enable');
 
     await navigateReady(cdp, `${BASE}/`, '!!(window.__game && window.__game.vehicle)');
-    await wait(1500);
+    const baselineResources = await waitForStableResources(cdp, 'baseline');
 
     // ---- A. arranque ----
     const arranque = await cdp.evaluate(
@@ -195,9 +212,22 @@ async function main() {
     report.arranque = arranque;
     check('arranca en estandar (todoterreno)', arranque.preset === 'estandar' && arranque.category === 'todoterreno', JSON.stringify(arranque));
 
+    const visualAudit = await cdp.evaluate(
+      'window.__game.vehicle.visualAudit ? window.__game.vehicle.visualAudit() : null',
+    );
+    report.visual_audit_estandar = visualAudit;
+    check(
+      'GLB visible proyecta sombras y conserva ruedas a altura de contacto',
+      Boolean(visualAudit?.glbLoaded && visualAudit.unregisteredCasterMeshes === 0 &&
+        visualAudit.wheelCenterClearanceM?.length === 4 &&
+        visualAudit.wheelCenterClearanceM.every((clearance) => Math.abs(clearance - visualAudit.wheelRadiusM) < 0.12)),
+      JSON.stringify(visualAudit),
+    );
+
     // ---- B. los 8 ids se conducen ----
-    const baseline = await cdp.evaluate('window.__game.perf()');
+    const baseline = baselineResources.snapshot;
     report.baseline = baseline;
+    report.estabilizacion_base = baselineResources;
     const drivable = [];
     const perId = {};
     for (const id of IDS) {
@@ -288,13 +318,14 @@ async function main() {
     report.cambios = switches;
     const todosOk = switches.every((s) => s.ok === true);
     check('once cambios entre categorías aceptados', todosOk, JSON.stringify(switches.filter((s) => !s.ok)));
-    const after = await cdp.evaluate('window.__game.perf()');
+    const afterResources = await waitForStableResources(cdp, 'after vehicle switching');
+    const after = afterResources.snapshot;
     report.recursos = { baseline: baseline, after: after };
-    const ratio = (a, b) => (b === 0 ? 1 : a / b);
+    report.estabilizacion_final = afterResources;
     // `activeMeshes` depende del último render (puede ser 0 sin frame); la
     // propiedad del actor se mide con triángulos y vértices de la escena.
-    const triOk = ratio(after.triangles, baseline.triangles) < 1.15 && ratio(after.triangles, baseline.triangles) > 0.85;
-    const vertOk = ratio(after.vertices, baseline.vertices) < 1.15 && ratio(after.vertices, baseline.vertices) > 0.85;
+    const triOk = after.triangles === baseline.triangles;
+    const vertOk = after.vertices === baseline.vertices;
     check('recursos gráficos estables tras once cambios', triOk && vertOk, `tri ${baseline.triangles}→${after.triangles} vert ${baseline.vertices}→${after.vertices}`);
 
     // ---- F. entrar y salir con 4x4 y con moto ----
@@ -329,7 +360,7 @@ async function main() {
     );
 
     // ---- G. capturas por categoría (hasta 3) ----
-    // 4x4: estandar (Mitsubishi Montero) · coche: turismo (Audi A4) · moto: trail (Honda).
+    // 4x4: estandar (SUV utilitario genérico) · coche: turismo (Audi A4) · moto: trail (Honda).
     const shots = [
       { id: 'estandar', file: '01_todoterreno.png' },
       { id: 'turismo', file: '02_coche.png' },
@@ -352,12 +383,40 @@ async function main() {
     }
     report.capturas = shotPaths;
 
+    // Luces de freno: mismo coche, cámara y posición, primero en reposo y luego
+    // con frenada hacia delante. La velocidad se fija desde la API de diagnóstico
+    // para que la comparación no dependa de la duración del harness.
+    const brakeLampCapture = async (braking) => cdp.evaluate(`(function () {
+      var g = window.__game, v = g.vehicle;
+      v.setState({ speed: 0, lateral: 0 });
+      var selected = v.setPreset('estandar');
+      if (!selected && v.preset() !== 'estandar') throw new Error('No se pudo seleccionar el SUV para la captura de freno');
+      v.setState({ speed: ${braking ? 12 : 0}, lateral: 0 });
+      v.setInput(${braking ? "{ throttle: -1, steer: 0, handbrake: false, neutral: false }" : "{ throttle: 0, steer: 0, handbrake: false, neutral: false }"});
+      v.step(0.1, 1/60);
+      var telemetry = v.telemetry();
+      v.setInput(null);
+      return { selected: selected, preset: v.preset(), telemetry: telemetry };
+    })()`);
+    const brakeOff = await brakeLampCapture(false);
+    await wait(400);
+    const brakeOffPath = resolve(OUT_DIR, '04_brake_lights_off.png');
+    await cdp.screenshot(brakeOffPath);
+    const brakeOn = await brakeLampCapture(true);
+    await wait(400);
+    const brakeOnPath = resolve(OUT_DIR, '05_brake_lights_on.png');
+    await cdp.screenshot(brakeOnPath);
+    report.luces_freno = {
+      apagadas: { seleccionado: brakeOff.selected, vehiculo: brakeOff.preset, velocidad: brakeOff.telemetry.speed, captura: brakeOffPath },
+      frenando: { seleccionado: brakeOn.selected, vehiculo: brakeOn.preset, velocidad: brakeOn.telemetry.speed, captura: brakeOnPath },
+    };
+
     // ---- H. consola sin errores ----
     check('consola sin errores', cdp.errors.length === 0, cdp.errors.length === 0 ? '0 errores' : cdp.errors.join(' | '));
     report.errores_consola = cdp.errors;
 
-    writeFileSync(resolve(root, 'output', 'vehicle_catalog.json'), `${JSON.stringify(report, null, 2)}\n`);
-    console.log(`=> reporte en ${resolve(root, 'output', 'vehicle_catalog.json')}`);
+    writeFileSync(resolve(OUT_DIR, 'vehicle_catalog.json'), `${JSON.stringify(report, null, 2)}\n`);
+    console.log(`=> reporte en ${resolve(OUT_DIR, 'vehicle_catalog.json')}`);
   } finally {
     chrome.kill('SIGTERM');
   }

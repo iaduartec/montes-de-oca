@@ -11,6 +11,9 @@ export interface VillagePilotHouseStyle {
   readonly stoneReturns?: boolean;
   /** Ensure a small chimney is present when the measured roof permits it. */
   readonly chimney?: boolean;
+  readonly porton?: boolean;
+  readonly sparseWindows?: boolean;
+  readonly shutters?: boolean;
 }
 
 export const VILLAGE_PILOT_HOUSES: Readonly<Record<number, VillagePilotHouseStyle>> = {

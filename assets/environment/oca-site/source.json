@@ -1,0 +1,72 @@
+{
+  "fetchedAt": "2026-09-30T01:48:49.238875+00:00",
+  "osm": {
+    "sourceUrl": "https://api.openstreetmap.org/api/0.6/way/216539679/full.json",
+    "wayId": 216539679,
+    "timestamp": "2024-12-27T17:34:28Z",
+    "license": "ODbL 1.0"
+  },
+  "photographs": [
+    {
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ermita_de_Ntra_Sra_de_Oca_01.jpg",
+      "author": "Jialxv",
+      "license": "CC BY-SA 4.0",
+      "capturedAt": "2017-10-04 17:26:39",
+      "visibleFeature": "Western double-arched bell gable and entrance narthex; north timber porch",
+      "confidence": "observado; heights approximate; 2017 photograph does not establish current condition"
+    },
+    {
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ermita_de_Ntra_Sra_de_Oca_02.jpg",
+      "author": "Jialxv",
+      "license": "CC BY-SA 4.0",
+      "capturedAt": "2017-10-04 17:26:23",
+      "visibleFeature": "Western double-arched bell gable and entrance narthex; north timber porch",
+      "confidence": "observado; heights approximate; 2017 photograph does not establish current condition"
+    },
+    {
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ermita_de_Ntra_Sra_de_Oca_03.jpg",
+      "author": "Jialxv",
+      "license": "CC BY-SA 4.0",
+      "capturedAt": "2017-10-04 17:25:58",
+      "visibleFeature": "Western double-arched bell gable and entrance narthex; north timber porch",
+      "confidence": "observado; heights approximate; 2017 photograph does not establish current condition"
+    }
+  ],
+  "campa": {
+    "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image%2Fpng&SRS=EPSG%3A4326&BBOX=-3.3130%2C42.3705%2C-3.3109%2C42.3726&WIDTH=900&HEIGHT=1218",
+    "author": "Instituto Geográfico Nacional / CNIG",
+    "license": "CC BY 4.0",
+    "flightDate": null,
+    "capturedAt": null,
+    "confidence": "observed plan in current orthophoto; flight date unknown; conservative interior trace, not surveyed parcel",
+    "traceWgs84": [
+      [
+        -3.31202,
+        42.37218
+      ],
+      [
+        -3.31197,
+        42.37257
+      ],
+      [
+        -3.3115,
+        42.37259
+      ],
+      [
+        -3.3114,
+        42.37239
+      ],
+      [
+        -3.3115,
+        42.37224
+      ],
+      [
+        -3.31172,
+        42.37216
+      ]
+    ],
+    "edgeTreatment": "Artistic opacity fade inside the unchanged sourced boundary, nominal2.5 m; no expansion of parcel."
+  },
+  "elevationNote": "Approximate 5.1 m wall, 6.65 m nave roof ridge, 10.45 m espadaña roof cap from photo proportions. Roof slab thickness and ridge tiles stylized; not survey measurements.",
+  "accessNote": "Small pale gate threshold observed in2017 photographs; modeled dimensions0.95 m depth and3.84 m width approximate, fitted to MDT. No new surveyed path."
+}

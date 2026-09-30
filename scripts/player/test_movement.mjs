@@ -38,37 +38,43 @@ writeFileSync(resolve(tmp, 'movement.gen.mjs'), js);
 const M = await import(`file://${resolve(tmp, 'movement.gen.mjs')}`);
 rmSync(tmp, { recursive: true, force: true });
 
-const { WALK_SPEED_MPS, RUN_SPEED_MPS, createCharacterState, stepCharacter, exitPosition } = M;
+const { WALK_SPEED_MPS, RUN_SPEED_MPS, TURN_RATE_RAD_S, createCharacterState, stepCharacter, exitPosition } = M;
 
 // --------------------------------------------------- terreno sintético conocido
 // Plano inclinado: 0,25 (este) y 0,10 (norte). Y esperado = 0.25x + 0.10z + 40.
 const terrain = { heightAt: (x, z) => 0.25 * x + 0.1 * z + 40 };
 const expectedY = (x, z) => 0.25 * x + 0.1 * z + 40;
 
-console.log('=== 1. normalización de la diagonal (W+D == W) ===');
-// Se corre medio segundo con W sola y con W+D, desde el mismo estado.
-function runSeconds(forward, strafe, seconds, dt = 1 / 60, run = false, yaw = 0) {
+console.log('=== 1. avance, marcha atrás y giro ===');
+function runSeconds(forward, turn, seconds, dt = 1 / 60, run = false, yaw = 0) {
   const s = createCharacterState(1000, 1000, yaw, terrain);
   const steps = Math.round(seconds / dt);
-  for (let i = 0; i < steps; i++) stepCharacter(s, { forward, strafe, run }, dt, terrain);
+  for (let i = 0; i < steps; i++) stepCharacter(s, { forward, turn, run }, dt, terrain);
   return s;
 }
 const onlyW = runSeconds(1, 0, 0.5);
-const wPlusD = runSeconds(1, 1, 0.5);
-console.log(
-  `  W: v=${onlyW.speed.toFixed(4)} m/s  |  W+D: v=${wPlusD.speed.toFixed(4)} m/s  |  ` +
-    `Δ=${Math.abs(onlyW.speed - wPlusD.speed).toExponential(2)}`,
-);
-check(
-  'W+D da la MISMA velocidad que W (±1e-9)',
-  Math.abs(onlyW.speed - wPlusD.speed) < 1e-9,
-  `${onlyW.speed.toFixed(6)} vs ${wPlusD.speed.toFixed(6)}`,
-);
-// Distancia recorrida en planta idéntica.
-const distW = Math.hypot(onlyW.x - 1000, onlyW.z - 1000);
-const distWD = Math.hypot(wPlusD.x - 1000, wPlusD.z - 1000);
-console.log(`  distancia W=${distW.toFixed(4)} m  W+D=${distWD.toFixed(4)} m`);
-check('W+D recorre la MISMA distancia que W', Math.abs(distW - distWD) < 1e-9, `${distW.toFixed(6)} vs ${distWD.toFixed(6)}`);
+const wAndD = runSeconds(1, 1, 0.5);
+check('girar mientras se avanza no supera la velocidad de caminata', Math.abs(wAndD.speed - onlyW.speed) < 1e-9,
+  `${wAndD.speed.toFixed(6)} vs ${onlyW.speed.toFixed(6)} m/s`);
+
+console.log('\n=== 1b. W avanza según el rumbo inicial del personaje ===');
+{
+  const initialYaw = -3.037375; // rumbo real de aparición de FIRST_ROUTE
+  const state = runSeconds(1, 0, 0.5, 1 / 60, false, initialYaw);
+  const dx = state.x - 1000;
+  const dz = state.z - 1000;
+  const distance = Math.hypot(dx, dz);
+  const facingDot = distance > 0
+    ? (dx * Math.sin(initialYaw) + dz * Math.cos(initialYaw)) / distance
+    : -1;
+  check('W avanza hacia donde mira el personaje en la aparición', facingDot > 0.999, `producto=${facingDot.toFixed(6)} rumbo=${initialYaw}`);
+}
+{
+  const state = createCharacterState(1000, 1000, 0, terrain);
+  stepCharacter(state, { forward: 0, turn: 1, run: false }, 0.5, terrain);
+  check('D gira en el sitio sin desplazar al personaje', state.yaw > 0.1 && state.x === 1000 && state.z === 1000,
+    `yaw=${state.yaw.toFixed(3)} posición=(${state.x.toFixed(3)}, ${state.z.toFixed(3)})`);
+}
 
 console.log('\n=== 2. convergencia de velocidad (no la salta) ===');
 {
@@ -77,7 +83,7 @@ console.log('\n=== 2. convergencia de velocidad (no la salta) ===');
   let maxJump = 0;
   let prev = 0;
   for (let i = 0; i < 120; i++) {
-    stepCharacter(s, { forward: 1, strafe: 0, run: false }, 1 / 60, terrain);
+    stepCharacter(s, { forward: 1, turn: 0, run: false }, 1 / 60, terrain);
     maxJump = Math.max(maxJump, Math.abs(s.speed - prev));
     prev = s.speed;
     if (i % 20 === 0) traza.push(`${(i / 60).toFixed(2)}s:${s.speed.toFixed(3)}`);
@@ -90,7 +96,7 @@ console.log('\n=== 2. convergencia de velocidad (no la salta) ===');
 }
 {
   const s = createCharacterState(0, 0, 0, terrain);
-  for (let i = 0; i < 180; i++) stepCharacter(s, { forward: 1, strafe: 0, run: true }, 1 / 60, terrain);
+  for (let i = 0; i < 180; i++) stepCharacter(s, { forward: 1, turn: 0, run: true }, 1 / 60, terrain);
   console.log(`  corriendo 3 s: v=${s.speed.toFixed(4)} m/s`);
   check('velocidad converge a RUN_SPEED_MPS', Math.abs(s.speed - RUN_SPEED_MPS) < 1e-6, `${s.speed.toFixed(6)} vs ${RUN_SPEED_MPS}`);
 }
@@ -100,7 +106,7 @@ console.log('\n=== 3. Y sigue al terreno inclinado ===');
   const s = createCharacterState(1000, 1000, 0, terrain);
   let worst = 0;
   for (let i = 0; i < 240; i++) {
-    stepCharacter(s, { forward: 1, strafe: 0.3, run: true }, 1 / 60, terrain);
+    stepCharacter(s, { forward: 1, turn: 0.3, run: true }, 1 / 60, terrain);
     worst = Math.max(worst, Math.abs(s.y - expectedY(s.x, s.z)));
   }
   console.log(`  tras 4 s: (${s.x.toFixed(3)}, ${s.z.toFixed(3)})  y=${s.y.toFixed(4)}  esperado=${expectedY(s.x, s.z).toFixed(4)}`);
@@ -115,8 +121,8 @@ console.log('\n=== 4. nunca Y = 0 dentro de la ventana ===');
   let minY = Infinity;
   let sawZero = false;
   for (let i = 0; i < 600; i++) {
-    // Apunta hacia -X/-Z (fuera de la ventana).
-    stepCharacter(s, { forward: -1, strafe: -1, run: true }, 1 / 30, terrain);
+    // Marcha atrás desde el borde sur de la ventana.
+    stepCharacter(s, { forward: -1, turn: 0, run: true }, 1 / 30, terrain);
     if (s.y === 0) sawZero = true;
     minY = Math.min(minY, s.y);
     if (s.x <= 0 || s.z <= 0) s.yaw = 0; // no debería hacer falta: se recorta
@@ -126,31 +132,31 @@ console.log('\n=== 4. nunca Y = 0 dentro de la ventana ===');
   check('nunca devuelve y = 0 dentro de la ventana', !sawZero, `minY=${minY.toFixed(3)}`);
 }
 
-console.log('\n=== 5. la guiñada converge y no salta ===');
+console.log('\n=== 5. el giro es gradual y conserva posición al girar en el sitio ===');
 {
   const s = createCharacterState(1000, 1000, 0, terrain);
-  const objetivo = Math.atan2(1, 0); // moverse hacia +X ⇒ yaw = atan2(1,0) = π/2
   let maxJump = 0;
   let prev = s.yaw;
   const traza = [];
-  for (let i = 0; i < 90; i++) {
-    stepCharacter(s, { forward: 0, strafe: 1, run: false }, 1 / 60, terrain);
+  for (let i = 0; i < 20; i++) {
+    stepCharacter(s, { forward: 0, turn: 1, run: false }, 1 / 60, terrain);
     const d = Math.abs(Math.atan2(Math.sin(s.yaw - prev), Math.cos(s.yaw - prev)));
     maxJump = Math.max(maxJump, d);
     prev = s.yaw;
     if (i % 15 === 0) traza.push(`${(i / 60).toFixed(2)}s:${((s.yaw * 180) / Math.PI).toFixed(1)}°`);
   }
   traza.push(`fin:${((s.yaw * 180) / Math.PI).toFixed(1)}°`);
-  console.log(`  guiñada hacia +X (objetivo 90°): ${traza.join('  ')}`);
-  console.log(`  salto máximo por frame: ${((maxJump * 180) / Math.PI).toFixed(3)}° (≤ 9 rad/s · dt = ${((9 / 60 * 180) / Math.PI).toFixed(2)}°)`);
-  const err = Math.abs(Math.atan2(Math.sin(s.yaw - objetivo), Math.cos(s.yaw - objetivo)));
-  check('la guiñada converge a la dirección de movimiento', err < 1e-6, `error ${((err * 180) / Math.PI).toFixed(6)}°`);
-  check('la guiñada no salta de golpe', maxJump <= 9 * (1 / 60) + 1e-9, `salto max ${((maxJump * 180) / Math.PI).toFixed(4)}°`);
+  console.log(`  D gira a la derecha: ${traza.join('  ')}`);
+  console.log(`  salto máximo por frame: ${((maxJump * 180) / Math.PI).toFixed(3)}° (≤ ${TURN_RATE_RAD_S} rad/s · dt)`);
+  check('D gira a la derecha sin movimiento lateral', s.yaw > 0 && s.x === 1000 && s.z === 1000,
+    `yaw=${s.yaw.toFixed(6)} · posición=(${s.x}, ${s.z})`);
+  check('el giro no salta de golpe', maxJump <= TURN_RATE_RAD_S * (1 / 60) + 1e-9,
+    `salto max ${((maxJump * 180) / Math.PI).toFixed(4)}°`);
 }
 {
   // Sin input conserva la guiñada.
   const s = createCharacterState(1000, 1000, 1.234, terrain);
-  for (let i = 0; i < 60; i++) stepCharacter(s, { forward: 0, strafe: 0, run: false }, 1 / 60, terrain);
+  for (let i = 0; i < 60; i++) stepCharacter(s, { forward: 0, turn: 0, run: false }, 1 / 60, terrain);
   console.log(`  sin input, yaw = ${s.yaw.toFixed(6)} (inicial 1.234000)`);
   check('sin input conserva la guiñada', Math.abs(s.yaw - 1.234) < 1e-9, `${s.yaw.toFixed(6)}`);
 }
@@ -158,7 +164,7 @@ console.log('\n=== 5. la guiñada converge y no salta ===');
 console.log('\n=== 6. dt grande (1 s) no teletransporta ===');
 {
   const s = createCharacterState(1000, 1000, 0, terrain);
-  stepCharacter(s, { forward: 1, strafe: 0, run: true }, 1, terrain);
+  stepCharacter(s, { forward: 1, turn: 0, run: true }, 1, terrain);
   const d = Math.hypot(s.x - 1000, s.z - 1000);
   const maxPosible = RUN_SPEED_MPS * 0.1;
   console.log(`  un paso de dt=1 s movió ${d.toFixed(4)} m (≤ RUN·0.1 = ${maxPosible.toFixed(2)} m)`);
@@ -168,8 +174,8 @@ console.log('\n=== 6. dt grande (1 s) no teletransporta ===');
 {
   // dt=0 y dt negativo no rompen ni mueven.
   const s = createCharacterState(1000, 1000, 0, terrain);
-  stepCharacter(s, { forward: 1, strafe: 0, run: false }, 0, terrain);
-  stepCharacter(s, { forward: 1, strafe: 0, run: false }, -5, terrain);
+  stepCharacter(s, { forward: 1, turn: 0, run: false }, 0, terrain);
+  stepCharacter(s, { forward: 1, turn: 0, run: false }, -5, terrain);
   check('dt=0 y dt<0 no mueven al personaje', s.x === 1000 && s.z === 1000 && s.speed === 0, `(${s.x}, ${s.z}) v=${s.speed}`);
 }
 

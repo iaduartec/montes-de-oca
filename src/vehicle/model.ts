@@ -13,11 +13,17 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
+import '@babylonjs/loaders/glTF';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { WheelLayout } from './attitude';
 import type { VehicleBodySize } from './types';
+import { publicUrl } from '../public-url';
 
 export type FourWheelVisual = 'estandar' | 'patrulla' | 'carga' | 'explorador' | 'turismo' | 'rally';
 
@@ -27,6 +33,8 @@ export interface VehicleModel {
   readonly wheels: readonly TransformNode[];
   /** Aplica el giro de rueda (rad) y el ángulo de dirección (rad). */
   setWheelPose(spin: number, steer: number): void;
+  /** Enciende las luces rojas al frenar o usar el freno de mano. */
+  setBrakeLights(active: boolean): void;
   setAppearance(id: FourWheelVisual): void;
   dispose(): void;
 }
@@ -39,7 +47,46 @@ function material(scene: Scene, name: string, color: Color3, specular = 0.1): St
   return mat;
 }
 
-function box(scene: Scene, name: string, mat: StandardMaterial, width: number, height: number, depth: number, x: number, y: number, z: number): Mesh {
+/** Pintura de carrocería: usa el IBL de la escena para reflejos suaves de cielo. */
+function paintMaterial(scene: Scene, name: string, color: Color3): PBRMaterial {
+  const mat = new PBRMaterial(name, scene);
+  mat.albedoColor = color;
+  // Pintura opaca de vehículo de campo: respuesta dieléctrica y reflejo amplio.
+  mat.metallic = 0.12;
+  mat.roughness = 0.38;
+  mat.clearCoat.isEnabled = true;
+  mat.clearCoat.intensity = 0.28;
+  mat.clearCoat.roughness = 0.24;
+  return mat;
+}
+
+/** Cristal tintado: capa de reflejo marcada, con una base oscura todavía opaca. */
+function glassMaterial(scene: Scene, name: string, color: Color3): PBRMaterial {
+  const mat = new PBRMaterial(name, scene);
+  mat.albedoColor = color;
+  mat.metallic = 0;
+  mat.roughness = 0.2;
+  mat.clearCoat.isEnabled = true;
+  mat.clearCoat.intensity = 0.62;
+  mat.clearCoat.roughness = 0.1;
+  return mat;
+}
+
+function brakeLightMaterial(scene: Scene, name: string): PBRMaterial {
+  const mat = new PBRMaterial(name, scene);
+  mat.albedoColor = new Color3(0.42, 0.035, 0.025);
+  mat.metallic = 0;
+  mat.roughness = 0.42;
+  mat.emissiveColor = Color3.Black();
+  return mat;
+}
+
+function setBrakeLightEmission(mat: PBRMaterial, active: boolean): void {
+  mat.emissiveColor = active ? new Color3(1, 0.012, 0.004) : Color3.Black();
+  mat.emissiveIntensity = active ? 2.2 : 1;
+}
+
+function box(scene: Scene, name: string, mat: Material, width: number, height: number, depth: number, x: number, y: number, z: number): Mesh {
   const mesh = CreateBox(name, { width, height, depth }, scene);
   mesh.material = mat;
   mesh.position.set(x, y, z);
@@ -59,7 +106,7 @@ function box(scene: Scene, name: string, mat: StandardMaterial, width: number, h
 function taperedBox(
   scene: Scene,
   name: string,
-  mat: StandardMaterial,
+  mat: Material,
   bottomWidth: number,
   bottomDepth: number,
   topWidth: number,
@@ -103,7 +150,7 @@ function taperedBox(
 function slopedBox(
   scene: Scene,
   name: string,
-  mat: StandardMaterial,
+  mat: Material,
   bottomWidth: number,
   bottomDepth: number,
   topWidth: number,
@@ -164,7 +211,7 @@ function catalogBodyWidth(sizeWidthM: number, halfTrack: number, wheelWidth: num
 function archCap(
   scene: Scene,
   kit: CatalogKit,
-  mat: StandardMaterial,
+  mat: Material,
   name: string,
   x: number,
   z: number,
@@ -183,30 +230,32 @@ function archCap(
 interface CatalogKit {
   root: TransformNode;
   parts: Mesh[];
-  bodyMat: StandardMaterial;
-  glassMat: StandardMaterial;
+  bodyMat: PBRMaterial;
+  glassMat: PBRMaterial;
   trimMat: StandardMaterial;
   wheelMat: StandardMaterial;
   lampMat: StandardMaterial;
-  mats: StandardMaterial[];
+  brakeMat: PBRMaterial;
+  mats: Material[];
 }
 
 function catalogKit(scene: Scene, body: Color3, glass: Color3): CatalogKit {
   const root = new TransformNode('vehicle:root', scene);
-  const bodyMat = material(scene, 'vehicle:body', body, 0.08);
-  const glassMat = material(scene, 'vehicle:glass', glass, 0.3);
+  const bodyMat = paintMaterial(scene, 'vehicle:body', body);
+  const glassMat = glassMaterial(scene, 'vehicle:glass', glass);
   const trimMat = material(scene, 'vehicle:trim', new Color3(0.12, 0.12, 0.13));
   const wheelMat = material(scene, 'vehicle:wheel', new Color3(0.09, 0.09, 0.1));
   const lampMat = material(scene, 'vehicle:lamp', new Color3(0.85, 0.78, 0.55), 0.22);
-  return { root, parts: [], bodyMat, glassMat, trimMat, wheelMat, lampMat, mats: [bodyMat, glassMat, trimMat, wheelMat, lampMat] };
+  const brakeMat = brakeLightMaterial(scene, 'vehicle:brake-lights');
+  return { root, parts: [], bodyMat, glassMat, trimMat, wheelMat, lampMat, brakeMat, mats: [bodyMat, glassMat, trimMat, wheelMat, lampMat, brakeMat] };
 }
 
 function assembleCatalogBody(scene: Scene, kit: CatalogKit, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, wheelWidth = 0.3): VehicleModel {
-  const byMaterial = new Map<StandardMaterial, Mesh[]>();
+  const byMaterial = new Map<Material, Mesh[]>();
   for (const part of kit.parts) {
-    const group = byMaterial.get(part.material as StandardMaterial) ?? [];
+    const group = byMaterial.get(part.material as Material) ?? [];
     group.push(part);
-    byMaterial.set(part.material as StandardMaterial, group);
+    byMaterial.set(part.material as Material, group);
   }
   let groupIndex = 0;
   for (const group of byMaterial.values()) {
@@ -241,6 +290,7 @@ function assembleCatalogBody(scene: Scene, kit: CatalogKit, layout: WheelLayout,
   return {
     root: kit.root, wheels,
     setWheelPose: (spin, steer) => wheels.forEach((hub, i) => hub.rotation.set(spin, i < 2 ? steer : 0, 0)),
+    setBrakeLights: (active) => setBrakeLightEmission(kit.brakeMat, active),
     setAppearance: () => {},
     dispose: () => { kit.root.dispose(false, true); kit.mats.forEach((mat) => mat.dispose()); },
   };
@@ -258,7 +308,7 @@ function spareRear(scene: Scene, kit: CatalogKit, wheelRadius: number, x: number
   kit.parts.push(cover);
 }
 
-// Mitsubishi Montero V20: corto 3 puertas, volumen alto, techo recto, repuesto trasera, verde bosque.
+// SUV utilitario genérico: fallback de catálogo si el GLB de cuatro puertas no carga.
 function buildEstandarCatalog(scene: Scene, layout: WheelLayout, wheelRadius: number, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
   const kit = catalogKit(scene, new Color3(0.18, 0.35, 0.22), new Color3(0.1, 0.17, 0.2));
   const width = catalogBodyWidth(size.widthM, layout.halfTrack, wheelWidth, 0.94);
@@ -298,7 +348,7 @@ function buildEstandarCatalog(scene: Scene, layout: WheelLayout, wheelRadius: nu
   kit.parts.push(box(scene, 'vehicle:estandar-grille', kit.trimMat, 0.8, 0.24, 0.05, 0, chassisY + 0.12, frontFace - 0.005));
   for (const side of [-1, 1] as const) {
     kit.parts.push(box(scene, `vehicle:estandar-headlamp-${side}`, kit.lampMat, 0.26, 0.18, 0.05, side * width * 0.3, chassisY + 0.14, frontFace - 0.005));
-    kit.parts.push(box(scene, `vehicle:estandar-taillamp-${side}`, kit.lampMat, 0.13, 0.26, 0.06, side * (halfW - 0.12), chassisY + 0.16, rearFace + 0.01));
+    kit.parts.push(box(scene, `vehicle:estandar-taillamp-${side}`, kit.brakeMat, 0.13, 0.26, 0.06, side * (halfW - 0.12), chassisY + 0.16, rearFace + 0.01));
   }
   kit.parts.push(box(scene, 'vehicle:estandar-bumper-f', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, frontFace + 0.06));
   kit.parts.push(box(scene, 'vehicle:estandar-bumper-r', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, rearFace - 0.06));
@@ -347,7 +397,7 @@ function buildPatrullaCatalog(scene: Scene, layout: WheelLayout, wheelRadius: nu
   kit.parts.push(box(scene, 'vehicle:patrulla-grille', kit.trimMat, 0.9, 0.26, 0.05, 0, chassisY + 0.14, frontFace - 0.005));
   for (const side of [-1, 1] as const) {
     kit.parts.push(box(scene, `vehicle:patrulla-headlamp-${side}`, kit.lampMat, 0.28, 0.2, 0.05, side * width * 0.3, chassisY + 0.16, frontFace - 0.005));
-    kit.parts.push(box(scene, `vehicle:patrulla-taillamp-${side}`, kit.lampMat, 0.14, 0.3, 0.06, side * (halfW - 0.12), chassisY + 0.2, rearFace + 0.01));
+    kit.parts.push(box(scene, `vehicle:patrulla-taillamp-${side}`, kit.brakeMat, 0.14, 0.3, 0.06, side * (halfW - 0.12), chassisY + 0.2, rearFace + 0.01));
   }
   kit.parts.push(box(scene, 'vehicle:patrulla-bumper-f', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, frontFace + 0.06));
   kit.parts.push(box(scene, 'vehicle:patrulla-bumper-r', kit.trimMat, width * 0.98, 0.2, 0.24, 0, wheelRadius + 0.12, rearFace - 0.06));
@@ -410,7 +460,7 @@ function buildCargaCatalog(scene: Scene, layout: WheelLayout, wheelRadius: numbe
   kit.parts.push(box(scene, 'vehicle:carga-bumper-f', kit.trimMat, width * 0.95, 0.18, 0.22, 0, wheelRadius + 0.1, frontFace + 0.08));
   kit.parts.push(box(scene, 'vehicle:carga-bumper-r', kit.trimMat, width * 0.95, 0.18, 0.22, 0, wheelRadius + 0.1, rearFace - 0.08));
   for (const side of [-1, 1] as const) {
-    kit.parts.push(box(scene, `vehicle:carga-taillamp-${side}`, kit.lampMat, 0.12, 0.2, 0.06, side * (halfW - 0.12), chassisY + 0.12, rearFace + 0.01));
+    kit.parts.push(box(scene, `vehicle:carga-taillamp-${side}`, kit.brakeMat, 0.12, 0.2, 0.06, side * (halfW - 0.12), chassisY + 0.12, rearFace + 0.01));
     archCap(scene, kit, kit.bodyMat, `vehicle:carga-arch-r-${side}`, side * layout.halfTrack, -layout.rear, wheelRadius, wheelWidth);
   }
   spareRear(scene, kit, wheelRadius, 0, chassisY + 0.18, rearFace - 0.08);
@@ -455,7 +505,7 @@ function buildExploradorCatalog(scene: Scene, layout: WheelLayout, wheelRadius: 
   kit.parts.push(box(scene, 'vehicle:explorador-bumper-r', kit.trimMat, width * 0.92, 0.16, 0.2, 0, wheelRadius + 0.06, rearFace + 0.04));
   for (const side of [-1, 1] as const) {
     kit.parts.push(box(scene, `vehicle:explorador-headlamp-${side}`, kit.lampMat, 0.3, 0.1, 0.04, side * width * 0.28, chassisY + 0.12, frontFace - 0.005));
-    kit.parts.push(box(scene, `vehicle:explorador-taillamp-${side}`, kit.lampMat, 0.1, 0.18, 0.04, side * (halfW - 0.1), chassisY + 0.1, rearFace + 0.005));
+    kit.parts.push(box(scene, `vehicle:explorador-taillamp-${side}`, kit.brakeMat, 0.1, 0.18, 0.04, side * (halfW - 0.1), chassisY + 0.1, rearFace + 0.005));
   }
   return assembleCatalogBody(scene, kit, layout, wheelRadius, 'explorador', wheelWidth);
 }
@@ -506,11 +556,11 @@ function buildTurismoCatalog(scene: Scene, layout: WheelLayout, wheelRadius: num
   for (const side of [-1, 1] as const) {
     kit.parts.push(box(scene, `vehicle:turismo-headlamp-${side}`, kit.lampMat, 0.32, 0.1, 0.04, side * width * 0.3, chassisY + 0.1, frontFace - 0.005));
     // Trasera ancha B5: piloto exterior + tira central en una sola barra de luz.
-    kit.parts.push(box(scene, `vehicle:turismo-taillamp-${side}`, kit.lampMat, 0.34, 0.1, 0.04, side * (halfW - 0.2), chassisY + 0.22, rearFace + 0.005));
+    kit.parts.push(box(scene, `vehicle:turismo-taillamp-${side}`, kit.brakeMat, 0.34, 0.1, 0.04, side * (halfW - 0.2), chassisY + 0.22, rearFace + 0.005));
     // Doble escape embutido en el faldón trasero.
     kit.parts.push(box(scene, `vehicle:turismo-exhaust-${side}`, kit.trimMat, 0.09, 0.07, 0.1, side * 0.28, wheelRadius + 0.02, rearFace + 0.02));
   }
-  kit.parts.push(box(scene, 'vehicle:turismo-lightbar', kit.lampMat, width * 0.34, 0.08, 0.03, 0, chassisY + 0.22, rearFace + 0.008));
+  kit.parts.push(box(scene, 'vehicle:turismo-lightbar', kit.brakeMat, width * 0.34, 0.08, 0.03, 0, chassisY + 0.22, rearFace + 0.008));
   kit.parts.push(box(scene, 'vehicle:turismo-bumper-f', kit.trimMat, width * 0.96, 0.16, 0.2, 0, wheelRadius + 0.04, frontFace - 0.04));
   kit.parts.push(box(scene, 'vehicle:turismo-valance-r', kit.trimMat, width * 0.96, 0.16, 0.2, 0, wheelRadius + 0.04, rearFace + 0.04));
   return assembleCatalogBody(scene, kit, layout, wheelRadius, 'turismo', wheelWidth);
@@ -555,20 +605,20 @@ function buildRallyCatalog(scene: Scene, layout: WheelLayout, wheelRadius: numbe
   kit.parts.push(box(scene, 'vehicle:rally-intake', kit.trimMat, width * 0.6, 0.07, 0.04, 0, chassisY - 0.04, frontFace - 0.005));
   for (const side of [-1, 1] as const) {
     kit.parts.push(box(scene, `vehicle:rally-headlamp-${side}`, kit.lampMat, 0.34, 0.07, 0.04, side * width * 0.28, chassisY + 0.12, frontFace - 0.01));
-    kit.parts.push(box(scene, `vehicle:rally-taillamp-${side}`, kit.lampMat, 0.3, 0.06, 0.04, side * (halfW - 0.2), chassisY + 0.14, rearFace + 0.005));
+    kit.parts.push(box(scene, `vehicle:rally-taillamp-${side}`, kit.brakeMat, 0.3, 0.06, 0.04, side * (halfW - 0.2), chassisY + 0.14, rearFace + 0.005));
   }
   // Barra de luz trasera de ancho completo + labio de baúl.
-  kit.parts.push(box(scene, 'vehicle:rally-lightbar', kit.lampMat, width * 0.5, 0.06, 0.03, 0, chassisY + 0.14, rearFace + 0.008));
+  kit.parts.push(box(scene, 'vehicle:rally-lightbar', kit.brakeMat, width * 0.5, 0.06, 0.03, 0, chassisY + 0.14, rearFace + 0.008));
   kit.parts.push(box(scene, 'vehicle:rally-lip', kit.bodyMat, width * 0.7, 0.05, 0.18, 0, chassisY + 0.16, rearFace + 0.06));
   return assembleCatalogBody(scene, kit, layout, wheelRadius, 'rally', wheelWidth);
 }
 
-function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, size: VehicleBodySize, wheelWidth = 0.32): VehicleModel {
+function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: number, visual: FourWheelVisual, size: VehicleBodySize, wheelWidth = 0.32,
+  onMeshesReplaced?: (removed: readonly AbstractMesh[], added: readonly AbstractMesh[]) => void): VehicleModel {
+  if (visual === 'estandar' || visual === 'patrulla') {
+    return buildUtilityWithGlbFallback(scene, layout, wheelRadius, size, wheelWidth, visual, onMeshesReplaced);
+  }
   switch (visual) {
-    case 'estandar':
-      return buildEstandarCatalog(scene, layout, wheelRadius, size, wheelWidth);
-    case 'patrulla':
-      return buildPatrullaCatalog(scene, layout, wheelRadius, size, wheelWidth);
     case 'carga':
       return buildCargaCatalog(scene, layout, wheelRadius, size, wheelWidth);
     case 'explorador':
@@ -580,21 +630,137 @@ function createCatalogBody(scene: Scene, layout: WheelLayout, wheelRadius: numbe
   }
 }
 
+/** Uses the sourced generic utility SUV when it loads; the catalog silhouette remains a visible fallback. */
+function buildUtilityWithGlbFallback(scene: Scene, layout: WheelLayout, wheelRadius: number,
+  size: VehicleBodySize, wheelWidth: number, visual: 'estandar' | 'patrulla',
+  onMeshesReplaced?: (removed: readonly AbstractMesh[], added: readonly AbstractMesh[]) => void): VehicleModel {
+  const fallback = visual === 'estandar'
+    ? buildEstandarCatalog(scene, layout, wheelRadius, size, wheelWidth)
+    : buildPatrullaCatalog(scene, layout, wheelRadius, size, wheelWidth);
+  const sourceScale = { x: 0.77, y: 0.9, z: 0.84 };
+  const url = publicUrl('/vehicles/four-door-utility.glb');
+  const assetRoot = new TransformNode(`vehicle:${visual}-glb-root`, scene);
+  assetRoot.parent = fallback.root;
+  assetRoot.scaling.set(sourceScale.x, sourceScale.y, sourceScale.z);
+  assetRoot.position.y = -wheelRadius;
+  assetRoot.setEnabled(false);
+
+  const wheelNames = ['wheel-lf', 'wheel-rf', 'wheel-lr', 'wheel-rr'] as const;
+  const glbWheels: TransformNode[] = [];
+  let braking = false;
+  let glbBrakeMaterials: Array<{
+    material: PBRMaterial;
+    albedo: Color3;
+    emissive: Color3;
+    intensity: number;
+  }> = [];
+  const applyGlbBrakeLights = (active: boolean): void => {
+    for (const lamp of glbBrakeMaterials) {
+      lamp.material.albedoColor = active ? new Color3(0.82, 0.025, 0.012) : lamp.albedo;
+      lamp.material.emissiveColor = active ? new Color3(1, 0.01, 0.002) : lamp.emissive;
+      lamp.material.emissiveIntensity = active ? 2.4 : lamp.intensity;
+    }
+  };
+  let container: Awaited<ReturnType<typeof SceneLoader.LoadAssetContainerAsync>> | null = null;
+  let disposed = false;
+
+  void SceneLoader.LoadAssetContainerAsync('', url, scene).then((loaded) => {
+    if (disposed) {
+      loaded.dispose();
+      return;
+    }
+    const pivots = wheelNames.map((name) => loaded.transformNodes.find((node) => node.name === name));
+    const drawableMeshes = loaded.meshes.filter((mesh) => mesh.getTotalVertices() > 0);
+    if (pivots.some((pivot) => !pivot) || drawableMeshes.length < 10) {
+      loaded.dispose();
+      throw new Error('Utility SUV GLB must contain four named wheel pivots and a detailed body');
+    }
+
+    glbBrakeMaterials = loaded.materials.flatMap((candidate) => {
+      if (candidate.name !== 'orange' || !('albedoColor' in candidate) || !('emissiveColor' in candidate)) return [];
+      const lamp = candidate as PBRMaterial;
+      return [{
+        material: lamp,
+        albedo: lamp.albedoColor.clone(),
+        emissive: lamp.emissiveColor.clone(),
+        intensity: lamp.emissiveIntensity,
+      }];
+    });
+    if (glbBrakeMaterials.length === 0) {
+      loaded.dispose();
+      throw new Error('Utility SUV GLB must provide its rear lamp material named "orange"');
+    }
+
+    loaded.animationGroups.forEach((group) => group.dispose());
+    loaded.addAllToScene();
+    for (const node of loaded.rootNodes) {
+      if (node instanceof TransformNode) node.parent = assetRoot;
+    }
+    const pivotByName = new Map(pivots.map((pivot, index) => [wheelNames[index]!, pivot!]));
+    const positions = [
+      [-layout.halfTrack, layout.front], [layout.halfTrack, layout.front],
+      [-layout.halfTrack, -layout.rear], [layout.halfTrack, -layout.rear],
+    ] as const;
+    for (let index = 0; index < wheelNames.length; index++) {
+      const wheel = pivotByName.get(wheelNames[index]!)!;
+      const [x, z] = positions[index]!;
+      // Lower the tire center back to the terrain support height after the
+      // parent model root is lowered to align the chassis.
+      wheel.position.set(x / sourceScale.x, (2 * wheelRadius) / sourceScale.y, z / sourceScale.z);
+      wheel.rotation.set(0, 0, 0);
+      glbWheels.push(wheel);
+    }
+
+    // Transfer ownership of the visible shell to the GLB. Physics hubs remain
+    // in place but their prototype tires/caps are removed to avoid duplicates.
+    const removed = fallback.root.getChildMeshes(false).filter((mesh) => mesh.name.startsWith('vehicle:'));
+    for (const mesh of removed) mesh.dispose(false, false);
+    assetRoot.setEnabled(true);
+    applyGlbBrakeLights(braking);
+    container = loaded;
+    onMeshesReplaced?.(removed, fallback.root.getChildMeshes());
+  }).catch((error: unknown) => {
+    if (!disposed) console.error(`[vehicle] Failed to load ${url}; retaining the procedural ${visual} fallback`, error);
+  });
+
+  return {
+    ...fallback,
+    setWheelPose: (spin, steer) => {
+      fallback.setWheelPose(spin, steer);
+      for (let index = 0; index < glbWheels.length; index++) {
+        glbWheels[index]!.rotation.set(spin, index < 2 ? steer : 0, 0);
+      }
+    },
+    setBrakeLights: (active) => {
+      braking = active;
+      fallback.setBrakeLights(active);
+      applyGlbBrakeLights(active);
+    },
+    dispose: () => {
+      disposed = true;
+      container?.dispose();
+      fallback.dispose();
+    },
+  };
+}
+
 export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadius: number, wheelWidth = 0.32,
-  visual?: FourWheelVisual, bodySize?: VehicleBodySize): VehicleModel {
+  visual?: FourWheelVisual, bodySize?: VehicleBodySize,
+  onMeshesReplaced?: (removed: readonly AbstractMesh[], added: readonly AbstractMesh[]) => void): VehicleModel {
   if (visual && bodySize) {
-    return createCatalogBody(scene, layout, wheelRadius, visual, bodySize, wheelWidth);
+    return createCatalogBody(scene, layout, wheelRadius, visual, bodySize, wheelWidth, onMeshesReplaced);
   }
   const root = new TransformNode('vehicle:root', scene);
 
   // Paleta de vehículo de trabajo rural: verde aceituna apagado, negro mate y
   // cristales oscuros. Se reutilizan los materiales existentes para no sumar
   // llamadas de dibujo.
-  const bodyMat = material(scene, 'vehicle:body', new Color3(0.4, 0.43, 0.32), 0.06);
-  const cabinMat = material(scene, 'vehicle:glass', new Color3(0.11, 0.19, 0.2), 0.32);
+  const bodyMat = paintMaterial(scene, 'vehicle:body', new Color3(0.4, 0.43, 0.32));
+  const cabinMat = glassMaterial(scene, 'vehicle:glass', new Color3(0.11, 0.19, 0.2));
   const trimMat = material(scene, 'vehicle:trim', new Color3(0.14, 0.14, 0.15), 0.06);
   const wheelMat = material(scene, 'vehicle:wheel', new Color3(0.13, 0.13, 0.14), 0.06);
   const lampMat = material(scene, 'vehicle:lamp', new Color3(0.85, 0.77, 0.55), 0.22);
+  const brakeMat = brakeLightMaterial(scene, 'vehicle:brake-lights');
 
   const parts: Mesh[] = [];
   const wheelHubs: TransformNode[] = [];
@@ -644,8 +810,8 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   parts.push(box(scene, 'vehicle:rack-lamp-right', lampMat, 0.14, 0.05, 0.09, 0.26, chassisY + 0.92, 0.28));
 
   parts.push(box(scene, 'vehicle:rear-glass', cabinMat, 0.94, 0.34, 0.035, 0, chassisY + 0.59, -1.27));
-  parts.push(box(scene, 'vehicle:taillamp-left', lampMat, 0.14, 0.24, 0.05, -0.66, chassisY + 0.14, -2.03));
-  parts.push(box(scene, 'vehicle:taillamp-right', lampMat, 0.14, 0.24, 0.05, 0.66, chassisY + 0.14, -2.03));
+  parts.push(box(scene, 'vehicle:taillamp-left', brakeMat, 0.14, 0.24, 0.05, -0.66, chassisY + 0.14, -2.03));
+  parts.push(box(scene, 'vehicle:taillamp-right', brakeMat, 0.14, 0.24, 0.05, 0.66, chassisY + 0.14, -2.03));
   parts.push(box(scene, 'vehicle:bumper-front', trimMat, 1.62, 0.2, 0.26, 0, wheelRadius + 0.1, 2.1));
   parts.push(box(scene, 'vehicle:bumper-rear', trimMat, 1.62, 0.2, 0.26, 0, wheelRadius + 0.1, -2.1));
   parts.push(box(scene, 'vehicle:grille', trimMat, 0.82, 0.26, 0.035, 0, chassisY + 0.08, 2.044));
@@ -674,11 +840,11 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
 
   // Agrupar las piezas estáticas por material: los nuevos rasgos no añaden
   // llamadas de dibujo; las cuatro ruedas siguen separadas para girar.
-  const staticByMaterial = new Map<StandardMaterial, Mesh[]>();
+  const staticByMaterial = new Map<Material, Mesh[]>();
   for (const part of parts) {
-    const group = staticByMaterial.get(part.material as StandardMaterial) ?? [];
+    const group = staticByMaterial.get(part.material as Material) ?? [];
     group.push(part);
-    staticByMaterial.set(part.material as StandardMaterial, group);
+    staticByMaterial.set(part.material as Material, group);
   }
   let staticGroup = 0;
   for (const group of staticByMaterial.values()) {
@@ -736,7 +902,7 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
     if (visual !== 'carga') cargoKit.dispose();
     if (visual === 'patrulla') patrolKit.setEnabled(true);
     if (visual === 'carga') cargoKit.setEnabled(true);
-    bodyMat.diffuseColor = visual === 'patrulla'
+    bodyMat.albedoColor = visual === 'patrulla'
       ? new Color3(0.69, 0.7, 0.64)
       : visual === 'carga' ? new Color3(0.48, 0.38, 0.25) : new Color3(0.4, 0.43, 0.32);
   }
@@ -795,10 +961,11 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
   return {
     root,
     wheels: wheelHubs,
+    setBrakeLights: (active) => setBrakeLightEmission(brakeMat, active),
     setAppearance: (id) => {
       patrolKit.setEnabled(id === 'patrulla');
       cargoKit.setEnabled(id === 'carga');
-      bodyMat.diffuseColor = id === 'patrulla'
+      bodyMat.albedoColor = id === 'patrulla'
         ? new Color3(0.69, 0.7, 0.64)
         : id === 'carga'
           ? new Color3(0.48, 0.38, 0.25)
@@ -818,6 +985,7 @@ export function createVehicleModel(scene: Scene, layout: WheelLayout, wheelRadiu
       trimMat.dispose();
       wheelMat.dispose();
       lampMat.dispose();
+      brakeMat.dispose();
     },
   };
 }

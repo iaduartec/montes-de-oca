@@ -1,8 +1,13 @@
 # Integración de 3D Tiles en el mapa principal
 
-**Estado:** propuesta para revisión; todavía no cambia la escena jugable.
+**Estado:** diseño aprobado por el usuario el 2026-09-27; implementar por fases,
+manteniendo disponible la escena de terreno actual hasta pasar las comprobaciones.
 
 ## Objetivo
+
+“Empezar de cero” se limita al render cartográfico: se conserva el juego y se
+reconstruye la integración visual con una sola escena RH. Física, misión,
+controles, coordenadas geográficas y samplers actuales no se reescriben.
 
 Mostrar el terreno cartográfico de Villafranca como contenido local 3D Tiles en
 la escena principal de Babylon, con carga y selección de teselas según la cámara.

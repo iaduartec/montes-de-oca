@@ -5,19 +5,15 @@
  *
  * DECISIONES DE DISEÑO (y por qué):
  *
- * 1. El input es relativo al MUNDO, no al cuerpo. El contrato no incluye cámara,
- *    y medir "adelante" contra la guiñada ACTUAL hace que mantener D (strafe
- *    puro) pida siempre 90° a la derecha del nuevo rumbo: la dirección pedida
- *    rota junto con el cuerpo y el personaje entra en un trompo infinito. Con el
- *    mundo fijo, W = +Z, D = +X, y la guiñada PERSIGUE esa dirección. Es la
- *    única lectura autocontenida del contrato.
+ * 1. W/S avanzan y retroceden según la guiñada del personaje; A/D giran el rumbo.
+ *    La cámara de persecución sigue esa guiñada, así que el jugador siempre puede
+ *    avanzar hacia lo que ve. Mantener A/D gira en el sitio y no usa la dirección
+ *    de giro como vector de movimiento.
  *
- * 2. La guiñada se interpola con tope de velocidad angular (rad/s): nunca salta
- *    de golpe. Sin input se conserva, como pide el contrato.
+ * 2. La guiñada avanza a velocidad angular acotada (rad/s): nunca salta de golpe.
  *
  * 3. La velocidad tiene rampa lineal acotada (m/s²), no un cambio instantáneo:
- *    el jugador no es un patín. La diagonal se normaliza, así W+D no es 41% más
- *    rápido que W.
+ *    el jugador no es un patín. El giro se puede combinar con W/S.
  *
  * 4. `y` sale SIEMPRE de `terrain.heightAt` y la posición se recorta a la
  *    ventana jugable ANTES de muestrear. Fuera de la ventana `heightAt` devuelve
@@ -31,10 +27,10 @@ export interface MovementTerrain {
 }
 
 export interface OnFootInput {
-  /** [-1,1] adelante (+Z del mundo). */
+  /** [-1,1] adelante/atrás según el rumbo del personaje. */
   readonly forward: number;
-  /** [-1,1] derecha (+X del mundo). */
-  readonly strafe: number;
+  /** [-1,1] giro: negativo a la izquierda, positivo a la derecha. */
+  readonly turn: number;
   readonly run: boolean;
 }
 
@@ -69,7 +65,7 @@ const ACCEL_MPS2 = 12;
 /** Frenado a pie (m/s²). */
 const BRAKE_MPS2 = 20;
 /** Velocidad angular máxima de la guiñada (rad/s). */
-const TURN_RATE_RAD_S = 9;
+export const TURN_RATE_RAD_S = 4.5;
 /** dt máximo por paso: un tirón de frame no teletransporta al personaje. */
 const MAX_DT_S = 0.1;
 /** Por debajo de esta rapidez se considera quieto. */
@@ -123,37 +119,19 @@ export function stepCharacter(
   }
 
   const forward = clamp(Number.isFinite(input.forward) ? input.forward : 0, -1, 1);
-  const strafe = clamp(Number.isFinite(input.strafe) ? input.strafe : 0, -1, 1);
-  const magnitude = Math.hypot(forward, strafe);
-  const hasInput = magnitude > 1e-6;
+  const turn = clamp(Number.isFinite(input.turn) ? input.turn : 0, -1, 1);
+  const maxSpeed = input.run ? RUN_SPEED_MPS : WALK_SPEED_MPS;
+  const targetSpeed = forward * maxSpeed;
+  const dv = targetSpeed - state.speed;
+  const acceleration = Math.abs(forward) > 1e-6 ? ACCEL_MPS2 : BRAKE_MPS2;
+  state.speed += Math.sign(dv) * Math.min(Math.abs(dv), acceleration * step);
 
-  if (hasInput) {
-    // Dirección de mundo normalizada: la diagonal no suma velocidad.
-    const dirX = strafe / magnitude;
-    const dirZ = forward / magnitude;
-    const targetSpeed = input.run ? RUN_SPEED_MPS : WALK_SPEED_MPS;
+  // A/D giran el personaje y la cámara; W/S siempre usan ese mismo rumbo.
+  state.yaw = wrapAngle(state.yaw + turn * TURN_RATE_RAD_S * step);
+  state.x = clampToWorld(state.x + Math.sin(state.yaw) * state.speed * step);
+  state.z = clampToWorld(state.z + Math.cos(state.yaw) * state.speed * step);
 
-    const dv = targetSpeed - state.speed;
-    state.speed += Math.sign(dv) * Math.min(Math.abs(dv), ACCEL_MPS2 * step);
-
-    state.x = clampToWorld(state.x + dirX * state.speed * step);
-    state.z = clampToWorld(state.z + dirZ * state.speed * step);
-
-    // Guiñada hacia la DIRECCIÓN DE MOVIMIENTO, con tope angular por paso.
-    const targetYaw = Math.atan2(dirX, dirZ);
-    const delta = wrapAngle(targetYaw - state.yaw);
-    const maxTurn = TURN_RATE_RAD_S * step;
-    state.yaw = wrapAngle(state.yaw + clamp(delta, -maxTurn, maxTurn));
-  } else {
-    // Sin input frena en el rumbo actual (no gira: conserva la guiñada).
-    state.speed = Math.max(0, state.speed - BRAKE_MPS2 * step);
-    if (state.speed > 0) {
-      state.x = clampToWorld(state.x + Math.sin(state.yaw) * state.speed * step);
-      state.z = clampToWorld(state.z + Math.cos(state.yaw) * state.speed * step);
-    }
-  }
-
-  state.moving = state.speed > MOVING_EPSILON_MPS;
+  state.moving = Math.abs(state.speed) > MOVING_EPSILON_MPS;
   state.y = terrain.heightAt(state.x, state.z);
 }
 

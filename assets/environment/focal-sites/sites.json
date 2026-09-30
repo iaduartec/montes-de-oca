@@ -8,8 +8,15 @@
   "sites": {
     "church": {
       "name": "Iglesia de Santiago Apóstol",
-      "osm": { "type": "way", "id": 90614388, "source": "public/village/buildings.json" },
-      "height": { "metres": 12.8, "source": "type-derived from four floors; not a LiDAR measurement" },
+      "osm": {
+        "type": "way",
+        "id": 90614388,
+        "source": "public/village/buildings.json"
+      },
+      "height": {
+        "metres": 12.8,
+        "source": "type-derived from four floors; not a LiDAR measurement"
+      },
       "footprintSource": "public/village/buildings.json",
       "reconstruction": "stylized low-poly approximation; no surveyed interior",
       "photoReference": {
@@ -18,22 +25,70 @@
         "license": "CC BY-SA 4.0",
         "url": "https://commons.wikimedia.org/wiki/File:Villafranca_Montes_de_Oca-02-Santiago_Apostol-1996-gje.jpg",
         "use": "visual reference only; no raster texture included"
-      }
+      },
+      "roofEvidence": {
+        "source": "PNOA MA 2023",
+        "license": "CC BY 4.0",
+        "visibleFeature": "crossed gable roofs: N-S nave and E-W transept",
+        "use": "plan and roof form only"
+      },
+      "userPhotoReference": {
+        "file": "fotos/Iglesia_plaza.jpg",
+        "providedBy": "user",
+        "author": null,
+        "license": null,
+        "captureDate": null,
+        "use": "visual reference for stylized tower proportion, belfry openings, clock, cupola and plaza details; no pixels included"
+      },
+      "towerHeightNote": "The shaft, clock, belfry, cupola and cross form an approximately 22 m model silhouette, extended to match the proportions in the user-provided photo; no verified vertical measurement."
     },
     "plaza": {
       "name": "La Plaza",
       "osmWays": [
-        { "id": 645040295, "role": "pedestrian square polygon", "source": "data/roads/raw/osm_highways_window.json" },
-        { "id": 741760074, "role": "existing living_street; keep current road mesh", "source": "public/roads/roads.json" }
+        {
+          "id": 645040295,
+          "role": "pedestrian square polygon",
+          "source": "data/roads/raw/osm_highways_window.json"
+        },
+        {
+          "id": 741760074,
+          "role": "existing living_street; keep current road mesh",
+          "source": "public/roads/roads.json"
+        }
       ],
       "furnitureAnchorsWorldXZ": [
-        [3084.0, 4004.5],
-        [3049.5, 4001.5],
-        [3084.0, 4001.5],
-        [3087.0, 4010.5]
+        [
+          3084.0,
+          4004.5
+        ],
+        [
+          3049.5,
+          4001.5
+        ],
+        [
+          3084.0,
+          4001.5
+        ],
+        [
+          3087.0,
+          4010.5
+        ]
       ],
       "placementSource": "manual low-poly furniture anchors tested inside pedestrian square way 645040295, at least 3 m from building footprints and at least 5 m from the living_street centerline",
-      "reconstruction": "generic low-poly furniture; existing street surface and collisions stay unchanged"
+      "pavingSource": "OSM pedestrian square way 645040295 polygon, aligned to the versioned OSM living_street way 741760074 and draped to the IGN/CNIG MDT terrain",
+      "platformApproximateCenterWorldXZ": [
+        3070.0,
+        3993.0
+      ],
+      "platformEvidence": {
+        "file": "fotos/Iglesia_plaza.jpg",
+        "providedBy": "user",
+        "author": null,
+        "license": null,
+        "captureDate": null,
+        "use": "approximate, not georeferenced visual reference for a raised forecourt, ramp and railings; no pixels included"
+      },
+      "reconstruction": "low-poly OSM square paving with photo-inspired grey stone colours and approximate access forecourt; furniture uses terrain-relative supports and the mapped anchor frame; furniture positions, laying pattern and elevations are artistic approximations; existing living_street surface and collisions stay unchanged"
     },
     "parking": {
       "name": "Parking de El Pájaro",
@@ -44,11 +99,19 @@
       "observationDate": null,
       "boundsWorldXZ": null,
       "confidence": null,
-      "unverifiedDetails": ["surface markings", "curbs", "furniture"]
+      "unverifiedDetails": [
+        "surface markings",
+        "curbs",
+        "furniture"
+      ]
     },
     "dam": {
       "name": "Presa de Alba",
-      "osm": { "type": "way", "id": 168459142, "source": "data/water/raw/osm_water_window.json" },
+      "osm": {
+        "type": "way",
+        "id": 168459142,
+        "source": "data/water/raw/osm_water_window.json"
+      },
       "geometrySource": "public/water/water.json",
       "reconstruction": "stylized low-poly approximation; architectural details without a reusable photo source are not claimed as literal"
     }

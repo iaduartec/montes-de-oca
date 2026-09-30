@@ -1,0 +1,16 @@
+{
+  "name": "Universal Animation Library Standard",
+  "creator": "Quaternius",
+  "license": "CC0 1.0 Universal",
+  "sourcePage": "https://quaternius.itch.io/universal-animation-library",
+  "sourceArchive": "Universal Animation Library[Standard].zip",
+  "sourceAsset": "Unreal-Godot/UAL1_Standard.glb",
+  "sourceAnimation": "Walk_Loop_Armature",
+  "runtimeAnimation": "Walk",
+  "sourceAnimationDuration": "32 frames at 30 fps (1.07 s)",
+  "retargetedTo": "Kenney Animated Characters 3 human male; 22 mapped humanoid bones",
+  "convertedWith": "Blender 4.0.2; scripts/player/build_kenney_character.py",
+  "sourceAssetSha256": "69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997",
+  "rootMotion": "Source root bone omitted; game world owns player position and heading",
+  "notes": "Only the source GLB and its CC0 license are retained for reproducible offline retargeting. The other library clips are not shipped in the runtime character."
+}

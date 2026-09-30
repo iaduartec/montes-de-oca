@@ -1,0 +1,101 @@
+{
+  "before": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:17:40.984Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2796.324,
+          "py": 111.2,
+          "pz": 2116.661,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 2.526823200124946,
+          "frameTimeMs": 539.0999999996275,
+          "drawCalls": 33,
+          "triangles": 773634,
+          "vertices": 1892609,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      }
+    ]
+  },
+  "after": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:19:49.278Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2796.324,
+          "py": 111.2,
+          "pz": 2116.661,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 2.6210945690917122,
+          "frameTimeMs": 549.2000000011176,
+          "drawCalls": 33,
+          "triangles": 773724,
+          "vertices": 1892775,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      }
+    ]
+  },
+  "geometryDeltaTriangles": 90,
+  "drawCallDelta": 0,
+  "notes": [
+    "Existing OSM footprint and anchor preserved",
+    "Eave thickness and ridge tiles are stylized from licensed reference photographs",
+    "SwiftShader frame time does not represent RTX2070"
+  ]
+}

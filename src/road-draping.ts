@@ -27,7 +27,7 @@
 
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
@@ -342,12 +342,24 @@ function toTyped(buffers: ClassBuffers): TypedClass {
   };
 }
 
-/** Variación suave y determinista de color por posición (rompe la planitud). */
+/** Mottling determinista de baja/media frecuencia; se calcula al construir la malla. */
 function vertexShade(classValue: RoadClass, x: number, z: number): number {
-  const n = Math.sin(x * 0.37 + z * 0.61) * Math.cos(z * 0.29 - x * 0.53);
-  const amplitude = classValue === 'ROAD' ? 0.025 : 0.12;
-  const base = classValue === 'ROAD' ? 0.2 : 0.88;
-  return base + amplitude * (0.5 + 0.5 * n);
+  const broad = Math.sin(x * 0.043 + z * 0.061) * Math.cos(z * 0.037 - x * 0.052);
+  const middle = Math.sin(x * 0.19 + z * 0.31) * Math.cos(z * 0.27 - x * 0.23);
+  const fine = Math.sin(x * 0.53 - z * 0.41) * Math.cos(z * 0.47 + x * 0.37);
+  const n = broad * 0.45 + middle * 0.35 + fine * 0.2;
+  const patch = 0.5 + 0.5 * n;
+  if (classValue === 'ROAD') return 0.2 + 0.04 * patch;
+  if (classValue === 'TRACK') return 0.74 + 0.32 * patch;
+  return 0.8 + 0.22 * patch;
+}
+
+/** Variación cromática cálida para tierra y polvo, acotada para preservar el PBR. */
+function vertexHue(classValue: RoadClass, x: number, z: number): readonly [number, number, number] {
+  if (classValue === 'ROAD') return [1, 1, 1];
+  const hue = Math.sin(x * 0.11 + z * 0.17) * Math.cos(z * 0.13 - x * 0.09);
+  const strength = classValue === 'TRACK' ? 0.055 : 0.035;
+  return [1 + hue * strength, 1 + hue * strength * 0.25, 1 - hue * strength * 0.7];
 }
 
 /**
@@ -453,7 +465,13 @@ function buildRoad(
     buffers.positions.push(x, y, z);
     buffers.normals.push(normal.x, normal.y, normal.z);
     const shade = vertexShade(road.class, x, z);
-    buffers.colors.push(shade * (tint?.[0] ?? 1), shade * (tint?.[1] ?? 1), shade * (tint?.[2] ?? 1), 1);
+    const hue = vertexHue(road.class, x, z);
+    buffers.colors.push(
+      shade * hue[0] * (tint?.[0] ?? 1),
+      shade * hue[1] * (tint?.[1] ?? 1),
+      shade * hue[2] * (tint?.[2] ?? 1),
+      1,
+    );
     buffers.roles.push(role);
   };
 
@@ -500,7 +518,11 @@ function buildRoad(
       const pz = station.z + nz * fraction * sideHalf;
       const py = pavementY(px, pz);
       const normal = road.bridge ? up : terrain.normalAt(px, pz, scratch);
-      pushVertex(px, py, pz, normal, road.bridge ? ROLE_BRIDGE : ROLE_PAVEMENT);
+      // Dos bandas oscuras siguen la línea de rodadura a ambos lados; con la
+      // cresta central más clara, la pista deja de leerse como una cinta lisa.
+      const rut = isTrackClass ? Math.exp(-(((Math.abs(fraction) - 0.48) / 0.2) ** 2)) : 0;
+      const rutTint: readonly [number, number, number] = [1 - 0.18 * rut, 1 - 0.13 * rut, 1 - 0.08 * rut];
+      pushVertex(px, py, pz, normal, road.bridge ? ROLE_BRIDGE : ROLE_PAVEMENT, isTrackClass ? rutTint : undefined);
     }
 
     if (useSkirt) {
@@ -886,21 +908,23 @@ export interface RoadNetwork {
 interface MaterialSpec {
   readonly name: string;
   readonly diffuse: readonly [number, number, number];
+  readonly roughness: number;
   /** Sesgo de profundidad (polygon offset). Más negativo = más al frente. */
   readonly zOffset: number;
 }
 
 const MATERIALS: Record<RoadClass, MaterialSpec> = {
-  ROAD: { name: 'road:asfalto', diffuse: [1, 1, 1], zOffset: -3 },
-  TRACK: { name: 'road:tierra', diffuse: [0.4, 0.32, 0.22], zOffset: -2 },
-  PATH: { name: 'road:senda', diffuse: [0.52, 0.47, 0.34], zOffset: -1 },
+  ROAD: { name: 'road:asfalto', diffuse: [0.08, 0.08, 0.08], roughness: 0.9, zOffset: -3 },
+  TRACK: { name: 'road:tierra', diffuse: [0.14, 0.08, 0.025], roughness: 0.96, zOffset: -2 },
+  PATH: { name: 'road:senda', diffuse: [0.16, 0.13, 0.075], roughness: 0.97, zOffset: -1 },
 };
 
-function createMaterial(scene: Scene, spec: MaterialSpec): StandardMaterial {
-  const material = new StandardMaterial(spec.name, scene);
-  material.diffuseColor = new Color3(spec.diffuse[0], spec.diffuse[1], spec.diffuse[2]);
-  material.specularColor = new Color3(0.04, 0.04, 0.04);
-  material.ambientColor = new Color3(0.22, 0.22, 0.22);
+function createMaterial(scene: Scene, spec: MaterialSpec): PBRMaterial {
+  const material = new PBRMaterial(spec.name, scene);
+  material.albedoColor = new Color3(spec.diffuse[0], spec.diffuse[1], spec.diffuse[2]);
+  material.metallic = 0;
+  material.reflectivityColor = new Color3(0.04, 0.04, 0.04);
+  material.roughness = spec.roughness;
   material.backFaceCulling = false;
   // Polygon offset: compensa la pérdida de precisión de profundidad a distancia
   // (los offsets geométricos son menores que la resolución de depth a ~1 km).
@@ -910,7 +934,7 @@ function createMaterial(scene: Scene, spec: MaterialSpec): StandardMaterial {
   return material;
 }
 
-function createMesh(scene: Scene, name: string, data: TypedClass, material: StandardMaterial): Mesh {
+function createMesh(scene: Scene, name: string, data: TypedClass, material: PBRMaterial): Mesh {
   const vertexData = new VertexData();
   vertexData.positions = data.positions;
   vertexData.normals = data.normals;
@@ -920,9 +944,9 @@ function createMesh(scene: Scene, name: string, data: TypedClass, material: Stan
   vertexData.applyToMesh(mesh, false);
   mesh.material = material;
   mesh.useVertexColors = true;
-  // Shadow-map aliasing left green terrain slivers visible on this very flat,
-  // near-coplanar surface. Terrain beside the road still receives the 4x4 shadow.
-  mesh.receiveShadows = false;
+  // Roads receive the vehicle/actor shadows so wheels stay visually grounded as
+  // the route crosses from terrain onto the draped surface.
+  mesh.receiveShadows = true;
   mesh.isPickable = false;
   mesh.freezeWorldMatrix();
   return mesh;
@@ -1004,7 +1028,7 @@ export async function loadRoadNetwork(
     PATH: toTyped(buffers.PATH),
   };
 
-  const materials: Record<RoadClass, StandardMaterial> = {
+  const materials: Record<RoadClass, PBRMaterial> = {
     ROAD: createMaterial(scene, MATERIALS.ROAD),
     TRACK: createMaterial(scene, MATERIALS.TRACK),
     PATH: createMaterial(scene, MATERIALS.PATH),

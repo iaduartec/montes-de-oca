@@ -160,8 +160,13 @@ async function main() {
         `[vegetacion] stats: ${report.stats.instances} instancias · ${report.stats.trees} árboles · ` +
           `${report.stats.shrubs} arbustos · ${report.stats.grassTufts} matas · ${report.stats.meshes} mallas · ` +
           `tier ${report.stats.near}/${report.stats.mid}/${report.stats.far} · ` +
-          `excluidas en runtime ${report.stats.excludedByCorridor}`,
+          `excluidas en runtime ${report.stats.excludedByCorridor} (${report.stats.excludedByCanopyCorridor ?? 0} por copas)`,
       );
+      const canopyExcluded = report.stats.excludedByCanopyCorridor ?? 0;
+      if (canopyExcluded < 1) {
+        throw new Error(`el despeje no tiene en cuenta las copas: ${canopyExcluded} árboles excluidos por su radio`);
+      }
+      report.clearance_canopy_check = { ok: true, excluded: canopyExcluded };
     } else {
       throw new Error('vegetationStats() devolvio null: la capa no cargo');
     }

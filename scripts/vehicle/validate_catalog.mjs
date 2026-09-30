@@ -21,10 +21,9 @@ assert.deepEqual(['todoterreno', 'coche', 'moto'].map((category) =>
 assert.deepEqual(ids, ['estandar', 'patrulla', 'carga', 'explorador', 'turismo', 'rally', 'trail', 'enduro']);
 assert.equal(DEFAULT_VEHICLE_ID, 'estandar');
 assert.equal(vehicleById('bogus'), undefined);
-// Nombres visibles con marca/modelo real (selector, storage y query siguen por ID).
+// Nombres visibles con marca/modelo solo cuando el asset los representa.
+// El vehículo de inicio y la patrulla usan el mismo GLB genérico de SUV.
 const expectedNames = {
-  estandar: ['montero'],
-  patrulla: ['patrol'],
   carga: ['wrangler'],
   explorador: ['ax'],
   turismo: ['audi', 'a4'],
@@ -36,6 +35,10 @@ for (const [id, tokens] of Object.entries(expectedNames)) {
   assert.ok(tokens.some((token) => lowered.includes(token)),
     `${id}.name debe mencionar marca/modelo (${tokens.join('/')}): "${name}"`);
 }
+assert.equal(vehicleById('estandar')?.name, 'SUV 4x4 utilitario',
+  'estandar must remain generic while its GLB does not depict an identifiable model');
+assert.equal(vehicleById('patrulla')?.name, 'Todoterreno de servicio',
+  'patrulla must remain generic while its GLB does not depict an identifiable model');
 // Categorías finales: 3 todoterrenos, 3 coches, 2 motos; explorador ya es coche.
 assert.equal(vehicleById('explorador').category, 'coche');
 assert.equal(vehicleById('turismo').category, 'coche');
@@ -57,4 +60,4 @@ assert.deepEqual(vehicleById('carga').params, {
   mass: 2400, dragCoefficient: 0.95, brakeForce: 16000, maxDriveForce: 10000,
   maxSpeed: 22, steerMax: 0.4,
 });
-console.log('PASS vehicle catalog: eight unique entries, 3/3/2 categories, real names, legacy values and dimensions');
+console.log('PASS vehicle catalog: eight unique entries, 3/3/2 categories, sourced names, legacy values and dimensions');

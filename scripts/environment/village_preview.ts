@@ -1,3 +1,5 @@
+import { FIRST_ROUTE } from '../../src/gameplay/first-route';
+import { routePrefixToEndpoint } from '../../src/environment/village-facade-kits';
 // Harness de VERIFICACION de la capa de pueblo (FASE E).
 //
 // Por que existe: `src/main.ts` esta congelado para este worker (lo integra el
@@ -147,6 +149,7 @@ async function bootstrap(): Promise<void> {
   const village: Village | null = flag('village', true)
     ? await loadVillage(scene, terrain, {
         keepClearAt: { x: routeStart.x, z: routeStart.z },
+        facadeRoute: { points: routePrefixToEndpoint(FIRST_ROUTE.polyline, FIRST_ROUTE.trackEntry), radiusM: 28 },
         // `?keepclear=40` agranda el radio a proposito: sirve para demostrar que
         // el filtro del runtime descarta de verdad (con 12 m los datos ya vienen
         // limpios del build y el contador daria 0 por casualidad).

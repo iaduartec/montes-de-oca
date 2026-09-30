@@ -5,6 +5,7 @@
  */
 
 import type { Scene } from '@babylonjs/core/scene';
+import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import {
   DEFAULT_VEHICLE_PARAMS,
@@ -87,6 +88,8 @@ export interface CreateVehicleOptions {
   spawn: { x: number; z: number; yaw?: number };
   params?: Partial<VehicleParams>;
   controls?: VehicleControls | undefined;
+  /** Called when an async visual asset replaces its procedural mesh set. */
+  onVisualMeshesReplaced?: (removed: readonly AbstractMesh[], added: readonly AbstractMesh[]) => void;
 }
 
 /**
@@ -129,7 +132,7 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
     rear: params.wheelBase / 2,
     halfTrack: params.track / 2,
   };
-  const model = createVehicleModel(scene, layout, params.wheelRadius, 0.32, definition?.visual, definition?.bodySize);
+  const model = createVehicleModel(scene, layout, params.wheelRadius, 0.32, definition?.visual, definition?.bodySize, options.onVisualMeshesReplaced);
   const state = createVehicleState(spawn.x, spawn.z, spawn.yaw ?? 0);
 
   let manualInput: VehicleInput | null = null;
@@ -200,6 +203,7 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
     },
     step: (dt: number) => {
       const input = manualInput ?? options.controls?.read() ?? { throttle: 0, steer: 0, handbrake: false, neutral: false };
+      model.setBrakeLights(input.handbrake || (input.throttle < 0 && state.speed > 1));
       stepVehicle(state, input, clamp(dt, 0, 0.1), params, terrain);
       applyPose();
     },
@@ -214,6 +218,7 @@ function createFourWheelActor(options: CreateVehicleOptions, definition?: FourWh
       state.lateral = 0;
       state.steer = 0;
       state.distance = 0;
+      model.setBrakeLights(false);
       applyPose();
     },
     applyPose,

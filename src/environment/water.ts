@@ -460,7 +460,20 @@ export async function loadWater(
   options: LoadWaterOptions = {},
 ): Promise<Water> {
   const url = options.url ?? DEFAULT_URL;
-  const response = await fetch(url);
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (error) {
+    // Esta capa es decorativa y un fallo de transporte puntual no debe dejar el
+    // valle sin agua. Se hace un único reintento sin caché; el fallo original se
+    // registra y, si persiste, ambos errores llegan al manejador del bootstrap.
+    console.warn('[agua] primer intento de red fallido; reintento único sin caché.', error);
+    try {
+      response = await fetch(url, { cache: 'reload' });
+    } catch (retryError) {
+      throw new AggregateError([error, retryError], `agua: fallaron ambos intentos para ${url}`, { cause: retryError });
+    }
+  }
   if (!response.ok) throw new Error(`agua: no se pudo cargar ${url} (HTTP ${response.status})`);
   const text = await response.text();
   const data = parseWaterData(JSON.parse(text) as unknown, new TextEncoder().encode(text).length);

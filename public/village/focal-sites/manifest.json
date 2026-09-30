@@ -25,7 +25,22 @@
         "license": "CC BY-SA 4.0",
         "url": "https://commons.wikimedia.org/wiki/File:Villafranca_Montes_de_Oca-02-Santiago_Apostol-1996-gje.jpg",
         "use": "visual reference only; no raster texture included"
-      }
+      },
+      "roofEvidence": {
+        "source": "PNOA MA 2023",
+        "license": "CC BY 4.0",
+        "visibleFeature": "crossed gable roofs: N-S nave and E-W transept",
+        "use": "plan and roof form only"
+      },
+      "userPhotoReference": {
+        "file": "fotos/Iglesia_plaza.jpg",
+        "providedBy": "user",
+        "author": null,
+        "license": null,
+        "captureDate": null,
+        "use": "visual reference for stylized tower proportion, belfry openings, clock, cupola and plaza details; no pixels included"
+      },
+      "towerHeightNote": "The shaft, clock, belfry, cupola and cross form an approximately 22 m model silhouette, extended to match the proportions in the user-provided photo; no verified vertical measurement."
     },
     "plaza": {
       "name": "La Plaza",
@@ -60,7 +75,20 @@
         ]
       ],
       "placementSource": "manual low-poly furniture anchors tested inside pedestrian square way 645040295, at least 3 m from building footprints and at least 5 m from the living_street centerline",
-      "reconstruction": "generic low-poly furniture; existing street surface and collisions stay unchanged"
+      "pavingSource": "OSM pedestrian square way 645040295 polygon, aligned to the versioned OSM living_street way 741760074 and draped to the IGN/CNIG MDT terrain",
+      "platformApproximateCenterWorldXZ": [
+        3070.0,
+        3993.0
+      ],
+      "platformEvidence": {
+        "file": "fotos/Iglesia_plaza.jpg",
+        "providedBy": "user",
+        "author": null,
+        "license": null,
+        "captureDate": null,
+        "use": "approximate, not georeferenced visual reference for a raised forecourt, ramp and railings; no pixels included"
+      },
+      "reconstruction": "low-poly OSM square paving with photo-inspired grey stone colours and approximate access forecourt; furniture uses terrain-relative supports and the mapped anchor frame; furniture positions, laying pattern and elevations are artistic approximations; existing living_street surface and collisions stay unchanged"
     },
     "parking": {
       "name": "Parking de El Pájaro",
@@ -82,7 +110,7 @@
       "osm": {
         "type": "way",
         "id": 168459142,
-        "source": "data/roads/raw/osm_highways_window.json"
+        "source": "data/water/raw/osm_water_window.json"
       },
       "geometrySource": "public/water/water.json",
       "reconstruction": "stylized low-poly approximation; architectural details without a reusable photo source are not claimed as literal"
@@ -96,12 +124,20 @@
         3067.357,
         3976.874
       ],
-      "bytes": 30040,
-      "sha256": "bda76441866971c8b94e4d905cab103f856cd818321869dbe6355424b79d3e40",
-      "triangles": 424,
+      "bytes": 89792,
+      "sha256": "e5a5d9273b6d0c5d23905914d9f5bbca435560468111cc607445a57c6a5f1c3f",
+      "verticalExtentM": 22.04,
+      "triangles": 1326,
       "meshes": 1,
       "osmWayIds": [
         90614388
+      ],
+      "features": [
+        "cross gable roof",
+        "extended tower shaft above nave ridge",
+        "bell tower belfry openings",
+        "clock face high on shaft",
+        "octagonal cupola and cross"
       ],
       "reconstruction": "stylized approximation",
       "rasterTextures": 0
@@ -113,13 +149,22 @@
         3063.04,
         4012.346
       ],
-      "bytes": 12752,
-      "sha256": "b4c0f4d7a3b370a1d0eab2b696a28b6446a9ba725ed55ec2e630dda8f6ca6cd6",
-      "triangles": 168,
+      "bytes": 148624,
+      "sha256": "a340c1169a31531d462d08687a586bed250a7ac96fd1c42ab0754a6e61bcc5e8",
+      "verticalExtentM": 5.93,
+      "triangles": 2430,
       "meshes": 1,
       "osmWayIds": [
         645040295,
         741760074
+      ],
+      "features": [
+        "continuous draped paving",
+        "OSM-clipped perimeter",
+        "variable OSM road-edge profile with 0.02 m visual overlap",
+        "raised forecourt",
+        "ramp",
+        "railings"
       ],
       "reconstruction": "stylized approximation",
       "rasterTextures": 0
@@ -128,18 +173,23 @@
       "glb": "public/village/focal-sites/dam.glb",
       "blend": "assets/environment/focal-sites/focal-sites.blend",
       "anchorWorldXZ": [
-        2434.565,
-        1523.295
+        2440.325,
+        1513.065
       ],
-      "bytes": 13356,
-      "sha256": "a050fdaf3cd015396d1c9c4090c82fa3d77625e6f30bd3cd8a4daac306d7df2c",
+      "bytes": 12332,
+      "sha256": "4506e6e075f4c72660904fd1647449cf07af548fb8799752e06821942c5dcf26",
+      "verticalExtentM": 5.2,
       "triangles": 174,
       "meshes": 1,
       "osmWayIds": [
         168459142
       ],
+      "features": [
+        "curved crest",
+        "low-poly parapet"
+      ],
       "yawRad": 0.0,
-      "baseM": 1004,
+      "baseM": 1010,
       "crestPoints": 18,
       "reconstruction": "stylized approximation",
       "rasterTextures": 0

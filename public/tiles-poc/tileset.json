@@ -1,0 +1,30 @@
+{
+  "asset": {
+    "version": "1.0",
+    "gltfUpAxis": "Z"
+  },
+  "geometricError": 0,
+  "root": {
+    "boundingVolume": {
+      "box": [
+        3500.0,
+        3500.0,
+        156.0,
+        1500.0,
+        0,
+        0,
+        0,
+        1500.0,
+        0,
+        0,
+        0,
+        107.0
+      ]
+    },
+    "geometricError": 0,
+    "refine": "REPLACE",
+    "content": {
+      "uri": "tile.gltf"
+    }
+  }
+}

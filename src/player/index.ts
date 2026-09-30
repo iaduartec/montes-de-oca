@@ -1,15 +1,15 @@
 /**
  * Fachada del JUGADOR (FASE F de la milestone 1): un único actor que puede estar
  * a pie o al volante del 4x4. Junta el movimiento puro (`movement.ts`), los
- * controles de teclado (`controls.ts`) y un modelo procedural de Babylon.
+ * controles de teclado (`controls.ts`) y el actor visual del jugador.
  *
  * Decisión clave: HAY UN SOLO JUGADOR. En `driving` el `root` del personaje se
  * oculta y se pega al vehículo; la posición del jugador pasa a ser la del 4x4.
  * No hay dos entidades (personaje + coche) sincronizadas a mano, que es de donde
  * salen los bugs de "el jugador quedó atrás".
  *
- * El modelo es procedural y barato: cuerpo, cabeza, equipo de campo y dos
- * piernas que oscilan con la velocidad. Sin GLTF, texturas ni huesos.
+ * El GLB humanoide sustituye al maniquí procedural cuando termina de cargar;
+ * el fallback mantiene al jugador visible si el asset no está disponible.
  *
  * LIMITACIÓN CONOCIDA: no hay colisión con edificios en esta milestone.
  */
@@ -20,8 +20,12 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
+import '@babylonjs/loaders/glTF';
 import type { Scene } from '@babylonjs/core/scene';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { publicUrl } from '../public-url';
 import type { VehicleActor } from '../vehicle/types';
 import type { VehicleRef } from '../vehicle/switch';
 import {
@@ -92,20 +96,19 @@ function makeMaterial(scene: Scene, name: string, color: Color3, specular = 0.12
 }
 
 /**
- * Modelo procedural del personaje. Origen del `root` en los PIES: así
- * `root.position.y = state.y` (terreno) planta al personaje directo, sin offsets.
- * Jerarquía:
- *   root
- *     ├─ cuerpo (cápsula/torso)   ├─ cabeza   ├─ pierna izq / der (pivote arriba)
+ * Actor visual con origen del `root` en los PIES. El GLB humanoide reemplaza la
+ * figura de respaldo al cargar; el anclaje del root mantiene `state.y` sobre el
+ * terreno independientemente de la jerarquía interna del asset.
  */
 function createCharacterModel(scene: Scene): {
   root: TransformNode;
-  legs: readonly [Mesh, Mesh];
   setEnabled(enabled: boolean): void;
-  advanceGait(distanceM: number): void;
+  advanceGait(distanceM: number, moving: boolean, running: boolean, dt: number): void;
   dispose(): void;
 } {
   const root = new TransformNode('player:root', scene);
+  const placeholderRoot = new TransformNode('player:placeholder', scene);
+  placeholderRoot.parent = root;
 
   const torsoMat = makeMaterial(scene, 'player:torso', new Color3(0.2, 0.34, 0.5));
   const headMat = makeMaterial(scene, 'player:head', new Color3(0.82, 0.66, 0.52));
@@ -122,7 +125,7 @@ function createCharacterModel(scene: Scene): {
     const mesh = CreateBox(name, { width, height, depth }, scene);
     mesh.material = mat;
     mesh.position.set(x, y, z);
-    mesh.parent = root;
+    mesh.parent = placeholderRoot;
     mesh.isPickable = false;
   };
 
@@ -131,7 +134,7 @@ function createCharacterModel(scene: Scene): {
   torso.material = torsoMat;
   torso.position.set(0, BODY_CENTER_Y_M, 0);
   torso.scaling.z = 0.65;
-  torso.parent = root;
+  torso.parent = placeholderRoot;
   torso.isPickable = false;
 
   // Front is +Z. The vest and field pack make the role legible from either side.
@@ -149,27 +152,27 @@ function createCharacterModel(scene: Scene): {
     sleeve.material = torsoMat;
     sleeve.position.set(side * 0.33, BODY_CENTER_Y_M + 0.02, 0);
     sleeve.rotation.z = side * 0.12;
-    sleeve.parent = root;
+    sleeve.parent = placeholderRoot;
     sleeve.isPickable = false;
 
     const hand = CreateSphere(`player:hand-${side}`, { diameter: 0.12, segments: 6 }, scene);
     hand.material = headMat;
     hand.position.set(side * 0.37, 0.7, 0);
-    hand.parent = root;
+    hand.parent = placeholderRoot;
     hand.isPickable = false;
   }
 
   const head = CreateSphere('player:head', { diameter: 0.28, segments: 8 }, scene);
   head.material = headMat;
   head.position.set(0, 1.55, 0);
-  head.parent = root;
+  head.parent = placeholderRoot;
   head.isPickable = false;
   // Pelo corto en la nuca: una pieza redondeada bajo la gorra, sin cubrir la cara.
   const hairBack = CreateSphere('player:hair-back', { diameter: 0.2, segments: 8 }, scene);
   hairBack.material = hairMat;
   hairBack.position.set(0, 1.52, -0.14);
   hairBack.scaling.set(1, 0.48, 0.4);
-  hairBack.parent = root;
+  hairBack.parent = placeholderRoot;
   hairBack.isPickable = false;
   const capBrim = CreateCylinder('player:cap-brim', {
     height: 0.035,
@@ -179,7 +182,7 @@ function createCharacterModel(scene: Scene): {
   }, scene);
   capBrim.material = gearMat;
   capBrim.position.set(0, 1.68, 0.025);
-  capBrim.parent = root;
+  capBrim.parent = placeholderRoot;
   capBrim.isPickable = false;
   const capCrown = CreateCylinder('player:field-cap', {
     height: 0.14,
@@ -189,7 +192,7 @@ function createCharacterModel(scene: Scene): {
   }, scene);
   capCrown.material = gearMat;
   capCrown.position.set(0, 1.755, 0.025);
-  capCrown.parent = root;
+  capCrown.parent = placeholderRoot;
   capCrown.isPickable = false;
 
   // Piernas: cada pieza cuelga de la cadera. `rotation.x` la balancea. Babylon rota
@@ -199,7 +202,10 @@ function createCharacterModel(scene: Scene): {
     const leg = CreateCylinder(name, { height: LEG_LENGTH_M, diameterTop: 0.18, diameterBottom: 0.15, tessellation: 6 }, scene);
     leg.material = legMat;
     leg.position.set(x, LEG_LENGTH_M / 2, 0);
-    leg.parent = root;
+    // Keep the procedural legs inside the disposable fallback hierarchy. When the
+    // skinned GLB replaces the placeholder, none of its standalone parts may leak
+    // into the final character or keep receiving the fallback gait.
+    leg.parent = placeholderRoot;
     leg.isPickable = false;
 
     const boot = CreateBox(`${name}-boot`, { width: 0.23, height: 0.14, depth: 0.34 }, scene);
@@ -213,23 +219,79 @@ function createCharacterModel(scene: Scene): {
   const legLeft = makeLeg('player:leg-left', -0.14);
 
   let gait = 0;
+  let disposed = false;
+  let assetContainer: Awaited<ReturnType<typeof SceneLoader.LoadAssetContainerAsync>> | null = null;
+  let idleAnimation: AnimationGroup | undefined;
+  let walkAnimation: AnimationGroup | undefined;
+  let runAnimation: AnimationGroup | undefined;
+  let activeAnimation: AnimationGroup | undefined;
+  let previousAnimation: AnimationGroup | undefined;
+  let transitionElapsedS = 0;
+  const transitionDurationS = 0.2;
+  let isMoving = false;
+  let isRunning = false;
 
-  return {
-    root,
-    legs: [legLeft, legRight],
-    setEnabled: (enabled: boolean) => {
-      root.setEnabled(enabled);
-    },
-    advanceGait: (distanceM: number) => {
-      // Las piernas se mueven con la DISTANCIA recorrida, no con el reloj: si el
-      // jugador está quieto, los pies no patinan.
-      gait += distanceM * GAIT_RATE_PER_M;
-      const swing = Math.sin(gait) * LEG_GAIT_RAD;
-      legLeft.rotation.x = swing;
-      legRight.rotation.x = -swing;
-    },
-    dispose: () => {
-      root.dispose(false, true);
+  const updateAnimation = (dt = 0): void => {
+    if (!idleAnimation || !walkAnimation || !runAnimation) return;
+    const next = !isMoving ? idleAnimation : isRunning ? runAnimation : walkAnimation;
+    // The authored 32-frame walk is a measured 1.07 s cycle at 30 fps. A 1.7x
+    // playback rate matches the game's brisk 3.4 m/s on-foot pace more closely
+    // than slowing the Run clip, while keeping the feet visibly cycling.
+    const speedRatio = next === walkAnimation ? 1.7 : 1;
+    if (activeAnimation !== next) {
+      next.start(true, speedRatio);
+      if (activeAnimation) {
+        previousAnimation?.stop();
+        previousAnimation = activeAnimation;
+        previousAnimation.setWeightForAllAnimatables(1);
+        next.setWeightForAllAnimatables(0);
+        transitionElapsedS = 0;
+      } else {
+        next.setWeightForAllAnimatables(1);
+      }
+      activeAnimation = next;
+    } else {
+      next.speedRatio = speedRatio;
+    }
+    if (previousAnimation) {
+      transitionElapsedS = Math.min(transitionDurationS, transitionElapsedS + Math.max(0, Math.min(dt, 0.1)));
+      const blend = transitionElapsedS / transitionDurationS;
+      previousAnimation.setWeightForAllAnimatables(1 - blend);
+      activeAnimation.setWeightForAllAnimatables(blend);
+      if (blend >= 1) {
+        previousAnimation.stop();
+        previousAnimation = undefined;
+      }
+    }
+  };
+
+  const assetUrl = publicUrl('/characters/field-player.glb');
+  void SceneLoader.LoadAssetContainerAsync('', assetUrl, scene)
+    .then((container) => {
+      if (disposed) {
+        container.dispose();
+        return;
+      }
+      const glbMeshes = container.meshes.filter((mesh) => mesh.getTotalVertices() > 0);
+      idleAnimation = container.animationGroups.find((group) => group.name.toLowerCase().includes('idle'));
+      walkAnimation = container.animationGroups.find((group) => group.name.toLowerCase().includes('walk'));
+      runAnimation = container.animationGroups.find((group) => group.name.toLowerCase().includes('run'));
+      if (glbMeshes.length === 0 || !idleAnimation || !walkAnimation || !runAnimation) {
+        container.dispose();
+        throw new Error('The player GLB must contain a skinned mesh plus Idle, Walk, and Run animation groups');
+      }
+
+      container.addAllToScene();
+      const transformRoots = container.rootNodes.filter((node): node is TransformNode => node instanceof TransformNode);
+      for (const node of transformRoots) node.parent = root;
+      root.computeWorldMatrix(true);
+      for (const mesh of glbMeshes) mesh.computeWorldMatrix(true);
+      const lowestWorldY = Math.min(...glbMeshes.map((mesh) => mesh.getBoundingInfo().boundingBox.minimumWorld.y));
+      const rootWorldY = root.getAbsolutePosition().y;
+      if (Number.isFinite(lowestWorldY)) {
+        for (const node of transformRoots) node.position.y -= lowestWorldY - rootWorldY;
+      }
+      placeholderRoot.dispose(false, true);
       torsoMat.dispose();
       headMat.dispose();
       legMat.dispose();
@@ -237,6 +299,35 @@ function createCharacterModel(scene: Scene): {
       vestMat.dispose();
       gearMat.dispose();
       hairMat.dispose();
+      assetContainer = container;
+      updateAnimation();
+    })
+    .catch((error: unknown) => {
+      if (!disposed) console.error(`[player] Failed to load ${assetUrl}; retaining the procedural fallback`, error);
+    });
+
+  return {
+    root,
+    setEnabled: (enabled: boolean) => {
+      root.setEnabled(enabled);
+    },
+    advanceGait: (distanceM: number, moving: boolean, running: boolean, dt: number) => {
+      // Las piernas se mueven con la DISTANCIA recorrida, no con el reloj: si el
+      // jugador está quieto, los pies no patinan.
+      gait += distanceM * GAIT_RATE_PER_M;
+      const swing = Math.sin(gait) * LEG_GAIT_RAD;
+      legLeft.rotation.x = swing;
+      legRight.rotation.x = -swing;
+      isMoving = moving;
+      isRunning = running;
+      updateAnimation(dt);
+    },
+    dispose: () => {
+      disposed = true;
+      activeAnimation?.stop();
+      previousAnimation?.stop();
+      assetContainer?.dispose();
+      root.dispose(false, true);
     },
   };
 }
@@ -322,11 +413,16 @@ export function createPlayer(options: CreatePlayerOptions): Player {
 
       const input = controls
         ? controls.readOnFoot()
-        : { forward: 0, strafe: 0, run: false };
+        : { forward: 0, turn: 0, run: false };
       stepCharacter(state, input, dt, terrain);
       syncOnFootRoot();
       // La marcha avanza con la velocidad REAL del paso (m/s ya saturado).
-      model.advanceGait(state.speed * Math.max(0, Math.min(dt, 0.1)));
+      model.advanceGait(
+        Math.abs(state.speed) * Math.max(0, Math.min(dt, 0.1)),
+        state.moving,
+        controls?.readOnFoot().run ?? false,
+        dt,
+      );
     },
     telemetry: (): PlayerTelemetry => {
       const v = vehicle();

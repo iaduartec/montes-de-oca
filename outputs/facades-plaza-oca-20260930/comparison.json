@@ -1,0 +1,262 @@
+{
+  "beforeVillage": {
+    "buildings": 330,
+    "meshes": 11,
+    "triangles": 26446,
+    "footprintAreaM2": 28771.4,
+    "tallestM": 18,
+    "droppedAtSpawn": 0,
+    "detailedBuildings": 143,
+    "courtyardWalls": 12,
+    "lidarAdjustedBuildings": 265,
+    "lidarFallbackBuildings": 65,
+    "roofLiftedBuildings": 3,
+    "maxRoofLiftM": 0.8300000000001546,
+    "streetPoles": 0
+  },
+  "afterVillage": {
+    "buildings": 330,
+    "meshes": 11,
+    "triangles": 30126,
+    "footprintAreaM2": 28771.4,
+    "tallestM": 18,
+    "droppedAtSpawn": 0,
+    "detailedBuildings": 143,
+    "courtyardWalls": 23,
+    "lidarAdjustedBuildings": 265,
+    "lidarFallbackBuildings": 65,
+    "roofLiftedBuildings": 3,
+    "maxRoofLiftM": 0.8300000000001546,
+    "streetPoles": 0
+  },
+  "plazaBefore": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T01:44:33.077Z",
+    "views": [
+      {
+        "id": "plaza",
+        "title": "La Plaza",
+        "target": {
+          "x": 3063.04,
+          "z": 4012.346
+        },
+        "groundY": 77.86120000000005,
+        "camera": {
+          "px": 3084,
+          "py": 97.86120000000005,
+          "pz": 4018.5,
+          "tx": 3084,
+          "ty": 79.36120000000005,
+          "tz": 4004.5
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 4.5786634284228676,
+          "frameTimeMs": 217.40000000037253,
+          "drawCalls": 33,
+          "triangles": 792083,
+          "vertices": 1888783,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "plaza.png"
+      }
+    ]
+  },
+  "plazaAfter": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T01:59:41.691Z",
+    "views": [
+      {
+        "id": "plaza",
+        "title": "La Plaza",
+        "target": {
+          "x": 3063.04,
+          "z": 4012.346
+        },
+        "groundY": 77.86120000000005,
+        "camera": {
+          "px": 3084,
+          "py": 97.86120000000005,
+          "pz": 4018.5,
+          "tx": 3084,
+          "ty": 79.36120000000005,
+          "tz": 4004.5
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 4.445025493528565,
+          "frameTimeMs": 346.7999999988824,
+          "drawCalls": 33,
+          "triangles": 790035,
+          "vertices": 1892609,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "plaza.png"
+      }
+    ]
+  },
+  "ocaBefore": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T01:48:30.075Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2784.074,
+          "py": 114,
+          "pz": 2113.861,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 3.99497774226644,
+          "frameTimeMs": 383.59999999962747,
+          "drawCalls": 30,
+          "triangles": 769539,
+          "vertices": 1896942,
+          "activeMeshes": 30
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      }
+    ]
+  },
+  "ocaAfter": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T01:55:58.578Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2784.074,
+          "py": 114,
+          "pz": 2113.861,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 3.1446020423364676,
+          "frameTimeMs": 371.80000000074506,
+          "drawCalls": 34,
+          "triangles": 772031,
+          "vertices": 1901452,
+          "activeMeshes": 34
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      },
+      {
+        "id": "campa-oca",
+        "title": "Campa de Oca",
+        "target": {
+          "x": 2835,
+          "z": 2158
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2793,
+          "py": 132,
+          "pz": 2193,
+          "tx": 2835,
+          "ty": 102.5,
+          "tz": 2158
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 3.917676556622723,
+          "frameTimeMs": 310.80000000074506,
+          "drawCalls": 31,
+          "triangles": 778368,
+          "vertices": 1901452,
+          "activeMeshes": 31
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "campa-oca.png"
+      }
+    ]
+  },
+  "notes": [
+    "SwiftShader CPU; FPS not target-hardware evidence",
+    "Plaza scene delta includes sourced walls changes",
+    "Oca capture before final plaza tessellation optimization; Oca own asset final version",
+    "Campa geometry from conservative north meadow trace; PNOA flight date unknown",
+    "Mission verified before final cosmetic plaza tessellation only; gameplay unchanged"
+  ]
+}

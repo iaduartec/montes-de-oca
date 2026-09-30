@@ -1,0 +1,185 @@
+{
+  "before": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:39:08.091Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2796.324,
+          "py": 111.2,
+          "pz": 2116.661,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 3.0920093643707087,
+          "frameTimeMs": 607.2000000011176,
+          "drawCalls": 33,
+          "triangles": 773724,
+          "vertices": 1892775,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      },
+      {
+        "id": "campa-oca",
+        "title": "Campa de Oca",
+        "target": {
+          "x": 2835,
+          "z": 2158
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2793,
+          "py": 132,
+          "pz": 2193,
+          "tx": 2835,
+          "ty": 102.5,
+          "tz": 2158
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 4.067844572965019,
+          "frameTimeMs": 237.19999999925494,
+          "drawCalls": 31,
+          "triangles": 778458,
+          "vertices": 1892775,
+          "activeMeshes": 31
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "campa-oca.png"
+      }
+    ]
+  },
+  "campaAfter": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:40:42.395Z",
+    "views": [
+      {
+        "id": "campa-oca",
+        "title": "Campa de Oca",
+        "target": {
+          "x": 2835,
+          "z": 2158
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2793,
+          "py": 132,
+          "pz": 2193,
+          "tx": 2835,
+          "ty": 102.5,
+          "tz": 2158
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 2.6431863611580515,
+          "frameTimeMs": 461.40000000037253,
+          "drawCalls": 31,
+          "triangles": 778460,
+          "vertices": 1892779,
+          "activeMeshes": 31
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "campa-oca.png"
+      }
+    ]
+  },
+  "accessAfter": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:40:42.904Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2796.324,
+          "py": 111.2,
+          "pz": 2116.661,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 1.9214510798553694,
+          "frameTimeMs": 766,
+          "drawCalls": 33,
+          "triangles": 773726,
+          "vertices": 1892779,
+          "activeMeshes": 33
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      }
+    ]
+  },
+  "notes": [
+    "No change to sourced campa outline; vertex alpha fades inside it",
+    "Threshold dimensions approximate from the existing2017 ground reference",
+    "Two added threshold triangles; draw counts unchanged",
+    "SwiftShader CPU; transparency fill cost on targetGPU not measured"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Kenney Animated Characters 3 - human male",
+  "creator": "Kenney",
+  "license": "CC0 1.0 Universal",
+  "sourcePage": "https://kenney-assets.itch.io/animated-characters-3",
+  "sourceMirror": "https://opengameart.org/content/animated-characters-3",
+  "sourceArchive": "source.zip",
+  "runtimeAsset": "/characters/field-player.glb",
+  "convertedWith": "Blender 4.0.2",
+  "runtimeScale": "1.8 m measured height",
+  "texture": "humanMaleA.png",
+  "animations": ["Idle", "Walk (retargeted)", "Run"],
+  "walkAnimationSource": "../quaternius-universal-animation-library/asset.json",
+  "notes": "Kenney supplies the CC0 model, skin, Idle, and Run. The authored Quaternius CC0 Walk_Loop_Armature is retargeted onto this rig by scripts/player/build_kenney_character.py; root motion is omitted so Babylon gameplay owns movement."
+}

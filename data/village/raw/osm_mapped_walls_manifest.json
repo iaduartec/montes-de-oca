@@ -1,0 +1,8 @@
+{
+  "sourceUrl": "https://api.openstreetmap.org/api/0.6/map.json?bbox=-3.318,42.368,-3.305,42.390",
+  "fetched_at_utc": "2026-09-30T01:46:19.208115+00:00",
+  "license": "ODbL-1.0",
+  "file": "osm_mapped_walls.json",
+  "sha256": "a28365ec555e6141b54a17f9bdfa24b341b18ef36f07fc846998f124c763eef2",
+  "scope": "only mapped wall and retaining_wall ways with full coordinate geometry"
+}

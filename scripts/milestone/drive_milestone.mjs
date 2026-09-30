@@ -277,7 +277,7 @@ window.__harness = (function () {
     };
   }
 
-  // Camina hacia (x,z) con input relativo al MUNDO (forward=+Z, strafe=+X).
+  // Camina hacia (x,z): W/S controlan avance y A/D giran hacia el destino.
   function walk(o) {
     o = o || {};
     var maxSim = o.maxSim != null ? o.maxSim : 60;
@@ -287,8 +287,18 @@ window.__harness = (function () {
       var t = g.player.telemetry();
       if (Math.hypot(t.x - tx, t.z - tz) <= stopDist) { reason = 'arrived'; break; }
       if (o.stopOnCanEnter && t.canEnter) { reason = 'canEnter'; break; }
-      var dx = tx - t.x, dz = tz - t.z, mag = Math.hypot(dx, dz) || 1;
-      g.player.inject({ forward: dz / mag, strafe: dx / mag, run: !!o.run });
+      var dx = tx - t.x, dz = tz - t.z;
+      var desiredYaw = Math.atan2(dx, dz);
+      var yaw = t.yawDeg * Math.PI / 180;
+      var delta = Math.atan2(Math.sin(desiredYaw - yaw), Math.cos(desiredYaw - yaw));
+      var forward = 1;
+      if (Math.abs(delta) > Math.PI / 2) {
+        forward = -1;
+        desiredYaw = Math.atan2(-dx, -dz);
+        delta = Math.atan2(Math.sin(desiredYaw - yaw), Math.cos(desiredYaw - yaw));
+      }
+      var turn = Math.max(-1, Math.min(1, delta / (4.5 * DT)));
+      g.player.inject({ forward: forward, turn: turn, run: !!o.run });
       g.player.step(DT, DT);
       sim += DT;
     }
@@ -297,7 +307,7 @@ window.__harness = (function () {
 
   // Mantiene E. Devuelve el punto donde el estado llega a REPAIRED (o corta).
   function holdInteract(seconds) {
-    g.player.inject({ interact: true, forward: 0, strafe: 0, run: false });
+    g.player.inject({ interact: true, forward: 0, turn: 0, run: false });
     var sim = 0, samples = [];
     while (sim < seconds) {
       g.player.step(DT, DT);
@@ -511,6 +521,9 @@ async function main() {
     const village = await cdp.evaluate('window.__game.village ? window.__game.village.stats() : null');
     report.pueblo = village;
     check('pueblo cargado y batcheado (meshes <= 20 con > 300 casas)', !!village && village.buildings > 300 && village.meshes <= 20, village, 'buildings > 300 y meshes <= 20');
+    const villageNpcs = await cdp.evaluate('window.__game.villageNpcs ? window.__game.villageNpcs.stats() : null');
+    report.puebloNpcs = villageNpcs;
+    check('dos vecinos animados cargados junto a la plaza', villageNpcs?.characters === 2 && villageNpcs.animations === 2 && villageNpcs.meshes >= 2, villageNpcs, '2 personajes con animación Idle');
 
     // La vegetación (FASE D): que cargue Y que siga BATCHEADA. Si alguien vuelve al
     // patrón "una malla por instancia", 30.000 instancias pasarían de 18 mallas a
@@ -530,7 +543,14 @@ async function main() {
       // El corredor runtime debe coincidir con el builder (ROAD 12 m / TRACK 8 m):
       // cualquier exclusión acá significa que el runtime ensanchó el corredor y
       // removió instancias aprobadas por la fuente.
-      check('vegetacion sin exclusiones por corredor (excludedByCorridor === 0)', vegetation?.excludedByCorridor === 0, vegetation?.excludedByCorridor, '=== 0');
+      const onlyCanopyClearance =
+        vegetation?.excludedByCanopyCorridor > 0 && vegetation.excludedByCorridor === vegetation.excludedByCanopyCorridor;
+      check(
+        'vegetacion sin troncos dentro del corredor; solo excluye copas que lo invaden',
+        onlyCanopyClearance,
+        vegetation ? { total: vegetation.excludedByCorridor, copas: vegetation.excludedByCanopyCorridor } : null,
+        'exclusiones = copas y al menos una',
+      );
     }
 
     // Instala el harness dentro de la página.

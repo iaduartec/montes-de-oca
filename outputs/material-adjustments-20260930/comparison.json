@@ -1,0 +1,142 @@
+{
+  "before": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:07:04.792Z",
+    "views": [
+      {
+        "id": "campa-oca",
+        "title": "Campa de Oca",
+        "target": {
+          "x": 2835,
+          "z": 2158
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2793,
+          "py": 132,
+          "pz": 2193,
+          "tx": 2835,
+          "ty": 102.5,
+          "tz": 2158
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 4.056795131845841,
+          "frameTimeMs": 241.80000000074506,
+          "drawCalls": 31,
+          "triangles": 778368,
+          "vertices": 1892609,
+          "activeMeshes": 31
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "campa-oca.png"
+      }
+    ]
+  },
+  "after": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:08:44.618Z",
+    "views": [
+      {
+        "id": "campa-oca",
+        "title": "Campa de Oca",
+        "target": {
+          "x": 2835,
+          "z": 2158
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2793,
+          "py": 132,
+          "pz": 2193,
+          "tx": 2835,
+          "ty": 102.5,
+          "tz": 2158
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 3.116089930355933,
+          "frameTimeMs": 328.09999999962747,
+          "drawCalls": 31,
+          "triangles": 778368,
+          "vertices": 1892609,
+          "activeMeshes": 31
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "campa-oca.png"
+      }
+    ]
+  },
+  "ocaAfter": {
+    "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+    "base": "http://127.0.0.1:5175",
+    "capturedAt": "2026-09-30T02:08:40.363Z",
+    "views": [
+      {
+        "id": "oca",
+        "title": "Ermita Nuestra Se\u00f1ora de Oca",
+        "target": {
+          "x": 2819.074,
+          "z": 2121.861
+        },
+        "groundY": 102,
+        "camera": {
+          "px": 2784.074,
+          "py": 114,
+          "pz": 2113.861,
+          "tx": 2819.074,
+          "ty": 106,
+          "tz": 2121.861
+        },
+        "landmarks": true,
+        "perf": {
+          "fps": 2.772974912733017,
+          "frameTimeMs": 859,
+          "drawCalls": 34,
+          "triangles": 772031,
+          "vertices": 1892609,
+          "activeMeshes": 34
+        },
+        "water": {
+          "sheets": 5,
+          "ribbons": 60,
+          "meshes": 2,
+          "triangles": 33419,
+          "dataBytes": 415543
+        },
+        "minimap": {
+          "width": 186,
+          "height": 186,
+          "paintedPixels": 27036
+        },
+        "screenshot": "oca.png"
+      }
+    ]
+  },
+  "scope": "procedural surface maps only; no geometry or resource count change",
+  "note": "SwiftShader CPU, no target GPU FPS claim"
+}

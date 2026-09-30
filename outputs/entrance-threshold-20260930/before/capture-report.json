@@ -1,0 +1,46 @@
+{
+  "generatedBy": "scripts/environment/capture_focal_sites.mjs",
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-09-30T03:09:56.636Z",
+  "views": [
+    {
+      "id": "facade-ground",
+      "title": "Encuentro de fachada y terreno",
+      "target": {
+        "x": 3117,
+        "z": 3961
+      },
+      "groundY": 71.19999999999993,
+      "camera": {
+        "px": 3103,
+        "py": 75.19999999999993,
+        "pz": 3948,
+        "tx": 3117,
+        "ty": 72.39999999999993,
+        "tz": 3961
+      },
+      "landmarks": true,
+      "perf": {
+        "fps": 2.077034917265847,
+        "frameTimeMs": 611.5999999977648,
+        "drawCalls": 32,
+        "triangles": 795363,
+        "vertices": 1901139,
+        "activeMeshes": 32
+      },
+      "water": {
+        "sheets": 5,
+        "ribbons": 60,
+        "meshes": 2,
+        "triangles": 33419,
+        "dataBytes": 415543
+      },
+      "minimap": {
+        "width": 186,
+        "height": 186,
+        "paintedPixels": 27036
+      },
+      "screenshot": "facade-ground.png"
+    }
+  ]
+}

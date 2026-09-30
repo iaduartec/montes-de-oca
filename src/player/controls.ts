@@ -8,7 +8,7 @@
  * único estado de teclado y de él salen las dos vistas (vehicular y a pie).
  *
  * Teclas:
- *   WASD / flechas   mover a pie, o conducir
+ *   W/S / flechas ↑↓ avanzar y retroceder; A/D / flechas ←→ girar a pie o conducir
  *   Shift            correr (a pie)
  *   E                interactuar (NIVEL, no flanco)
  *   F                entrar/salir del 4x4 (FLANCO)
@@ -32,7 +32,7 @@ export interface PlayerControls {
   /** Añade o suelta una tecla virtual, usada por los controles táctiles. */
   setVirtualKey(code: string, pressed: boolean): void;
   /** Ejes analógicos del joystick: avance y giro, ambos en el rango [-1, 1]. */
-  setVirtualAxes(forward: number, strafe: number): void;
+  setVirtualAxes(forward: number, turn: number): void;
   dispose(): void;
 }
 
@@ -63,7 +63,7 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
   const keyboardKeys = new Set<string>();
   const virtualKeys = new Set<string>();
   let virtualForward = 0;
-  let virtualStrafe = 0;
+  let virtualTurn = 0;
   let neutral = false;
   // Flanco de F: se levanta en keydown y se consume en el primer `consumeToggle`.
   let togglePending = false;
@@ -92,7 +92,7 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
     keyboardKeys.clear();
     virtualKeys.clear();
     virtualForward = 0;
-    virtualStrafe = 0;
+    virtualTurn = 0;
     // El flanco de F también se tira. Si no, apretás F, cambiás de ventana y al volver
     // el F pendiente dispara solo: entrás o salís del 4x4 sin haber tocado nada.
     togglePending = false;
@@ -105,13 +105,13 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
   return {
     readVehicular: () => ({
       throttle: Math.max(-1, Math.min(1, axis(keys, FORWARD_KEYS, BACK_KEYS) + virtualForward)),
-      steer: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualStrafe)),
+      steer: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualTurn)),
       handbrake: keys.has('Space'),
       neutral,
     }),
     readOnFoot: () => ({
       forward: Math.max(-1, Math.min(1, axis(keys, FORWARD_KEYS, BACK_KEYS) + virtualForward)),
-      strafe: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualStrafe)),
+      turn: Math.max(-1, Math.min(1, axis(keys, RIGHT_KEYS, LEFT_KEYS) + virtualTurn)),
       run: any(keys, RUN_KEYS),
     }),
     get interact() {
@@ -136,9 +136,9 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
       // A keyboard key with the same code may still be held.
       if (!keyboardKeys.has(code)) keys.delete(code);
     },
-    setVirtualAxes: (forward, strafe) => {
+    setVirtualAxes: (forward, turn) => {
       virtualForward = Number.isFinite(forward) ? Math.max(-1, Math.min(1, forward)) : 0;
-      virtualStrafe = Number.isFinite(strafe) ? Math.max(-1, Math.min(1, strafe)) : 0;
+      virtualTurn = Number.isFinite(turn) ? Math.max(-1, Math.min(1, turn)) : 0;
     },
     dispose: () => {
       window.removeEventListener('keydown', onKeyDown);
@@ -148,7 +148,7 @@ export function createPlayerControls(options: PlayerControlsOptions = {}): Playe
       keyboardKeys.clear();
       virtualKeys.clear();
       virtualForward = 0;
-      virtualStrafe = 0;
+      virtualTurn = 0;
       togglePending = false;
     },
   };

@@ -64,6 +64,7 @@ export interface VegetationStats {
   readonly mid: number;
   readonly far: number;
   readonly excludedByCorridor: number;
+  readonly excludedByCanopyCorridor: number;
 }
 
 export interface Vegetation {
@@ -95,6 +96,13 @@ type TreeType = (typeof TREE_TYPES)[number];
 type ShrubType = (typeof SHRUB_TYPES)[number];
 type GrassType = (typeof GRASS_TYPES)[number];
 type VegType = TreeType | ShrubType | GrassType;
+
+const TREE_CANOPY_RADIUS_M: Readonly<Record<TreeType, number>> = {
+  roble: 3.0,
+  pino: 2.1,
+  abedul: 1.7,
+  haya: 2.65,
+};
 
 type Family = 'arbol' | 'arbusto' | 'hierba';
 
@@ -153,6 +161,40 @@ const TREE_PROFILES = [
 function treeProfileIndex(x: number, z: number): number {
   const hash = Math.imul(Math.round(x * 10), 73856093) ^ Math.imul(Math.round(z * 10), 19349663);
   return (hash >>> 0) % TREE_PROFILES.length;
+}
+
+const TREE_CANOPY_LOBE_AMOUNT: Readonly<Record<TreeType, number>> = {
+  roble: 0.18,
+  pino: 0,
+  abedul: 0.1,
+  haya: 0.12,
+};
+const TREE_HEIGHT_M: Readonly<Record<TreeType, number>> = {
+  roble: 6.7,
+  pino: 7.4,
+  abedul: 8.35,
+  haya: 8.6,
+};
+const MAX_TREE_PROFILE_XZ_SCALE = Math.max(...TREE_PROFILES.map((profile) => Math.max(profile[0], profile[2])));
+const MAX_TREE_PROFILE_Y_SCALE = Math.max(...TREE_PROFILES.map((profile) => profile[1]));
+const MAX_TREE_PROFILE_TILT_RAD = Math.max(...TREE_PROFILES.map((profile) => Math.hypot(profile[3], profile[4])));
+
+/** Horizontal extent of the full scaled, profiled and tilted tree silhouette. */
+export function treeCanopyClearanceRadiusM(type: string, instanceScale: number): number {
+  if (!TREE_TYPES.includes(type as TreeType) || !Number.isFinite(instanceScale) || instanceScale <= 0) return 0;
+  const treeType = type as TreeType;
+  const radialExtent = TREE_CANOPY_RADIUS_M[treeType] * MAX_TREE_PROFILE_XZ_SCALE * (1 + TREE_CANOPY_LOBE_AMOUNT[treeType]);
+  const tiltExtent = TREE_HEIGHT_M[treeType] * MAX_TREE_PROFILE_Y_SCALE * Math.sin(MAX_TREE_PROFILE_TILT_RAD);
+  return instanceScale * (radialExtent + tiltExtent);
+}
+
+/** Largest actual tree footprint, used to pad the spatial corridor index. */
+export function maxTreeCanopyClearanceRadiusM(instances: readonly { readonly type: string; readonly scale: number }[]): number {
+  let maximum = 0;
+  for (const instance of instances) {
+    maximum = Math.max(maximum, treeCanopyClearanceRadiusM(instance.type, instance.scale));
+  }
+  return maximum;
 }
 
 /**
@@ -619,7 +661,7 @@ function pointSegDist(px: number, pz: number, s: CorrSeg): number {
   return Math.sqrt(ex * ex + ez * ez);
 }
 
-function buildCorridorIndex(corridors: readonly VegetationCorridor[]): Map<number, CorrSeg[]> {
+function buildCorridorIndex(corridors: readonly VegetationCorridor[], maxCanopyRadiusM: number): Map<number, CorrSeg[]> {
   const grid = new Map<number, CorrSeg[]>();
   for (const corridor of corridors) {
     const half = corridor.halfWidthM;
@@ -627,10 +669,11 @@ function buildCorridorIndex(corridors: readonly VegetationCorridor[]): Map<numbe
       const a = corridor.points[i]!;
       const b = corridor.points[i + 1]!;
       const seg: CorrSeg = { ax: a.x, az: a.z, bx: b.x, bz: b.z, halfWidthM: half };
-      const i0 = Math.floor((Math.min(a.x, b.x) - half) / CORR_CELL_M);
-      const i1 = Math.floor((Math.max(a.x, b.x) + half) / CORR_CELL_M);
-      const j0 = Math.floor((Math.min(a.z, b.z) - half) / CORR_CELL_M);
-      const j1 = Math.floor((Math.max(a.z, b.z) + half) / CORR_CELL_M);
+      const indexPad = half + maxCanopyRadiusM;
+      const i0 = Math.floor((Math.min(a.x, b.x) - indexPad) / CORR_CELL_M);
+      const i1 = Math.floor((Math.max(a.x, b.x) + indexPad) / CORR_CELL_M);
+      const j0 = Math.floor((Math.min(a.z, b.z) - indexPad) / CORR_CELL_M);
+      const j1 = Math.floor((Math.max(a.z, b.z) + indexPad) / CORR_CELL_M);
       for (let cj = j0; cj <= j1; cj++) {
         for (let ci = i0; ci <= i1; ci++) {
           const key = corrKey(ci, cj);
@@ -769,11 +812,12 @@ export async function loadVegetation(
   }
   const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
 
-  const corrGrid = buildCorridorIndex(options.corridors);
-  const inCorridor = (x: number, z: number): boolean => {
+  const maxCanopyRadiusM = maxTreeCanopyClearanceRadiusM(parsed);
+  const corrGrid = buildCorridorIndex(options.corridors, maxCanopyRadiusM);
+  const inCorridor = (x: number, z: number, extraClearanceM = 0): boolean => {
     const list = corrGrid.get(corrKey(Math.floor(x / CORR_CELL_M), Math.floor(z / CORR_CELL_M)));
     if (!list) return false;
-    for (const seg of list) if (pointSegDist(x, z, seg) <= seg.halfWidthM) return true;
+    for (const seg of list) if (pointSegDist(x, z, seg) <= seg.halfWidthM + extraClearanceM) return true;
     return false;
   };
   const inClearing = (x: number, z: number): boolean =>
@@ -782,14 +826,18 @@ export async function loadVegetation(
   // 1) Filtrado + alturas + despeje: se resuelve ANTES de reservar los buffers,
   //    porque cuantas instancias queden define el tamanio de cada bucket.
   const kept: { readonly raw: RawInstance; readonly y: number }[] = [];
-  const excluded = { corridor: 0, outside: 0, badHeight: 0 };
+  const excluded = { corridor: 0, canopyCorridor: 0, outside: 0, badHeight: 0 };
   for (const raw of parsed) {
     if (raw.x < minX || raw.x > maxX || raw.z < minZ || raw.z > maxZ) {
       excluded.outside++;
       continue;
     }
-    if (inCorridor(raw.x, raw.z) || inClearing(raw.x, raw.z)) {
+    const trunkInCorridor = inCorridor(raw.x, raw.z);
+    const canopyRadiusM = treeCanopyClearanceRadiusM(raw.type, raw.scale);
+    const canopyInCorridor = !trunkInCorridor && canopyRadiusM > 0 && inCorridor(raw.x, raw.z, canopyRadiusM);
+    if (trunkInCorridor || canopyInCorridor || inClearing(raw.x, raw.z)) {
       excluded.corridor++;
+      if (canopyInCorridor) excluded.canopyCorridor++;
       continue;
     }
     // SIEMPRE terrain.heightAt, con la coordenada recortada al dominio. Nunca
@@ -892,12 +940,13 @@ export async function loadVegetation(
     mid: tierCounts.mid,
     far: tierCounts.far,
     excludedByCorridor: excluded.corridor,
+    excludedByCanopyCorridor: excluded.canopyCorridor,
   };
 
   console.info(
     `[vegetacion] ${stats.instances} instancias · ${stats.trees} árboles · ${stats.shrubs} arbustos · ` +
       `${stats.grassTufts} matas · ${stats.meshes} mallas · tier ${stats.near}/${stats.mid}/${stats.far} · ` +
-      `${stats.excludedByCorridor} excluidas en runtime`,
+      `${stats.excludedByCorridor} excluidas en runtime (${stats.excludedByCanopyCorridor} por copas)`,
   );
 
   let disposed = false;
