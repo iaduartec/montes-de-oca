@@ -389,7 +389,7 @@
           max-width: calc(100vw - 24px);
         }
         #mision {
-          top: max(8px, env(safe-area-inset-top));
+          top: calc(max(8px, env(safe-area-inset-top)) + 40px);
           min-width: 0;
           width: max-content;
           max-width: calc(100vw - 24px);
@@ -407,7 +407,7 @@
           display: none;
         }
         #datos {
-          top: calc(max(8px, env(safe-area-inset-top)) + 220px);
+          top: calc(max(8px, env(safe-area-inset-top)) + 280px);
           right: 8px;
           bottom: auto;
         }
@@ -502,12 +502,12 @@
           background: rgba(108, 81, 48, 0.88);
         }
         #accion {
-          bottom: max(145px, calc(env(safe-area-inset-bottom) + 145px));
+          bottom: max(260px, calc(env(safe-area-inset-bottom) + 260px));
           max-width: calc(100vw - 32px);
           text-align: center;
         }
         #aviso {
-          bottom: max(189px, calc(env(safe-area-inset-bottom) + 189px));
+          bottom: max(304px, calc(env(safe-area-inset-bottom) + 304px));
           max-width: calc(100vw - 32px);
           text-align: center;
         }
@@ -540,7 +540,7 @@
       }
       @media (pointer: coarse), (max-width: 760px) {
         #minimapa {
-          top: calc(max(68px, env(safe-area-inset-top) + 56px));
+          top: calc(max(144px, env(safe-area-inset-top) + 136px));
           right: 8px;
           width: 128px;
           height: 128px;
