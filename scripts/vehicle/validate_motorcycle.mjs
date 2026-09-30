@@ -34,10 +34,22 @@ for (const definition of api.VEHICLE_CATALOG.filter(d => d.category === 'moto'))
   assert.equal(api.recoverMotorcycle(s, p, flat), true);
   assert.deepEqual([s.x, s.z], location);
   assert.equal(s.fallen, false);
+  assert.equal(s.recovering, true, 'recovery is a continuous spring, not a rotation snap');
+  const recoveryRoll = s.leanRad;
+  assert.ok(Math.abs(recoveryRoll) > p.fallAngleRad);
+  api.stepMotorcycle(s, input, 1 / 60, p, flat);
+  assert.ok(Math.abs(s.leanRad) < Math.abs(recoveryRoll) && Math.abs(s.leanRad) > 0);
+  assert.deepEqual([s.x, s.z], location, 'recovering throttle cannot move');
+  for (let i = 0; i < 180; i++) api.stepMotorcycle(s, { ...input, throttle: 0 }, 1 / 60, p, flat);
+  assert.equal(s.recovering, false);
+  assert.ok(Math.abs(s.leanRad) < 0.001);
   const unstable = api.createMotorcycleState(0, 0);
   unstable.speed = p.maxSpeed;
   for (let i = 0; i < 120; i++) api.stepMotorcycle(unstable, { ...input, steer: 1 }, 1 / 60, p, flat);
-  assert.equal(unstable.fallen, true, 'excess turn demand causes fall');
+  assert.equal(unstable.fallen, false, 'speed-aware assistance bounds ordinary full steering');
+  const lostSupport = { heightAt: () => NaN, normalAt: () => ({ x: 0, y: 1, z: 0 }) };
+  api.stepMotorcycle(unstable, input, 1 / 60, p, lostSupport);
+  assert.equal(unstable.fallen, true, 'loss of terrain support still causes fall');
   const slope = { heightAt: (_x, z) => z * 0.2, normalAt: () => ({ x: 0, y: 1 / Math.hypot(1, 0.2), z: -0.2 / Math.hypot(1, 0.2) }) };
   const downhill = api.createMotorcycleState(0, 0);
   api.stepMotorcycle(downhill, { ...input, throttle: 0, neutral: true }, 0.1, p, slope);
@@ -241,3 +253,6 @@ assert.notDeepEqual(silhouettes.trail.paints, silhouettes.enduro.paints, 'ambas 
 scene.dispose(); engine.dispose();
 console.log('PASS geometría de motos: trail (CRF300L) y enduro (450 SX-F) diferenciadas');
 console.log('PASS motorcycle and legacy factory overload');
+
+// Sustained turns, braking, low speed and slalom exercise the same runtime controller.
+await import('./diagnose_motorcycle.mjs');

@@ -44,7 +44,10 @@
     "test:vegetation-color": "node scripts/environment/test_vegetation_color.mjs",
     "test:water": "python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs",
     "test:motorcycle": "node scripts/vehicle/validate_motorcycle.mjs",
-    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs"
+    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface",
+    "test:water-contact": "node scripts/water/test_water_contact.mjs",
+    "test:road-surface": "node scripts/roads/test_road_surface.mjs",
+    "diagnose:road-surface": "node scripts/roads/diagnose_surface.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^8.0.0",

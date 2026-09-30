@@ -21,10 +21,10 @@ const byId = (id) => {
   return definition;
 };
 
-function fakeActor(category, { x = 0, z = 0, yaw = 0, speed = 0, lateral = 0, fallen = false } = {}) {
+function fakeActor(category, { x = 0, z = 0, yaw = 0, speed = 0, lateral = 0, fallen = false, recovering = false } = {}) {
   let disposed = false;
   let enabled = true;
-  const state = { x, z, yaw, speed, lateral, ...(category === 'moto' ? { fallen } : {}) };
+  const state = { x, z, yaw, speed, lateral, ...(category === 'moto' ? { fallen, recovering } : {}) };
   return {
     category,
     state,
@@ -92,6 +92,7 @@ const flatCtx = makeContext().context;
 assert.equal(validateSwitchPose(fakeActor('todoterreno', { speed: 1 }), four, flatCtx).ok, false, 'moving forward rejected');
 assert.equal(validateSwitchPose(fakeActor('todoterreno', { lateral: 0.2 }), four, flatCtx).ok, false, 'sliding rejected');
 assert.equal(validateSwitchPose(fakeActor('moto', { fallen: true }), moto, flatCtx).ok, false, 'fallen moto rejected');
+assert.equal(validateSwitchPose(fakeActor('moto', { recovering: true }), moto, flatCtx).ok, false, 'recovering moto cannot bypass recovery by switching');
 assert.equal(
   validateSwitchPose(fakeActor('todoterreno'), four, makeContext({ terrain: { heightAt: () => NaN, normalAt: flat.normalAt } }).context).ok,
   false,

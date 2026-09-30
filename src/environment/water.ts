@@ -50,6 +50,10 @@ export interface Water {
   readonly stats: WaterStats;
   /** 0 en seco; `caladoM` en cintas; batimetría en el vaso; nivel−terreno en láminas menores. */
   depthAt(x: number, z: number): number;
+  /** Height of the actual rendered water triangle, in world metres; null outside. */
+  surfaceHeightAt(x: number, z: number): number | null;
+  /** Immersion at a wheel/ground contact height, rather than an XZ-only hit. */
+  contactDepthAt(x: number, z: number, contactY: number): number;
   /** Banda húmeda: profundidad 0,05–0,5 m, u orilla (12 m láminas / 2 m cintas) con pendiente <20°. */
   isMuddy(x: number, z: number): boolean;
   /** Primer punto seco con pendiente <20° en anillos de 25 m hasta 150 m; `null` si no hay. */
@@ -60,6 +64,8 @@ export interface Water {
 export interface LoadWaterOptions {
   /** URL de los datos. Por defecto `/water/water.json`. */
   readonly url?: string;
+  /** Only source-tagged bridges may constrain ribbon height; real fords stay wet. */
+  readonly roadSurfaceAt?: (x: number, z: number) => { readonly height: number; readonly bridge: boolean } | null;
   /** Omite únicamente el muro genérico si ya se cargó una presa detallada. */
   readonly includeDam?: boolean;
 }
@@ -596,7 +602,30 @@ export async function loadWater(
   const ribbonGrid = new SegmentGrid(10, 8);
   for (const ribbon of data.ribbons) {
     const half = ribbon.widthM / 2;
-    const points = ribbon.points;
+    // Densify only source-tagged bridge crossings. A 1m footbridge can fall
+    // entirely between the source's 2.5m stations. Interpolate the original
+    // elevations (never re-sample the DEM or move the river in XZ).
+    const points: (readonly [number, number, number])[] = [];
+    for (let i = 1; i < ribbon.points.length; i++) {
+      const a = ribbon.points[i - 1]!; const b = ribbon.points[i]!;
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const steps = Math.max(1, Math.ceil(length / 0.25));
+      let crossing = false;
+      for (let j = 0; j <= steps && !crossing; j++) {
+        const x = a[0] + (b[0] - a[0]) * j / steps;
+        const z = a[1] + (b[1] - a[1]) * j / steps;
+        const nx = length > 0 ? -(b[1] - a[1]) / length * half : 0;
+        const nz = length > 0 ? (b[0] - a[0]) / length * half : 0;
+        crossing = [[x, z], [x + nx, z + nz], [x - nx, z - nz]].some(([px, pz]) =>
+          options.roadSurfaceAt?.(px!, pz!)?.bridge === true);
+      }
+      if (i === 1) points.push(a);
+      const divisions = crossing ? steps : 1;
+      for (let j = 1; j <= divisions; j++) {
+        const t = j / divisions;
+        points.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+      }
+    }
     // Dirección por estación (diferencias centrales; un laterales en los
     // extremos). El ancho va perpendicular al eje (AGUA.md §4).
     const stationIndex: number[] = [];
@@ -616,7 +645,18 @@ export async function loadWater(
       const nz = (dx / len) * half;
       // Lerp TAL CUAL de los points + caladoM: es la invariante verificada
       // (>= terreno + 0,02 m en todo el eje). Nada de remuestreo propio.
-      const y = toWorld(p[2] + ribbon.caladoM);
+      let y = toWorld(p[2] + ribbon.caladoM);
+      // OSM bridge tags establish a separated crossing. Keep the complete river
+      // ribbon, with the existing skirt clearance (4 cm) beneath its deck.
+      // Sample centre and both banks so a narrow bridge is not missed.
+      for (const [x, z] of [[p[0], p[1]], [p[0] + nx, p[1] + nz], [p[0] - nx, p[1] - nz]]) {
+        // Half a refinement interval of overlap prevents a triangle from
+        // climbing through the deck between its protected stations.
+        for (const [ox, oz] of [[0, 0], [0.25, 0], [-0.25, 0], [0, 0.25], [0, -0.25]]) {
+          const deck = options.roadSurfaceAt?.(x! + ox!, z! + oz!);
+          if (deck?.bridge) y = Math.min(y, deck.height - 0.04);
+        }
+      }
       const left = pushVertex(ribbonsBuffers, p[0] + nx, y, p[1] + nz, 0, 1, 0, RIBBON_COLOR);
       const right = pushVertex(ribbonsBuffers, p[0] - nx, y, p[1] - nz, 0, 1, 0, RIBBON_COLOR);
       stationIndex.push(left, right);
@@ -691,6 +731,68 @@ export async function loadWater(
   // La cara de aguas arriba queda a contraluz del sol de mediodía: sin un
   // mínimo emisivo el hormigón se leía negro en la captura de la presa.
   if (data.dam && options.includeDam !== false) meshes.push(createWaterMesh(scene, 'agua:presa', damBuffers, [0.22, 0.22, 0.23]));
+
+  // Index the rendered triangles, including varying heights across river bends.
+  // The same barycentric interpolation drives contact queries and the visible mesh.
+  const waterCells = new Map<string, number[]>();
+  const waterTriangles: number[][] = [];
+  const waterCellM = 16;
+  for (const buffers of [sheetsBuffers, ribbonsBuffers]) {
+    for (let i = 0; i < buffers.indices.length; i += 3) {
+      const triangle = buffers.indices.slice(i, i + 3).flatMap(index => buffers.positions.slice(index * 3, index * 3 + 3));
+      const id = waterTriangles.push(triangle) - 1;
+      const xs = [triangle[0]!, triangle[3]!, triangle[6]!];
+      const zs = [triangle[2]!, triangle[5]!, triangle[8]!];
+      for (let x = Math.floor(Math.min(...xs) / waterCellM); x <= Math.floor(Math.max(...xs) / waterCellM); x++) {
+        for (let z = Math.floor(Math.min(...zs) / waterCellM); z <= Math.floor(Math.max(...zs) / waterCellM); z++) {
+          const key = `${x},${z}`;
+          const bucket = waterCells.get(key);
+          if (bucket) bucket.push(id); else waterCells.set(key, [id]);
+        }
+      }
+    }
+  }
+  function surfaceHeightAt(x: number, z: number): number | null {
+    let highest: number | null = null;
+    for (const id of waterCells.get(`${Math.floor(x / waterCellM)},${Math.floor(z / waterCellM)}`) ?? []) {
+      const t = waterTriangles[id]!;
+      const [ax, ay, az, bx, by, bz, cx, cy, cz] = t as [number, number, number, number, number, number, number, number, number];
+      const determinant = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
+      if (Math.abs(determinant) < 1e-10) continue;
+      const a = ((bz - cz) * (x - cx) + (cx - bx) * (z - cz)) / determinant;
+      const b = ((cz - az) * (x - cx) + (ax - cx) * (z - cz)) / determinant;
+      const c = 1 - a - b;
+      if (Math.min(a, b, c) < -1e-7) continue;
+      const y = a * ay + b * by + c * cy;
+      highest = highest === null ? y : Math.max(highest, y);
+    }
+    return highest;
+  }
+  function contactDepthAt(x: number, z: number, contactY: number): number {
+    if (!Number.isFinite(contactY)) return 0;
+    const waterY = surfaceHeightAt(x, z);
+    if (waterY === null) return 0;
+    const deck = options.roadSurfaceAt?.(x, z);
+    // A bridge is a separate OSM surface. Even when a narrow ribbon triangle
+    // overlaps its approach, a supported contact above the deck must remain dry.
+    if (deck?.bridge) return 0;
+    // 2 cm is the existing ribbon's rendering clearance, not a guessed depth.
+    // Fade this small contact band continuously rather than switching full drag.
+    let insideM = Math.max(0, -ribbonEdgeDistAt(x, z));
+    for (const { sheet, box } of sheetBoxesWithData) {
+      if (x < box.minX || x > box.maxX || z < box.minZ || z > box.maxZ || !containsPoint(sheet.ring, x, z)) continue;
+      let distance = Infinity;
+      for (let i = 0; i < sheet.ring.length; i++) {
+        const a = sheet.ring[i]!; const b = sheet.ring[(i + 1) % sheet.ring.length]!;
+        distance = Math.min(distance, pointSegDist(x, z, a[0], a[1], b[0], b[1]));
+      }
+      insideM = Math.max(insideM, distance);
+    }
+    // Fade over one bridge refinement interval so grazing a bank cannot toggle
+    // the full water response. Interior water retains its measured immersion.
+    const coverage = Math.min(1, insideM / 0.25);
+    return coverage * Math.min(depthAt(x, z), Math.max(0, waterY + 0.02 - contactY));
+  }
 
   /* ----- Consultas (AGUA.md §5.1) ----- */
 
@@ -870,11 +972,15 @@ export async function loadWater(
   return {
     stats,
     depthAt,
+    surfaceHeightAt,
+    contactDepthAt,
     isMuddy,
     nearestSafeShore,
     dispose: () => {
       if (disposed) return;
       disposed = true;
+      waterCells.clear();
+      waterTriangles.length = 0;
       for (const mesh of meshes) {
         const material = mesh.material;
         mesh.dispose();

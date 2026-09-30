@@ -1,0 +1,974 @@
+{
+  "mode": "actual final ribbon triangles AFTER",
+  "classes": {
+    "ROAD": {
+      "count": 21550,
+      "metrics": {
+        "longitudinalSlope": {
+          "p50": 0.03450455313485777,
+          "p95": 0.18843052323051604,
+          "p99": 0.24158815667620578,
+          "max": 0.6315998533220153,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614398",
+              "x": 3244.7933333333335,
+              "z": 3391.5783333333334,
+              "height": 82.64300000000003,
+              "longitudinalSlope": 0.6315998533220153,
+              "crossSlope": 0.04729884727372538,
+              "heightDeltaPerMeter": 0.2784783537062612,
+              "slopeDerivative": 0.373194284141247
+            },
+            {
+              "normalDeltaPerMeter": 1.528231954401028e-8,
+              "id": "266150945",
+              "x": 2330.857857142857,
+              "z": 2045.412142857143,
+              "height": 150.65685714285723,
+              "longitudinalSlope": 0.5679246921735341,
+              "crossSlope": 0.2425756652763766,
+              "heightDeltaPerMeter": 0.391185172481449,
+              "slopeDerivative": 0.18126035822676612
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "266150945",
+              "x": 1891.042857142857,
+              "z": 2126.9842857142858,
+              "height": 196.39457142857145,
+              "longitudinalSlope": 0.5450182774079622,
+              "crossSlope": 0.14428465452899292,
+              "heightDeltaPerMeter": 0.2662789482212935,
+              "slopeDerivative": 0.284532808229338
+            },
+            {
+              "normalDeltaPerMeter": 2.1217231190754597e-8,
+              "id": "1340518555",
+              "x": 2714.8202325581397,
+              "z": 2968.173023255814,
+              "height": 129.30516279069752,
+              "longitudinalSlope": 0.4603160872861167,
+              "crossSlope": -0.2073768432395203,
+              "heightDeltaPerMeter": 0.22922808923675372,
+              "slopeDerivative": 0.23266496325358246
+            },
+            {
+              "normalDeltaPerMeter": 2.123539792085774e-8,
+              "id": "162456721",
+              "x": 3259.3915789473685,
+              "z": 3449.5163157894735,
+              "height": 80.07178947368425,
+              "longitudinalSlope": 0.44572142853000685,
+              "crossSlope": -0.1635629836609195,
+              "heightDeltaPerMeter": 0.3364080683835158,
+              "slopeDerivative": 0.12640808020318606
+            }
+          ]
+        },
+        "crossSlope": {
+          "p50": 0.05815658530223065,
+          "p95": 0.08000000000000514,
+          "p99": 0.0877451747706248,
+          "max": 0.4226526224699579,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.30804945745147233,
+              "id": "310897359",
+              "x": 3047.6690909090908,
+              "z": 3840.4481818181816,
+              "height": 80.93236363636368,
+              "longitudinalSlope": -0.17408502786020108,
+              "crossSlope": 0.4226526224699579,
+              "heightDeltaPerMeter": 0.16683837627550072,
+              "slopeDerivative": 0.13532289724664304
+            },
+            {
+              "normalDeltaPerMeter": 0.2789648655442252,
+              "id": "266152553",
+              "x": 3034.12,
+              "z": 3967.62,
+              "height": 81.47204700800836,
+              "longitudinalSlope": 0.16493642576493817,
+              "crossSlope": -0.36441436918773906,
+              "heightDeltaPerMeter": 0.1649216325055296,
+              "slopeDerivative": 0.0022600479558531365
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "266152553",
+              "x": 3034.12,
+              "z": 3967.62,
+              "height": 81.47204700800836,
+              "longitudinalSlope": 0.1768377362276148,
+              "crossSlope": -0.3587900110935409,
+              "heightDeltaPerMeter": 0,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 0.46259815593095294,
+              "id": "376548174",
+              "x": 3076.6459302325584,
+              "z": 2934.6611627906977,
+              "height": 88.01244186046495,
+              "longitudinalSlope": -0.33004306352692936,
+              "crossSlope": 0.35167362006226566,
+              "heightDeltaPerMeter": 0.3433489503042518,
+              "slopeDerivative": 0.3059308186451126
+            },
+            {
+              "normalDeltaPerMeter": 1.4946345285387483e-8,
+              "id": "376548174",
+              "x": 3076.646511627907,
+              "z": 2935.6581395348835,
+              "height": 88.01209302325583,
+              "longitudinalSlope": -0.00034989497203241626,
+              "crossSlope": 0.33001149120000695,
+              "heightDeltaPerMeter": 0.00034989497180966866,
+              "slopeDerivative": 0.33069288167216665
+            }
+          ]
+        },
+        "heightDeltaPerMeter": {
+          "p50": 0.03159172008847658,
+          "p95": 0.18276817734002185,
+          "p99": 0.2407281860147464,
+          "max": 0.7549441174436952,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.048025734430457996,
+              "id": "168459140",
+              "x": 3018.6384615384613,
+              "z": 3864.08,
+              "height": 85.39230487619734,
+              "longitudinalSlope": -0.06895002968556106,
+              "crossSlope": -0.07509371773147086,
+              "heightDeltaPerMeter": 0.7549441174436952,
+              "slopeDerivative": 0.048209851699888076
+            },
+            {
+              "normalDeltaPerMeter": 0.11098343304948827,
+              "id": "168459105",
+              "x": 3087.9700000000003,
+              "z": 3850.399090909091,
+              "height": 74.08123848222813,
+              "longitudinalSlope": 0.06734804922606138,
+              "crossSlope": -0.07999999999999875,
+              "heightDeltaPerMeter": 0.6613949833583503,
+              "slopeDerivative": 0.1131210498653858
+            },
+            {
+              "normalDeltaPerMeter": 0.17191668116212458,
+              "id": "90614398",
+              "x": 3245.335,
+              "z": 3390.8025000000002,
+              "height": 83.18440222945651,
+              "longitudinalSlope": 0.10990600732669725,
+              "crossSlope": 0.033078021122424014,
+              "heightDeltaPerMeter": 0.5721776149979637,
+              "slopeDerivative": 0.5513489312010871
+            },
+            {
+              "normalDeltaPerMeter": 0.15920226202076873,
+              "id": "168459140",
+              "x": 3046.1825,
+              "z": 3851.28,
+              "height": 80.52700000000004,
+              "longitudinalSlope": -0.44004532814219033,
+              "crossSlope": -0.17155710962046294,
+              "heightDeltaPerMeter": 0.5668065099773235,
+              "slopeDerivative": 0.18915935300161807
+            },
+            {
+              "normalDeltaPerMeter": 0.48468039564534865,
+              "id": "741763075",
+              "x": 415.1464516129032,
+              "z": 1875.4816129032258,
+              "height": 260.35330814692657,
+              "longitudinalSlope": -0.1029582709143397,
+              "crossSlope": -0.08000000000000138,
+              "heightDeltaPerMeter": 0.5637238936422275,
+              "slopeDerivative": 0.48192709579754933
+            }
+          ]
+        },
+        "slopeDerivative": {
+          "p50": 0.000006488638808479788,
+          "p95": 0.13320665754074842,
+          "p99": 0.22195001590171334,
+          "max": 0.5600888808739276,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.3589437142424924,
+              "id": "266150945",
+              "x": 2329.904285714286,
+              "z": 2045.6157142857144,
+              "height": 151.03954793688325,
+              "longitudinalSlope": 0.0218050620515852,
+              "crossSlope": 0.08000000000000138,
+              "heightDeltaPerMeter": 0.39247968160185875,
+              "slopeDerivative": 0.5600888808739276
+            },
+            {
+              "normalDeltaPerMeter": 0.2671528805177936,
+              "id": "266150945",
+              "x": 1890.1571428571428,
+              "z": 2126.565714285714,
+              "height": 196.80770848051475,
+              "longitudinalSlope": 0.0026233263518551844,
+              "crossSlope": 0.04251096316506766,
+              "heightDeltaPerMeter": 0.42172393079877385,
+              "slopeDerivative": 0.5536684006647408
+            },
+            {
+              "normalDeltaPerMeter": 0.17191668116212458,
+              "id": "90614398",
+              "x": 3245.335,
+              "z": 3390.8025000000002,
+              "height": 83.18440222945651,
+              "longitudinalSlope": 0.10990600732669725,
+              "crossSlope": 0.033078021122424014,
+              "heightDeltaPerMeter": 0.5721776149979637,
+              "slopeDerivative": 0.5513489312010871
+            },
+            {
+              "normalDeltaPerMeter": 0.2819529115373032,
+              "id": "266152557",
+              "x": 3089.631379310345,
+              "z": 3804.7844827586205,
+              "height": 76.07372413793098,
+              "longitudinalSlope": 0.3205783239775428,
+              "crossSlope": 0.11202998982244335,
+              "heightDeltaPerMeter": 0.16870021390553,
+              "slopeDerivative": 0.5272372708243322
+            },
+            {
+              "normalDeltaPerMeter": 0.48468039564534865,
+              "id": "741763075",
+              "x": 415.1464516129032,
+              "z": 1875.4816129032258,
+              "height": 260.35330814692657,
+              "longitudinalSlope": -0.1029582709143397,
+              "crossSlope": -0.08000000000000138,
+              "heightDeltaPerMeter": 0.5637238936422275,
+              "slopeDerivative": 0.48192709579754933
+            }
+          ]
+        },
+        "normalDeltaPerMeter": {
+          "p50": 0.0009633971567690082,
+          "p95": 0.14185889377696764,
+          "p99": 0.2257426453036299,
+          "max": 0.6018655788312404,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.6018655788312404,
+              "id": "224696091",
+              "x": 980.955,
+              "z": 2355.9791304347823,
+              "height": 245.24816525925624,
+              "longitudinalSlope": -0.028030118078627694,
+              "crossSlope": 0.07999999999999939,
+              "heightDeltaPerMeter": 0.4116292107025905,
+              "slopeDerivative": 0.20098478579554724
+            },
+            {
+              "normalDeltaPerMeter": 0.48468039564534865,
+              "id": "741763075",
+              "x": 415.1464516129032,
+              "z": 1875.4816129032258,
+              "height": 260.35330814692657,
+              "longitudinalSlope": -0.1029582709143397,
+              "crossSlope": -0.08000000000000138,
+              "heightDeltaPerMeter": 0.5637238936422275,
+              "slopeDerivative": 0.48192709579754933
+            },
+            {
+              "normalDeltaPerMeter": 0.46259815593095294,
+              "id": "376548174",
+              "x": 3076.6459302325584,
+              "z": 2934.6611627906977,
+              "height": 88.01244186046495,
+              "longitudinalSlope": -0.33004306352692936,
+              "crossSlope": 0.35167362006226566,
+              "heightDeltaPerMeter": 0.3433489503042518,
+              "slopeDerivative": 0.3059308186451126
+            },
+            {
+              "normalDeltaPerMeter": 0.44791921682145625,
+              "id": "168459099",
+              "x": 2990.4085714285716,
+              "z": 3409.6314285714284,
+              "height": 97.11603155887327,
+              "longitudinalSlope": -0.16782008413568086,
+              "crossSlope": -0.07999999999999478,
+              "heightDeltaPerMeter": 0.01605406330933931,
+              "slopeDerivative": 0.4570322596888425
+            },
+            {
+              "normalDeltaPerMeter": 0.4128486943487284,
+              "id": "224696091",
+              "x": 983.61,
+              "z": 2357.348695652174,
+              "height": 244.4954782608695,
+              "longitudinalSlope": 0.17211249526530992,
+              "crossSlope": -0.18367452729213105,
+              "heightDeltaPerMeter": 0.04037098447408603,
+              "slopeDerivative": 0.045089474341938746
+            }
+          ]
+        }
+      },
+      "maxHeightDeltaPerMeter": 0.7549441174436952,
+      "maxCrossSlope": 0.4226526224699579,
+      "maxSlopeDerivative": 0.5600888808739276
+    },
+    "TRACK": {
+      "count": 95186,
+      "metrics": {
+        "longitudinalSlope": {
+          "p50": 0.05344348469279905,
+          "p95": 0.23512887669701651,
+          "p99": 0.31640114396147523,
+          "max": 0.8410800723174532,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.29536429134974557,
+              "id": "266230161",
+              "x": 3459.8144,
+              "z": 563.5015999999999,
+              "height": 205.47487999999976,
+              "longitudinalSlope": -0.8410800723174532,
+              "crossSlope": 0.10336150953856796,
+              "heightDeltaPerMeter": 0.7148177566418238,
+              "slopeDerivative": 0.6281679921333944
+            },
+            {
+              "normalDeltaPerMeter": 2.124976283443873e-8,
+              "id": "311202339",
+              "x": 2736.2781355932207,
+              "z": 2791.4113559322036,
+              "height": 125.20647457627103,
+              "longitudinalSlope": 0.7639459139696783,
+              "crossSlope": 0.08689054214836947,
+              "heightDeltaPerMeter": 0.4386912737736432,
+              "slopeDerivative": 0.3279763118316982
+            },
+            {
+              "normalDeltaPerMeter": 0.16762922513648346,
+              "id": "266230161",
+              "x": 3481.44,
+              "z": 519.94,
+              "height": 194.6880000000001,
+              "longitudinalSlope": -0.7392675005189915,
+              "crossSlope": -0.050820530347455886,
+              "heightDeltaPerMeter": 0.6527589895613054,
+              "slopeDerivative": 0.4885852586895263
+            },
+            {
+              "normalDeltaPerMeter": 0.05983348541217939,
+              "id": "313192066",
+              "x": 740.9976712328768,
+              "z": 4455.631917808219,
+              "height": 201.14863013698618,
+              "longitudinalSlope": -0.7207524651746553,
+              "crossSlope": -0.09771520148812365,
+              "heightDeltaPerMeter": 0.7207524651742563,
+              "slopeDerivative": 0.08520845309649196
+            },
+            {
+              "normalDeltaPerMeter": 2.6093705608281432e-8,
+              "id": "313192066",
+              "x": 741.8375342465754,
+              "z": 4456.154383561644,
+              "height": 200.43572602739732,
+              "longitudinalSlope": -0.7207524651746553,
+              "crossSlope": -0.1035165183304798,
+              "heightDeltaPerMeter": 0.7207524651742563,
+              "slopeDerivative": 0
+            }
+          ]
+        },
+        "crossSlope": {
+          "p50": 0.09289213856201221,
+          "p95": 0.25000000000000117,
+          "p99": 0.26076250931792516,
+          "max": 0.8748777613688219,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614389",
+              "x": 3320.4348,
+              "z": 3707.0088,
+              "height": 83.54431999999997,
+              "longitudinalSlope": 0.18598092015679413,
+              "crossSlope": 0.8748777613688219,
+              "heightDeltaPerMeter": 0.18598092015662446,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614389",
+              "x": 3320.9276,
+              "z": 3708.9056,
+              "height": 83.17984000000001,
+              "longitudinalSlope": 0.18598092015668044,
+              "crossSlope": 0.8748777613687864,
+              "heightDeltaPerMeter": 0.18598092015662446,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614389",
+              "x": 3320.6812,
+              "z": 3707.9572,
+              "height": 83.36207999999999,
+              "longitudinalSlope": 0.18598092015679413,
+              "crossSlope": 0.8748777613687864,
+              "heightDeltaPerMeter": 0.1859809201565409,
+              "slopeDerivative": 1.160205371441832e-13
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614389",
+              "x": 3320.1884,
+              "z": 3706.0604,
+              "height": 83.72656000000006,
+              "longitudinalSlope": 0.18598092015668044,
+              "crossSlope": 0.8748777613687864,
+              "heightDeltaPerMeter": 0.18598092015665693,
+              "slopeDerivative": 1.160205371441832e-13
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "90614389",
+              "x": 3319.942,
+              "z": 3705.112,
+              "height": 83.90880000000004,
+              "longitudinalSlope": 0.1115940980121195,
+              "crossSlope": 0.8567319653160155,
+              "heightDeltaPerMeter": 0.18598092015662446,
+              "slopeDerivative": 0.07591379296517897
+            }
+          ]
+        },
+        "heightDeltaPerMeter": {
+          "p50": 0.04882536921621823,
+          "p95": 0.2271110041590878,
+          "p99": 0.3072167427207667,
+          "max": 0.8056252704423323,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.2870364594139611,
+              "id": "313192066",
+              "x": 740.1578082191782,
+              "z": 4455.109452054795,
+              "height": 201.86153424657505,
+              "longitudinalSlope": -0.6364718566171632,
+              "crossSlope": -0.08062616039220907,
+              "heightDeltaPerMeter": 0.8056252704423323,
+              "slopeDerivative": 0.1933014171563852
+            },
+            {
+              "normalDeltaPerMeter": 0.09422720827431431,
+              "id": "996247201",
+              "x": 1694.914,
+              "z": 2732.6233333333334,
+              "height": 198.57400000000007,
+              "longitudinalSlope": -0.5942192291859101,
+              "crossSlope": 0.08308734961133267,
+              "heightDeltaPerMeter": 0.7916177378354495,
+              "slopeDerivative": 0.12149033438810333
+            },
+            {
+              "normalDeltaPerMeter": 2.1305421412896417e-8,
+              "id": "313192066",
+              "x": 742.677397260274,
+              "z": 4456.6768493150685,
+              "height": 199.72282191780823,
+              "longitudinalSlope": -0.7207524651746553,
+              "crossSlope": -0.0770667466409236,
+              "heightDeltaPerMeter": 0.7207524651744862,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "313192066",
+              "x": 743.5172602739726,
+              "z": 4457.199315068493,
+              "height": 199.00991780821914,
+              "longitudinalSlope": -0.7207524651746553,
+              "crossSlope": -0.05061697495146214,
+              "heightDeltaPerMeter": 0.7207524651744862,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 2.1305421412896417e-8,
+              "id": "313192066",
+              "x": 754.4354794520548,
+              "z": 4463.9913698630135,
+              "height": 190.74216438356166,
+              "longitudinalSlope": -0.7207524651742006,
+              "crossSlope": -0.12835659365975968,
+              "heightDeltaPerMeter": 0.7207524651744862,
+              "slopeDerivative": 0.006820956835992473
+            }
+          ]
+        },
+        "slopeDerivative": {
+          "p50": 4.2182808185214913e-17,
+          "p95": 0.17655137062978077,
+          "p99": 0.27224530973851835,
+          "max": 0.6380479701771351,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.4756093873529319,
+              "id": "162456724",
+              "x": 2264.59,
+              "z": 991.1225,
+              "height": 149.68868543873515,
+              "longitudinalSlope": -0.33717351639866855,
+              "crossSlope": -0.24999999999999262,
+              "heightDeltaPerMeter": 0.10219612642782147,
+              "slopeDerivative": 0.6380479701771351
+            },
+            {
+              "normalDeltaPerMeter": 0.29536429134974557,
+              "id": "266230161",
+              "x": 3459.8144,
+              "z": 563.5015999999999,
+              "height": 205.47487999999976,
+              "longitudinalSlope": -0.8410800723174532,
+              "crossSlope": 0.10336150953856796,
+              "heightDeltaPerMeter": 0.7148177566418238,
+              "slopeDerivative": 0.6281679921333944
+            },
+            {
+              "normalDeltaPerMeter": 0.28594050304689184,
+              "id": "311202339",
+              "x": 2735.3218644067797,
+              "z": 2791.148644067797,
+              "height": 125.8344307244486,
+              "longitudinalSlope": 0.1695253126723879,
+              "crossSlope": 0.23386217589838448,
+              "heightDeltaPerMeter": 0.6332107709427339,
+              "slopeDerivative": 0.5993946047093596
+            },
+            {
+              "normalDeltaPerMeter": 0.5516501992362384,
+              "id": "266150977",
+              "x": 704.8686956521739,
+              "z": 1895.354347826087,
+              "height": 292.198013477001,
+              "longitudinalSlope": 0.231868195012671,
+              "crossSlope": -0.13887795271151696,
+              "heightDeltaPerMeter": 0.246532757663501,
+              "slopeDerivative": 0.557495579770676
+            },
+            {
+              "normalDeltaPerMeter": 0.5118176542205525,
+              "id": "218781065",
+              "x": 4134.351428571428,
+              "z": 300.4104761904762,
+              "height": 203.32762583641355,
+              "longitudinalSlope": 0.33746176325860855,
+              "crossSlope": -0.24999999999999387,
+              "heightDeltaPerMeter": 0.1630914751981323,
+              "slopeDerivative": 0.5413383453079436
+            }
+          ]
+        },
+        "normalDeltaPerMeter": {
+          "p50": 2.1138472735065083e-8,
+          "p95": 0.20969122109475216,
+          "p99": 0.2970860136571577,
+          "max": 0.7470562688891896,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.7470562688891896,
+              "id": "218781065",
+              "x": 4327.272121212121,
+              "z": 207.40075757575758,
+              "height": 200.78110521123432,
+              "longitudinalSlope": -0.2873994497525998,
+              "crossSlope": 0.2126602037249975,
+              "heightDeltaPerMeter": 0.45591381042508444,
+              "slopeDerivative": 0.4707956857760464
+            },
+            {
+              "normalDeltaPerMeter": 0.5516501992362384,
+              "id": "266150977",
+              "x": 704.8686956521739,
+              "z": 1895.354347826087,
+              "height": 292.198013477001,
+              "longitudinalSlope": 0.231868195012671,
+              "crossSlope": -0.13887795271151696,
+              "heightDeltaPerMeter": 0.246532757663501,
+              "slopeDerivative": 0.557495579770676
+            },
+            {
+              "normalDeltaPerMeter": 0.5465501931242851,
+              "id": "956141505.1",
+              "x": 5567.6900000000005,
+              "z": 658.425,
+              "height": 209.1935097030335,
+              "longitudinalSlope": -0.3623853686453815,
+              "crossSlope": 0.06221519402953995,
+              "heightDeltaPerMeter": 0.15571075628299558,
+              "slopeDerivative": 0.5296108047343486
+            },
+            {
+              "normalDeltaPerMeter": 0.5118176542205525,
+              "id": "218781065",
+              "x": 4134.351428571428,
+              "z": 300.4104761904762,
+              "height": 203.32762583641355,
+              "longitudinalSlope": 0.33746176325860855,
+              "crossSlope": -0.24999999999999387,
+              "heightDeltaPerMeter": 0.1630914751981323,
+              "slopeDerivative": 0.5413383453079436
+            },
+            {
+              "normalDeltaPerMeter": 0.5110835929926943,
+              "id": "168459108",
+              "x": 4740.015882352942,
+              "z": 825.5997058823529,
+              "height": 262.1547693016779,
+              "longitudinalSlope": 0.22344582248676748,
+              "crossSlope": -0.20394053401040355,
+              "heightDeltaPerMeter": 0.05647425704874745,
+              "slopeDerivative": 0.3358491639531835
+            }
+          ]
+        }
+      },
+      "maxHeightDeltaPerMeter": 0.8056252704423323,
+      "maxCrossSlope": 0.8748777613688219,
+      "maxSlopeDerivative": 0.6380479701771351
+    },
+    "PATH": {
+      "count": 28078,
+      "metrics": {
+        "longitudinalSlope": {
+          "p50": 0.08710672514207886,
+          "p95": 0.3141949945293885,
+          "p99": 0.4703166208393371,
+          "max": 1.4831749333059179,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "311677968",
+              "x": 2497.48,
+              "z": 1741,
+              "height": 145.30399999999997,
+              "longitudinalSlope": 1.4831749333059179,
+              "crossSlope": 1.0393229128686696,
+              "heightDeltaPerMeter": 1.4831749333058044,
+              "slopeDerivative": 0.11456180561801538
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "305923850",
+              "x": 2399.1924,
+              "z": 1526.9216,
+              "height": 125.4147200000001,
+              "longitudinalSlope": 1.441449897854099,
+              "crossSlope": 0.30809536482870215,
+              "heightDeltaPerMeter": 0.839688779352869,
+              "slopeDerivative": 0.7800854965261749
+            },
+            {
+              "normalDeltaPerMeter": 0.23101415009475,
+              "id": "311677968",
+              "x": 2497.0875,
+              "z": 1740.2825,
+              "height": 144.0909999999999,
+              "longitudinalSlope": 1.3894816897820874,
+              "crossSlope": 1.0365961211155648,
+              "heightDeltaPerMeter": 1.1640416624124623,
+              "slopeDerivative": 0.5263864870468631
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "305923850",
+              "x": 2392.892307692308,
+              "z": 1536.965,
+              "height": 130.02207692307684,
+              "longitudinalSlope": 1.126347984009385,
+              "crossSlope": 0.06650637389157055,
+              "heightDeltaPerMeter": 0.7180368390492474,
+              "slopeDerivative": 0.410486997348976
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "305923850",
+              "x": 2384.052105263158,
+              "z": 1553.635789473684,
+              "height": 136.75021052631564,
+              "longitudinalSlope": 1.0583398023372013,
+              "crossSlope": 0.3046899969822192,
+              "heightDeltaPerMeter": 0.7919368697937146,
+              "slopeDerivative": 0.2711385136323072
+            }
+          ]
+        },
+        "crossSlope": {
+          "p50": 0.16137454582074423,
+          "p95": 0.44623831999181374,
+          "p99": 0.6153952494779938,
+          "max": 1.524327875140443,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 2.1966816515087404e-8,
+              "id": "311677968",
+              "x": 2491.6433333333334,
+              "z": 1735.9383333333333,
+              "height": 142.48266666666643,
+              "longitudinalSlope": -0.341210388280615,
+              "crossSlope": 1.524327875140443,
+              "heightDeltaPerMeter": 0.34121038828090067,
+              "slopeDerivative": 1.1850650725478324e-13
+            },
+            {
+              "normalDeltaPerMeter": 2.1966816515094286e-8,
+              "id": "311677968",
+              "x": 2492.4966666666664,
+              "z": 1736.3766666666668,
+              "height": 142.1553333333336,
+              "longitudinalSlope": -0.3412103882807287,
+              "crossSlope": 1.524327875140443,
+              "heightDeltaPerMeter": 0.3412103882802965,
+              "slopeDerivative": 1.1850650725482034e-13
+            },
+            {
+              "normalDeltaPerMeter": 2.1966816515087404e-8,
+              "id": "311677968",
+              "x": 2493.35,
+              "z": 1736.815,
+              "height": 141.8280000000001,
+              "longitudinalSlope": -0.341210388280615,
+              "crossSlope": 1.524327875140443,
+              "heightDeltaPerMeter": 0.34121038828090067,
+              "slopeDerivative": 1.1850650725478324e-13
+            },
+            {
+              "normalDeltaPerMeter": 2.1966816515087404e-8,
+              "id": "311677968",
+              "x": 2494.2033333333334,
+              "z": 1737.2533333333333,
+              "height": 141.5006666666667,
+              "longitudinalSlope": -0.341210388280615,
+              "crossSlope": 1.524327875140443,
+              "heightDeltaPerMeter": 0.34121038828078215,
+              "slopeDerivative": 0
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "311677968",
+              "x": 2490.79,
+              "z": 1735.5,
+              "height": 142.80999999999995,
+              "longitudinalSlope": -0.3412103882807287,
+              "crossSlope": 1.5187102314880954,
+              "heightDeltaPerMeter": 0,
+              "slopeDerivative": 0
+            }
+          ]
+        },
+        "heightDeltaPerMeter": {
+          "p50": 0.08119399953852223,
+          "p95": 0.30567283753540775,
+          "p99": 0.46156738630084904,
+          "max": 1.4831749333058044,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "311677968",
+              "x": 2497.48,
+              "z": 1741,
+              "height": 145.30399999999997,
+              "longitudinalSlope": 1.4831749333059179,
+              "crossSlope": 1.0393229128686696,
+              "heightDeltaPerMeter": 1.4831749333058044,
+              "slopeDerivative": 0.11456180561801538
+            },
+            {
+              "normalDeltaPerMeter": 0.3386364611248935,
+              "id": "305923850",
+              "x": 2398.5116000000003,
+              "z": 1527.6444,
+              "height": 126.61908387322612,
+              "longitudinalSlope": 0.3707537842314281,
+              "crossSlope": 0.22181907627039582,
+              "heightDeltaPerMeter": 1.2129279776027215,
+              "slopeDerivative": 1.078309720670047
+            },
+            {
+              "normalDeltaPerMeter": 0.23101415009475,
+              "id": "311677968",
+              "x": 2497.0875,
+              "z": 1740.2825,
+              "height": 144.0909999999999,
+              "longitudinalSlope": 1.3894816897820874,
+              "crossSlope": 1.0365961211155648,
+              "heightDeltaPerMeter": 1.1640416624124623,
+              "slopeDerivative": 0.5263864870468631
+            },
+            {
+              "normalDeltaPerMeter": 0.4074084883050937,
+              "id": "858629620",
+              "x": 2137.314347826087,
+              "z": 1120.0252173913043,
+              "height": 207.67130121607357,
+              "longitudinalSlope": 0.2932816391218442,
+              "crossSlope": 0.04458264141167872,
+              "heightDeltaPerMeter": 1.0135635430536387,
+              "slopeDerivative": 0.5354611862726567
+            },
+            {
+              "normalDeltaPerMeter": 0.29484490276018105,
+              "id": "305923850",
+              "x": 2389.107692307692,
+              "z": 1543.965,
+              "height": 132.54512053386821,
+              "longitudinalSlope": 0.3282031003055742,
+              "crossSlope": 0.40623072467191695,
+              "heightDeltaPerMeter": 0.9789248672801939,
+              "slopeDerivative": 0.4062939689964434
+            }
+          ]
+        },
+        "slopeDerivative": {
+          "p50": 8.38121160450935e-17,
+          "p95": 0.19407632983102732,
+          "p99": 0.3022658116568066,
+          "max": 1.1472847070570424,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.7456650621169504,
+              "id": "305923850",
+              "x": 2392.4192307692306,
+              "z": 1537.84,
+              "height": 130.7820575528523,
+              "longitudinalSlope": -0.014855355826529696,
+              "crossSlope": -0.3577672105638947,
+              "heightDeltaPerMeter": 0.7640304963761694,
+              "slopeDerivative": 1.1472847070570424
+            },
+            {
+              "normalDeltaPerMeter": 0.3386364611248935,
+              "id": "305923850",
+              "x": 2398.5116000000003,
+              "z": 1527.6444,
+              "height": 126.61908387322612,
+              "longitudinalSlope": 0.3707537842314281,
+              "crossSlope": 0.22181907627039582,
+              "heightDeltaPerMeter": 1.2129279776027215,
+              "slopeDerivative": 1.078309720670047
+            },
+            {
+              "normalDeltaPerMeter": 0.9219022113284683,
+              "id": "956141498",
+              "x": 2984.069285714286,
+              "z": 16.062142857142856,
+              "height": 165.77085714285704,
+              "longitudinalSlope": 0.4429735017574785,
+              "crossSlope": 0.4514138641434328,
+              "heightDeltaPerMeter": 0.3207401354339898,
+              "slopeDerivative": 0.8583095884222337
+            },
+            {
+              "normalDeltaPerMeter": 0.4493901068391991,
+              "id": "305923850",
+              "x": 2383.653157894737,
+              "z": 1554.5336842105262,
+              "height": 137.5318472574331,
+              "longitudinalSlope": 0.24716444948602626,
+              "crossSlope": 0.44999999999999873,
+              "heightDeltaPerMeter": 0.7955311131618384,
+              "slopeDerivative": 0.8255948137193786
+            },
+            {
+              "normalDeltaPerMeter": 0,
+              "id": "305923850",
+              "x": 2399.1924,
+              "z": 1526.9216,
+              "height": 125.4147200000001,
+              "longitudinalSlope": 1.441449897854099,
+              "crossSlope": 0.30809536482870215,
+              "heightDeltaPerMeter": 0.839688779352869,
+              "slopeDerivative": 0.7800854965261749
+            }
+          ]
+        },
+        "normalDeltaPerMeter": {
+          "p50": 2.152363859110638e-8,
+          "p95": 0.22832379094920255,
+          "p99": 0.3224186669224866,
+          "max": 0.9219022113284683,
+          "worst": [
+            {
+              "normalDeltaPerMeter": 0.9219022113284683,
+              "id": "956141498",
+              "x": 2984.069285714286,
+              "z": 16.062142857142856,
+              "height": 165.77085714285704,
+              "longitudinalSlope": 0.4429735017574785,
+              "crossSlope": 0.4514138641434328,
+              "heightDeltaPerMeter": 0.3207401354339898,
+              "slopeDerivative": 0.8583095884222337
+            },
+            {
+              "normalDeltaPerMeter": 0.8545191905656238,
+              "id": "956141498",
+              "x": 2984.5,
+              "z": 15.18,
+              "height": 165.45599375183917,
+              "longitudinalSlope": -0.06779103694892334,
+              "crossSlope": 0.40096368130631127,
+              "heightDeltaPerMeter": 0.3355621865361614,
+              "slopeDerivative": 0.42743334382363174
+            },
+            {
+              "normalDeltaPerMeter": 0.8351123682130228,
+              "id": "305923847",
+              "x": 2533.4244444444444,
+              "z": 1693.6155555555556,
+              "height": 110.14755555555553,
+              "longitudinalSlope": -0.27901063567105666,
+              "crossSlope": -0.7550215139327556,
+              "heightDeltaPerMeter": 0.2765108215353509,
+              "slopeDerivative": 0.7303686511179963
+            },
+            {
+              "normalDeltaPerMeter": 0.7822641018109419,
+              "id": "858629620",
+              "x": 2134.366,
+              "z": 1130.2259999999999,
+              "height": 208.94600000000014,
+              "longitudinalSlope": -0.040182661103926876,
+              "crossSlope": 0.7281637226039094,
+              "heightDeltaPerMeter": 0.2336741396734584,
+              "slopeDerivative": 0.026203765351890763
+            },
+            {
+              "normalDeltaPerMeter": 0.750082437699999,
+              "id": "305923850",
+              "x": 2405.3196000000003,
+              "z": 1520.4163999999998,
+              "height": 122.28968693125492,
+              "longitudinalSlope": 0.56345019830183,
+              "crossSlope": -0.17872253670428154,
+              "heightDeltaPerMeter": 0.23054658019508467,
+              "slopeDerivative": 0.6704329644208212
+            }
+          ]
+        }
+      },
+      "maxHeightDeltaPerMeter": 1.4831749333058044,
+      "maxCrossSlope": 1.524327875140443,
+      "maxSlopeDerivative": 1.1472847070570424
+    }
+  }
+}

@@ -310,6 +310,7 @@ interface DebugApi {
     audit(): RoadAuditReport;
     probe(count: number): RoadProbe[];
     stations(): RoadStation[];
+    sampleAt(x: number, z: number): ReturnType<RoadNetwork['surface']['sampleAt']>;
   } | null;
   /** La ruta de la milestone, para que los arneses no la dupliquen a mano. */
   route: FirstRoute | null;
@@ -317,6 +318,8 @@ interface DebugApi {
   water: {
     stats(): WaterStats;
     depthAt(x: number, z: number): number;
+    surfaceHeightAt(x: number, z: number): number | null;
+    contactDepthAt(x: number, z: number, contactY?: number): number;
     isMuddy(x: number, z: number): boolean;
     nearestSafeShore(x: number, z: number): { x: number; z: number } | null;
     /** Estado de la regla del agua (AGUA T6): lo usa el arnés `drive_water.mjs`. */
@@ -484,7 +487,7 @@ async function bootstrap(): Promise<void> {
     let actor: VehicleActor | null = null;
     const options: CreateVehicleOptions = {
       scene,
-      terrain: { heightAt: terrain.heightAt, normalAt: terrain.normalAt, surfaceAt: (x, z) => surfaceAt(x, z) },
+      terrain: { heightAt: drivingHeightAt, normalAt: drivingNormalAt, surfaceAt: (x, z) => surfaceAt(x, z) },
       spawn: { x: pose.x, z: pose.z, yaw: pose.yaw },
       ...(controls ? { controls } : {}),
       onVisualMeshesReplaced: (removed, added) => {
@@ -558,7 +561,7 @@ async function bootstrap(): Promise<void> {
    * el agua y la bajada usan la huella real del destino.
    */
   const switchContext: SwitchContext = {
-    terrain,
+    terrain: { heightAt: (x, z) => drivingHeightAt(x, z), normalAt: (x, z) => drivingNormalAt(x, z) },
     canPlace: (target, pose) => {
       const blockedRadius =
         (objective?.interactable.radiusM ?? FIRST_ROUTE.targetClearRadiusM) +
@@ -568,15 +571,15 @@ async function bootstrap(): Promise<void> {
     },
     waterSafe: (target, pose) => {
       if (!water) return true;
-      return footprintSamples(target, pose).every((point) => water!.depthAt(point.x, point.z) <= AGUA_VADEO_M);
+      return footprintSamples(target, pose).every((point) => drivingWaterDepthAt(point.x, point.z) <= AGUA_VADEO_M);
     },
     canExit: (target, pose) => {
       const sideX = pose.x + Math.cos(pose.yaw) * target.exitOffsetM;
       const sideZ = pose.z - Math.sin(pose.yaw) * target.exitOffsetM;
-      const height = terrain.heightAt(sideX, sideZ);
-      const normal = terrain.normalAt(sideX, sideZ);
+      const height = drivingHeightAt(sideX, sideZ);
+      const normal = drivingNormalAt(sideX, sideZ);
       if (!Number.isFinite(height) || !Number.isFinite(normal.y) || normal.y < 0.5) return false;
-      return !water || water.depthAt(sideX, sideZ) === 0;
+      return !water || drivingWaterDepthAt(sideX, sideZ) === 0;
     },
     create: createActor,
     prepareRebind,
@@ -652,6 +655,19 @@ async function bootstrap(): Promise<void> {
   const drapeParam = params.get('drape');
   const roadsEnabled = drapeParam === null || !(drapeParam === '0' || drapeParam.toLowerCase() === 'false');
   let roads: RoadNetwork | null = null;
+  // Contacts and rendered pavement use the same final triangles. Off-road stays MDT.
+  const drivingHeightAt = (x: number, z: number): number => roads?.surface.heightAt(x, z) ?? terrain.heightAt(x, z);
+  const drivingNormalAt = (x: number, z: number, out?: Vector3): Vector3 =>
+    roads?.surface.normalAt(x, z, out) ?? terrain.normalAt(x, z, out);
+  const drivingWaterDepthAt = (x: number, z: number): number =>
+    water?.contactDepthAt(x, z, drivingHeightAt(x, z)) ?? 0;
+  const drivingMuddyAt = (x: number, z: number): boolean => {
+    if (!water?.isMuddy(x, z)) return false;
+    const road = roads?.surface.sampleAt(x, z);
+    // A dry supported road/deck cannot acquire mud from a river underneath.
+    return !road || drivingWaterDepthAt(x, z) > 0;
+  };
+
   /** Stats del pueblo cargado (FASE E), para la API de depuración. */
   let villageStats: VillageStats | null = null;
   let villageNpcs: VillageNpcs | null = null;
@@ -704,6 +720,7 @@ async function bootstrap(): Promise<void> {
       water = await loadWater(scene, terrain, {
         url: publicUrl('/water/water.json'),
         includeDam: !landmarks?.replacesDam,
+        roadSurfaceAt: (x, z) => roads?.surface.sampleAt(x, z) ?? null,
       });
       console.info(
         `[agua] ${water.stats.sheets} láminas · ${water.stats.ribbons} cintas · ${water.stats.meshes} mallas`,
@@ -717,7 +734,7 @@ async function bootstrap(): Promise<void> {
   surfaceAt = createSurfaceResolver(roads?.mapLines() ?? [], (x, z) => {
     // A shallow mapped water contact provides a wet response; ROCK remains
     // available for authored areas rather than inferred from elevation/color.
-    const depth = water?.depthAt(x, z) ?? 0;
+    const depth = drivingWaterDepthAt(x, z);
     return depth > 0 && depth <= AGUA_VADEO_M ? 'MUD' : 'GRASS';
   });
 
@@ -752,13 +769,13 @@ async function bootstrap(): Promise<void> {
     villageStats = village.stats;
     // El módulo ya loguea sus propias cifras al cargar: no se duplican acá.
     try {
-      villageNpcs = await loadVillageNpcs(scene, terrain, publicUrl('/characters/field-player.glb'), {
+      villageNpcs = await loadVillageNpcs(scene, { ...terrain, heightAt: drivingHeightAt, normalAt: drivingNormalAt }, publicUrl('/characters/field-player.glb'), {
         roads: roads?.mapLines() ?? [],
         buildingsUrl: publicUrl('/village/buildings.json'),
         mappedWallsUrl: publicUrl('/village/mapped-walls.json'),
         waterDepthAt: (x, z) => {
           if (!water) throw new Error('NPC: agua no disponible para verificar los recorridos');
-          return water.depthAt(x, z);
+          return drivingWaterDepthAt(x, z);
         },
       });
     } catch (error) {
@@ -996,7 +1013,7 @@ async function bootstrap(): Promise<void> {
       // pasar `undefined` a una propiedad opcional, hay que no ponerla.
       player = createPlayer({
         scene,
-        terrain,
+        terrain: { heightAt: drivingHeightAt },
         vehicleRef: vehicleRef!,
         spawn: { x: salidaInicial.x, z: salidaInicial.z, yaw },
         ...(controlsForPlayer ? { controls: controlsForPlayer } : {}),
@@ -1301,12 +1318,13 @@ async function bootstrap(): Promise<void> {
     }
     const x = active.state.x;
     const z = active.state.z;
-    const prof = water.depthAt(x, z);
+    const contacts = active.contactPoints(active.state);
+    const prof = Math.max(...contacts.map(point => drivingWaterDepthAt(point.x, point.z)));
     if (prof === 0) ultimaPosicionSeca = { x, z };
     const velocidad = Math.abs(active.state.speed);
     const gas = leerGasConduciendo();
 
-    if (water.isMuddy(x, z) && velocidad < AGUA_ENFANGADO_VELOCIDAD_MPS && gas > 0) enfangadoS += dt;
+    if (contacts.some(point => drivingMuddyAt(point.x, point.z)) && velocidad < AGUA_ENFANGADO_VELOCIDAD_MPS && gas > 0) enfangadoS += dt;
     else enfangadoS = 0;
 
     if (prof > AGUA_HUNDIMIENTO_M || enfangadoS > AGUA_ENFANGADO_S) {
@@ -1337,6 +1355,9 @@ async function bootstrap(): Promise<void> {
       else caladoAgua = Math.max(objetivo, caladoAgua - dt * 0.8);
     }
 
+    // The existing shallow-mud threshold (5cm) defines full edge engagement.
+    // Below it, raise the speed ceiling continuously towards dry driving.
+    if (estadoAgua === 'vadeando') velocidadMaximaAgua /= Math.min(1, prof / 0.05);
     // Límite de velocidad objetivo post-paso, sin tocar la física.
     if (velocidadMaximaAgua < Infinity) {
       if (active.state.speed > velocidadMaximaAgua) active.state.speed = velocidadMaximaAgua;
@@ -1448,7 +1469,11 @@ async function bootstrap(): Promise<void> {
       currentAmbient = audioEnvironment.sample({ x: listener.x, z: listener.z, yaw: listenerYaw });
       ambientQueryElapsedS %= 0.1;
     }
-    const ambient = currentAmbient;
+    const aboveWater = active && player?.mode === 'driving' &&
+      roads?.surface.sampleAt(active.state.x, active.state.z) &&
+      (water?.depthAt(active.state.x, active.state.z) ?? 0) > 0 &&
+      drivingWaterDepthAt(active.state.x, active.state.z) === 0;
+    const ambient = aboveWater ? { ...currentAmbient, water: 0 } : currentAmbient;
     const impact = active && isFourWheel(active) ? vehicleImpact.update({
       x: active.state.x, z: active.state.z, speed: active.state.speed,
       verticalVelocity: active.telemetry().suspensionVelocity,
@@ -1541,7 +1566,7 @@ async function bootstrap(): Promise<void> {
             if (!pivot) return [];
             pivot.computeWorldMatrix(true);
             const point = pivot.getAbsolutePosition();
-            return [point.y - terrain.heightAt(point.x, point.z)];
+            return [point.y - drivingHeightAt(point.x, point.z)];
           });
           return {
             glbLoaded: Boolean(glbRoot?.isEnabled() && glbMeshes.length > 0),
@@ -1585,6 +1610,7 @@ async function bootstrap(): Promise<void> {
           audit: () => roads!.audit(),
           probe: (count: number) => roads!.probe(count),
           stations: () => roads!.stations(),
+          sampleAt: (x, z) => roads!.surface.sampleAt(x, z),
         }
       : null,
     route: FIRST_ROUTE,
@@ -1592,6 +1618,8 @@ async function bootstrap(): Promise<void> {
       ? {
           stats: () => water!.stats,
           depthAt: (x: number, z: number) => water!.depthAt(x, z),
+          surfaceHeightAt: (x, z) => water!.surfaceHeightAt(x, z),
+          contactDepthAt: (x, z, contactY) => water!.contactDepthAt(x, z, contactY ?? drivingHeightAt(x, z)),
           isMuddy: (x: number, z: number) => water!.isMuddy(x, z),
           nearestSafeShore: (x: number, z: number) => water!.nearestSafeShore(x, z),
           estadoAgua: () => estadoAgua,

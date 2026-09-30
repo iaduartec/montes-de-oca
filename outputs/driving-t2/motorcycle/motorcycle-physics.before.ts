@@ -10,8 +10,6 @@ export interface MotorcycleState extends VehiclePose {
   steer: number;
   yawRate: number;
   leanRad: number;
-  leanVelocity: number;
-  recovering: boolean;
   fallen: boolean;
   wheelSpin: number;
   distance: number;
@@ -20,7 +18,7 @@ export interface MotorcycleState extends VehiclePose {
 
 export function createMotorcycleState(x: number, z: number, yaw = 0): MotorcycleState {
   return { x, z, yaw, speed: 0, lateral: 0, steer: 0, yawRate: 0, leanRad: 0,
-    fallen: false, leanVelocity: 0, recovering: false, wheelSpin: 0, distance: 0, instability: 0 };
+    fallen: false, wheelSpin: 0, distance: 0, instability: 0 };
 }
 
 export function motorcycleContacts(pose: VehiclePose, params: MotorcycleParams): { x: number; z: number }[] {
@@ -39,7 +37,7 @@ function support(state: VehiclePose, params: MotorcycleParams, surface: VehicleS
 /** Recovery never moves x/z or heading and rejects missing or overly steep ground. */
 export function recoverMotorcycle(state: MotorcycleState, params: MotorcycleParams, surface: VehicleSurface): boolean {
   if (!state.fallen || !support(state, params, surface)) return false;
-  Object.assign(state, { fallen: false, recovering: true, speed: 0, lateral: 0, yawRate: 0, steer: 0, instability: 0 });
+  Object.assign(state, { fallen: false, leanRad: 0, speed: 0, lateral: 0, yawRate: 0, steer: 0, instability: 0 });
   return true;
 }
 
@@ -48,39 +46,16 @@ function fall(state: MotorcycleState): void {
   state.speed = 0;
   state.lateral = 0;
   state.yawRate = 0;
-  state.recovering = false;
-}
-
-/** Exact critically damped spring: angular velocity stays continuous across targets.
- * Its response follows the existing steering actuator rate rather than a frame gain.
- */
-function balance(state: MotorcycleState, target: number, rate: number, dt: number): void {
-  const displacement = state.leanRad - target;
-  const velocity = state.leanVelocity;
-  const decay = Math.exp(-rate * dt);
-  const c = velocity + rate * displacement;
-  state.leanRad = target + (displacement + c * dt) * decay;
-  state.leanVelocity = (velocity - rate * c * dt) * decay;
+  state.leanRad = (Math.sign(state.leanRad) || 1) * Math.PI / 2;
 }
 
 export function stepMotorcycle(state: MotorcycleState, input: VehicleInput, dt: number,
   params: MotorcycleParams, surface: VehicleSurface): void {
-  if (!Number.isFinite(dt) || dt <= 0) return;
+  if (!Number.isFinite(dt) || dt <= 0 || state.fallen) return;
   let remaining = Math.min(dt, 0.1);
   while (remaining > 1e-9) {
     const h = Math.min(remaining, 1 / 120);
     remaining -= h;
-    if (state.fallen) {
-      balance(state, (Math.sign(state.leanRad) || 1) * Math.PI / 2, params.steerRate, h);
-      continue;
-    }
-    if (state.recovering) {
-      if (!support(state, params, surface)) { fall(state); return; }
-      balance(state, 0, params.steerRate * 2, h);
-      // A recovery is settled below one tenth degree, including angular motion.
-      if (Math.abs(state.leanRad) < Math.PI / 1800 && Math.abs(state.leanVelocity) < Math.PI / 1800) state.recovering = false;
-      continue;
-    }
     if (Math.abs(state.leanRad) > params.fallAngleRad || !support(state, params, surface)) { fall(state); return; }
     const contacts = motorcycleContacts(state, params);
     const front = contacts[0]!; const rear = contacts[1]!;
@@ -101,23 +76,18 @@ export function stepMotorcycle(state: MotorcycleState, input: VehicleInput, dt: 
       state.speed += (acceleration - Math.sign(state.speed || acceleration) * braking) * h;
       if (before * state.speed < 0 && Math.abs(acceleration) < braking) state.speed = 0;
     }
-    // Convert input to curvature within tire and rider capacity BEFORE asking
-    // for yaw. Previously the unclamped geometric demand alone triggered a fall,
-    // even while the executed yaw was safely clamped by grip.
-    const bankAngle = Math.atan(crossSlope);
-    const availableLean = Math.max(0, params.leanLimitRad - Math.abs(bankAngle));
-    const turnAccel = Math.min(gripAccel, normalG * Math.tan(availableLean));
-    const steerLimit = Math.min(params.steerMax, Math.atan2(turnAccel * params.wheelBase, state.speed * state.speed));
-    const requestedSteer = clamp(clamp(input.steer, -1, 1) * params.steerMax, -steerLimit, steerLimit);
-    state.steer += (requestedSteer - state.steer) * (1 - Math.exp(-h * params.steerRate));
+    state.steer += (clamp(input.steer, -1, 1) * params.steerMax - state.steer) * Math.min(1, h * params.steerRate);
     const requestedYaw = state.speed * Math.tan(state.steer) / params.wheelBase;
-    state.yawRate = clamp(requestedYaw, -turnAccel / Math.max(Math.abs(state.speed), 0.1), turnAccel / Math.max(Math.abs(state.speed), 0.1));
+    const demand = state.speed * requestedYaw;
+    state.yawRate = clamp(requestedYaw, -gripAccel / Math.max(Math.abs(state.speed), 0.1), gripAccel / Math.max(Math.abs(state.speed), 0.1));
     const targetLean = Math.atan2(state.speed * state.yawRate, normalG);
-    // At walking speed lateral acceleration tends to zero and assistance grows;
-    // curves still lean naturally, while release/braking returns upright smoothly.
-    const uprightAssist = 1 + 1 / (1 + Math.abs(state.speed));
-    balance(state, clamp(targetLean, -availableLean, availableLean), params.steerRate * 2 * uprightAssist, h);
-    state.instability = 0;
+    state.leanRad += (clamp(targetLean, -params.leanLimitRad, params.leanLimitRad) - state.leanRad) * Math.min(1, h * 7);
+    // Rider balance handles ordinary turns. Sustained demand beyond tire grip or
+    // lean capacity accumulates a loss of balance and produces an actual fall.
+    const excess = Math.max(0, Math.abs(demand) / Math.max(gripAccel, 0.1) - 1.15,
+      Math.abs(Math.atan(crossSlope) + targetLean) / params.leanLimitRad - 1);
+    state.instability = Math.max(0, state.instability + (excess > 0 ? excess : -2) * h);
+    if (state.instability > 0.5) { fall(state); return; }
     state.yaw += state.yawRate * h;
     const next = { x: state.x + Math.sin(state.yaw) * state.speed * h,
       z: state.z + Math.cos(state.yaw) * state.speed * h, yaw: state.yaw };

@@ -1,30 +1,8 @@
-/**
- * FASE 3b — Drapeado de la red vial real sobre el terreno.
- *
- * Toma `public/roads/roads.json` (438 segmentos en coordenadas de mundo, ya
- * proyectados) y construye cintas de calzada que **siguen la superficie del
- * terreno**. No hay reproyección: los `points` ya son `[worldX, worldZ]`.
- *
- * Decisiones CERRADAS que implementa este módulo (ver docs/roads/DRAPING_FASE3B.md):
- *
- *  1. TRACK/PATH siguen el terreno vértice a vértice → residual 0 por
- *     construcción. No se aplana (aplanar costaría 0,64 m p95).
- *  2. ROAD (asfalto) lleva aplanado PARCIAL `lerp = 0,6` hacia la cota de la
- *     línea central, limitado para que nunca quede bajo el terreno. Muestreo
- *     longitudinal y transversal fino evita que la malla corte el DEM entre
- *     vértices; los faldones cosen el asfalto a la ladera.
- *  3. Offset vertical de la cinta: 0,10 m (evita z-fighting sin leerse como
- *     "flotando").
- *  4. Subdivisión a 2,5 m y secciones transversales de hasta 1,5 m. Vértices OSM preservados.
- *  5. Sin suavizado longitudinal (la rugosidad es micro-relieve real).
- *  6. La pendiente transversal no se toca: la física la muestrea del terreno.
- *
- * TRAMPA (docs/vehicle/VALIDACION_FASE4.md §2): TODA altura sale de
- * `terrain.heightAt` (interpolación triangular SO→NE). Nunca se reimplementa
- * aquí la interpolación. Para verificar el residual se vuelve a llamar a
- * `terrain.heightAt`, que es la misma superficie que se dibuja.
- */
+/** Road ribbons follow a separately sampled, bounded driving profile.
+ * OSM XZ, footprint trims and bridge deck semantics remain unchanged.
+ * Wheel contacts query the final rendered triangles through RoadNetwork.surface. */
 
+import { createRenderedRoadSurface, type RoadSurfaceSampler } from './world/road-surface';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
@@ -123,9 +101,9 @@ export const DRAPING = {
    */
   skirtLiftM: 0.04,
 } as const;
-const SURFACE_CLEARANCE_M = DRAPING.surfaceClearanceM;
 /** Cota del faldón: banda de mezcla apoyada en el terreno, nunca superficie de rodadura. */
 const SKIRT_LIFT_M = DRAPING.skirtLiftM;
+const SURFACE_CLEARANCE_M = DRAPING.surfaceClearanceM;
 /**
  * Tiras laterales del detalle de rodadas de una pista (fracción del semiancho y tinte
  * R/G/B). Su largo fija la fila transversal de esos tramos: la malla reserva exactamente
@@ -394,13 +372,7 @@ function buildRoad(
   // ruta jugable (ver `trackBlendCorridor`) y nunca en los tramos con rodadas detalladas.
   const cercaDeRuta =
     isTrackClass && blendCorridor !== undefined && blendCorridor.points.length > 0
-      ? stations.some(
-          (station, index) =>
-            index % 4 === 0 &&
-            blendCorridor.points.some(
-              (point) => Math.hypot(station.x - point.x, station.z - point.z) <= blendCorridor.radiusM,
-            ),
-        )
+      ? stations.some((station, index) => index % 4 === 0 && blendCorridor.points.some((point) => Math.hypot(station.x - point.x, station.z - point.z) <= blendCorridor.radiusM))
       : false;
   const useSkirt = (isRoadClass || (isTrackClass && !detallePista && cercaDeRuta)) && !road.bridge;
   const smoothProfile = isRoadClass && !road.bridge
@@ -743,21 +715,11 @@ function clearTrianglesFromTerrain(buffers: ClassBuffers, terrain: RoadTerrain):
     const ic = buffers.indices[i + 2]!;
     const roles = [buffers.roles[ia], buffers.roles[ib], buffers.roles[ic]];
     if (roles.some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
-    const ax = buffers.positions[ia * 3]!;
-    const ay = buffers.positions[ia * 3 + 1]!;
-    const az = buffers.positions[ia * 3 + 2]!;
-    const bx = buffers.positions[ib * 3]!;
-    const by = buffers.positions[ib * 3 + 1]!;
-    const bz = buffers.positions[ib * 3 + 2]!;
-    const cx = buffers.positions[ic * 3]!;
-    const cy = buffers.positions[ic * 3 + 1]!;
-    const cz = buffers.positions[ic * 3 + 2]!;
     const needed = calculateTriangleTerrainLift(
-      [{ x: ax, y: ay, z: az }, { x: bx, y: by, z: bz }, { x: cx, y: cy, z: cz }],
-      (x, z) => terrain.heightAt(x, z),
-      // El faldón es banda de mezcla: se conforma con vivir a SKIRT_LIFT_M del suelo.
-      // Con el margen de calzada quedaba a la misma cota que el asfalto de una vía que
-      // lo cruza y el z-buffer elegía entre ambos por píxel (franjas de tierra).
+      [{ x: buffers.positions[ia * 3]!, y: buffers.positions[ia * 3 + 1]!, z: buffers.positions[ia * 3 + 2]! },
+       { x: buffers.positions[ib * 3]!, y: buffers.positions[ib * 3 + 1]!, z: buffers.positions[ib * 3 + 2]! },
+       { x: buffers.positions[ic * 3]!, y: buffers.positions[ic * 3 + 1]!, z: buffers.positions[ic * 3 + 2]! }],
+      terrain.heightAt,
       roles.includes(ROLE_SKIRT) ? SKIRT_LIFT_M : SURFACE_CLEARANCE_M,
     );
     if (needed > 0) {
@@ -874,6 +836,8 @@ export interface RoadDrapingStats {
 
 export interface RoadNetwork {
   readonly meshes: readonly Mesh[];
+  readonly surface: RoadSurfaceSampler;
+  gradingTriangles(): Float32Array;
   readonly stats: RoadDrapingStats;
   /** Líneas XZ de la fuente OSM ya parseada, sin solicitar roads.json otra vez. */
   mapLines(): readonly RoadMapLine[];
@@ -1156,7 +1120,20 @@ export async function loadRoadNetwork(
 
   return {
     meshes,
+    surface: createRenderedRoadSurface(surface, CLASSES.map((cls) => ({ class: cls, ...typed[cls], stations: buffers[cls].stations }))),
     stats,
+    gradingTriangles: () => {
+      const triangles: number[] = [];
+      for (const cls of CLASSES) {
+        const data = typed[cls];
+        for (let i = 0; i < data.indices.length; i += 3) {
+          const vertices = [data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!];
+          if (vertices.some((v) => data.roles[v] !== ROLE_PAVEMENT && data.roles[v] !== ROLE_SKIRT)) continue;
+          for (const v of vertices) triangles.push(data.positions[v * 3]!, data.positions[v * 3 + 2]!);
+        }
+      }
+      return new Float32Array(triangles);
+    },
     mapLines: () => mapLines,
     audit,
     probe,

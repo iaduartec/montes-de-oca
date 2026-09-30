@@ -55,7 +55,8 @@ const MIN_SUPPORT_NORMAL_Y = 0.5;
 const CONTACT_LONGITUDINAL_FRACTION = 0.35;
 
 function isFallen(actor: VehicleActor): boolean {
-  return (actor.state as { fallen?: boolean }).fallen === true;
+  const state = actor.state as { fallen?: boolean; recovering?: boolean };
+  return state.fallen === true || state.recovering === true;
 }
 
 /** Apoyos aproximados del destino antes de construirlo (huella, no ruedas reales). */
