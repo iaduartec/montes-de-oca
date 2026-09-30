@@ -133,7 +133,9 @@ def build():
     obj.data.materials.clear()
     for name,roughness in (('oca-stone',.92),('oca-roof',.86),('oca-metal',.65)):
         mat=bpy.data.materials.new(name);mat.use_nodes=True
-        mat.node_tree.nodes.get('Principled BSDF').inputs['Roughness'].default_value=roughness
+        principled=next((node for node in mat.node_tree.nodes if node.type=='BSDF_PRINCIPLED'),None)
+        if principled is None: raise RuntimeError(f'{name}: missing Principled BSDF node')
+        principled.inputs['Roughness'].default_value=roughness
         obj.data.materials.append(mat)
     for polygon,color in zip(obj.data.polygons,b.colors):
         polygon.material_index=2 if max(color[:3])<.2 or color==timber else 1 if color[0]>color[1]*1.7 else 0
@@ -160,6 +162,16 @@ def build():
             t=max(0,min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)))
             distance=min(distance,math.hypot(x-a[0]-t*dx,z-a[1]-t*dz))
         return max(0,min(1,distance/2.5))
+    def meadow_noise(x,z,spacing,seed):
+        gx,gz=x/spacing,z/spacing;ix,iz=math.floor(gx),math.floor(gz)
+        tx,tz=gx-ix,gz-iz
+        tx,tz=tx*tx*(3-2*tx),tz*tz*(3-2*tz)
+        def lattice(a,c):
+            value=math.sin(a*127.1+c*311.7+seed*74.7)*43758.5453123
+            return (value-math.floor(value))-.5
+        low=lattice(ix,iz)*(1-tx)+lattice(ix+1,iz)*tx
+        high=lattice(ix,iz+1)*(1-tx)+lattice(ix+1,iz+1)*tx
+        return low*(1-tz)+high*tz
     xx=math.floor(min(x for x,z in meadow)/step)*step
     while xx<max(x for x,z in meadow):
       zz=math.floor(min(z for x,z in meadow)/step)*step
@@ -173,12 +185,11 @@ def build():
             clip=clip_halfplane(clip,terrain_triangle[edge],terrain_triangle[(edge+1)%3])
             if len(clip)<3:break
         if len(clip)>=3 and H['polygon_area'](clip)>.001:
-         tint=.98+((int(xx*7+zz*11)%11)-5)*.008
          # The sourced conservative meadow is convex; half-plane clipping
          # preserves convexity, so an explicit fan cannot cross a DEM diagonal.
          for index in range(1,len(clip)-1):
           facet=(clip[0],clip[index],clip[index+1])
-          mb.face([(x-ma[0],z-ma[1],sample(grids,x,z,datum)-mg+.04)for x,z in facet],(.115*tint,.165*tint,.06*tint,1))
+          mb.face([(x-ma[0],z-ma[1],sample(grids,x,z,datum)-mg+.04)for x,z in facet],(.115,.165,.06,1))
        zz+=step
       xx+=step
     campa_obj=mb.create_object('oca:campa',col)
@@ -188,7 +199,10 @@ def build():
         for loop_index in polygon.loop_indices:
             vertex=campa_obj.data.vertices[campa_obj.data.loops[loop_index].vertex_index]
             color=colors.data[loop_index].color[:]
-            colors.data[loop_index].color=(*color[:3],edge_opacity(vertex.co.x+ma[0],vertex.co.y+ma[1]))
+            world_x,world_z=vertex.co.x+ma[0],vertex.co.y+ma[1]
+            variation=meadow_noise(world_x,world_z,14,17)*.12+meadow_noise(world_x,world_z,37,29)*.08
+            tint=max(.91,min(1.06,.98+variation))
+            colors.data[loop_index].color=(*(channel*tint for channel in color[:3]),edge_opacity(world_x,world_z))
     export('campa',campa_obj,ma)
     (OUT/'manifest.json').write_text(json.dumps({'version':1,'crs':'EPSG:25830','verticalDatum':datum,'source':str(SOURCE.relative_to(ROOT)),'reconstruction':'Mapped OSM footprint; elevations and colors stylized from 2017 ground photographs. Campa conservative PNOA trace; no perimeter walls inferred.','assets':assets},indent=2)+'\n');print(json.dumps(assets,indent=2))
 if __name__ == '__main__':
