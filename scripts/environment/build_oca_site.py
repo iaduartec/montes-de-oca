@@ -63,8 +63,15 @@ def build():
             continue
         # The mapped west notch is the low narthex, not a full nave wall.
         height=3.25 if max(a[0],c[0])<x0+4.1 else 5.1
-        b.face([(a[0],a[1],-.3),(c[0],c[1],-.3),
-                (c[0],c[1],height),(a[0],a[1],height)],stone)
+        length=math.hypot(c[0]-a[0],c[1]-a[1]);steps=max(1,math.ceil(length/2))
+        for section in range(steps):
+            t0,t1=section/steps,(section+1)/steps
+            p0=(a[0]+(c[0]-a[0])*t0,a[1]+(c[1]-a[1])*t0)
+            p1=(a[0]+(c[0]-a[0])*t1,a[1]+(c[1]-a[1])*t1)
+            base0=sample(grids,anchor[0]+p0[0],anchor[1]+p0[1],datum)-ground-.12
+            base1=sample(grids,anchor[0]+p1[0],anchor[1]+p1[1],datum)-ground-.12
+            b.face([(p0[0],p0[1],base0),(p1[0],p1[1],base1),
+                    (p1[0],p1[1],height),(p0[0],p0[1],height)],stone)
 
     # Western espadaña, two physically open bell apertures.
     wallx=x0+4.5

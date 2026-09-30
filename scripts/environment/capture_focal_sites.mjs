@@ -47,6 +47,11 @@ const views = [
     cameraOffset: { x: -35, z: -8 }, cameraHeight: 12, targetHeight: 4,
   },
   {
+    id: 'oca-grounding', title: 'Base y acceso de la ermita de Oca',
+    target: { x: 2808.0, z: 2122.0 },
+    cameraOffset: { x: -14, z: -6 }, cameraHeight: 7, targetHeight: 0.8,
+  },
+  {
     id: 'campa-oca', title: 'Campa de Oca',
     target: { x: 2835, z: 2158 },
     cameraOffset: { x: -42, z: 35 }, cameraHeight: 30, targetHeight: 0.5,

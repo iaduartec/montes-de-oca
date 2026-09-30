@@ -13,9 +13,9 @@
       },
       "baseM": 972.0,
       "yawRad": 0,
-      "bytes": 156760,
-      "sha256": "e777eb795b0ee5a2601c7184c2d23ac870cfcc4a0531f6a96f344fcf1498cbd9",
-      "triangles": 2356,
+      "bytes": 159116,
+      "sha256": "08db09369b01c0fe2207a7d9fab1d725af0e6be767eac42440e71e04c76545bf",
+      "triangles": 2418,
       "meshCount": 1,
       "materialPrimitiveCount": 3
     },
