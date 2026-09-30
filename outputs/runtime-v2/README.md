@@ -40,3 +40,16 @@ Revisión final **ACCEPT** tras corregir descarga inicial de suelo por cámara d
 Las capturas usan Chrome headless / SwiftShader. La RTX 2070 es visible en el host, pero el intento de usar ANGLE GL en Chrome no cargó el juego: **60 FPS / 1080p / 1440p en hardware objetivo no validados**. No utilizar los FPS headless como benchmark de esa GPU.
 
 Audio es una primera pasada sintetizada, sin grabaciones ni ambiente espacial completo. NPC tiene Idle/Walk; Run/variación de skin sigue pendiente. Suspensión de cuatro puntos no añade vuelo balístico/vuelco rígido. Vegetación y landmarks se conservan; no se declara rediseño visual de esos sistemas.
+
+## POC equivalente 3D Tiles
+
+`tiles-benchmark.json` y `tiles-benchmark/`: 1 km × 1 km, mismo grid MDT05 201×201, atlas PNOA idéntico por SHA-256, material y cámara. Capturas revisadas: geometría y orientación del atlas coinciden. Ambos: 80.000 triángulos, 1 draw call por frame, cero requests fallidos.
+
+| Observación aislada (SwiftShader) | Terreno actual | 3D Tiles |
+| --- | ---: | ---: |
+| Carga visible | 1689 ms | 1709 ms |
+| Requests de assets | 4 | 4 |
+| Transferencia de assets | 7.77 MB | 10.01 MB |
+| Heap de página | 19.00 MB | 26.02 MB |
+
+**ACCEPT como POC aislado; conservar sistema actual.** Una tesela raíz no permite evaluar jerarquía, LOD, pop-in ni continuidad entre tiles. No hay ventaja demostrada para adoptar 3D Tiles. Se corrigieron frustum/frames de coordenadas, UV, contador de draw calls acumulado y unidades de GPU (ns→ms) antes de aceptar las métricas. El runner prepara su caché Vite aislada sin depender de la caché del servidor del juego.

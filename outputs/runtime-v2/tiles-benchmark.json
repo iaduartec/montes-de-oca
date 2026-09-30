@@ -1,0 +1,1040 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T14:41:18.280Z",
+  "benchmark": {
+    "status": "equivalent-single-tile-observation",
+    "rendererComparisonValid": true,
+    "validityIssues": [],
+    "scope": "One 1 km current terrain tile vs one root 3D Tile in the same minimal Babylon app.",
+    "comparableInputs": {
+      "tileId": "tile_3_3",
+      "dimensions": {
+        "widthM": 1000,
+        "depthM": 1000,
+        "columns": 201,
+        "rows": 201,
+        "sampleM": 5
+      },
+      "worldScale": 1,
+      "verticalDatumM": 870,
+      "orthophoto": {
+        "url": "/terrain/orthophoto.webp",
+        "width": 6144,
+        "height": 6144,
+        "encodedBytes": 7590072,
+        "sha256": "98501ed7a9766b3f72c5c8c039e61cdb980556c186d1231e59ddc40515227292",
+        "decodedRgbaPlusMipsBytes": 201326580
+      },
+      "terrainMesh": {
+        "vertices": 40401,
+        "indices": 240000,
+        "triangles": 80000,
+        "gltfBinaryBytes": 2419248,
+        "geometryBufferBytesEstimate": 2419248
+      },
+      "material": {
+        "colorSpace": "sRGB orthophoto atlas",
+        "metallic": 0,
+        "roughness": 0.96,
+        "atlasFiltering": "linear mag + trilinear min"
+      },
+      "scene": {
+        "rightHanded": true,
+        "coordinates": "Babylon 3D Tiles Z-up frame; terrain and camera rotated from gameplay Y-up by +90deg around X",
+        "width": 1280,
+        "height": 720,
+        "deviceScaleFactor": 1,
+        "gameplayCamera": {
+          "x": 3900,
+          "y": 600,
+          "z": 3100,
+          "tx": 3500,
+          "ty": 120,
+          "tz": 3500
+        },
+        "rendererCamera": {
+          "x": 3900,
+          "y": -3100,
+          "z": 600,
+          "tx": 3500,
+          "ty": -3500,
+          "tz": 120
+        },
+        "warmupMs": 1800,
+        "sampleMs": 5000
+      }
+    },
+    "exclusions": [
+      "This measures only a single root tile at one fixed view. It does not exercise hierarchical LOD, multiple-tile selection, refinement, unload hysteresis, or streaming continuity.",
+      "Both paths use the same source DEM grid and atlas. The current terrain path parses JSON height samples and generates its mesh at load; 3D Tiles downloads a prepacked glTF binary.",
+      "JS heap is whole-page heap and includes renderer/bootstrap allocations; it is not isolated texture VRAM or total GPU memory."
+    ],
+    "timing": {
+      "browserFrameIntervals": "requestAnimationFrame interval; includes browser scheduling and software renderer pacing.",
+      "cpuSceneRender": "performance.now around Babylon before/after render observables; main-thread render pass, not isolated CPU-only work.",
+      "gpu": "WebGL timer query recorded only when the runtime reports a usable timer query; SwiftShader timings are software-renderer results, not RTX GPU measurements."
+    },
+    "performanceClaims": "No renderer performance win is inferred from these observations.",
+    "server": {
+      "mode": "isolated Vite dev server with temporary dependency cache",
+      "base": "http://127.0.0.1:44441"
+    },
+    "browser": {
+      "instances": {
+        "terrain": {
+          "userAgent": "Chrome/148.0.7778.96",
+          "protocolVersion": "1.3"
+        },
+        "tiles": {
+          "userAgent": "Chrome/148.0.7778.96",
+          "protocolVersion": "1.3"
+        }
+      },
+      "cacheDisabled": true,
+      "separateFreshProcessPerRenderer": true,
+      "backend": "SwiftShader forced by Chrome launch flags"
+    },
+    "references": {
+      "nasaAmmos": {
+        "url": "https://github.com/NASA-AMMOS/3DTilesRendererJS",
+        "license": "Apache-2.0",
+        "babylonApi": "TilesRenderer(url, scene); scene.onBeforeRenderObservable -> tiles.update(); scene.render()",
+        "documentedLimit": "Babylon renderer requires right-handed scene coordinates; this single-root dataset cannot benchmark hierarchy or LOD."
+      },
+      "babylonDemo": {
+        "url": "https://github.com/gkjohnson/babylon-3dtiles-demo",
+        "license": "Apache-2.0",
+        "use": "Minimal Babylon integration example only."
+      }
+    }
+  },
+  "pages": {
+    "terrain": {
+      "url": "http://127.0.0.1:44441/tiles-poc.html?benchmark=1&renderer=terrain&tile=tile_3_3&x=3900&y=-3100&z=600&tx=3500&ty=-3500&tz=120",
+      "browser": {
+        "userAgent": "Chrome/148.0.7778.96",
+        "protocolVersion": "1.3"
+      },
+      "ready": true,
+      "rootReady": true,
+      "readinessIssue": null,
+      "firstModelAtMs": 1689,
+      "metrics": {
+        "rendererMode": "terrain",
+        "terrainRuntime": {
+          "totalTiles": 1,
+          "residentGpuMeshes": 1,
+          "unloadedTiles": 0,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 0,
+          "cachedTiles": 1,
+          "residentTriangles": 80000,
+          "retainedCpuHeightSamples": 40401,
+          "retainedCpuHeightBytesEstimate": 323208,
+          "residentGpuGeometryBytesEstimate": 2419248,
+          "taskFrames": 0,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 21.90000000037253
+        },
+        "cpuSceneRenderTimes": [
+          0.2999999988824129,
+          2.300000000745058,
+          0.40000000037252903,
+          0.5,
+          0.5,
+          0.5,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.30000000074505806,
+          0.5,
+          0.5,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.40000000037252903,
+          0.30000000074505806,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.2000000011175871,
+          0.3999999985098839,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.2999999988824129,
+          0.40000000037252903,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.2000000011175871,
+          0.2000000011175871,
+          0.2999999988824129,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.2999999988824129,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.2999999988824129,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.30000000074505806,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.5,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.09999999962747097,
+          0.30000000074505806,
+          0.599999999627471,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.2000000011175871,
+          0.40000000037252903,
+          0.2999999988824129,
+          0.2000000011175871,
+          0.30000000074505806,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.2999999988824129,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.3999999985098839
+        ],
+        "drawCallsPerFrame": {
+          "samples": 98,
+          "mean": 0.99,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "gpuTiming": {
+          "timerQueryAvailable": true,
+          "measured": true,
+          "sourceUnit": "nanoseconds",
+          "reason": "WebGL TIME_ELAPSED query converted from ns to ms; SwiftShader is a software-renderer measurement",
+          "frameTimeMs": 65.3150566
+        },
+        "scene": {
+          "activeMeshes": 1,
+          "activeIndices": 240000,
+          "totalVertices": 40401,
+          "drawCalls": 1,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        "camera": {
+          "position": [
+            3900,
+            -3100.000244140625,
+            599.9999389648438
+          ],
+          "target": [
+            3499.9999840615646,
+            -3500.0000159384354,
+            120.00001624992484
+          ],
+          "up": [
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "0": -0.7071067690849304,
+            "1": -0.45749568939208984,
+            "2": 0.5391638875007629,
+            "3": 0,
+            "4": 0.7071067690849304,
+            "5": -0.45749568939208984,
+            "6": 0.5391638875007629,
+            "7": 0,
+            "8": 0,
+            "9": 0.7624928951263428,
+            "10": 0.6469966173171997,
+            "11": 0,
+            "12": 4949.74755859375,
+            "13": -91.4991683959961,
+            "14": -819.529052734375,
+            "15": 1
+          },
+          "projection": {
+            "0": 1.3304376602172852,
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 2.365222454071045,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": -1.000249981880188,
+            "11": -1,
+            "12": 0,
+            "13": 0,
+            "14": -1.0001250505447388,
+            "15": 0
+          },
+          "frustumPlanes": [
+            {
+              "normal": [
+                -0.5391638743330797,
+                -0.5391638743330797,
+                -0.6469966253608176
+              ],
+              "d": 819.0290289473174
+            },
+            {
+              "normal": [
+                0.5390973208347019,
+                0.5390973208347019,
+                0.6471075315105621
+              ],
+              "d": 3181.3465743686834
+            },
+            {
+              "normal": [
+                -0.8891906474573991,
+                0.24129379070217272,
+                -0.3887380854030998
+              ],
+              "d": 4449.097373892761
+            },
+            {
+              "normal": [
+                0.24129379070217272,
+                -0.8891906474573991,
+                -0.3887380854030998
+              ],
+              "d": -3464.2942192389023
+            },
+            {
+              "normal": [
+                0.21142111426119534,
+                0.21142111426119534,
+                -0.9542548008205718
+              ],
+              "d": 403.415945632131
+            },
+            {
+              "normal": [
+                -0.631341728046832,
+                -0.631341728046832,
+                0.4503501358428573
+              ],
+              "d": 234.8633228430688
+            }
+          ]
+        },
+        "meshMetrics": [
+          {
+            "name": "terrain:tile_3_3",
+            "vertices": 40401,
+            "indices": 240000,
+            "visible": true,
+            "visibility": 1,
+            "enabled": true,
+            "subMeshes": 1,
+            "material": {
+              "name": "terrain:material",
+              "type": "PBRMaterial",
+              "ready": true,
+              "textures": [
+                {
+                  "name": "/terrain/orthophoto.webp",
+                  "ready": true,
+                  "width": 6144,
+                  "height": 6144
+                }
+              ]
+            },
+            "inFrustum": true,
+            "worldBounds": {
+              "min": [
+                3000,
+                -4000,
+                65.00000000000067
+              ],
+              "max": [
+                4000,
+                -3000,
+                192.00000000000088
+              ]
+            }
+          }
+        ],
+        "terrainMeshes": [
+          {
+            "name": "terrain:tile_3_3",
+            "vertices": 40401,
+            "indices": 240000,
+            "visible": true,
+            "visibility": 1,
+            "enabled": true,
+            "subMeshes": 1,
+            "material": {
+              "name": "terrain:material",
+              "type": "PBRMaterial",
+              "ready": true,
+              "textures": [
+                {
+                  "name": "/terrain/orthophoto.webp",
+                  "ready": true,
+                  "width": 6144,
+                  "height": 6144
+                }
+              ]
+            },
+            "inFrustum": true,
+            "worldBounds": {
+              "min": [
+                3000,
+                -4000,
+                65.00000000000067
+              ],
+              "max": [
+                4000,
+                -3000,
+                192.00000000000088
+              ]
+            }
+          }
+        ],
+        "tilesRenderer": null,
+        "memory": {
+          "usedJSHeapSize": 18997667,
+          "totalJSHeapSize": 26804047,
+          "jsHeapSizeLimit": 4294967296
+        },
+        "frames": {
+          "samples": 72,
+          "meanMs": 68.517,
+          "p50Ms": 66.7,
+          "p95Ms": 116.7,
+          "maxMs": 150,
+          "fpsFromMean": 14.6
+        },
+        "hud": null,
+        "status": "Gameplay terrain tile_3_3 ready",
+        "cpuSceneRender": {
+          "samples": 98,
+          "meanMs": 0.28,
+          "p50Ms": 0.2,
+          "p95Ms": 0.5,
+          "maxMs": 2.3,
+          "fpsFromMean": 3576.6
+        },
+        "scope": {
+          "renderer": "terrain",
+          "totalScene": {
+            "drawCalls": 1,
+            "triangles": 80000,
+            "activeMeshes": 1
+          },
+          "terrain": {
+            "visibleTriangles": 80000,
+            "meshCount": 1,
+            "vertices": 40401,
+            "indices": 240000,
+            "geometryBufferBytesEstimate": 2419248,
+            "residentGpuMeshes": 1,
+            "retainedCpuHeightBytesEstimate": 323208,
+            "visibleTiles": null
+          }
+        }
+      },
+      "network": {
+        "allRequests": 173,
+        "benchmarkAssetRequests": 4,
+        "benchmarkAssetEncodedBytes": 7772955,
+        "failedRequests": 0,
+        "assets": [
+          {
+            "path": "/terrain/config.json",
+            "type": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "encodedBytes": 3963,
+            "durationMs": 3.951999999117106
+          },
+          {
+            "path": "/terrain/tiles/tile_3_3.json",
+            "type": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "encodedBytes": 176386,
+            "durationMs": 4.541000000244821
+          },
+          {
+            "path": "/terrain/orthophoto.json",
+            "type": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "encodedBytes": 2209,
+            "durationMs": 3.010000000358559
+          },
+          {
+            "path": "/terrain/orthophoto.webp",
+            "type": "Image",
+            "status": 200,
+            "mimeType": "image/webp",
+            "encodedBytes": 7590397,
+            "durationMs": 137.58000000052562
+          }
+        ],
+        "consoleErrors": []
+      }
+    },
+    "tiles": {
+      "url": "http://127.0.0.1:44441/tiles-poc.html?benchmark=1&renderer=tiles&tile=tile_3_3&x=3900&y=-3100&z=600&tx=3500&ty=-3500&tz=120",
+      "browser": {
+        "userAgent": "Chrome/148.0.7778.96",
+        "protocolVersion": "1.3"
+      },
+      "ready": true,
+      "rootReady": true,
+      "readinessIssue": null,
+      "firstModelAtMs": 1709,
+      "metrics": {
+        "rendererMode": "tiles",
+        "terrainRuntime": null,
+        "cpuSceneRenderTimes": [
+          0.7000000011175871,
+          0.7000000011175871,
+          0.599999999627471,
+          0.900000000372529,
+          0.6999999992549419,
+          0.8000000007450581,
+          0.599999999627471,
+          0.7000000011175871,
+          0.3999999985098839,
+          0.599999999627471,
+          0.7000000011175871,
+          0.40000000037252903,
+          0.599999999627471,
+          0.40000000037252903,
+          0.2000000011175871,
+          0.40000000037252903,
+          0.5,
+          0.5,
+          0.5,
+          0.40000000037252903,
+          0.19999999925494194,
+          0.40000000037252903,
+          0.5,
+          0.5,
+          0.40000000037252903,
+          0.6999999992549419,
+          0.30000000074505806,
+          0.5,
+          0.30000000074505806,
+          0.5,
+          0.5,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.2999999988824129,
+          0.40000000037252903,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.2999999988824129,
+          0.3999999985098839,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.5,
+          0.40000000037252903,
+          0.2999999988824129,
+          0.2999999988824129,
+          0.2000000011175871,
+          0.6000000014901161,
+          0.6000000014901161,
+          0.40000000037252903,
+          0.5,
+          0.40000000037252903,
+          0.2000000011175871,
+          0.40000000037252903,
+          0.40000000037252903,
+          0.3999999985098839,
+          0.5,
+          0.5,
+          0.3999999985098839,
+          0.30000000074505806,
+          0.5,
+          0.3999999985098839,
+          0.5,
+          0.5,
+          0.2999999988824129,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.599999999627471,
+          0.599999999627471,
+          0.3999999985098839,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.2999999988824129,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.40000000037252903,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.599999999627471,
+          0.30000000074505806,
+          0.2999999988824129
+        ],
+        "drawCallsPerFrame": {
+          "samples": 87,
+          "mean": 1,
+          "p50": 1,
+          "p95": 1,
+          "max": 1
+        },
+        "gpuTiming": {
+          "timerQueryAvailable": true,
+          "measured": true,
+          "sourceUnit": "nanoseconds",
+          "reason": "WebGL TIME_ELAPSED query converted from ns to ms; SwiftShader is a software-renderer measurement",
+          "frameTimeMs": 76.62299440000001
+        },
+        "scene": {
+          "activeMeshes": 1,
+          "activeIndices": 240000,
+          "totalVertices": 40401,
+          "drawCalls": 1,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        "camera": {
+          "position": [
+            3900,
+            -3100.000244140625,
+            599.9999389648438
+          ],
+          "target": [
+            3499.9999840615646,
+            -3500.0000159384354,
+            120.00001624992484
+          ],
+          "up": [
+            0,
+            0,
+            1
+          ],
+          "view": {
+            "0": -0.7071067690849304,
+            "1": -0.45749568939208984,
+            "2": 0.5391638875007629,
+            "3": 0,
+            "4": 0.7071067690849304,
+            "5": -0.45749568939208984,
+            "6": 0.5391638875007629,
+            "7": 0,
+            "8": 0,
+            "9": 0.7624928951263428,
+            "10": 0.6469966173171997,
+            "11": 0,
+            "12": 4949.74755859375,
+            "13": -91.4991683959961,
+            "14": -819.529052734375,
+            "15": 1
+          },
+          "projection": {
+            "0": 1.3304376602172852,
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 2.365222454071045,
+            "6": 0,
+            "7": 0,
+            "8": 0,
+            "9": 0,
+            "10": -1.000249981880188,
+            "11": -1,
+            "12": 0,
+            "13": 0,
+            "14": -1.0001250505447388,
+            "15": 0
+          },
+          "frustumPlanes": [
+            {
+              "normal": [
+                -0.5391638743330797,
+                -0.5391638743330797,
+                -0.6469966253608176
+              ],
+              "d": 819.0290289473174
+            },
+            {
+              "normal": [
+                0.5390973208347019,
+                0.5390973208347019,
+                0.6471075315105621
+              ],
+              "d": 3181.3465743686834
+            },
+            {
+              "normal": [
+                -0.8891906474573991,
+                0.24129379070217272,
+                -0.3887380854030998
+              ],
+              "d": 4449.097373892761
+            },
+            {
+              "normal": [
+                0.24129379070217272,
+                -0.8891906474573991,
+                -0.3887380854030998
+              ],
+              "d": -3464.2942192389023
+            },
+            {
+              "normal": [
+                0.21142111426119534,
+                0.21142111426119534,
+                -0.9542548008205718
+              ],
+              "d": 403.415945632131
+            },
+            {
+              "normal": [
+                -0.631341728046832,
+                -0.631341728046832,
+                0.4503501358428573
+              ],
+              "d": 234.8633228430688
+            }
+          ]
+        },
+        "meshMetrics": [
+          {
+            "name": "__root__",
+            "vertices": 0,
+            "indices": 0,
+            "visible": true,
+            "visibility": 1,
+            "enabled": true,
+            "subMeshes": null,
+            "material": null,
+            "inFrustum": false,
+            "worldBounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "name": "IGN MDT05 terrain tile_3_3",
+            "vertices": 40401,
+            "indices": 240000,
+            "visible": true,
+            "visibility": 1,
+            "enabled": true,
+            "subMeshes": 1,
+            "material": {
+              "name": "PNOA 2023 orthophoto",
+              "type": "PBRMaterial",
+              "ready": true,
+              "textures": [
+                {
+                  "name": "PNOA 2023 orthophoto (Base Color)",
+                  "ready": true,
+                  "width": 6144,
+                  "height": 6144
+                }
+              ]
+            },
+            "inFrustum": true,
+            "worldBounds": {
+              "min": [
+                3000,
+                -4000,
+                65.00000000000067
+              ],
+              "max": [
+                4000,
+                -3000,
+                192.00000000000088
+              ]
+            }
+          }
+        ],
+        "terrainMeshes": [
+          {
+            "name": "IGN MDT05 terrain tile_3_3",
+            "vertices": 40401,
+            "indices": 240000,
+            "visible": true,
+            "visibility": 1,
+            "enabled": true,
+            "subMeshes": 1,
+            "material": {
+              "name": "PNOA 2023 orthophoto",
+              "type": "PBRMaterial",
+              "ready": true,
+              "textures": [
+                {
+                  "name": "PNOA 2023 orthophoto (Base Color)",
+                  "ready": true,
+                  "width": 6144,
+                  "height": 6144
+                }
+              ]
+            },
+            "inFrustum": true,
+            "worldBounds": {
+              "min": [
+                3000,
+                -4000,
+                65.00000000000067
+              ],
+              "max": [
+                4000,
+                -3000,
+                192.00000000000088
+              ]
+            }
+          }
+        ],
+        "tilesRenderer": {
+          "activeTiles": 1,
+          "visibleTiles": 1,
+          "loadProgress": 1,
+          "root": {
+            "boundingVolume": {
+              "box": [
+                3500,
+                -3500,
+                128.5,
+                500,
+                0,
+                0,
+                0,
+                500,
+                0,
+                0,
+                0,
+                63.55
+              ]
+            },
+            "traversal": {
+              "distanceFromCamera": 407.94993896484374,
+              "error": 0,
+              "inFrustum": true,
+              "wasInFrustum": true,
+              "isLeaf": true,
+              "used": true,
+              "usedLastFrame": true,
+              "visible": true,
+              "wasSetVisible": true,
+              "active": true,
+              "wasSetActive": true,
+              "allChildrenReady": false,
+              "allChildrenLoaded": false,
+              "kicked": false,
+              "allUsedChildrenProcessed": true,
+              "lastFrameVisited": 97,
+              "unconditionallyRefine": false
+            },
+            "hasContent": true,
+            "hasRenderableContent": true,
+            "loadingState": 4,
+            "content": {
+              "uri": "tile.gltf"
+            }
+          }
+        },
+        "memory": {
+          "usedJSHeapSize": 26018685,
+          "totalJSHeapSize": 33734117,
+          "jsHeapSizeLimit": 4294967296
+        },
+        "frames": {
+          "samples": 62,
+          "meanMs": 79.835,
+          "p50Ms": 83.3,
+          "p95Ms": 133.3,
+          "maxMs": 166.6,
+          "fpsFromMean": 12.5
+        },
+        "hud": null,
+        "status": "3D Tiles exact gameplay tile ready",
+        "cpuSceneRender": {
+          "samples": 87,
+          "meanMs": 0.431,
+          "p50Ms": 0.4,
+          "p95Ms": 0.7,
+          "maxMs": 0.9,
+          "fpsFromMean": 2320
+        },
+        "scope": {
+          "renderer": "tiles",
+          "totalScene": {
+            "drawCalls": 1,
+            "triangles": 80000,
+            "activeMeshes": 1
+          },
+          "terrain": {
+            "visibleTriangles": 80000,
+            "meshCount": 1,
+            "vertices": 40401,
+            "indices": 240000,
+            "geometryBufferBytesEstimate": 2419248,
+            "residentGpuMeshes": 1,
+            "retainedCpuHeightBytesEstimate": null,
+            "visibleTiles": 1
+          }
+        }
+      },
+      "network": {
+        "allRequests": 174,
+        "benchmarkAssetRequests": 4,
+        "benchmarkAssetEncodedBytes": 10012046,
+        "failedRequests": 0,
+        "assets": [
+          {
+            "path": "/tiles-benchmark/equivalent/tileset.json",
+            "type": "Fetch",
+            "status": 200,
+            "mimeType": "application/json",
+            "encodedBytes": 488,
+            "durationMs": 3.9930000002641464
+          },
+          {
+            "path": "/tiles-benchmark/equivalent/tile.gltf",
+            "type": "Fetch",
+            "status": 200,
+            "mimeType": "model/gltf+json",
+            "encodedBytes": 1680,
+            "durationMs": 2.8940000011061784
+          },
+          {
+            "path": "/tiles-benchmark/equivalent/tile.bin",
+            "type": "XHR",
+            "status": 200,
+            "mimeType": "application/octet-stream",
+            "encodedBytes": 2419534,
+            "durationMs": 15.993999999409425
+          },
+          {
+            "path": "/tiles-benchmark/equivalent/orthophoto.webp",
+            "type": "XHR",
+            "status": 200,
+            "mimeType": "image/webp",
+            "encodedBytes": 7590344,
+            "durationMs": 159.3140000004496
+          }
+        ],
+        "consoleErrors": []
+      }
+    }
+  },
+  "summary": {
+    "terrain": {
+      "readyMs": 1689,
+      "frameMs": {
+        "samples": 72,
+        "meanMs": 68.517,
+        "p50Ms": 66.7,
+        "p95Ms": 116.7,
+        "maxMs": 150,
+        "fpsFromMean": 14.6
+      },
+      "cpuSceneRenderMs": {
+        "samples": 98,
+        "meanMs": 0.28,
+        "p50Ms": 0.2,
+        "p95Ms": 0.5,
+        "maxMs": 2.3,
+        "fpsFromMean": 3576.6
+      },
+      "drawCalls": 1,
+      "triangles": 80000,
+      "heapBytes": 18997667,
+      "requests": 4,
+      "encodedBytes": 7772955,
+      "failedRequests": 0,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    },
+    "tiles": {
+      "readyMs": 1709,
+      "frameMs": {
+        "samples": 62,
+        "meanMs": 79.835,
+        "p50Ms": 83.3,
+        "p95Ms": 133.3,
+        "maxMs": 166.6,
+        "fpsFromMean": 12.5
+      },
+      "cpuSceneRenderMs": {
+        "samples": 87,
+        "meanMs": 0.431,
+        "p50Ms": 0.4,
+        "p95Ms": 0.7,
+        "maxMs": 0.9,
+        "fpsFromMean": 2320
+      },
+      "drawCalls": 1,
+      "triangles": 80000,
+      "heapBytes": 26018685,
+      "requests": 4,
+      "encodedBytes": 10012046,
+      "failedRequests": 0,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+    }
+  },
+  "screenshots": {
+    "terrain": "outputs/runtime-v2/tiles-benchmark/terrain.png",
+    "tiles": "outputs/runtime-v2/tiles-benchmark/tiles.png"
+  }
+}
