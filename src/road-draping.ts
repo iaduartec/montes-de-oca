@@ -37,6 +37,8 @@ import {
   parseSpeedLimitKph,
   ROAD_CLEARANCE_SAMPLES,
   ROAD_SURFACE_CLEARANCE_M,
+  roadVertexHue,
+  roadVertexShade,
   shouldMarkRoad,
   shouldPlaceSpeedSign,
 } from './road-visuals';
@@ -48,6 +50,9 @@ export interface RoadMapLine {
   readonly id: string;
   readonly class: RoadClass;
   readonly points: readonly (readonly [number, number])[];
+  /** Actual OSM/design width and trimmed bands, also used by wheel surfaces. */
+  readonly width: number;
+  readonly clearance?: ClearanceProfile | null;
 }
 
 const CLASSES: readonly RoadClass[] = ['ROAD', 'TRACK', 'PATH'];
@@ -342,26 +347,6 @@ function toTyped(buffers: ClassBuffers): TypedClass {
   };
 }
 
-/** Mottling determinista de baja/media frecuencia; se calcula al construir la malla. */
-function vertexShade(classValue: RoadClass, x: number, z: number): number {
-  const broad = Math.sin(x * 0.043 + z * 0.061) * Math.cos(z * 0.037 - x * 0.052);
-  const middle = Math.sin(x * 0.19 + z * 0.31) * Math.cos(z * 0.27 - x * 0.23);
-  const fine = Math.sin(x * 0.53 - z * 0.41) * Math.cos(z * 0.47 + x * 0.37);
-  const n = broad * 0.45 + middle * 0.35 + fine * 0.2;
-  const patch = 0.5 + 0.5 * n;
-  if (classValue === 'ROAD') return 0.2 + 0.04 * patch;
-  if (classValue === 'TRACK') return 0.74 + 0.32 * patch;
-  return 0.8 + 0.22 * patch;
-}
-
-/** Variación cromática cálida para tierra y polvo, acotada para preservar el PBR. */
-function vertexHue(classValue: RoadClass, x: number, z: number): readonly [number, number, number] {
-  if (classValue === 'ROAD') return [1, 1, 1];
-  const hue = Math.sin(x * 0.11 + z * 0.17) * Math.cos(z * 0.13 - x * 0.09);
-  const strength = classValue === 'TRACK' ? 0.055 : 0.035;
-  return [1 + hue * strength, 1 + hue * strength * 0.25, 1 - hue * strength * 0.7];
-}
-
 /**
  * Construye la cinta de UNA vía dentro de sus buffers de clase.
  *
@@ -464,8 +449,8 @@ function buildRoad(
   const pushVertex = (x: number, y: number, z: number, normal: Vector3, role: number, tint?: readonly [number, number, number]): void => {
     buffers.positions.push(x, y, z);
     buffers.normals.push(normal.x, normal.y, normal.z);
-    const shade = vertexShade(road.class, x, z);
-    const hue = vertexHue(road.class, x, z);
+    const shade = roadVertexShade(road.class, x, z);
+    const hue = roadVertexHue(road.class, x, z);
     buffers.colors.push(
       shade * hue[0] * (tint?.[0] ?? 1),
       shade * hue[1] * (tint?.[1] ?? 1),
@@ -1067,6 +1052,8 @@ export async function loadRoadNetwork(
     id: road.id,
     class: road.class,
     points: road.points,
+    width: road.width,
+    ...(road.clearance ? { clearance: road.clearance } : {}),
   }));
 
   const audit = (): RoadAuditReport => {

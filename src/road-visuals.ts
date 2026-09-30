@@ -10,6 +10,28 @@ export interface RoadTrianglePoint {
   readonly z: number;
 }
 
+export type RoadSurfaceClass = 'ROAD' | 'TRACK' | 'PATH';
+
+/** Deterministic vertex shading; frequencies match the existing road mesh sampling. */
+export function roadVertexShade(classValue: RoadSurfaceClass, x: number, z: number): number {
+  const broad = Math.sin(x * 0.043 + z * 0.061) * Math.cos(z * 0.037 - x * 0.052);
+  const middle = Math.sin(x * 0.19 + z * 0.31) * Math.cos(z * 0.27 - x * 0.23);
+  const fine = Math.sin(x * 0.53 - z * 0.41) * Math.cos(z * 0.47 + x * 0.37);
+  const n = broad * 0.45 + middle * 0.35 + fine * 0.2;
+  const patch = 0.5 + 0.5 * n;
+  if (classValue === 'ROAD') return 0.2 + 0.04 * patch;
+  if (classValue === 'TRACK') return 0.68 + 0.42 * patch;
+  return 0.84 + 0.16 * patch;
+}
+
+/** Warm chroma for dirt, kept subtler on narrow paths; asphalt remains neutral. */
+export function roadVertexHue(classValue: RoadSurfaceClass, x: number, z: number): readonly [number, number, number] {
+  if (classValue === 'ROAD') return [1, 1, 1];
+  const hue = Math.sin(x * 0.11 + z * 0.17) * Math.cos(z * 0.13 - x * 0.09);
+  const strength = classValue === 'TRACK' ? 0.075 : 0.02;
+  return [1 + hue * strength, 1 + hue * strength * 0.25, 1 - hue * strength * 0.7];
+}
+
 /** Holgura adicional contra el DEM para impedir destellos de terreno sobre calzada. */
 export const ROAD_SURFACE_CLEARANCE_M = 0.12;
 
