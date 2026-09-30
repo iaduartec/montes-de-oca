@@ -571,8 +571,9 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
     batch = MeshBatch()
     # Linear vertex colours based on the grey paving / dark railing visible in
     # the user's photo. Pattern and elevations remain artistic, not surveyed.
-    paving_palette = ((0.207, 0.202, 0.196, 1.0), (0.212, 0.207, 0.201, 1.0),
-                      (0.216, 0.211, 0.205, 1.0), (0.204, 0.199, 0.193, 1.0))
+    # Keep enough slab variation to read as stone without a high-contrast 1 m grid.
+    paving_palette = ((0.2075, 0.2035, 0.1975, 1.0), (0.2095, 0.2055, 0.1995, 1.0),
+                      (0.2115, 0.2075, 0.2015, 1.0), (0.2085, 0.2045, 0.1985, 1.0))
     paving_light = (0.265, 0.254, 0.235, 1.0)
     plaza_metal = (0.045, 0.048, 0.045, 1.0)
 
