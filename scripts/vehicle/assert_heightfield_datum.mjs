@@ -38,6 +38,7 @@ const files = [
   transpile('src/config.ts', 'config.gen.mjs'),
   transpile('src/heightfield.ts', 'heightfield.gen.mjs'),
   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.gen.mjs'),
+  transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.gen.mjs'),
   transpile('src/terrain.ts', 'terrain.gen.mjs'),
 ];
 for (const f of files) {
@@ -45,6 +46,7 @@ for (const f of files) {
     .replace(/(['"])\.\/config\1/g, '$1./config.gen.mjs$1')
     .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.gen.mjs$1')
     .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.gen.mjs$1')
+    .replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.gen.mjs$1')
     .replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1');
   writeFileSync(f.outFile, rewritten);
 }

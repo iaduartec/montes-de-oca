@@ -8,6 +8,7 @@ import { Frustum } from '@babylonjs/core/Maths/math.frustum';
 import type { Plane } from '@babylonjs/core/Maths/math.plane';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { Scene } from '@babylonjs/core/scene';
+import { FrameTaskQueue, type FrameTaskHandle, type FrameTaskRunStats } from './runtime/frame-task-queue';
 import type { TerrainConfig } from './config';
 import { loadTerrainOrthophotoTexture, terrainTileOrthophotoUV, type TerrainTextureFactory } from './terrain-orthophoto';
 import {
@@ -100,10 +101,35 @@ function parseTile(raw: unknown, expectedId: string): TerrainTileData {
 /** Entrada de culling: malla + su AABB en mundo (con el datum ya restado). */
 interface TileMeshEntry {
   readonly id: string;
-  readonly mesh: Mesh;
+  mesh: Mesh | null;
   readonly min: Vector3;
   readonly max: Vector3;
   readonly triangles: number;
+  buildHandle: FrameTaskHandle | null;
+  wanted: boolean;
+  state: 'UNLOADED' | 'QUEUED' | 'LOADING' | 'ACTIVE' | 'CACHED';
+}
+
+export interface TerrainResidencyStats {
+  readonly totalTiles: number;
+  readonly residentGpuMeshes: number;
+  readonly unloadedTiles: number;
+  readonly queuedTiles: number;
+  readonly loadingTiles: number;
+  readonly activeTiles: number;
+  readonly cachedTiles: number;
+  readonly residentTriangles: number;
+  readonly retainedCpuHeightSamples: number;
+  /** Float payload estimate only; excludes JS array/object overhead. */
+  readonly retainedCpuHeightBytesEstimate: number;
+  /** Position/normal/color/UV/index buffer estimate; excludes shared texture/material. */
+  readonly residentGpuGeometryBytesEstimate: number;
+  readonly taskFrames: number;
+  readonly taskSteps: number;
+  readonly taskOvershootFrames: number;
+  readonly lastTaskFrameMs: number;
+  readonly maxTaskFrameMs: number;
+  readonly initialGeometryBuildMs: number;
 }
 
 /**
@@ -113,7 +139,7 @@ interface TileMeshEntry {
  * que no aparezcan costuras entre tiles. Los índices son `u16` porque 201×201 =
  * 40.401 vértices < 65.535.
  */
-function buildTileMesh(
+function createTileMeshBuildTask(
   scene: Scene,
   tile: TerrainTileData,
   sampler: HeightfieldSampler,
@@ -122,14 +148,13 @@ function buildTileMesh(
   globalMinMeters: number,
   globalMaxMeters: number,
   orthophotoUVs: Float32Array | null,
-): TileMeshEntry {
+): { readonly step: () => boolean; readonly getMesh: () => Mesh } {
   const grid = tile.grid;
   const columns = grid.columns;
   const rows = grid.rows;
   const vertexCount = columns * rows;
   const datumOffset = verticalDatum * sampler.worldScale;
   const heightSpan = globalMaxMeters - globalMinMeters;
-  let orthoOffset = 0;
 
   const positions = new Float32Array(vertexCount * 3);
   const normals = new Float32Array(vertexCount * 3);
@@ -137,46 +162,46 @@ function buildTileMesh(
   const uvs = new Float32Array(vertexCount * 2);
 
   const normalScratch = new Vector3();
-  let p = 0;
-  let n = 0;
-  let c = 0;
-  let t = 0;
-  for (let j = 0; j < rows; j++) {
-    const z = grid.z0 + j * grid.dz;
-    for (let i = 0; i < columns; i++) {
-      const x = grid.x0 + i * grid.dx;
-      const meters = grid.heights[j * columns + i]!;
+  let row = 0;
+  let mesh: Mesh | null = null;
+  const step = (): boolean => {
+    const rowEnd = Math.min(rows, row + 6);
+    for (; row < rowEnd; row++) {
+      let p = row * columns * 3;
+      let n = p;
+      let c = row * columns * 4;
+      let t = row * columns * 2;
+      const z = grid.z0 + row * grid.dz;
+      for (let i = 0; i < columns; i++) {
+        const x = grid.x0 + i * grid.dx;
+        const meters = grid.heights[row * columns + i]!;
 
-      positions[p++] = x;
-      positions[p++] = meters * sampler.worldScale - datumOffset;
-      positions[p++] = z;
+        positions[p++] = x;
+        positions[p++] = meters * sampler.worldScale - datumOffset;
+        positions[p++] = z;
 
-      const normal = sampler.normalAt(x, z, normalScratch);
-      normals[n++] = normal.x;
-      normals[n++] = normal.y;
-      normals[n++] = normal.z;
+        const normal = sampler.normalAt(x, z, normalScratch);
+        normals[n++] = normal.x;
+        normals[n++] = normal.y;
+        normals[n++] = normal.z;
 
-      const alturaN = heightSpan > 0 ? (meters - globalMinMeters) / heightSpan : 0;
-      const rgb = colorForHeight(alturaN);
-      // Manchas suaves de pasto: sin esto el valle es una alfombra de un solo tono.
-      // Deterministas por posición y de onda larga (~60-80 m), así se leen como
-      // variación de campo y no como ruido. Se apagan en roca y cima (`pasto`).
-      const pasto = Math.max(0, 1 - alturaN * 2.2);
-      const k = 1 + pasto * 0.11 * Math.sin(x * 0.078 + z * 0.122) * Math.cos(z * 0.094 - x * 0.066);
-      const verdor = 1 + pasto * 0.07 * Math.cos(x * 0.046 - z * 0.038);
-      // El ortofoto ya aporta detalle fino y color real. Una modulación neutra de
-      // baja frecuencia (~200–400 m) evita que la imagen se lea como un mosaico
-      // plano, sin repintar los datos ni crear costuras entre tiles.
-      const macro = 1 + 0.07 * Math.sin(x * 0.022 + z * 0.031) * Math.cos(z * 0.028 - x * 0.017);
-      colors[c++] = orthophotoUVs ? macro : rgb[0] * k;
-      colors[c++] = orthophotoUVs ? macro : rgb[1] * k * verdor;
-      colors[c++] = orthophotoUVs ? macro : rgb[2] * k * verdor;
-      colors[c++] = 1;
+        const alturaN = heightSpan > 0 ? (meters - globalMinMeters) / heightSpan : 0;
+        const rgb = colorForHeight(alturaN);
+        const pasto = Math.max(0, 1 - alturaN * 2.2);
+        const k = 1 + pasto * 0.11 * Math.sin(x * 0.078 + z * 0.122) * Math.cos(z * 0.094 - x * 0.066);
+        const verdor = 1 + pasto * 0.07 * Math.cos(x * 0.046 - z * 0.038);
+        const macro = 1 + 0.07 * Math.sin(x * 0.022 + z * 0.031) * Math.cos(z * 0.028 - x * 0.017);
+        colors[c++] = orthophotoUVs ? macro : rgb[0] * k;
+        colors[c++] = orthophotoUVs ? macro : rgb[1] * k * verdor;
+        colors[c++] = orthophotoUVs ? macro : rgb[2] * k * verdor;
+        colors[c++] = 1;
 
-      uvs[t++] = orthophotoUVs ? orthophotoUVs[orthoOffset++]! : i / (columns - 1);
-      uvs[t++] = orthophotoUVs ? orthophotoUVs[orthoOffset++]! : j / (rows - 1);
+        const uvIndex = (row * columns + i) * 2;
+        uvs[t++] = orthophotoUVs ? orthophotoUVs[uvIndex]! : i / (columns - 1);
+        uvs[t++] = orthophotoUVs ? orthophotoUVs[uvIndex + 1]! : row / (rows - 1);
+      }
     }
-  }
+    if (row < rows) return false;
 
   // Dos triángulos por celda, partidos SW→NE igual que la interpolación.
   const indices = new Uint16Array((columns - 1) * (rows - 1) * 6);
@@ -196,38 +221,21 @@ function buildTileMesh(
     }
   }
 
-  const vertexData = new VertexData();
-  vertexData.positions = positions;
-  vertexData.normals = normals;
-  vertexData.colors = colors;
-  vertexData.uvs = uvs;
-  vertexData.indices = indices;
-
-  const mesh = new Mesh(`terrain:${tile.id}`, scene);
-  vertexData.applyToMesh(mesh, false);
-  mesh.material = material;
-  mesh.useVertexColors = true;
-  mesh.receiveShadows = true;
-  mesh.isPickable = false;
-
-  let tileMinMeters = Infinity;
-  let tileMaxMeters = -Infinity;
-  for (const height of grid.heights) {
-    if (height < tileMinMeters) tileMinMeters = height;
-    if (height > tileMaxMeters) tileMaxMeters = height;
-  }
-
-  return {
-    id: tile.id,
-    mesh,
-    min: new Vector3(grid.x0, tileMinMeters - verticalDatum, grid.z0),
-    max: new Vector3(
-      grid.x0 + (columns - 1) * grid.dx,
-      tileMaxMeters - verticalDatum,
-      grid.z0 + (rows - 1) * grid.dz,
-    ),
-    triangles: (columns - 1) * (rows - 1) * 2,
+    const vertexData = new VertexData();
+    vertexData.positions = positions;
+    vertexData.normals = normals;
+    vertexData.colors = colors;
+    vertexData.uvs = uvs;
+    vertexData.indices = indices;
+    mesh = new Mesh(`terrain:${tile.id}`, scene);
+    vertexData.applyToMesh(mesh, false);
+    mesh.material = material;
+    mesh.useVertexColors = true;
+    mesh.receiveShadows = true;
+    mesh.isPickable = false;
+    return true;
   };
+  return { step, getMesh: () => { if (!mesh) throw new Error(`terrain: tile ${tile.id} is not built`); return mesh; } };
 }
 
 /** Distancia 3D mínima de un punto al AABB. 0 si está dentro. */
@@ -271,6 +279,10 @@ export interface WorldTerrain {
   cull(camera: Camera): number;
   /** Triángulos de los tiles actualmente habilitados. */
   activeTriangles(): number;
+  /** Advances cooperative mesh preparation. Call once just before scene.render(). */
+  runDeferredTasks(budgetMs: number): FrameTaskRunStats;
+  /** CPU height samples remain resident; byte counts are payload estimates, not heap/VRAM measurements. */
+  residencyStats(): TerrainResidencyStats;
   /** Centro del área cubierta, en unidades de mundo. */
   center(): { x: number; z: number; height: number };
   dispose(): void;
@@ -367,9 +379,9 @@ function resolveSampler(samplers: readonly HeightfieldSampler[], x: number, z: n
 }
 
 /**
- * Carga todos los tiles declarados en el config, arma las mallas y devuelve el
- * mundo con culling por distancia + frustum. Los 36 tiles quedan en memoria (no
- * hay streaming ni LOD todavía); la visibilidad se resuelve con `setEnabled`.
+ * Carga todos los heightfields CPU y construye al inicio las mallas GPU. En
+ * ejecución libera/reconstruye solo mallas lejanas; los samplers permanecen
+ * residentes porque alimentan física y capas del mundo.
  */
 export async function loadTerrain(
   scene: Scene,
@@ -409,6 +421,7 @@ export async function loadTerrain(
   // Winding del heightfield: se desactiva el back-face culling (un solo material).
   material.backFaceCulling = false;
   let orthophotoLoaded = false;
+  let orthophotoTexture: Texture | null = null;
   if (config.orthophotoManifestUrl) {
     const textureFactory: TerrainTextureFactory = options.createTexture ?? ((targetScene, url, onLoad, onError) =>
       new Texture(url, targetScene, false, true, Texture.TRILINEAR_SAMPLINGMODE, onLoad, onError));
@@ -417,29 +430,56 @@ export async function loadTerrain(
       // PNOA is color/albedo data. Keep it in sRGB while PBR lighting works in linear space.
       texture.gammaSpace = true;
       material.albedoTexture = texture;
+      orthophotoTexture = texture;
       orthophotoLoaded = true;
     }
   }
   material.freeze();
 
+  const queue = new FrameTaskQueue();
   const entries: TileMeshEntry[] = [];
+  let initialGeometryBuildMs = 0;
   for (let i = 0; i < tileData.length; i++) {
-    entries.push(
-      buildTileMesh(
-        scene,
-        tileData[i]!,
-        samplers[i]!,
-        material,
-        config.verticalDatum,
-        globalMinMeters,
-        globalMaxMeters,
-        orthophotoLoaded ? terrainTileOrthophotoUV(tileData[i]!.grid, config.bounds) : null,
+    const tile = tileData[i]!;
+    const grid = tile.grid;
+    let tileMinMeters = Infinity;
+    let tileMaxMeters = -Infinity;
+    for (const height of grid.heights) {
+      tileMinMeters = Math.min(tileMinMeters, height);
+      tileMaxMeters = Math.max(tileMaxMeters, height);
+    }
+    const entry: TileMeshEntry = {
+      id: tile.id,
+      mesh: null,
+      min: new Vector3(grid.x0, (tileMinMeters - config.verticalDatum) * config.worldScale, grid.z0),
+      max: new Vector3(
+        grid.x0 + (grid.columns - 1) * grid.dx,
+        (tileMaxMeters - config.verticalDatum) * config.worldScale,
+        grid.z0 + (grid.rows - 1) * grid.dz,
       ),
+      triangles: (grid.columns - 1) * (grid.rows - 1) * 2,
+      buildHandle: null,
+      wanted: true,
+      state: 'CACHED',
+    };
+    const build = createTileMeshBuildTask(
+      scene, tile, samplers[i]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+      orthophotoLoaded ? terrainTileOrthophotoUV(grid, config.bounds) : null,
     );
+    const buildStarted = performance.now();
+    while (!build.step()) { /* Initial resident set is prepared before the first render. */ }
+    initialGeometryBuildMs += performance.now() - buildStarted;
+    entry.mesh = build.getMesh();
+    entries.push(entry);
   }
 
   const datumOffset = config.verticalDatum * config.worldScale;
   const firstSampler = samplers[0]!;
+  let taskFrames = 0;
+  let taskSteps = 0;
+  let taskOvershootFrames = 0;
+  let lastTaskFrameMs = 0;
+  let maxTaskFrameMs = 0;
 
   const heightAt = (x: number, z: number): number => {
     const sampler = resolveSampler(samplers, x, z);
@@ -452,14 +492,69 @@ export async function loadTerrain(
   };
 
   const cull = (camera: Camera): number => {
-    const planes = Frustum.GetPlanes(scene.getTransformMatrix());
+    // Culling may run before Babylon's first render, or after the camera has
+    // been moved by gameplay code. Force the matrices so position and frustum
+    // describe the same current pose (also handles parented cameras).
+    camera.getViewMatrix(true);
+    camera.getProjectionMatrix(true);
+    const planes = Frustum.GetPlanes(camera.getTransformationMatrix());
     const position = camera.globalPosition;
     let enabled = 0;
-    for (const entry of entries) {
-      const visible =
-        distanceToBox(position, entry.min, entry.max) <= config.viewRadius &&
-        boxInFrustum(planes, entry.min, entry.max);
-      entry.mesh.setEnabled(visible);
+    const largestTileEdge = entries.reduce((largest, entry) => Math.max(largest, entry.max.x - entry.min.x, entry.max.z - entry.min.z), 0);
+    const loadRadius = config.viewRadius + largestTileEdge * 0.25;
+    const unloadRadius = loadRadius + largestTileEdge * 0.5;
+    for (let index = 0; index < entries.length; index++) {
+      const entry = entries[index]!;
+      const tileDistance = distanceToBox(position, entry.min, entry.max);
+      if (entry.wanted ? tileDistance > unloadRadius : tileDistance <= loadRadius) entry.wanted = !entry.wanted;
+
+      if (!entry.wanted) {
+        entry.buildHandle?.cancel();
+        entry.buildHandle = null;
+        if (entry.mesh) {
+          entry.mesh.dispose(false, false);
+          entry.mesh = null;
+        }
+        entry.state = 'UNLOADED';
+        continue;
+      }
+
+      if (!entry.mesh && !entry.buildHandle) {
+        const tile = tileData[index]!;
+        let build: ReturnType<typeof createTileMeshBuildTask> | null = null;
+        entry.buildHandle = queue.enqueue({
+          get priority() {
+            // Queued work follows the live camera pose, so fast relocation
+            // reprioritizes the newly-near tile on the next frame.
+            return Math.max(0, config.viewRadius - distanceToBox(camera.globalPosition, entry.min, entry.max));
+          },
+          estimatedCostMs: Math.max(0.01, initialGeometryBuildMs / Math.max(1, entries.length)),
+          step: () => {
+            build ??= createTileMeshBuildTask(
+              scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+              orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null,
+            );
+            if (entry.state === 'QUEUED') entry.state = 'LOADING';
+            const done = build.step();
+            if (done) {
+              entry.mesh = build.getMesh();
+              entry.mesh.setEnabled(false);
+              entry.buildHandle = null;
+              entry.state = 'CACHED';
+            }
+            return done;
+          },
+          onError: () => {
+            entry.buildHandle = null;
+            entry.state = 'UNLOADED';
+          },
+        });
+        entry.state = 'QUEUED';
+      }
+
+      const visible = Boolean(entry.mesh) && tileDistance <= config.viewRadius && boxInFrustum(planes, entry.min, entry.max);
+      entry.mesh?.setEnabled(visible);
+      if (entry.mesh) entry.state = visible ? 'ACTIVE' : 'CACHED';
       if (visible) enabled++;
     }
     return enabled;
@@ -468,7 +563,7 @@ export async function loadTerrain(
   const activeTriangles = (): number => {
     let total = 0;
     for (const entry of entries) {
-      if (entry.mesh.isEnabled()) total += entry.triangles;
+      if (entry.mesh?.isEnabled()) total += entry.triangles;
     }
     return total;
   };
@@ -492,7 +587,7 @@ export async function loadTerrain(
 
   return {
     config,
-    meshes: entries.map((entry) => entry.mesh),
+    get meshes() { return entries.flatMap((entry) => entry.mesh ? [entry.mesh] : []); },
     samplers,
     viewRadius: config.viewRadius,
     heightAt,
@@ -500,10 +595,68 @@ export async function loadTerrain(
     sampleHeight: (x, z) => ({ height: heightAt(x, z), normal: normalAt(x, z) }),
     cull,
     activeTriangles,
+    runDeferredTasks: (budgetMs) => {
+      const stats = queue.runFrame(budgetMs);
+      taskFrames++;
+      taskSteps += stats.executedSteps;
+      if (stats.overshotBudget) taskOvershootFrames++;
+      lastTaskFrameMs = stats.spentMs;
+      maxTaskFrameMs = Math.max(maxTaskFrameMs, stats.spentMs);
+      return stats;
+    },
+    residencyStats: () => {
+      let residentGpuMeshes = 0;
+      let residentTriangles = 0;
+      let residentGpuGeometryBytesEstimate = 0;
+      let unloadedTiles = 0;
+      let queuedTiles = 0;
+      let loadingTiles = 0;
+      let activeTiles = 0;
+      let cachedTiles = 0;
+      for (const entry of entries) {
+        if (entry.state === 'UNLOADED') unloadedTiles++;
+        else if (entry.state === 'QUEUED') queuedTiles++;
+        else if (entry.state === 'LOADING') loadingTiles++;
+        else if (entry.state === 'ACTIVE') activeTiles++;
+        else if (entry.state === 'CACHED') cachedTiles++;
+        if (!entry.mesh) continue;
+        residentGpuMeshes++;
+        residentTriangles += entry.triangles;
+        const grid = tileData.find((item) => item.id === entry.id)!.grid;
+        const vertices = grid.columns * grid.rows;
+        const indices = (grid.columns - 1) * (grid.rows - 1) * 6;
+        residentGpuGeometryBytesEstimate += vertices * (3 + 3 + 4 + 2) * 4 + indices * 2;
+      }
+      const retainedCpuHeightSamples = samplers.reduce((sum, sampler) => sum + sampler.grid.heights.length, 0);
+      return {
+        totalTiles: entries.length,
+        residentGpuMeshes,
+        unloadedTiles,
+        queuedTiles,
+        loadingTiles,
+        activeTiles,
+        cachedTiles,
+        residentTriangles,
+        retainedCpuHeightSamples,
+        retainedCpuHeightBytesEstimate: retainedCpuHeightSamples * 8,
+        residentGpuGeometryBytesEstimate,
+        taskFrames,
+        taskSteps,
+        taskOvershootFrames,
+        lastTaskFrameMs,
+        maxTaskFrameMs,
+        initialGeometryBuildMs,
+      };
+    },
     center,
     dispose: () => {
-      for (const entry of entries) entry.mesh.dispose();
+      queue.dispose();
+      for (const entry of entries) {
+        entry.buildHandle?.cancel();
+        entry.mesh?.dispose(false, false);
+      }
       material.dispose();
+      orthophotoTexture?.dispose?.();
     },
   };
 }

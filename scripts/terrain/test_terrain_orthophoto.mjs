@@ -25,6 +25,7 @@ try {
   transpile('src/config.ts', 'config.mjs');
   transpile('src/heightfield.ts', 'heightfield.mjs');
   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.mjs');
+  transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.mjs');
   transpile('src/terrain.ts', 'terrain.mjs');
   for (const file of ['terrain.mjs', 'terrain-orthophoto.mjs']) {
     const p = resolve(temp, file);
@@ -32,6 +33,7 @@ try {
       .replace(/(['"])\.\/config\1/g, '$1./config.mjs$1')
       .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.mjs$1')
       .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.mjs$1');
+    code = code.replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.mjs$1');
     writeFileSync(p, code);
   }
   const [{ parseTerrainConfig }, ortho, terrain] = await Promise.all([
@@ -39,6 +41,7 @@ try {
     import(pathToFileURL(resolve(temp, 'terrain-orthophoto.mjs')).href),
     import(pathToFileURL(resolve(temp, 'terrain.mjs')).href),
   ]);
+  const { FrameTaskQueue } = await import(pathToFileURL(resolve(temp, 'frame-task-queue.mjs')).href);
   const config = JSON.parse(readFileSync(resolve(root, 'public/terrain/config.json'), 'utf8'));
   const minimal = { ...config };
   delete minimal.orthophotoManifestUrl;
@@ -110,6 +113,89 @@ try {
     await assert.doesNotReject(() => ortho.loadTerrainOrthophotoTexture(scene, '/manifest.json', { e: [0, 6000], n: [0, 6000] }, async () => ({ ok: true, json: async () => JSON.parse(readFileSync(resolve(root, 'public/terrain/orthophoto.json'), 'utf8')) }), () => { attempted = true; return {}; }));
     assert.equal(attempted, false);
     scene.dispose(); engine.dispose();
+  });
+  await test('test_gpu_tile_unload_keeps_cpu_sampler_and_rebuilds_nearby', async () => {
+    const engine = new (await import('@babylonjs/core/Engines/nullEngine.js')).NullEngine();
+    const { Scene } = await import('@babylonjs/core/scene.js');
+    const { FreeCamera } = await import('@babylonjs/core/Cameras/freeCamera.js');
+    const { Vector3 } = await import('@babylonjs/core/Maths/math.vector.js');
+    const scene = new Scene(engine);
+    const camera = new FreeCamera('residency-camera', new Vector3(5, 0, 5), scene);
+    camera.setTarget(Vector3.Zero());
+    scene.activeCamera = camera;
+    const cfg = { ...parseTerrainConfig(minimal), worldScale: 2, viewRadius: 20, tiles: [{ id: 'fixture', url: '/tile.json' }] };
+    const grid = { x0: 0, z0: 0, dx: 10, dz: 10, columns: 2, rows: 2, heights: [10, 20, 30, 40] };
+    const result = await terrain.loadTerrain(scene, cfg, async () => ({ ok: true, json: async () => ({ schemaVersion: 1, id: 'fixture', grid }) }));
+    const expectedHeight = result.heightAt(5, 5);
+    camera.position.y = expectedHeight + 2;
+    camera.position.x = 1000;
+    scene.updateTransformMatrix(true);
+    result.cull(camera);
+    assert.equal(result.residencyStats().residentGpuMeshes, 0, 'distant GPU geometry should be released');
+    assert.equal(result.residencyStats().unloadedTiles, 1);
+    assert.equal(result.residencyStats().retainedCpuHeightSamples, 4, 'heightfield samples must remain resident');
+    assert.equal(result.heightAt(5, 5), expectedHeight, 'height sampling must stay valid while mesh is unloaded');
+    camera.position.set(5, expectedHeight + 2, 5);
+    camera.setTarget(Vector3.Zero());
+    scene.updateTransformMatrix(true);
+    result.cull(camera);
+    for (let frame = 0; frame < 4 && result.residencyStats().residentGpuMeshes === 0; frame++) {
+      result.runDeferredTasks(10);
+      result.cull(camera);
+    }
+    assert.equal(result.residencyStats().residentGpuMeshes, 1, 'near tile mesh should be rebuilt from retained CPU data');
+    assert.equal(result.residencyStats().taskSteps, 1);
+    assert.equal(result.meshes.length, 1);
+    assert.equal(result.heightAt(5, 5), expectedHeight);
+    result.dispose();
+    scene.dispose();
+    engine.dispose();
+  });
+  await test('test_first_cull_uses_camera_moved_before_first_render', async () => {
+    const engine = new (await import('@babylonjs/core/Engines/nullEngine.js')).NullEngine();
+    const { Scene } = await import('@babylonjs/core/scene.js');
+    const { FreeCamera } = await import('@babylonjs/core/Cameras/freeCamera.js');
+    const { Vector3 } = await import('@babylonjs/core/Maths/math.vector.js');
+    const scene = new Scene(engine);
+    const camera = new FreeCamera('initial-view-camera', new Vector3(1000, 30, 1000), scene);
+    camera.setTarget(Vector3.Zero());
+    scene.activeCamera = camera;
+    const cfg = { ...parseTerrainConfig(minimal), worldScale: 1, viewRadius: 20, tiles: [{ id: 'spawn', url: '/spawn.json' }] };
+    const grid = { x0: 0, z0: 0, dx: 10, dz: 10, columns: 2, rows: 2, heights: [10, 10, 10, 10] };
+    const result = await terrain.loadTerrain(scene, cfg, async () => ({ ok: true, json: async () => ({ schemaVersion: 1, id: 'spawn', grid }) }));
+
+    // Cache a valid far-away pose as if it belonged to the prior frame, then
+    // simulate bootstrap moving the camera to spawn before the first render.
+    camera.getViewMatrix(true);
+    camera.position.set(5, result.heightAt(5, 5) + 3, 5);
+    camera.setTarget(new Vector3(5, result.heightAt(5, 5), 5));
+    result.cull(camera);
+    assert.equal(result.residencyStats().residentGpuMeshes, 1, 'stale origin culling must not discard the initial terrain mesh');
+    assert.equal(result.meshes[0]?.isEnabled(), true, 'the nearby spawn mesh must stay visible');
+    result.dispose(); scene.dispose(); engine.dispose();
+  });
+  await test('test_frame_task_queue_priority_budget_and_cancel', () => {
+    const queue = new FrameTaskQueue();
+    const order = [];
+    queue.enqueue({ priority: 1, estimatedCostMs: 1, step: () => { order.push('low'); return true; } });
+    queue.enqueue({ priority: 2, estimatedCostMs: 2, step: () => { order.push('high'); return true; } });
+    const cancelled = queue.enqueue({ priority: 3, estimatedCostMs: 1, step: () => { order.push('cancelled'); return true; } });
+    cancelled.cancel();
+    const empty = queue.runFrame(0);
+    assert.equal(empty.executedSteps, 0);
+    const stats = queue.runFrame(100);
+    assert.deepEqual(order, ['high', 'low']);
+    assert.equal(stats.completedTasks, 2);
+    assert.equal(stats.pendingTasks, 0);
+    queue.dispose();
+  });
+  await test('test_frame_task_queue_uses_remaining_budget_for_cooperative_steps', () => {
+    const queue = new FrameTaskQueue();
+    let steps = 0;
+    queue.enqueue({ priority: 1, estimatedCostMs: 3, step: () => ++steps === 3 });
+    assert.equal(queue.runFrame(100).completedTasks, 1);
+    assert.equal(steps, 3);
+    queue.dispose();
   });
 } catch (error) {
   console.error(`[FAIL] test setup: ${error.stack || error}`);
