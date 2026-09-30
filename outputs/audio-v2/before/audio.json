@@ -1,0 +1,57 @@
+{
+  "label": "baseline on foot; no engine-drive comparison",
+  "base": "http://127.0.0.1:5174",
+  "recording": {
+    "file": "audio.webm",
+    "mimeType": "audio/webm;codecs=opus",
+    "bytes": 257581,
+    "durationMs": 16016
+  },
+  "beforeGesture": {
+    "audio": {
+      "state": "locked",
+      "nodes": 0,
+      "sources": 0,
+      "enabled": true,
+      "procedural": true
+    }
+  },
+  "afterGesture": {
+    "audio": {
+      "state": "running",
+      "nodes": 9,
+      "sources": 2,
+      "enabled": true,
+      "procedural": true,
+      "surface": "ROAD"
+    },
+    "graph": {
+      "sampleRate": 44100,
+      "allocations": {
+        "GainNode": 4,
+        "OscillatorNode": 1,
+        "BiquadFilterNode": 3,
+        "AudioBufferSourceNode": 1
+      },
+      "allocationsStableDuringRecord": true,
+      "consoleErrors": 0
+    }
+  },
+  "player": {
+    "mode": "on-foot",
+    "moving": false,
+    "speedMps": 0,
+    "position": {
+      "x": 3085.54085149219,
+      "z": 3935.2580581982947
+    }
+  },
+  "signal": {
+    "analyserRmsObservedRange": [
+      0.00020396576290607137,
+      0.00039911083537198284
+    ],
+    "signalObserved": true
+  },
+  "limitation": "Historical preview build capture before source update. Player stayed on foot, so this is a quiet ambience baseline, not an engine or surface-driving comparison."
+}

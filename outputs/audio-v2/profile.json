@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "harness": "Node host CPU; esbuild-bundled resolver; checked-in water, vegetation and village JSON; repeated 1000 listener samples over the Villafranca village/river origin (x=3000+i%100, z=3900+i%100), yaw=i/100 radians.",
+  "note": "Isolated Node CPU observation; not browser, GPU or RTX 2070 performance. Cold samples/JIT affect max.",
+  "iterations": 1000,
+  "sampleCostMs": {
+    "p50": 0.03044399999998859,
+    "p95": 0.138339000000002,
+    "max": 2.1632279999999753
+  },
+  "index": {
+    "waterSegments": 15879,
+    "treeInstances": 24034,
+    "buildingFootprints": 330
+  },
+  "maxLocalCandidates": {
+    "water": 379,
+    "trees": 2,
+    "buildings": 135
+  }
+}
