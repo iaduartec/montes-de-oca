@@ -5,6 +5,16 @@ export interface VillageNpcSpawn {
   readonly yaw: number;
 }
 
+export type VillageNpcSimulationTier = 'FULL' | 'REDUCED' | 'VISUAL' | 'SLEEP';
+
+export function villageNpcTierForDistance(distanceM: number): VillageNpcSimulationTier {
+  if (!Number.isFinite(distanceM) || distanceM < 0) return 'SLEEP';
+  if (distanceM <= 80) return 'FULL';
+  if (distanceM <= 250) return 'REDUCED';
+  if (distanceM <= 900) return 'VISUAL';
+  return 'SLEEP';
+}
+
 // Clear roadside points beside La Plaza. The points sit outside nearby building
 // footprints and road edges in the checked-in roads/buildings datasets.
 export const VILLAGE_NPC_SPAWNS: readonly VillageNpcSpawn[] = [

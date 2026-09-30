@@ -523,7 +523,7 @@ async function main() {
     check('pueblo cargado y batcheado (meshes <= 20 con > 300 casas)', !!village && village.buildings > 300 && village.meshes <= 20, village, 'buildings > 300 y meshes <= 20');
     const villageNpcs = await cdp.evaluate('window.__game.villageNpcs ? window.__game.villageNpcs.stats() : null');
     report.puebloNpcs = villageNpcs;
-    check('dos vecinos animados cargados junto a la plaza', villageNpcs?.characters === 2 && villageNpcs.animations === 2 && villageNpcs.meshes >= 2, villageNpcs, '2 personajes con animación Idle');
+    check('diez vecinos animados con rutas cargados en Villafranca', villageNpcs?.characters === 10 && villageNpcs.animations === 18 && villageNpcs.meshes >= 10, villageNpcs, '10 personajes; dos Idle y ocho Idle/Walk');
 
     // La vegetación (FASE D): que cargue Y que siga BATCHEADA. Si alguien vuelve al
     // patrón "una malla por instancia", 30.000 instancias pasarían de 18 mallas a
