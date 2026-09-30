@@ -2,6 +2,13 @@
 
 Estas reglas se aplican al trabajo en este juego. Conserva la arquitectura, jugabilidad, controles y navegadores compatibles, salvo que la tarea indique lo contrario.
 
+## Fuentes de verdad del proyecto
+
+- `AGENTS.md` define las reglas permanentes de trabajo para este repositorio.
+- `OBJECTIVE.md` define el objetivo del proyecto y su backlog; sus prioridades deben contrastarse con HEAD y no pueden contradecir estas reglas.
+- `.agents/skills/` contiene las guías especializadas activas. Consulta solo las pertinentes para cada tarea.
+- `outputs/babylon-game-overhaul-kit/` es un artefacto histórico de distribución. No lo uses ni lo trates como configuración activa de agentes; la configuración vigente está en los tres elementos anteriores.
+
 ## Antes de cambiar código
 
 - Inspecciona el repositorio, los scripts del proyecto, la versión instalada de Babylon.js, el motor de renderizado, la gestión de escenas y el flujo de assets. Considera autoritativos la versión instalada y las convenciones del proyecto; contrasta las API actuales con la [documentación oficial de Babylon.js](https://doc.babylonjs.com/).

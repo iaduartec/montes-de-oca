@@ -21,3 +21,7 @@ orchestration/logs/*.exit
 # Artefactos locales de herramientas (no son parte del proyecto)
 __pycache__/
 .playwright-cli/
+
+# Backups locales de Blender y metadatos de procedencia del sistema de archivos
+*.blend1
+*:Zone.Identifier
