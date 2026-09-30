@@ -154,7 +154,7 @@ async function main() {
       const {mission,selector,map,prompt,settings,touch}=report.controls.mobileLayout;
       if(mission.top<selector.bottom || map.top<mission.bottom || prompt.bottom>settings.top || settings.bottom>touch.top)throw Error('Mobile mission controls overlap');
     }
-    if(report.controls.sound.muted.enabled || !report.controls.sound.enabled.enabled || report.controls.sound.enabled.sources!==2)throw Error('Sound control failed');
+    if(report.controls.sound.muted.enabled || !report.controls.sound.enabled.enabled || report.controls.sound.enabled.sources!==4)throw Error('Sound control failed');
     report.playable=await cdp.evaluate('({runtime:window.__game.runtime(),npc:window.__game.villageNpcs.stats()})');
     if(report.playable.npc.characters!==10)throw Error('Expected 10 real NPC in playable scene');
     await cdp.screenshot(resolve(OUT_DIR,'playable.png'));

@@ -55,6 +55,8 @@ import { createInteractor, type Interactor } from './gameplay/interact';
 import { createRepeaterObjective, type Objective } from './gameplay/objective';
 import { createSurfaceResolver, SURFACES, type SurfaceDefinition } from './world/surfaces';
 import { createVehicleAudio } from './runtime/vehicle-audio';
+import { loadAudioEnvironment } from './runtime/audio-environment';
+import { createVehicleImpactDetector } from './runtime/vehicle-impact';
 import { createVehicleEffects } from './runtime/vehicle-effects';
 import { getGraphicsQualityPreset, type GraphicsQualitySettings } from './runtime/quality';
 
@@ -281,6 +283,7 @@ interface DebugApi {
   runtime(): { terrain: ReturnType<WorldTerrain['residencyStats']>; queue: ReturnType<WorldTerrain['runDeferredTasks']>; surface: SurfaceDefinition;
     quality: GraphicsQualitySettings; audio: ReturnType<ReturnType<typeof createVehicleAudio>['stats']>;
     effects: ReturnType<ReturnType<typeof createVehicleEffects>['stats']>;
+    audioEnvironment: ReturnType<Awaited<ReturnType<typeof loadAudioEnvironment>>['stats']>;
     textures: number; shadowCasters: number; renderWidth: number; renderHeight: number };
   auditDatum(): { verticalDatum: number; maxAbsDiffM: number; ok: boolean; samples: readonly unknown[] };
   vehicle: {
@@ -1061,7 +1064,17 @@ async function bootstrap(): Promise<void> {
   const diagnostics = createDiagnostics(scene);
   let hudTick = 0;
   let queueStats = terrain.runDeferredTasks(0);
+  // Index real world data once; environment queries do not scan the datasets per frame.
+  const audioEnvironment = await loadAudioEnvironment({
+    waterUrl: water ? publicUrl('/water/water.json') : null,
+    vegetationUrl: vegetation ? publicUrl('/vegetation/vegetation.json') : null,
+    buildingsUrl: villageStats ? publicUrl('/village/buildings.json') : null,
+  });
+  let currentAmbient = audioEnvironment.sample({ x: startX, z: startZ, yaw });
+  let ambientQueryElapsedS = 0.1;
   const vehicleAudio = createVehicleAudio();
+  const vehicleImpact = createVehicleImpactDetector();
+  let lastAudioVehicle: VehicleActor | null = null;
   const vehicleEffects = createVehicleEffects(scene);
   const soundControl = document.querySelector<HTMLButtonElement>('#sound-toggle');
   const toggleSound = () => {
@@ -1069,6 +1082,7 @@ async function bootstrap(): Promise<void> {
     vehicleAudio.setEnabled(enabled);
     soundControl?.setAttribute('aria-pressed', String(enabled));
     if (soundControl) soundControl.textContent = enabled ? 'Sonido: sí' : 'Sonido: no';
+    if (canvas instanceof HTMLCanvasElement) canvas.focus({ preventScroll: true });
   };
   soundControl?.addEventListener('click', toggleSound);
 
@@ -1422,7 +1436,25 @@ async function bootstrap(): Promise<void> {
     // dibujar: al revés, la vegetación vería la pose del frame anterior.
     vegetation?.update(camera.position);
     villageNpcs?.update(camera.position, Math.min(dt, 0.1));
-    vehicleAudio.update({ speed: active?.state.speed ?? 0, load: leerGasConduciendo(),
+    if (lastAudioVehicle !== active) {
+      vehicleImpact.reset();
+      lastAudioVehicle = active;
+    }
+    const listener = player?.root.position ?? camera.position;
+    const listenerYaw = player ? player.telemetry().yawDeg * Math.PI / 180
+      : Math.atan2(camera.getTarget().x - camera.position.x, camera.getTarget().z - camera.position.z);
+    ambientQueryElapsedS += Math.min(dt, 0.1);
+    if (ambientQueryElapsedS >= 0.1) {
+      currentAmbient = audioEnvironment.sample({ x: listener.x, z: listener.z, yaw: listenerYaw });
+      ambientQueryElapsedS %= 0.1;
+    }
+    const ambient = currentAmbient;
+    const impact = active && isFourWheel(active) ? vehicleImpact.update({
+      x: active.state.x, z: active.state.z, speed: active.state.speed,
+      verticalVelocity: active.telemetry().suspensionVelocity,
+      driving: player?.mode === 'driving',
+    }, Math.min(dt, 0.1)) : 0;
+    vehicleAudio.update({ ambient, impact, speed: active?.state.speed ?? 0, load: leerGasConduciendo(),
       slip: Boolean(active && isFourWheel(active) && (active.state.slipping || active.state.skidding)), driving: player?.mode === 'driving',
       surface: surfaceAt(active?.state.x ?? startX, active?.state.z ?? startZ) });
     vehicleEffects.update({ position: active?.root.position ?? camera.position, yaw: active?.state.yaw ?? 0,
@@ -1536,7 +1568,7 @@ async function bootstrap(): Promise<void> {
     },
     perf: () => diagnostics.snapshot(),
     runtime: () => ({ terrain: terrain.residencyStats(), queue: queueStats,
-      quality, audio: vehicleAudio.stats(), effects: vehicleEffects.stats(), textures: scene.textures.length,
+      quality, audio: vehicleAudio.stats(), audioEnvironment: audioEnvironment.stats(), effects: vehicleEffects.stats(), textures: scene.textures.length,
       shadowCasters: atmosphere?.shadowGenerator?.getShadowMap()?.renderList?.length ?? 0,
       renderWidth: engine.getRenderWidth(), renderHeight: engine.getRenderHeight(),
       surface: surfaceAt(activeVehicle()?.state.x ?? FIRST_ROUTE.start.x, activeVehicle()?.state.z ?? FIRST_ROUTE.start.z) }),
