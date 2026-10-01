@@ -1,10 +1,6 @@
 import { routePrefixToEndpoint } from './environment/village-facade-kits';
-import { Engine } from '@babylonjs/core/Engines/engine';
-import { Scene } from '@babylonjs/core/scene';
-import { UniversalCamera } from '@babylonjs/core/Cameras/universalCamera';
 import { Ray } from '@babylonjs/core/Culling/ray';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color4 } from '@babylonjs/core/Maths/math.color';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { loadTerrainConfig, TERRAIN_CONFIG_PATH, wgs84ToWorld } from './config';
 import { publicUrl } from './public-url';
@@ -59,6 +55,7 @@ import { loadAudioEnvironment } from './runtime/audio-environment';
 import { createVehicleImpactDetector } from './runtime/vehicle-impact';
 import { createVehicleEffects } from './runtime/vehicle-effects';
 import { getGraphicsQualityPreset, type GraphicsQualitySettings } from './runtime/quality';
+import { createRenderingRuntime } from './runtime/rendering-runtime';
 
 const canvas = document.getElementById('render-canvas');
 const hud = document.getElementById('hud');
@@ -135,26 +132,11 @@ if (!(canvas instanceof HTMLCanvasElement)) {
   throw new Error('No se encontró el canvas #render-canvas');
 }
 
-const engine = new Engine(canvas, true, {
-  preserveDrawingBuffer: true,
-  stencil: true,
-  antialias: true,
-});
-
-const scene = new Scene(engine);
-scene.clearColor = new Color4(0.53, 0.68, 0.82, 1);
+const { engine, scene, camera } = createRenderingRuntime(canvas);
 
 // Iluminación y atmósfera: las crea `createAtmosphere` al final del bootstrap, cuando
 // ya existen las mallas que proyectan sombra. Un solo dueño de las luces — si además
 // se crearan acá, habría dos juegos sumando intensidad.
-
-const camera = new UniversalCamera('camara-libre', new Vector3(0, 80, -160), scene);
-camera.attachControl(canvas, true);
-camera.speed = 6;
-camera.angularSensibility = 4000;
-camera.inertia = 0.75;
-camera.minZ = 0.5;
-camera.maxZ = 40000;
 
 /** Lee un número de la query string si es válido. */
 function queryNumber(params: URLSearchParams, key: string): number | null {
