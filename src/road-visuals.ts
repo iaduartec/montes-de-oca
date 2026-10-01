@@ -12,6 +12,64 @@ export interface RoadTrianglePoint {
 
 export type RoadSurfaceClass = 'ROAD' | 'TRACK' | 'PATH';
 
+/** Deterministic, non-periodic value noise used only for artistic vertex color. */
+function hashGrid(x: number, z: number): number {
+  if (x === 0 && z === 0) return 0.5;
+  let value = Math.imul(x | 0, 0x1f123bb5) ^ Math.imul(z | 0, 0x5f356495);
+  value = Math.imul(value ^ (value >>> 15), value | 1);
+  value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+  return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+}
+
+function smoothNoise(x: number, z: number): number {
+  const x0 = Math.floor(x);
+  const z0 = Math.floor(z);
+  const tx = x - x0;
+  const tz = z - z0;
+  const fade = (t: number): number => t * t * (3 - 2 * t);
+  const a = hashGrid(x0, z0) * (1 - fade(tx)) + hashGrid(x0 + 1, z0) * fade(tx);
+  const b = hashGrid(x0, z0 + 1) * (1 - fade(tx)) + hashGrid(x0 + 1, z0 + 1) * fade(tx);
+  return a * (1 - fade(tz)) + b * fade(tz);
+}
+
+function smoothstep(edge0: number, edge1: number, value: number): number {
+  const t = Math.max(0, Math.min(1, (value - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Local damp marks are artistic vertex-color detail, not surveyed soil or wetness.
+ * A sparse jittered cell field plus warped edges avoids a repeated stripe pattern.
+ */
+function dampPatch(x: number, z: number): number {
+  const cellSize = 38;
+  const cellX = Math.floor(x / cellSize);
+  const cellZ = Math.floor(z / cellSize);
+  let coverage = 0;
+  for (let dz = -1; dz <= 1; dz++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const gx = cellX + dx;
+      const gz = cellZ + dz;
+      const seed = hashGrid(gx, gz);
+      if (seed > 0.38) continue;
+      const centerX = (gx + 0.18 + hashGrid(gx + 17, gz - 11) * 0.64) * cellSize;
+      const centerZ = (gz + 0.18 + hashGrid(gx - 7, gz + 23) * 0.64) * cellSize;
+      const angle = hashGrid(gx + 31, gz + 9) * Math.PI;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const offsetX = x - centerX;
+      const offsetZ = z - centerZ;
+      const along = (offsetX * cos + offsetZ * sin) / (5 + hashGrid(gx + 3, gz + 41) * 5);
+      const across = (-offsetX * sin + offsetZ * cos) / (2.5 + hashGrid(gx + 43, gz + 5) * 2.5);
+      const edgeWarp = (smoothNoise(x * 0.11, z * 0.11) - 0.5) * 0.42;
+      const radius = Math.hypot(along, across) + edgeWarp;
+      const mark = 1 - smoothstep(0.72, 1.08, radius);
+      coverage = Math.max(coverage, mark);
+    }
+  }
+  return coverage;
+}
+
 /** Deterministic vertex shading; frequencies match the existing road mesh sampling. */
 export function roadVertexShade(classValue: RoadSurfaceClass, x: number, z: number): number {
   const broad = Math.sin(x * 0.043 + z * 0.061) * Math.cos(z * 0.037 - x * 0.052);
@@ -20,14 +78,17 @@ export function roadVertexShade(classValue: RoadSurfaceClass, x: number, z: numb
   const n = broad * 0.45 + middle * 0.35 + fine * 0.2;
   const patch = 0.5 + 0.5 * n;
   if (classValue === 'ROAD') return 0.2 + 0.04 * patch;
-  if (classValue === 'TRACK') return 0.68 + 0.42 * patch;
-  return 0.84 + 0.16 * patch;
+  if (classValue === 'TRACK') return (0.68 + 0.42 * patch) * (1 - 0.24 * dampPatch(x, z));
+  return (0.84 + 0.16 * patch) * (1 - 0.07 * dampPatch(x, z));
 }
 
 /** Warm chroma for dirt, kept subtler on narrow paths; asphalt remains neutral. */
 export function roadVertexHue(classValue: RoadSurfaceClass, x: number, z: number): readonly [number, number, number] {
   if (classValue === 'ROAD') return [1, 1, 1];
-  const hue = Math.sin(x * 0.11 + z * 0.17) * Math.cos(z * 0.13 - x * 0.09);
+  const broadGravel = smoothNoise(x * 0.075 + 9, z * 0.075 - 13) - 0.5;
+  const grain = smoothNoise(x * 0.31 - 4, z * 0.31 + 7) - 0.5;
+  const baseHue = Math.sin(x * 0.11 + z * 0.17) * Math.cos(z * 0.13 - x * 0.09);
+  const hue = baseHue * 0.75 + broadGravel * 0.68 + grain * 0.32;
   const strength = classValue === 'TRACK' ? 0.075 : 0.02;
   return [1 + hue * strength, 1 + hue * strength * 0.25, 1 - hue * strength * 0.7];
 }
