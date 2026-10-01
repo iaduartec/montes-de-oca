@@ -13,3 +13,11 @@ description: Úsala al mejorar terreno, carreteras, edificios, vegetación, obje
 6. Inspecciona vistas generales, a altura del jugador y lejanas. Ejecuta el juego y compara las mismas ubicaciones antes/después cuando sea posible.
 
 Usa assets reales del proyecto cuando existan. Si falta un asset importante de entorno, describe lo necesario en vez de disimularlo con primitivas genéricas.
+
+## Decisión visual estable: pistas de tierra
+
+- **DECISIÓN:** TRACK puede llevar parches oscuros de humedad y variación cromática de grava procedural; PATH conserva una variación más leve. Son detalle artístico de color por vértice, no una afirmación de geología o humedad medida.
+- **WHY:** la geometría existente de rodadas ya define la lectura principal de la pista; el color añade escala y ruptura local sin reemplazar esa señal ni añadir mallas.
+- **INVARIANTE:** ROAD mantiene exactamente su sombreado neutro. Esta capa no cambia perfiles, elevaciones, secciones, topología, tránsito ni helpers de carretera.
+- **VALIDACIÓN:** `node scripts/roads/test_track_art.mjs` muestrea una cuadrícula espacial amplia, acota sombreado/croma, comprueba que los parches sean localizados y compara ROAD con su paleta establecida.
+- **ANTI-PATTERN:** no uses ondas periódicas grandes como único detalle, no oscurezcas una pista entera para simular humedad y no alteres elevación o geometría para fingir datos ambientales sin fuente.
