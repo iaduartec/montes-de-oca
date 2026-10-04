@@ -1,0 +1,1023 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-04T18:01:39.709Z",
+  "verdict": "PARTIAL_ACCEPT",
+  "summary": "Four measured roof-profile corrections are visually and geometrically supported within the PNOA plan evidence; the Antiguo Hospital material correction is visible, while its connected multi-volume roof massing remains approximate and unimplemented.",
+  "comparison": {
+    "beforeHead": "349d98494c1108060e6a0cf7f87f4803701c6a07",
+    "baselineManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1
+    },
+    "quality": "HIGH",
+    "viewCount": {
+      "before": 21,
+      "after": 21
+    },
+    "allCamerasMatch": true,
+    "afterErrors": [],
+    "backend": "Chrome headless SwiftShader; FPS/frame time are not target-GPU evidence"
+  },
+  "provenance": {
+    "runtimeSourceSha256": {
+      "src/environment/village.ts": "f7b252a41c856af93578ecf6a8df7ef4fa243f765e98210eda30a7a383477dbf",
+      "src/environment/village-roof-geometry.ts": "52e21805b7e33aeaf76c4e4a92dafe212c6bd1b08d10a6ac82432c10f2f0316b",
+      "src/environment/village-building-overrides.ts": "f1cdd831ca247cbb648a976056e41728f63d471cb8827a7f0ab6ae13bd6df69b",
+      "src/environment/village-facade-kits.ts": "3a9b63437e8ef2da0942e1da2da5e56cb3b805af11f2f44c33cc1dcc4462860e",
+      "src/main.ts": "1851db324ffc95622e3acd975bcec73125d1a6ea52725a0a0dbadd193ea7b40a",
+      "src/road-draping.ts": "e8afeb9011f07caed613bab88ce50f7d5bfa0dd082dd574ef62cdb811e3c5b1e",
+      "src/road-profile.ts": "37a92cd44e7787c02334525393201dc71622cfadededaaed53279853a7242811",
+      "src/terrain-road-cutouts.ts": "255adf6aaf3d7796fbafb2c6e7968d3c1f5bee035a11fa71fdec13f8de7c39f8",
+      "src/world/road-surface.ts": "d974bd8c2a632cf8dc2979b6e279cfdda12a28da4ba22865c097bfd9d5e47ba7"
+    },
+    "afterViews": [
+      {
+        "name": "calle_mayor_1",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "calle_mayor_2",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "plaza",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "iglesia",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "entrada_norte",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "entrada_sur",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "pilot_houses",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "road",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "vehicle",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "track",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "forest",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "river",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "aerial",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_310174514",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_818885706",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_818885708",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_474364245",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_474649085",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "house_672017718",
+        "base": "http://127.0.0.1:5174"
+      },
+      {
+        "name": "spawn",
+        "base": "http://127.0.0.1:4174"
+      },
+      {
+        "name": "character_npc",
+        "base": "http://127.0.0.1:4174"
+      }
+    ],
+    "notes": [
+      "Nineteen diagnostic views were captured from Vite at 127.0.0.1:5174.",
+      "Native spawn and character_npc were recaptured from the built preview at 127.0.0.1:4174 after the first native dev-server spawn capture returned an uncaught runtime event and zero rendered triangles.",
+      "The failed first attempt is preserved at outputs/village-fidelity-20261004/review/first-pass/full-capture-failure/.",
+      "A later independent cold run from native dev 5174 and built preview 4199 rendered after about 30 seconds with zero console errors. The initial zero-resource dev spawn attempt is retained as rejected evidence; it was captured before readiness and is superseded by the stable-run captures."
+    ],
+    "failedDevSpawnAttempt": {
+      "report": "outputs/village-fidelity-20261004/review/first-pass/full-capture-failure/capture-report.json",
+      "screenshot": "outputs/village-fidelity-20261004/review/first-pass/full-capture-failure/spawn.png",
+      "errors": [
+        "Uncaught"
+      ],
+      "perf": {
+        "fps": 0,
+        "frameTimeMs": 0,
+        "drawCalls": 55,
+        "triangles": 0,
+        "vertices": 0,
+        "activeMeshes": 0
+      },
+      "conclusion": "Rejected as capture evidence: the native play view was black and reported zero rendered triangles/active meshes."
+    },
+    "laterColdRun": {
+      "bases": [
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:4199"
+      ],
+      "result": "rendered after approximately 30 seconds",
+      "consoleErrors": [],
+      "interpretation": "Confirms the first zero-resource sample was a capture-readiness failure rather than evidence of a persistent native runtime failure."
+    }
+  },
+  "targets": [
+    {
+      "id": 818885706,
+      "osmWayId": 818885706,
+      "heightM": 9.6,
+      "heightSource": "levels",
+      "footprintVertices": 11,
+      "pnoa": {
+        "path": "outputs/village-fidelity-20261004/references/818885706.png",
+        "license": "CC BY 4.0",
+        "provider": "IGN/CNIG",
+        "captureYear": null,
+        "retrievedAt": "2026-10-04",
+        "evidenceConfidence": "observed",
+        "evidenceStatus": "evidence-ready",
+        "observedFeatures": [
+          "A north-south two-slope roof ridge is visible inside the mapped footprint."
+        ]
+      },
+      "beforePng": "outputs/village-fidelity-20261004/before/house_818885706.png",
+      "afterPng": "outputs/village-fidelity-20261004/after/house_818885706.png",
+      "capture": {
+        "cameraMatchesBaseline": true,
+        "base": null,
+        "drawCalls": {
+          "before": 43,
+          "after": 43
+        },
+        "activeMeshes": {
+          "before": 33,
+          "after": 33
+        },
+        "triangles": {
+          "before": 1027346,
+          "after": 1028476
+        }
+      },
+      "sourceEvidenceLimit": "PNOA supports roof plan/material appearance only; it does not establish facade details, slope, or absolute ridge height.",
+      "status": "ACCEPT",
+      "finding": "Explicit north-south gable replaces the unsupported shed profile. The final image has a continuous roof/wall boundary; first-pass output had a visible seam, then the geometry correction removed it. Rendered-mesh tests verify concave-footprint containment, exact projected roof area, shared roof/wall boundary vertices, and preserved maximum at the existing topY datum."
+    },
+    {
+      "id": 818885708,
+      "osmWayId": 818885708,
+      "heightM": 9.6,
+      "heightSource": "levels",
+      "footprintVertices": 9,
+      "pnoa": {
+        "path": "outputs/village-fidelity-20261004/references/818885708.png",
+        "license": "CC BY 4.0",
+        "provider": "IGN/CNIG",
+        "captureYear": null,
+        "retrievedAt": "2026-10-04",
+        "evidenceConfidence": "observed",
+        "evidenceStatus": "evidence-ready",
+        "observedFeatures": [
+          "The principal roof has hipped ends rather than the generated long gable."
+        ]
+      },
+      "beforePng": "outputs/village-fidelity-20261004/before/house_818885708.png",
+      "afterPng": "outputs/village-fidelity-20261004/after/house_818885708.png",
+      "capture": {
+        "cameraMatchesBaseline": true,
+        "base": null,
+        "drawCalls": {
+          "before": 43,
+          "after": 43
+        },
+        "activeMeshes": {
+          "before": 33,
+          "after": 33
+        },
+        "triangles": {
+          "before": 947389,
+          "after": 948519
+        }
+      },
+      "sourceEvidenceLimit": "PNOA supports roof plan/material appearance only; it does not establish facade details, slope, or absolute ridge height.",
+      "status": "ACCEPT",
+      "finding": "The final hipped surface adds the observed principal hip ends; the clipped mesh covers the concave source footprint once. PNOA indicates a compound roof but the exact secondary-volume arrangement remains probable.",
+      "confidenceNote": "Observed hip ends; fit of secondary roof volumes is probable."
+    },
+    {
+      "id": 474364245,
+      "osmWayId": 474364245,
+      "heightM": 9.6,
+      "heightSource": "levels",
+      "footprintVertices": 7,
+      "pnoa": {
+        "path": "outputs/village-fidelity-20261004/references/474364245.png",
+        "license": "CC BY 4.0",
+        "provider": "IGN/CNIG",
+        "captureYear": null,
+        "retrievedAt": "2026-10-04",
+        "evidenceConfidence": "observed",
+        "evidenceStatus": "evidence-ready",
+        "observedFeatures": [
+          "A triangular northern hip end and central ridge are visible within this footprint."
+        ]
+      },
+      "beforePng": "outputs/village-fidelity-20261004/before/house_474364245.png",
+      "afterPng": "outputs/village-fidelity-20261004/after/house_474364245.png",
+      "capture": {
+        "cameraMatchesBaseline": true,
+        "base": null,
+        "drawCalls": {
+          "before": 42,
+          "after": 42
+        },
+        "activeMeshes": {
+          "before": 32,
+          "after": 32
+        },
+        "triangles": {
+          "before": 954720,
+          "after": 955850
+        }
+      },
+      "sourceEvidenceLimit": "PNOA supports roof plan/material appearance only; it does not establish facade details, slope, or absolute ridge height.",
+      "status": "ACCEPT",
+      "finding": "The final hipped surface matches the broad roof plan and renders without a visible crease gap. The complete compound arrangement is probable from this top-down reference.",
+      "confidenceNote": "Broad hipped roof plan observed; complete compound fit remains probable."
+    },
+    {
+      "id": 474649085,
+      "osmWayId": 474649085,
+      "heightM": 9.6,
+      "heightSource": "levels",
+      "footprintVertices": 6,
+      "pnoa": {
+        "path": "outputs/village-fidelity-20261004/references/474649085.png",
+        "license": "CC BY 4.0",
+        "provider": "IGN/CNIG",
+        "captureYear": null,
+        "retrievedAt": "2026-10-04",
+        "evidenceConfidence": "observed",
+        "evidenceStatus": "evidence-ready",
+        "observedFeatures": [
+          "Continuous approximately north-south gable ridge; the current principal footprint axis selects an almost east-west ridge."
+        ]
+      },
+      "beforePng": "outputs/village-fidelity-20261004/before/house_474649085.png",
+      "afterPng": "outputs/village-fidelity-20261004/after/house_474649085.png",
+      "capture": {
+        "cameraMatchesBaseline": true,
+        "base": null,
+        "drawCalls": {
+          "before": 42,
+          "after": 42
+        },
+        "activeMeshes": {
+          "before": 32,
+          "after": 32
+        },
+        "triangles": {
+          "before": 955281,
+          "after": 956411
+        }
+      },
+      "sourceEvidenceLimit": "PNOA supports roof plan/material appearance only; it does not establish facade details, slope, or absolute ridge height.",
+      "status": "ACCEPT",
+      "finding": "The explicit north-south gable follows the observed ridge direction and the final wall/roof seam is closed. The runtime geometry test checks area, footprint containment, boundary joining, and keeps the prior maximum roof height (9.6 m OSM levels plus the historic gable rise); PNOA itself does not verify the vertical datum."
+    },
+    {
+      "id": 672017718,
+      "osmWayId": 672017718,
+      "heightM": 9.6,
+      "heightSource": "levels",
+      "footprintVertices": 30,
+      "pnoa": {
+        "path": "outputs/village-fidelity-20261004/references/672017718.png",
+        "license": "CC BY 4.0",
+        "provider": "IGN/CNIG",
+        "captureYear": null,
+        "retrievedAt": "2026-10-04",
+        "evidenceConfidence": "probable",
+        "evidenceStatus": "evidence-ready",
+        "observedFeatures": [
+          "Connected Antiguo Hospital roof planes are warm weathered brown/red, with a small blue-grey glazing patch; the whole-roof pale grey palette disagrees."
+        ]
+      },
+      "beforePng": "outputs/village-fidelity-20261004/before/house_672017718.png",
+      "afterPng": "outputs/village-fidelity-20261004/after/house_672017718.png",
+      "capture": {
+        "cameraMatchesBaseline": true,
+        "base": null,
+        "drawCalls": {
+          "before": 45,
+          "after": 45
+        },
+        "activeMeshes": {
+          "before": 35,
+          "after": 35
+        },
+        "triangles": {
+          "before": 1112608,
+          "after": 1113738
+        }
+      },
+      "sourceEvidenceLimit": "PNOA supports roof plan/material appearance only; it does not establish facade details, slope, or absolute ridge height.",
+      "status": "ACCEPT_APPEARANCE_ONLY",
+      "finding": "The muted terracotta appearance corrects the prior pale-grey chapa appearance and matches the warm PNOA palette. The 30-vertex compound still renders as one broad procedural roof surface, while PNOA shows connected pitched volumes and a blue-grey glazing patch. Accept the appearance only; massing and glazing remain unmodeled.",
+      "appearanceStatus": "ACCEPT_APPEARANCE_ONLY",
+      "massingStatus": "BLOCKED"
+    }
+  ],
+  "control": {
+    "id": 310174514,
+    "status": "PASS_NO_OVERRIDE",
+    "beforePng": "outputs/village-fidelity-20261004/before/house_310174514.png",
+    "afterPng": "outputs/village-fidelity-20261004/after/house_310174514.png",
+    "overridePresent": false,
+    "visualAssessment": "Same roof form, tint, footprint, and camera in the reviewed before/after images.",
+    "sceneDelta": {
+      "drawCalls": 0,
+      "activeMeshes": 0,
+      "triangles": 1130,
+      "vertices": 2606,
+      "textures": 0
+    },
+    "interpretation": "The no-op control remains visually unchanged but reports +1,130 triangles and +2,606 vertices. The same diagnostic delta repeats across non-spawn views; native spawn is +2,260 triangles. These deltas reflect broader village roof tessellation and clipping updates together with target overrides, so they cannot be assigned only to the five local overrides. Road geometry fixes changed Y positions and add no triangles; do not attribute this count increase to road work."
+  },
+  "resourceComparison": {
+    "perView": [
+      {
+        "name": "calle_mayor_1",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 49,
+          "activeMeshes": 45,
+          "triangles": 955404,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 49,
+          "activeMeshes": 45,
+          "triangles": 956534,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "calle_mayor_2",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 46,
+          "activeMeshes": 38,
+          "triangles": 955107,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 46,
+          "activeMeshes": 38,
+          "triangles": 956237,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "plaza",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 44,
+          "activeMeshes": 35,
+          "triangles": 1032376,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 44,
+          "activeMeshes": 35,
+          "triangles": 1033506,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "iglesia",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 53,
+          "activeMeshes": 47,
+          "triangles": 1039933,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 53,
+          "activeMeshes": 47,
+          "triangles": 1041063,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "entrada_norte",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 43,
+          "activeMeshes": 34,
+          "triangles": 1024965,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 43,
+          "activeMeshes": 34,
+          "triangles": 1026095,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "entrada_sur",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 47,
+          "activeMeshes": 44,
+          "triangles": 952515,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 47,
+          "activeMeshes": 44,
+          "triangles": 953645,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "pilot_houses",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 46,
+          "activeMeshes": 40,
+          "triangles": 954048,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 46,
+          "activeMeshes": 40,
+          "triangles": 955178,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "road",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 53,
+          "activeMeshes": 51,
+          "triangles": 1047868,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 53,
+          "activeMeshes": 51,
+          "triangles": 1048998,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "vehicle",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 44,
+          "activeMeshes": 36,
+          "triangles": 953922,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 44,
+          "activeMeshes": 36,
+          "triangles": 955052,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "track",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 51,
+          "activeMeshes": 47,
+          "triangles": 1127786,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 51,
+          "activeMeshes": 47,
+          "triangles": 1128916,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "forest",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 45,
+          "activeMeshes": 35,
+          "triangles": 925925,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 45,
+          "activeMeshes": 35,
+          "triangles": 927055,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "river",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 41,
+          "activeMeshes": 41,
+          "triangles": 930177,
+          "vertices": 1296829,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 41,
+          "activeMeshes": 41,
+          "triangles": 931307,
+          "vertices": 1299435,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "aerial",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 53,
+          "activeMeshes": 53,
+          "triangles": 1133189,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 53,
+          "activeMeshes": 53,
+          "triangles": 1134319,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_310174514",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 41,
+          "activeMeshes": 31,
+          "triangles": 950021,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 41,
+          "activeMeshes": 31,
+          "triangles": 951151,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_818885706",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 43,
+          "activeMeshes": 33,
+          "triangles": 1027346,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 43,
+          "activeMeshes": 33,
+          "triangles": 1028476,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_818885708",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 43,
+          "activeMeshes": 33,
+          "triangles": 947389,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 43,
+          "activeMeshes": 33,
+          "triangles": 948519,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_474364245",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 42,
+          "activeMeshes": 32,
+          "triangles": 954720,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 42,
+          "activeMeshes": 32,
+          "triangles": 955850,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_474649085",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 42,
+          "activeMeshes": 32,
+          "triangles": 955281,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 42,
+          "activeMeshes": 32,
+          "triangles": 956411,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "house_672017718",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:5174",
+        "before": {
+          "drawCalls": 45,
+          "activeMeshes": 35,
+          "triangles": 1112608,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 45,
+          "activeMeshes": 35,
+          "triangles": 1113738,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "spawn",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:4174",
+        "before": {
+          "drawCalls": 196,
+          "activeMeshes": 101,
+          "triangles": 1931470,
+          "vertices": 1311573,
+          "textures": 42
+        },
+        "after": {
+          "drawCalls": 196,
+          "activeMeshes": 101,
+          "triangles": 1933730,
+          "vertices": 1314179,
+          "textures": 42
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 2260,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      {
+        "name": "character_npc",
+        "cameraMatchesBaseline": true,
+        "captureBase": "http://127.0.0.1:4174",
+        "before": {
+          "drawCalls": 47,
+          "activeMeshes": 41,
+          "triangles": 952799,
+          "vertices": 1286773,
+          "textures": 39
+        },
+        "after": {
+          "drawCalls": 47,
+          "activeMeshes": 41,
+          "triangles": 953929,
+          "vertices": 1289379,
+          "textures": 39
+        },
+        "delta": {
+          "drawCalls": 0,
+          "activeMeshes": 0,
+          "triangles": 1130,
+          "vertices": 2606,
+          "textures": 0
+        },
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      }
+    ],
+    "summary": {
+      "drawCalls": "unchanged in all 21 views",
+      "activeMeshes": "unchanged in all 21 views",
+      "textures": "unchanged in all 21 views",
+      "viteDiagnosticViews": {
+        "count": 19,
+        "triangleDelta": 1130,
+        "vertexDelta": 2606
+      },
+      "previewNpcView": {
+        "count": 1,
+        "triangleDelta": 1130,
+        "vertexDelta": 2606
+      },
+      "previewSpawn": {
+        "count": 1,
+        "triangleDelta": 2260,
+        "vertexDelta": 2606
+      },
+      "fps": "not accepted as hardware evidence; backend is SwiftShader"
+    }
+  },
+  "geometryAndMaterialChecks": {
+    "roofProfiles": {
+      "status": "PASS",
+      "notes": "The tested runtime emits actual Babylon mesh vertices/indices; target hip roofs preserve footprint area and stay inside source footprints. Gable roofs 818885706 and 474649085 are triangulated within their concave footprints; tested area is equal to the polygon area; rendered roof boundary points join wall top vertices; maximum height is asserted."
+    },
+    "hospital": {
+      "status": "PARTIAL",
+      "notes": "No multi-volume compound decomposition or small blue-grey glazing detail is modeled."
+    },
+    "roofMaterial": {
+      "status": "VISUALLY_CONFIRMED",
+      "notes": "The override selects the shared teja material group and applies a muted vertex tint; no new textures, draw calls, or meshes are added."
+    },
+    "facadeKits": {
+      "status": "OPTION_PATH_TESTED_RUNTIME_EVIDENCE_MAP_NOT_WIRED",
+      "notes": "The detailed-building path consumes selectVillageFacadeKit and a NullEngine test confirms kit selection changes actual shutter vertices when facadeKitsByBuilding is supplied. src/main.ts does not pass facadeKitsByBuilding, so the installed game uses deterministic hash fallback rather than per-building evidence kit choices. No facade claim is made from PNOA."
+    }
+  },
+  "validation": [
+    {
+      "command": "node scripts/environment/capture_village_fidelity.mjs --base http://127.0.0.1:5174 ...",
+      "status": "PASS_DIAGNOSTIC_SWEEP",
+      "views": 19,
+      "consoleErrors": []
+    },
+    {
+      "command": "node scripts/environment/capture_village_fidelity.mjs --base http://127.0.0.1:4174 ... --views spawn,character_npc",
+      "status": "PASS_ACTOR_RECAPTURE",
+      "views": [
+        "spawn",
+        "character_npc"
+      ],
+      "consoleErrors": [],
+      "spawnTriangles": 1933730,
+      "spawnActiveMeshes": 101,
+      "npcCharacters": 10
+    },
+    {
+      "command": "npm run test:village-fidelity",
+      "status": "PASS",
+      "notes": "Override/runtime mesh checks passed; roof-shape and facade-kit validators passed; evidence source phase reported 164 checks OK, 5 corrected records, and 6 remaining evidence blockers."
+    },
+    {
+      "command": "npm run typecheck / npm run build / npm test",
+      "status": "PASS_ROOT_REPORTED",
+      "notes": "Reported by root after source freeze; not repeated by this reviewer."
+    }
+  ],
+  "limitations": [
+    "Orthophoto flight year is unknown for the five targets; PNOA maximum-actuality service snapshots were retrieved 2026-10-04.",
+    "PNOA supports plan/roof inspection only, not facade or vertical-height conclusions.",
+    "Renderer is Chrome headless SwiftShader; no target-GPU performance claim.",
+    "The new evidence-map facade-kit option has no production caller in src/main.ts.",
+    "The hospital compound roof massing remains approximate; appearance acceptance is limited to colour/material.",
+    "The initial Vite native spawn frame failed to render and logged an uncaught event; built-preview actor captures render correctly, but the dev/preview discrepancy remains unexplained."
+  ]
+}

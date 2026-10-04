@@ -1,0 +1,14 @@
+{
+  "osmWayId": 818885704,
+  "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.308654,42.388829,-3.308306,42.389026&WIDTH=640&HEIGHT=640",
+  "bbox": [
+    -3.308654,
+    42.388829,
+    -3.308306,
+    42.389026
+  ],
+  "license": "CC BY 4.0",
+  "provider": "IGN/CNIG",
+  "retrievedAt": "2026-10-04",
+  "note": "Current maximum actuality service; do not assume historical flight year without metadata."
+}

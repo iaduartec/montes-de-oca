@@ -1,0 +1,183 @@
+{
+  "url": "http://127.0.0.1:4188/?vx=2992.171&vz=3542.183&vyaw=0",
+  "checks": {
+    "walkingBridgeDry": true,
+    "walkingUsesDeck": true,
+    "bridgeDry": true,
+    "bridgeNoWaterSpeedCap": true,
+    "bridgeRoadSurface": true,
+    "riverWet": true,
+    "riverSpeedLimited": true,
+    "riverMud": true
+  },
+  "walking": {
+    "player": {
+      "mode": "on-foot",
+      "x": 3188.81,
+      "y": 74.30468873241041,
+      "z": 3446.18,
+      "yawDeg": 0,
+      "speedMps": 0,
+      "running": false,
+      "moving": false,
+      "interact": false,
+      "distanceToVehicleM": 218.82292459886392,
+      "canEnter": false
+    },
+    "road": {
+      "height": 74.30468873241041,
+      "roadId": "741760080",
+      "normal": {
+        "_isDirty": true,
+        "_x": -0.022720117308983837,
+        "_y": 0.9997371401188149,
+        "_z": 0.0030735869142237584
+      },
+      "class": "ROAD",
+      "bridge": true,
+      "skirt": false,
+      "tangentX": 0.9909656862357332,
+      "tangentZ": -0.13411565420689084,
+      "longitudinalSlope": 0.022933100952407942,
+      "crossSlope": 0.0000013045738128721664
+    },
+    "waterDepth": 0
+  },
+  "bridge": {
+    "p": {
+      "x": 3188.81,
+      "z": 3446.18,
+      "yaw": 1.705317329711091
+    },
+    "mode": "driving",
+    "water": "seco",
+    "calado": 0,
+    "telemetry": {
+      "x": 3190.290366493204,
+      "z": 3445.979649608923,
+      "y": 74.4327052806116,
+      "yawDeg": 97.70748572296499,
+      "speed": 14.886711263361795,
+      "speedKmh": 53.59216054810246,
+      "lateral": 5.263550070752535e-7,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 1.493862521587939,
+      "slopeForwardDeg": 1.3139295075616122,
+      "slopeRightDeg": -0.00007476073717074034,
+      "slopeMagnitudeDeg": 1.3139295096870114,
+      "pitchDeg": -1.3138178079504734,
+      "rollDeg": -0.000023194942292832465,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 14122.685662701962,
+      "tireForceN": -1486.8670525236337,
+      "gravityForceN": -404.904757652731,
+      "wheelResidualMaxM": 0.000005227349689107541,
+      "airborne": false,
+      "contacts": [
+        74.37105939860533,
+        74.3710589883456,
+        74.30684093464825,
+        74.30684023434137
+      ],
+      "wheelCompression": [
+        0.14616299312989825,
+        0.14616440051795163,
+        0.14615669308916998,
+        0.14615733214313392
+      ],
+      "wheelSurfaceTypes": [
+        "ROAD",
+        "ROAD",
+        "ROAD",
+        "ROAD"
+      ],
+      "suspensionVelocity": 0.16036263138365925
+    },
+    "surface": {
+      "type": "ROAD",
+      "grip": 1,
+      "lateralGrip": 1,
+      "brakingGrip": 1,
+      "rollingResistance": 0.65,
+      "roughness": 0.08,
+      "dust": 0,
+      "suspensionNoise": 0.08,
+      "wheelAudio": 0.08,
+      "skidAudio": 0.5
+    }
+  },
+  "river": {
+    "p": {
+      "x": 4514.73,
+      "z": 57.42,
+      "yaw": 0
+    },
+    "mode": "driving",
+    "water": "vadeando",
+    "calado": 0.11999999999999998,
+    "telemetry": {
+      "x": 4514.736526979293,
+      "z": 58.37085372137958,
+      "y": 210.62156054933365,
+      "yawDeg": 0,
+      "speed": 9,
+      "speedKmh": 32.4,
+      "lateral": 0.08777991660836718,
+      "yawRate": 0,
+      "lateralAccel": 0,
+      "distance": 0.9508537213795816,
+      "slopeForwardDeg": -15.173619096759243,
+      "slopeRightDeg": -13.17482998958789,
+      "slopeMagnitudeDeg": 19.710184341288247,
+      "pitchDeg": 12.266384137397477,
+      "rollDeg": -16.840218228070505,
+      "slipping": false,
+      "skidding": false,
+      "rolloverRisk": false,
+      "neutral": false,
+      "handbrake": false,
+      "tractionLimitN": 6649.3714287470975,
+      "tireForceN": -2342.8607143159074,
+      "gravityForceN": 4389.606068810484,
+      "wheelResidualMaxM": 0.15162841796870907,
+      "airborne": false,
+      "contacts": [
+        210.30635311558967,
+        209.93652385986547,
+        211.03521846400713,
+        210.49652385986542
+      ],
+      "wheelCompression": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "wheelSurfaceTypes": [
+        "GRASS",
+        "MUD",
+        "MUD",
+        "GRASS"
+      ],
+      "suspensionVelocity": -1.0967989204644717
+    },
+    "surface": {
+      "type": "MUD",
+      "grip": 0.4,
+      "lateralGrip": 0.35,
+      "brakingGrip": 0.42,
+      "rollingResistance": 3.5,
+      "roughness": 0.7,
+      "dust": 0,
+      "suspensionNoise": 0.7,
+      "wheelAudio": 0.7,
+      "skidAudio": 0.825
+    }
+  },
+  "method": "Actual player.step advances world and water rules; teleports isolate positive and negative contact fixtures, no claim of full route drive"
+}

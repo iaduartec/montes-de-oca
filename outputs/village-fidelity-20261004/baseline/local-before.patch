@@ -1,0 +1,2352 @@
+diff --git a/.agents/skills/babylon-vehicles/SKILL.md b/.agents/skills/babylon-vehicles/SKILL.md
+index 5c15e8a..b976fe1 100644
+--- a/.agents/skills/babylon-vehicles/SKILL.md
++++ b/.agents/skills/babylon-vehicles/SKILL.md
+@@ -13,3 +13,11 @@ description: Úsala al mejorar modelos, materiales, ruedas, presentación de con
+ 6. Prueba vistas cercanas y de conducción, movimiento, giros, sombras y luces representativas. Compara draw calls, número de mallas/materiales y LOD/instancias antes y después.
+ 
+ Usa los sistemas actuales de vehículos y físicas; no presupongas un plugin concreto de físicas Babylon.
++
++## Road changes and motorcycles
++
++- DECISION: Preserve assisted motorcycle stability and recovery unless a real gameplay regression is reproduced.
++- WHY: Road banking, support heights and junctions can affect riders without a motorcycle code defect.
++- INVARIANT: Both wheel heights use final road/terrain support; water contact compares actual world Y with water Y.
++- VALIDATION: Run `test:motorcycle`, `test:water-contact`, long turns, slalom, low-speed turns, braking turns and ROAD/TRACK transitions in the actual actor.
++- ANTI-PATTERN: Rewriting physics to compensate for visible road geometry, or declaring eight finished GLBs from an eight-entry catalog.
+diff --git a/.agents/skills/montes-oca-game-visuals/SKILL.md b/.agents/skills/montes-oca-game-visuals/SKILL.md
+index 8f434b6..b05e8c9 100644
+--- a/.agents/skills/montes-oca-game-visuals/SKILL.md
++++ b/.agents/skills/montes-oca-game-visuals/SKILL.md
+@@ -20,7 +20,7 @@ Use this skill for runtime art and rendering work in this game. Read the reposit
+ - Assets served by Vite live under `public/` and should be resolved with `src/public-url.ts`. Register the loader with `import '@babylonjs/loaders/glTF'`; use `SceneLoader.LoadAssetContainerAsync` when the actor needs to validate content, attach it under the established root, and dispose its resources deliberately.
+ - An unavailable or invalid asset must be reported clearly and leave a visible working fallback. Do not silently claim a placeholder is finished art. Keep source files and conversion settings when they materially support rebuilding the shipped GLB.
+ - Map idle and locomotion clips from actual movement state, avoid root-motion drift when gameplay owns position, transition intentionally, and dispose animation groups/container with the actor. Do not claim a walk cycle exists when the supplied GLB only has idle and run.
+-- No separate NPC population or AI system has been found in the game baseline; confirm current source before planning NPC-specific work.
++- Village NPC patrols and simulation tiers already exist; inspect their current runtime before planning changes.
+ 
+ ## Lighting and cost
+ 
+@@ -41,3 +41,17 @@ Use this skill for runtime art and rendering work in this game. Read the reposit
+ The player can use `public/characters/field-player.glb`, built from the retained Kenney Animated Characters 3 source pack under `assets/characters/kenney-animated-characters-3/` with `scripts/player/build_kenney_character.py`. Its license and source are recorded in `asset.json`; the GLB contains Idle, retargeted Walk, and Run groups. Refresh these paths and properties from the live checkout before relying on this note.
+ 
+ The default 4x4 and patrol use `public/vehicles/four-door-utility.glb`. It is a generic four-door SUV, not a Mitsubishi or Nissan model; `public/vehicles/ATTRIBUTION.md` preserves the provider's CC0 and AI-origin claims without presenting them as independently verified. The runtime validates four named wheel pivots and drawable meshes, drives those pivots, and retains a visible procedural fallback. The NullEngine model validator does not prove the asynchronous GLB loaded: verify the actual browser scene and wheel pose with the vehicle capture harness before claiming the asset works. Refresh the live asset, loader, manifest, and triangle/draw measurements before relying on this note.
++
++## Comparable road evidence
++
++- DECISION: Diagnose RAW TERRAIN, RENDERED ROAD GEOMETRY and DRIVING SURFACE separately; reuse spatially separated baseline worst-point cameras for final captures, positioned above the local slope.
++- WHY: Contact normal caps, steep-facet rejection and overlays can hide road geometry tails.
++- INVARIANT: Rendered diagnostics bypass driving filtering/clamps; include percentiles, histograms, contacts, skirts and overlap flags. Keep baseline code isolated if implementation has started.
++- VALIDATION: Inspect the actual PNGs, triangle heights and console alongside the statistical report. Use independent browser sessions for concurrent harnesses; restart mission after any HMR reload.
++- ANTI-PATTERN: Reporting only improved maxima, mixing shoulder slopes with pavement without labels, or claiming target GPU FPS from software rendering.
++
++- DECISION: Close exposed cut/fill only at isolated OSM termini using separately labelled earthwork faces; retain the centreline and XZ footprint.
++- WHY: A graded cross-section can leave an open wedge against raw MDT at an isolated end even when lateral skirts and contact are correct.
++- INVARIANT: Terminal earthwork faces are rendered, excluded from driving contacts and reported apart from pavement; shared OSM nodes use the junction field.
++- VALIDATION: Inspect matching endpoint captures, retain the closure through mesh filtering and run road-surface plus actual mission/moto/water harnesses.
++- ANTI-PATTERN: Adding broad vertical side seals without a localized cause or accepting vertex/index growth as proof that faces rendered.
+diff --git a/.agents/skills/montes-oca-open-world-runtime/SKILL.md b/.agents/skills/montes-oca-open-world-runtime/SKILL.md
+index 7171202..4aa9a71 100644
+--- a/.agents/skills/montes-oca-open-world-runtime/SKILL.md
++++ b/.agents/skills/montes-oca-open-world-runtime/SKILL.md
+@@ -20,3 +20,11 @@ description: Cambia streaming de terreno, presupuesto por frame, superficies, su
+ - Impactos: usa velocidad vertical real de suspensión, cooldown 220 ms, reinicio al cambiar vehículo y supresión de teleports/parado/a pie. No conviertas frenadas o teleports en colisiones inventadas. Al cerrar un control de sonido devuelve foco al canvas; verifica F/W después del click.
+ - HIGH conserva bandas y sombras originales; LOW/MEDIUM reducen presupuestos y renderScale, ULTRA aumenta sombras. Cambiar preset en la UI reinicia partida, anunciado al jugador.
+ - Gates: `npm run typecheck`, `npm run build`, `npm test`, `npm run test:runtime`, recorrido real `scripts/milestone/drive_milestone.mjs` y capturas fijas `scripts/runtime/capture_runtime.mjs`. Revisa imágenes directamente y errores de consola. El POC 3D Tiles queda aislado; adopción exige comparación equivalente y jerarquía/LOD útil.
++
++## Geometry and contact contract
++
++- DECISION: Road heights come from final triangles; rendered profile is built by station separately from the driving normal safety bounds.
++- WHY: A limited driving bank can mask a twisted mesh and clearance lifts can create visible ridges.
++- INVARIANT: Preserve OSM XZ, trimmed widths, datum and linear bridge decks. Bounded station cuts/fills use local rendered-MDT footprint excision with preserved exterior UV/height attributes; CPU heightfields remain raw. Apply cutouts again on tile rebuild. Junction targets use immutable profiles, stable OSM-ID priorities and the principal road grade; never mutate targets pair by pair. Report shoulder samples separately and audit them explicitly. Cutouts are a measured bootstrap operation, not an unbudgeted per-frame task.
++- VALIDATION: Run `test:road-surface`, separate raw/rendered/driving diagnostics, actual water/motorcycle harnesses and the complete mission after code stops changing.
++- ANTI-PATTERN: Calling bounded sampler normals proof of rendered geometry, or using a Vite reload interrupted harness as gameplay evidence.
+diff --git a/AGENTS.md b/AGENTS.md
+index 6e155dc..ac685ba 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -9,6 +9,14 @@ Estas reglas se aplican al trabajo en este juego. Conserva la arquitectura, juga
+ - `.agents/skills/` contiene las guías especializadas activas. Consulta solo las pertinentes para cada tarea.
+ - `outputs/babylon-game-overhaul-kit/` es un artefacto histórico de distribución. No lo uses ni lo trates como configuración activa de agentes; la configuración vigente está en los tres elementos anteriores.
+ 
++## Coordinación de agentes
++
++- La política de roles, modelos y vías de ejecución está en `orchestration/MODEL_POOL.md`; el prompt activo es `orchestration/ORQUESTADOR-PRINCIPAL.md`. Ambos complementan estas reglas, sin revocarlas.
++- Un único writer por archivo, incluidos reportes, logs y archivos generados. Cada packet declara rutas exactas, dependencias, restricciones y verificaciones; no se despacha si hay ownership solapado.
++- Solo el orquestador escribe el registro `orchestration/workers.tsv`, integra archivos compartidos y realiza commits. Los workers no hacen commit, no limpian el árbol y no revierten cambios ajenos.
++- Inspecciona `git status` antes de editar y antes de commit. Si un archivo cambia desde la lectura inicial, detén esa edición y concilia el diff con su dueño; no lo sobrescribas.
++- Registra solo despachos reales, conservando el historial. Un packet preparado no prueba que un worker se haya ejecutado. Quien implementa no revisa su propio resultado; el orquestador reproduce la validación antes de ACCEPT / FIX / REVERT.
++
+ ## Antes de cambiar código
+ 
+ - Inspecciona el repositorio, los scripts del proyecto, la versión instalada de Babylon.js, el motor de renderizado, la gestión de escenas y el flujo de assets. Considera autoritativos la versión instalada y las convenciones del proyecto; contrasta las API actuales con la [documentación oficial de Babylon.js](https://doc.babylonjs.com/).
+diff --git a/OBJECTIVE.md b/OBJECTIVE.md
+index 665c88e..a7d52ac 100644
+--- a/OBJECTIVE.md
++++ b/OBJECTIVE.md
+@@ -1,597 +1,50 @@
+ # Objetivo del proyecto — Montes de Oca Offroad
+ 
+-Este documento reúne el objetivo del juego y un backlog orientativo para mejorar la experiencia. Las reglas de trabajo activas están en `AGENTS.md`; consulta las guías pertinentes de `.agents/skills/`.
++Consolidar un juego off-road jugable en Villafranca Montes de Oca, conservando MDT05, PNOA, EPSG:25830, trazado OSM, controles y sistemas validados. Las reglas permanentes son `AGENTS.md`; las guías activas son `.agents/skills/`. Contrastar siempre este backlog con HEAD.
+ 
+-El objetivo es consolidar un videojuego 3D off-road convincente y jugable, ambientado en Villafranca Montes de Oca. Integra los sistemas existentes, conserva los controles y la arquitectura que funcionan, y prioriza cambios perceptibles y verificables sobre la incorporación de sistemas por sí misma.
++## Estado comprobado el 1 de octubre de 2026
+ 
+-Antes de iniciar una prioridad, inspecciona HEAD y comprueba si sigue pendiente. Esta lista es una guía revisable: no repitas trabajo ya resuelto ni presentes como hecho lo que no hayas verificado. Cualquier delegación, selección de herramientas y límite de agentes debe seguir `AGENTS.md` y las instrucciones activas del entorno; este documento no fija modelos ni cantidades de agentes.
++Baseline: `caef87e`. Babylon core/loaders 8.56.2. Pasaron typecheck, build, npm test, runtime, road-surface, water-contact y motorcycle antes de modificar código.
+ 
+-Usa la documentación oficial de Babylon.js cuando una tarea dependa de sus APIs y contrasta los ejemplos con la versión instalada. Distingue datos observados, estimaciones y objetivos de rendimiento.
++Ya implementado; conservar y verificar ante cambios:
+ 
+-Las especificaciones de hardware y FPS que aparecen más abajo son objetivos orientativos, no resultados medidos; contrástalos con el dispositivo disponible antes de informar de rendimiento.
++- Misión integrada: conducir al repetidor, reparar y regresar; HUD y minimapa.
++- ROAD/TRACK/PATH/GRASS/MUD/ROCK, respuesta centralizada y física off-road.
++- Suspensión de cuatro contactos, presets de calidad, cola cooperativa por frame.
++- Lifecycle GPU de tiles con histéresis; datos CPU y atlas compartido conservados.
++- Polvo con pool, audio procedural por superficie, ambiente e impactos.
++- Personaje Kenney con Idle/Walk/Run y NPC con simulation tiers.
++- Catálogo de ocho vehículos, selector y luces de freno; un GLB de vehículo de runtime. El catálogo no demuestra ocho assets finales.
++- Agua/vados, contacto 3D, carreteras sobre agua secas, estabilidad y recuperación asistida de moto.
+ 
+-==================================================
+-ESTADO ACTUAL
+-==================================================
++## Iteración Road Geometry V3
+ 
+-El proyecto ya NO es una maqueta inicial.
++La normal de conducción limitada del baseline no probaba la corrección del pavimento. La iteración introduce perfiles por estación, banking por clase, cortes/rellenos locales, transición lateral y reconciliación local de cruces. El renderer sustrae únicamente la huella de calzada/faldones del MDT visible, conservando alturas CPU y los atributos PNOA de los fragmentos exteriores. Son perfiles de diseño sobre el MDT, no rasantes topográficas levantadas. Conservar puentes lineales y las anchuras/recortes OSM.
+ 
+-Está basado en:
++El diagnóstico distingue RAW TERRAIN, RENDERED ROAD GEOMETRY y DRIVING SURFACE, con percentiles, histogramas y puntos extremos. La evidencia y el estado de aceptación se registran en `outputs/road-v3-20261001/`; no declarar cerrados extremos sin revisar las métricas finales y las capturas.
+ 
+-Babylon.js 8
+-TypeScript
+-Vite
++Mejoras adicionales: detalle artístico por vertex color en TRACK/PATH y extracción pequeña de motor/escena/cámara a `src/runtime/rendering-runtime.ts`. No sustituir la state machine ni ampliar la población o la geometría por defecto.
+ 
+-Ya existen:
++## Backlog válido
+ 
+-- MDT05 georreferenciado;
+-- EPSG:25830;
+-- escala 1 unidad = 1 metro;
+-- tiles de terreno;
+-- ortofoto PNOA;
+-- red vial OSM;
+-- ROAD / TRACK / PATH;
+-- draping de vías;
+-- vegetación;
+-- más de 33.000 instancias;
+-- siete tipos de vegetación;
+-- pueblo de Villafranca;
+-- ~330 edificios;
+-- alturas OSM/LiDAR;
+-- fachadas;
+-- materiales;
+-- muros OSM;
+-- agua;
+-- río;
+-- sitios focales;
+-- vehículos múltiples;
+-- catálogo de vehículos;
+-- selector;
+-- luces de freno;
+-- motocicleta;
+-- minimapa;
+-- primera misión;
+-- objetivo repetidor;
+-- tests extensos.
++1. Resolver las discontinuidades y solapes viales que permanezcan en las métricas finales. Revisar pavimento, hombros, contacto y normal por separado; preservar pendientes reales y trazado OSM.
++2. Terrain Material V2: evaluar micro-normal, roughness y detalle con fade de distancia sin reemplazar PNOA. Diagnóstico independiente de manchas claras mediante aislamiento de ortofoto, luz, sombras, vías, agua, vegetación y detalle. No corregir sin causa reproducible.
++3. Character Art V2: buscar proporciones/ropa humana rural apropiadas en assets legales, manteniendo collider, animaciones y runtime. Kenney funciona; no presentarlo como un upgrade naturalista.
++4. Vegetation Distribution V2: reubicar el inventario existente por bosque/borde/seto/campo/ribera/valle/vía/pueblo; comparar vistas aéreas sin aumentar significativamente el conteo.
++5. Auditar sombras en HEAD por casters, tiers, distancia y captura concreta. No usar las cifras históricas de 10/65 como presupuesto.
++6. Clasificar cada vehículo FINAL / ACCEPTABLE STYLIZED / PLACEHOLDER con evidencia visual y licencia por asset; priorizar vehículos seleccionados por el jugador.
++7. Continuar extracciones de `main.ts`, una frontera por iteración. Tras cada una: tipos, pruebas específicas, build, npm test y runtime.
++8. Tras varias extracciones, medir bundle/startup y lazy-load solo contenido opcional; no crear chunks artificiales. Baseline initial index: 2,304.06 kB / 592.56 kB gzip (Vite), no tiempo de primera jugabilidad.
++9. Completar evidencia geográfica pendiente de estructuras reales, sin geometría ni imágenes de Google.
+ 
+-NO rehagas estos sistemas desde cero.
++## GPU objetivo y validación
+ 
+-==================================================
+-FUENTE DE VERDAD
+-==================================================
++RTX 2070 8 GB, Ryzen 9 5900X, 32 GB; HIGH a 1920×1080 y 2560×1440 en village/road/track/forest/aerial. Medir frame time p50/p95/p99, FPS, draw calls, triángulos, meshes, texturas y heap. En esta iteración se verificó ANGLE D3D11 sobre la RTX 2070 desde Chrome Windows. Las mediciones de cámara libre excluyen actores/NPC por el bootstrap existente: no equivalen al presupuesto de juego completo. SwiftShader solo permite comparar geometría/capturas y costes indirectos.
+ 
+-Leer antes:
++Gates de cada cambio transversal: `npm run typecheck`, `npm run build`, `npm test`, `npm run test:runtime`, `npm run test:road-surface`, `npm run test:water-contact`, `npm run test:motorcycle`. Añadir misión real, moto/agua y cámaras iguales; revisar imágenes y consola. Los tests de harness no sustituyen un recorrido humano ni medición de GPU real.
+ 
+-AGENTS.md
+-OBJECTIVE.md
++## Orquestación de esta fase
+ 
+-y:
++Usar `orchestration/ORQUESTADOR-PRINCIPAL.md` como metaprompt activo y `orchestration/MODEL_POOL.md` como política de despacho: GPT-6.1 Sol coordina e integra; GPT-6 Luna analiza y revisa; OpenCode implementa; WorkBuddy AI + DeepSeek V4.1 Flash tiene prioridad para tareas mecánicas y aisladas con acceso gratuito confirmado en la cuenta del usuario. No equiparar esa vía al proveedor de DeepSeek en OpenCode.
+ 
+-.agents/skills/
+-
+-Especialmente:
+-
+-montes-oca-game-visuals
+-
+-Consulta documentación oficial Babylon.js cuando sea necesario:
+-
+-https://doc.babylonjs.com/
+-
+-==================================================
+-MISIÓN DE ESTA PASADA
+-==================================================
+-
+-Llevar el proyecto desde:
+-
+-"mundo técnicamente avanzado"
+-
+-a:
+-
+-"vertical slice de videojuego convincente".
+-
+-Prioridad:
+-
+-GAMEPLAY + FEEL + VISUAL COHESION + PERFORMANCE.
+-
+-No queremos añadir sistemas por añadir.
+-
+-Queremos integrar y pulir lo que ya existe.
+-
+-==================================================
+-FASE 0 — AUDITORÍA ACTUAL REAL
+-==================================================
+-
+-Inspecciona HEAD actual.
+-
+-Ejecuta:
+-
+-npm run typecheck
+-npm run build
+-npm test
+-
+-Ejecuta el juego real.
+-
+-Captura:
+-
+-- spawn;
+-- pueblo;
+-- carretera;
+-- pista;
+-- bosque;
+-- objetivo;
+-- vehículo;
+-- personaje/NPC;
+-- vista aérea.
+-
+-Registra:
+-
+-FPS
+-frame time
+-draw calls
+-active meshes
+-triangles
+-textures
+-shadow casters
+-JS heap
+-
+-No uses datos históricos cuando puedas medir HEAD.
+-
+-==================================================
+-PRIORIDAD P0 — INTEGRAR LA MISIÓN
+-==================================================
+-
+-Revisar:
+-
+-docs/gameplay/MISION.md
+-
+-Actualmente las piezas de misión existen.
+-
+-Comprobar si sigue pendiente integrar:
+-
+-createRepeaterObjective(...)
+-createMission(FIRST_ROUTE)
+-
+-en el runtime principal.
+-
+-Completar el loop:
+-
+-SPAWN
+-→ entrar al 4x4
+-→ misión ACTIVE
+-→ conducir al repetidor
+-→ TARGET_REACHED
+-→ bajar del coche
+-→ mantener E
+-→ REPAIRED
+-→ volver al vehículo
+-→ RETURNING
+-→ regresar a Villafranca
+-→ COMPLETED
+-
+-Añadir feedback visual y UI mínimos.
+-
+-Debe poder jugarse de inicio a fin sin consola.
+-
+-==================================================
+-PRIORIDAD P1 — DESACOPLAR MAIN.TS
+-==================================================
+-
+-src/main.ts ha crecido demasiado.
+-
+-NO hacer big rewrite.
+-
+-Extraer gradualmente responsabilidades.
+-
+-Objetivo aproximado:
+-
+-main.ts
+- ├ GameBootstrap
+- ├ WorldRuntime
+- ├ RenderingRuntime
+- ├ VehicleRuntime
+- ├ CharacterRuntime
+- ├ MissionRuntime
+- ├ UiRuntime
+- └ InputRuntime
+-
+-Mantener comportamiento.
+-
+-Cada extracción debe pasar tests antes de continuar.
+-
+-==================================================
+-PRIORIDAD P1 — CHARACTER SYSTEM
+-==================================================
+-
+-Ya existen assets humanos.
+-
+-Audita:
+-
+-assets/characters/
+-
+-Incluye:
+-
+-Kenney Animated Characters
+-Quaternius Universal Animation Library
+-
+-Integrar un personaje humano riggeado real.
+-
+-Debe soportar:
+-
+-IDLE
+-WALK
+-RUN
+-
+-Usar:
+-
+-Skeleton
+-AnimationGroup
+-blending
+-
+-Separar:
+-
+-visual mesh
+-collider
+-state machine
+-
+-Añadir:
+-
+-ground alignment
+-heading
+-speed sync
+-
+-Evitar foot sliding.
+-
+-==================================================
+-NPC DE VILLAFRANCA
+-==================================================
+-
+-Usar humanos reales, no placeholders.
+-
+-Crear NPC ligeros.
+-
+-Estados iniciales:
+-
+-IDLE
+-WALK
+-
+-Variar:
+-
+-skin
+-speed
+-idle duration
+-route
+-
+-Niveles de simulación:
+-
+-NEAR:
+-animación completa
+-
+-MID:
+-actualización reducida
+-
+-FAR:
+-sleep
+-
+-No introducir cientos todavía.
+-
+-Crear primero 10-30 NPC convincentes.
+-
+-==================================================
+-PRIORIDAD P1 — OFFROAD PHYSICS
+-==================================================
+-
+-Auditar completamente el sistema actual de conducción.
+-
+-Comprobar específicamente si persisten:
+-
+-- física fundamentalmente 2D;
+-- grip casi constante;
+-- pendiente solo visual;
+-- superficie solo visual/audio.
+-
+-Si sigue ocurriendo:
+-
+-mejorarlo.
+-
+-Introducir modelo simplificado pero perceptible:
+-
+-surfaceGrip
+-rollingResistance
+-slopeForce
+-lateralGrip
+-brakeGrip
+-wheelSlip
+-
+-Superficies:
+-
+-ROAD
+-TRACK
+-PATH
+-GRASS
+-MUD
+-ROCK
+-
+-El vehículo debe comportarse claramente diferente.
+-
+-No buscar simulación extrema.
+-
+-Buscar sensación off-road.
+-
+-==================================================
+-SUSPENSIÓN VISUAL
+-==================================================
+-
+-Calcular altura del terreno bajo cada rueda.
+-
+-Usar cuatro muestras:
+-
+-FL
+-FR
+-RL
+-RR
+-
+-Derivar:
+-
+-bodyHeight
+-pitch
+-roll
+-wheelCompression
+-
+-Suavizar con damping.
+-
+-Evitar vibración.
+-
+-No mover visualmente el coche con senoides artificiales si puede derivarse del terreno real.
+-
+-==================================================
+-VEHÍCULOS
+-==================================================
+-
+-Los ocho modelos actuales ya existen.
+-
+-NO crear más modelos hasta mejorar calidad de uso.
+-
+-Auditar:
+-
+-- escala;
+-- pivotes;
+-- materiales;
+-- ruedas;
+-- luces;
+-- brake lights;
+-- steering;
+-- rotation;
+-- suspensión;
+-- shadow.
+-
+-Añadir efectos:
+-
+-polvo
+-grava
+-hierba
+-
+-solo ligados a superficie y velocidad.
+-
+-==================================================
+-PISTAS OFFROAD
+-==================================================
+-
+-Mejorar TRACK y PATH.
+-
+-Actualmente la red real existe.
+-
+-Añadir visualmente cuando sea seguro:
+-
+-- rodadas;
+-- tierra;
+-- gravel;
+-- roughness variation;
+-- bordes irregulares;
+-- vegetación lateral;
+-- puddle/mud zones puntuales.
+-
+-No modificar topología OSM.
+-
+-==================================================
+-VEGETACIÓN 2.0
+-==================================================
+-
+-La base actual de 33k instancias se conserva.
+-
+-NO aumentar cantidad indiscriminadamente.
+-
+-Mejorar distribución.
+-
+-Añadir:
+-
+-clustering por especie;
+-forest edge;
+-clearings;
+-river vegetation;
+-roadside vegetation;
+-village vegetation.
+-
+-Evitar patrón procedural evidente.
+-
+-Mantener thin instances.
+-
+-Medir impacto.
+-
+-==================================================
+-PUEBLO
+-==================================================
+-
+-El pueblo ya tiene cantidad suficiente.
+-
+-No generar más edificios por defecto.
+-
+-Mejorar IDENTIDAD.
+-
+-Priorizar landmarks:
+-
+-- iglesia;
+-- plaza;
+-- edificios singulares;
+-- entrada de Villafranca;
+-- fuente;
+-- señales;
+-- mobiliario;
+-- ermita cuando corresponda.
+-
+-Usar evidencia real siempre que exista.
+-
+-No copiar geometría de Google Maps/Earth.
+-
+-==================================================
+-RENDERING PASS
+-==================================================
+-
+-Auditar:
+-
+-PBR
+-environment
+-DirectionalLight
+-shadows
+-fog
+-tone mapping
+-exposure
+-
+-Objetivo:
+-
+-mejor separación:
+-
+-FOREGROUND
+-MIDGROUND
+-BACKGROUND
+-
+-Evaluar:
+-
+-CSM
+-SSAO2
+-fog
+-
+-solo si mejoran la escena.
+-
+-Evitar bloom agresivo.
+-
+-==================================================
+-STREAMING
+-==================================================
+-
+-Verificar si los tiles:
+-
+-se descargan realmente
+-
+-o
+-
+-solo se ocultan.
+-
+-Medir memoria.
+-
+-Si permanecen residentes innecesariamente:
+-
+-implementar lifecycle:
+-
+-LOAD_RADIUS
+-KEEP_RADIUS
+-UNLOAD_RADIUS
+-
+-con hysteresis.
+-
+-Evitar thrashing.
+-
+-==================================================
+-AUDIO
+-==================================================
+-
+-Crear primera pasada seria.
+-
+-Vehicle:
+-
+-engine rpm
+-load
+-gravel
+-dirt
+-grass
+-braking
+-impacts
+-
+-Environment:
+-
+-wind
+-birds
+-water
+-village ambience
+-
+-Usar audio espacial donde tenga sentido.
+-
+-==================================================
+-UI
+-==================================================
+-
+-Conservar minimapa.
+-
+-Añadir únicamente:
+-
+-mission objective
+-distance
+-interaction prompt
+-repair progress
+-mission completion
+-
+-HUD mínimo.
+-
+-No saturar pantalla.
+-
+-==================================================
+-PERFORMANCE
+-==================================================
+-
+-Hardware target:
+-
+-Ryzen 9 5900X
+-RTX 2070 8 GB
+-32 GB RAM
+-
+-Objetivo HIGH:
+-
+-60 FPS razonablemente estable a 1080p/1440p.
+-
+-4K puede usar:
+-
+-render scale
+-reduced shadows
+-LOD bias
+-
+-Crear o revisar:
+-
+-LOW
+-MEDIUM
+-HIGH
+-ULTRA
+-
+-## Coordinación del trabajo
+-
+-Divide una tarea solo cuando existan partes independientes y ownership claro. Mantén explícitos los archivos afectados, las restricciones, el resultado esperado y cómo se comprobará. Integra los cambios después de revisar su compatibilidad con el runtime y las reglas de `AGENTS.md`.
+-
+-## Límites del proyecto
+-
+-- No reescribas el terreno ni cambies la proyección sin una necesidad demostrada.
+-- No sustituyas datos reales por datos procedurales ni rehagas la topología OSM.
+-- No añadas sistemas, casas o vegetación sin una mejora clara y medible.
+-- No infles `src/main.ts` ni declares mejoras visuales o cifras de rendimiento sin verificarlas.
+-- Protege jugabilidad, controles, accesibilidad y coherencia del mundo.
+-
+-## Criterio de finalización
+-
+-Completa el flujo pertinente hasta donde permita el entorno: ejecuta el juego cuando sea posible, inspecciona el resultado desde vistas comparables y corre las comprobaciones del repositorio que correspondan. Informa de cambios, validaciones, evidencia visual o de rendimiento disponible y limitaciones concretas. Si una prioridad del backlog ya está resuelta, márcala como tal en vez de implementarla de nuevo.
+-
+-## Orden orientativo para revisar el backlog
+-
+-Tras comprobar qué sigue pendiente en HEAD, prioriza en este orden: integración del loop de misión; personajes y NPC; sensación de conducción y suspensión; superficies de pistas; distribución de vegetación; identidad del pueblo; renderizado; audio; y ciclo de vida de tiles. Cambia el orden cuando la evidencia o una dependencia lo justifique.
+-
+-## Formato de entrega
+-
+-Resume qué se implementó, el efecto observado en jugabilidad y presentación, las métricas disponibles, las pruebas ejecutadas, las regresiones y los siguientes pasos útiles. Separa resultados medidos de estimaciones y no afirmes verificaciones que no ejecutaste.
+-
+-Cuando el trabajo sea una iteración de juego, organiza el informe bajo: IMPLEMENTADO, MEJORA VISUAL, MEJORA JUGABLE, RENDIMIENTO, TESTS, REGRESIONES, COMMITS y SIGUIENTES 3 PRIORIDADES. Omite afirmaciones para las que no haya evidencia.
++Mantener un writer por archivo, packets autocontenidos y despachos reales en `orchestration/workers.tsv`. El backlog válido de este documento sustituye los planes históricos de fases anteriores; comprobar el estado actual antes de asignar trabajo. Los roles no permiten omitir los gates ni cambiar gameplay fuera del alcance autorizado.
+diff --git a/orchestration/MODEL_POOL.md b/orchestration/MODEL_POOL.md
+index a6ee6ed..baee344 100644
+--- a/orchestration/MODEL_POOL.md
++++ b/orchestration/MODEL_POOL.md
+@@ -1,75 +1,80 @@
+ # Pool de modelos — Montes de Oca: Offroad Stories
+ 
+-Registro explícito de qué modelos puede usar el orquestador en este proyecto y para qué.
+-Existe porque hasta ahora el pool era **implícito** (se deducía de `workers.tsv`), y un pool
+-implícito no se puede auditar ni respetar.
+-
+-Complementa la tabla de asignaciones del orquestador global
+-(`~/.config/opencode/opencode.json` → `agent.sdd-orchestrator.prompt`). **Si hay conflicto, el
+-pool de este archivo manda para el trabajo de este proyecto.**
+-
+-## Política de costos (objetivo de reparto, no decoración)
+-
+-| Banda | Cuota objetivo |
+-| --- | --- |
+-| Muse Spark free | 50–60% |
+-| MiMo free | 20–30% |
+-| DeepSeek Flash | 15–25% |
+-| Modelos fuertes (Kimi / Qwen / Grok) | <10% |
+-| OpenAI / GPT-6 Astra | **0%** — no autorizado |
+-| Codex / `codex-orch` | **0%** — no autorizado |
+-
+-El reparto se audita contra `workers.tsv`, que registra el modelo real de cada worker.
+-
+-## Roster
+-
+-| Modelo | Coste | Banda | Para qué |
+-| --- | --- | --- | --- |
+-| `opencode/muse-spark-1.3-contributor-free` | 0 | free | Exploración, auditoría, redacción, data. El caballo de tiro. |
+-| `opencode/mimo-v2.6-flash-free` | 0 | free | Igual que Muse, más volumen de datos y consultas geo. |
+-| `opencode/space-bunny-free` | 0 | free | **Nuevo.** Trabajo mecánico y cross-review. Variantes de esfuerzo. |
+-| `opencode-go/deepseek-v4.1-flash` | bajo | flash | Implementación de código: el coder por defecto. |
+-| `opencode-go/kimi-k2.7-code` | alto | fuerte | Escalación: sólo con motivo concreto y escrito. |
+-| `opencode-go/qwen3.8-max` | alto | fuerte | Escalación. |
+-| `opencode-go/grok-4.7` | alto | fuerte | Escalación. |
+-
+-## Space Bunny Free — lo que verifiqué
+-
+-No se cablea un modelo sin probarlo. Comprobado en esta sesión:
+-
+-| Comprobación | Resultado |
+-| --- | --- |
+-| `opencode/space-bunny-free` responde | OK (exit 0) |
+-| `opencode-go/space-bunny-free` responde | OK (exit 0) |
+-| Sufijo de variante `#low` | OK (exit 0) |
+-| Sufijo de variante `#high` | OK (exit 0) |
+-| Coste declarado | 0 input / 0 output en ambos providers |
+-
+-Variantes disponibles: `low`, `medium`, `high`, `xhigh`, `max`. Se pasan con sufijo:
+-`opencode/space-bunny-free#low`.
+-
+-**Criterio de uso**: `#low` o `#medium` para trabajo puramente mecánico (reformateos, refactors
+-repetitivos, normalización de datos, revisión de listas de verificación). Subir el esfuerzo si la
+-tarea requiere criterio. **No** usarlo en decisiones de arquitectura: para eso están Muse/MiMo con
+-contexto completo o se escala.
+-
+-## Reglas de despacho
+-
+-1. **Un worker por archivo.** Dos workers nunca escriben el mismo archivo. Los archivos compartidos
+-   tienen un único escritor.
+-2. **Quien implementa no revisa.** El cross-review lo hace otro modelo, aunque sea de la misma banda
+-   de coste. Es gratis tener revisión independiente: usarla.
+-3. **Escalación con motivo escrito.** Si se escala a Kimi/Qwen/Grok, el motivo va en el packet.
+-   "No me salió" no es motivo.
+-4. **El veredicto del worker no es la validación.** Un worker dice `status: ok`; el orquestador
+-   verifica por su cuenta. Ya pasó dos veces en este proyecto que el resumen del worker era
+-   correcto pero incompleto, y una vez que un invariante "fallaba" y era redondeo a milímetros.
+-
+-## Cómo verificar que un modelo sirve antes de despacharlo
+-
+-```bash
+-timeout 100 opencode run -m "<provider>/<modelo>" --auto \
+-  "Responde unicamente con la palabra OK y nada mas."
+-```
+-
+-Si no devuelve `OK` con exit 0, no se despacha. Barato y evita una corrida perdida.
++Política vigente de despacho. Complementa `AGENTS.md` (reglas permanentes), `OBJECTIVE.md`
++(backlog actual) y `orchestration/ORQUESTADOR-PRINCIPAL.md` (metaprompt activo).
++Ante una configuración global de OpenCode distinta, esta política rige el trabajo de este
++proyecto; no edites la configuración global para aplicarla. Las instrucciones del usuario y
++del entorno de ejecución tienen precedencia. Ningún prompt puede revocar `AGENTS.md`.
++
++## Roles y vías de ejecución
++
++| Rol | Modelo / herramienta | Responsabilidad |
++| --- | --- | --- |
++| Orquestador principal | GPT-6.1 Sol / Codex | Prioridades, arquitectura, packets, ownership, integración, verificación final, ACCEPT / FIX / REVERT y commits. Puede resolver cambios pequeños, archivos compartidos y conflictos. |
++| Analista / reviewer | GPT-6 Luna / Codex | Exploración profunda, debugging, Babylon.js, diseño técnico, rendimiento y revisión independiente. No decide la aceptación final. |
++| Implementador | OpenCode | Implementaciones acotadas, refactors y tests dentro del ownership; seleccionar un modelo realmente disponible y registrar su identificador. |
++| Worker gratuito prioritario | WorkBuddy AI + DeepSeek V4.1 Flash | Inventarios, búsquedas, normalizaciones, documentación, transformaciones repetitivas y cambios mecánicos aislados con contrato cerrado. No arquitectura ni integración transversal. |
++
++## Coste y selección
++
++- Prioriza **WorkBuddy AI + DeepSeek V4.1 Flash** para trabajo mecánico/aislado si la cuenta
++  del usuario confirma acceso gratuito, cuota y modelo disponibles. Esta condición fue
++  indicada por el usuario; no es una comprobación de precios ni de disponibilidad realizada
++  por este documento. No actives consumo de pago como fallback automático.
++- OpenCode conserva la implementación que requiere contexto de código o razonamiento;
++  Luna concentra análisis/review y Sol coordinación/integración. No hay cuotas porcentuales
++  obligatorias: el coste se evalúa según la vía real y el trabajo asignado.
++- `opencode-go/deepseek-v4.1-flash` es una vía OpenCode distinta de WorkBuddy. No se registra
++  como gratuita por usar el mismo nombre de modelo.
++- Muse/MiMo/Space Bunny y Kimi/Qwen/Grok de los packets históricos no constituyen el pool
++  prioritario actual. Reutilizarlos requiere disponibilidad comprobada y motivo en el packet;
++  cualquier coste adicional requiere autorización previa del usuario.
++- Si WorkBuddy no está disponible, reporta el bloqueo. Reasigna solo a una vía autorizada
++  que respete ownership, coste y verificación. No inventes IDs de proveedor ni comandos.
++
++## Ownership y despacho
++
++1. **Un writer por archivo**, también para salidas generadas, reportes y logs. Antes del
++   despacho, Sol expande globs a rutas concretas y comprueba todos los packets activos y
++   `git status`. Si se comparte una ruta o dependencia, serializa el trabajo. Los reviewers
++   leen sin escribir código; su informe tiene una ruta exclusiva.
++2. Cada packet se guarda en `orchestration/phaseN/<id>.md` e incluye modelo/vía real, contexto
++   cerrado, baseline (HEAD y diff inicial relevante), archivos propios, prohibiciones,
++   dependencias, contratos, comandos exactos, resultado esperado y formato de reporte.
++3. Solo Sol escribe `orchestration/workers.tsv`. Mantener las cuatro columnas existentes:
++   `worker`, `modelo`, `packet`, `fase`. Añadir una fila por despacho real, nunca por planes
++   ni pruebas de conectividad. No reescribir las filas históricas.
++4. En la columna `modelo`, registrar herramienta y modelo **observados**. Para WorkBuddy:
++   `WorkBuddy AI / DeepSeek V4.1 Flash` si la interfaz confirma ese modelo. Es una etiqueta
++   de auditoría, no un ID invocable. Para Codex registrar GPT-6.1 Sol o GPT-6 Luna junto al
++   ID real mostrado por el entorno; para OpenCode usar su `provider/model` real.
++5. Documentar en el packet los estados PREPARED / RUNNING / REVIEW / ACCEPTED / FIX /
++   BLOCKED / REVERTED, el modo de entrega y la evidencia. Solo Sol actualiza estos estados;
++   reserva ownership hasta que el worker haya parado y Sol libere explícitamente las rutas.
++6. Quien implementa no revisa su propio resultado. Luna hace el cross-review y Sol reproduce
++   los gates pertinentes y revisa el diff antes de aceptar. REVERT afecta exclusivamente
++   cambios del packet; nunca usar reset/checkout sobre modificaciones ajenas.
++
++## Uso de WorkBuddy AI
++
++Abrir el checkout WSL correcto mediante la vía soportada por la instalación del usuario,
++seleccionar DeepSeek V4.1 Flash y confirmar acceso gratuito. Si no accede al checkout,
++entregar el packet y recibir un patch/reporte para que Sol lo integre: el worker no escribe
++el repo en ese modo. El packet debe declarar quién escribe las rutas finales y dónde se
++guarda el patch; nunca conceder dos writers a la vez.
++
++No se ha verificado aquí una CLI/API de WorkBuddy ni se presupone que exista. El launcher
++`orchestration/phase6/launch.sh` ejecuta **solo OpenCode** y escribe el registro; no usarlo
++para WorkBuddy ni lanzarlo concurrentemente con otros writers del registro. Para nuevos
++despachos, Sol registra la fila y coordina la ejecución por la vía real disponible.
++
++Antes de una corrida larga, comprobar una respuesta mínima y el modelo seleccionado en la
++herramienta real. No afirmar que el worker está conectado por haber redactado el packet.
++
++## Historia y arranque
++
++`phase0`…`phase6`, `run-phase0.sh`, los logs y las filas previas de `workers.tsv` documentan
++ejecuciones anteriores. No relanzarlas automáticamente: sus modelos, backlog y ownership
++deben revisarse contra esta política y `OBJECTIVE.md`. `status.sh` muestra procesos/logs de
++OpenCode; no demuestra actividad de WorkBuddy ni de Codex. No existe un MASTER_PROMPT
++separado: usar el metaprompt activo citado arriba, sin duplicarlo.
+diff --git a/package.json b/package.json
+index cc1d4c0..4db0565 100644
+--- a/package.json
++++ b/package.json
+@@ -14,7 +14,7 @@
+     "test:player": "node scripts/player/test_controls.mjs && node scripts/player/test_movement.mjs",
+     "test:skybox": "node scripts/environment/test_skybox.mjs",
+     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
+-    "test:terrain": "node scripts/terrain/validate_terrain.mjs",
++    "test:terrain": "node scripts/terrain/validate_terrain.mjs && node scripts/terrain/test_road_cutouts.mjs",
+     "test:terrain-orthophoto": "python3 scripts/terrain/test_pnoa_orthophoto_fetch.py && python3 scripts/terrain/test_terrain_orthophoto_builder.py && python3 scripts/terrain/test_validate_terrain_orthophoto.py && node scripts/terrain/test_terrain_orthophoto.mjs && python3 scripts/terrain/build_terrain_orthophoto.py --check && python3 scripts/terrain/validate_terrain_orthophoto.py",
+     "test:roads": "python3 scripts/roads/validate_roads.py",
+     "test:road-visuals": "node scripts/roads/test_road_visuals.mjs && node scripts/roads/test_road_material.mjs && node scripts/roads/test_track_art.mjs",
+@@ -44,9 +44,9 @@
+     "test:vegetation-color": "node scripts/environment/test_vegetation_color.mjs",
+     "test:water": "python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs",
+     "test:motorcycle": "node scripts/vehicle/validate_motorcycle.mjs",
+-    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface",
++    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface && node scripts/terrain/test_road_cutouts.mjs",
+     "test:water-contact": "node scripts/water/test_water_contact.mjs",
+-    "test:road-surface": "node scripts/roads/test_road_surface.mjs",
++    "test:road-surface": "node scripts/roads/test_road_surface.mjs && node scripts/roads/test_road_geometry.mjs",
+     "diagnose:road-surface": "node scripts/roads/diagnose_surface.mjs"
+   },
+   "dependencies": {
+diff --git a/scripts/milestone/drive_milestone.mjs b/scripts/milestone/drive_milestone.mjs
+index 289bb1e..e2fa3ab 100644
+--- a/scripts/milestone/drive_milestone.mjs
++++ b/scripts/milestone/drive_milestone.mjs
+@@ -408,7 +408,7 @@ async function main() {
+     errores_consola: [],
+     capturas: [],
+     notas: [
+-      'FPS/frame medidos en Chrome headless con SwiftShader (CPU): NO son señal de rendimiento.',
++      flag('--external-cdp') ? 'Chrome CDP externo; recorrido acelerado por player.step. FPS del harness no es benchmark.' : 'Chrome headless SwiftShader (CPU); FPS/frame no es señal de rendimiento.',
+       'draw calls y triángulos sí son válidos. El FPS real se mide en la GPU del usuario a 1920x1080 (objetivo ~60 fps RTX 2070).',
+     ],
+   };
+@@ -430,7 +430,7 @@ async function main() {
+     const cdpPort = Number(arg('--cdp-port', '')) || (await freePort());
+     const profile = `/tmp/opencode/chrome-cdp-profile-milestone-${cdpPort}`;
+     log(`Chrome CDP en ${cdpPort}`);
+-    chrome = spawn(
++    if (!flag('--external-cdp')) chrome = spawn(
+       CHROME,
+       [
+         '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--hide-scrollbars',
+@@ -565,12 +565,12 @@ async function main() {
+     // ===================== FASE B: aparición =====================
+     const spawnInfo = await cdp.evaluate(`(function () {
+       var g = window.__game, v = g.vehicle.telemetry();
+-      return { x: v.x, z: v.z, y: v.y, groundY: g.terrainHeightAt(v.x, v.z), residual: v.wheelResidualMaxM,
++      return { x: v.x, z: v.z, y: v.y, groundY: g.roads?.sampleAt(v.x, v.z)?.height ?? g.terrainHeightAt(v.x, v.z), rawTerrainY: g.terrainHeightAt(v.x, v.z), residual: v.wheelResidualMaxM,
+                speed: v.speed, mode: g.player.mode(), startX: g.route.start.x, startZ: g.route.start.z,
+                distToStart: Math.hypot(v.x - g.route.start.x, v.z - g.route.start.z), mission: g.mission.snapshot() };
+     })()`);
+     report.spawn = spawnInfo;
+-    check('FASE B: 4x4 sobre el terreno (|y - heightAt| <= 0.5 m)', Math.abs(spawnInfo.y - spawnInfo.groundY) <= 0.5, +Math.abs(spawnInfo.y - spawnInfo.groundY).toFixed(4), '<= 0.5');
++    check('FASE B: 4x4 sobre soporte renderizado (|y - supportHeight| <= 0.5 m)', Math.abs(spawnInfo.y - spawnInfo.groundY) <= 0.5, +Math.abs(spawnInfo.y - spawnInfo.groundY).toFixed(4), '<= 0.5');
+     check('FASE B: spawn sobre route.start (<= 1 m)', spawnInfo.distToStart <= 1, +spawnInfo.distToStart.toFixed(3), '<= 1');
+     check('FASE B: arranca a pie y detenido', spawnInfo.mode === 'on-foot' && Math.abs(spawnInfo.speed) < 0.01, { mode: spawnInfo.mode, speed: +spawnInfo.speed.toFixed(3) }, "mode='on-foot' y |v|<0.01");
+     check('FASE B: misión en NOT_STARTED', spawnInfo.mission.state === 'NOT_STARTED', spawnInfo.mission.state, 'NOT_STARTED');
+@@ -724,6 +724,7 @@ async function main() {
+     for (const e of report.errores_consola) console.error(`${LOG_PREFIX}   ${e}`);
+   } finally {
+     try { writeFileSync(resolve(OUT_DIR, 'drive_report.json'), JSON.stringify(report, null, 2) + '\n'); } catch {}
++    if (flag('--external-cdp') && cdp) { await cdp.send('Page.close').catch(() => {}); cdp.ws.close(); }
+     if (chrome) chrome.kill('SIGKILL');
+     if (serverChild) { try { process.kill(-serverChild.pid, 'SIGKILL'); } catch { try { serverChild.kill('SIGKILL'); } catch {} } }
+   }
+@@ -736,7 +737,7 @@ async function main() {
+     for (const c of report.checks.filter((c) => !c.ok)) console.log(`- ${c.name}: valor=${JSON.stringify(c.value)} umbral=${JSON.stringify(c.threshold)}${c.detail ? ' detalle=' + JSON.stringify(c.detail) : ''}`);
+   }
+   const fps = report.perf_despues ? report.perf_despues.fps.toFixed(1) : 'n/a';
+-  console.log(`\nFPS headless ${fps} (NO es señal de rendimiento: SwiftShader CPU). Draw calls/triángulos sí valen.`);
++  console.log(`\nFPS headless ${fps} (NO es benchmark: recorrido acelerado). Draw calls/triángulos sí valen.`);
+   console.log(`Reporte: ${resolve(OUT_DIR, 'drive_report.json')}`);
+   console.log(`RESULTADO: ${exitCode === 0 ? 'OK' : 'FALLO'}`);
+   return exitCode;
+diff --git a/scripts/roads/diagnose_surface.mjs b/scripts/roads/diagnose_surface.mjs
+index 41b8a5e..4c481a8 100644
+--- a/scripts/roads/diagnose_surface.mjs
++++ b/scripts/roads/diagnose_surface.mjs
+@@ -2,74 +2,270 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+ import ts from 'typescript';
+ import { execFileSync } from 'node:child_process';
+ import { pathToFileURL } from 'node:url';
++
+ const generated = [];
+-async function moduleFrom(path, source = readFileSync(path, 'utf8')) { const dest = path.replace('.ts', '.diagnostic.mjs'); let code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText.replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1'); writeFileSync(dest, code); generated.push(dest); code = code.replace(/(['"])(\.\.?\/[^'"]+)\1/g, (match, quote, rel) => quote + rel + '.diagnostic.mjs' + quote); writeFileSync(dest, code); return import(pathToFileURL(process.cwd() + '/' + dest).href); }
++async function moduleFrom(path, source = readFileSync(path, 'utf8')) {
++  const dest = path.replace('.ts', '.diagnostic.mjs');
++  let code = ts.transpileModule(source, {
++    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
++  }).outputText.replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g, '$1$2.js$1');
++  writeFileSync(dest, code);
++  generated.push(dest);
++  code = code.replace(/(['"])(\.\.?\/[^'"]+)\1/g, (match, quote, rel) => quote + rel + '.diagnostic.mjs' + quote);
++  writeFileSync(dest, code);
++  return import(pathToFileURL(`${process.cwd()}/${dest}`).href);
++}
++
++const metricBins = {
++  longitudinalSlope: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  crossSlope: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  sourceBranchCrossSlope: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  ownFacetBank: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  centerlineFiniteSlope: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  crossSectionSlope: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  heightDeltaPerMeter: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  networkHeightDeltaPerMeter: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1],
++  slopeDerivative: [0.025, 0.05, 0.1, 0.2, 0.4, 0.8],
++  normalDeltaPerMeter: [0.025, 0.05, 0.1, 0.2, 0.4, 0.8],
++  triangleGrade: [0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1, 2],
++  triangleSlopeDeg: [5, 10, 15, 20, 30, 45, 60, 75, 80, 85, 89, 90],
++};
++
++function pointAt(points, distance) {
++  let remaining = Math.max(0, distance);
++  for (let i = 1; i < points.length; i++) {
++    const a = points[i - 1], b = points[i];
++    const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
++    if (length < 1e-9) continue;
++    if (remaining <= length || i === points.length - 1) {
++      const t = Math.max(0, Math.min(1, remaining / length));
++      return { x: a[0] + (b[0] - a[0]) * t, z: a[1] + (b[1] - a[1]) * t };
++    }
++    remaining -= length;
++  }
++  const last = points.at(-1);
++  return { x: last[0], z: last[1] };
++}
++
++function summarize(rows, key) {
++  const sorted = rows.map(row => row[key]).filter(Number.isFinite).map(Math.abs).sort((a, b) => a - b);
++  const percentile = p => sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))] : null;
++  const bounds = metricBins[key];
++  const histogram = Object.fromEntries([...bounds.map((limit, i) => [i === 0 ? `<=${limit}` : `>${bounds[i - 1]}..<=${limit}`, 0]), [`>${bounds.at(-1)}`, 0]]);
++  for (const value of sorted) {
++    const index = bounds.findIndex(limit => value <= limit);
++    const label = index < 0 ? `>${bounds.at(-1)}` : index === 0 ? `<=${bounds[0]}` : `>${bounds[index - 1]}..<=${bounds[index]}`;
++    histogram[label]++;
++  }
++  return {
++    unit: key === 'normalDeltaPerMeter' ? 'rad/m' : key === 'slopeDerivative' ? 'slope-ratio/m' : key === 'heightDeltaPerMeter' || key === 'networkHeightDeltaPerMeter' ? 'm/m' : 'slope-ratio',
++    p50: percentile(0.5), p90: percentile(0.9), p95: percentile(0.95), p99: percentile(0.99), max: sorted.at(-1) ?? null,
++    histogram,
++    top10: rows.filter(row => Number.isFinite(row[key])).slice().sort((a, b) => Math.abs(b[key]) - Math.abs(a[key])).slice(0, 10),
++  };
++}
++
+ try {
+-    const { createHeightfield } = await moduleFrom('src/heightfield.ts');
+-    const cfg = JSON.parse(readFileSync('public/terrain/config.json', 'utf8'));
+-    const samplers = cfg.tiles.map(t => createHeightfield(JSON.parse(readFileSync('public' + t.url, 'utf8')).grid, cfg.worldScale));
+-    const terrain = { heightAt(x, z) { x = Math.max(0, Math.min(6000, x)); z = Math.max(0, Math.min(6000, z)); const s = samplers.find(s => x >= s.grid.x0 && z >= s.grid.z0 && x <= s.grid.x0 + 1000 && z <= s.grid.z0 + 1000); return s.heightAt(x, z) - cfg.verticalDatum; }, normalAt(x, z, out) { const e = .1; const { Vector3 } = globalThis; return (out ?? new Vector3()).set(-(this.heightAt(x + e, z) - this.heightAt(x - e, z)) / (2 * e), 1, -(this.heightAt(x, z + e) - this.heightAt(x, z - e)) / (2 * e)).normalize(); } };
+-    globalThis.Vector3 = (await import('@babylonjs/core/Maths/math.vector.js')).Vector3;
+-    const roads = JSON.parse(readFileSync('public/roads/roads.json', 'utf8')).roads;
+-    const after = process.argv.includes('--after'), baseline = process.argv.includes('--baseline');
+-    let sampler = null;
+-    if (after || baseline) {
+-        await moduleFrom('src/world/road-surface.ts');
+-        await moduleFrom('src/road-visuals.ts');
+-        let source = readFileSync('src/road-draping.ts', 'utf8');
+-        if (baseline) {
+-            source = execFileSync('git', ['show', 'HEAD:src/road-draping.ts'], { encoding: 'utf8' });
+-            source = "import {createRenderedRoadSurface} from './world/road-surface';\n" + source;
+-            source = source.replace('pushVertex(x, y, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);', 'pushVertex(x, y, z, terrain.normalAt(x, z, scratch), 4, tint);')
+-                .replace('pushVertex(x, terrain.heightAt(x, z) + offset, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);', 'pushVertex(x, terrain.heightAt(x, z) + offset, z, terrain.normalAt(x, z, scratch), 4, tint);');
+-            source = source.replace('    meshes,\n    stats,', '    meshes,\n    surface: createRenderedRoadSurface(surface, CLASSES.map((cls) => ({ class: cls, ...typed[cls] }))),\n    stats,');
+-        }
+-        const { loadRoadNetwork } = await moduleFrom('src/road-draping.ts', source);
+-        const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine.js');
+-        const { Scene } = await import('@babylonjs/core/scene.js');
+-        const engine = new NullEngine();
+-        const scene = new Scene(engine);
+-        const network = await loadRoadNetwork(scene, terrain, { fetchImpl: async () => ({ ok: true, json: async () => ({ roads }) }) });
+-        sampler = network.surface;
++  const { createHeightfield } = await moduleFrom('src/heightfield.ts');
++  const cfg = JSON.parse(readFileSync('public/terrain/config.json', 'utf8'));
++  const samplers = cfg.tiles.map(tile => createHeightfield(JSON.parse(readFileSync(`public${tile.url}`, 'utf8')).grid, cfg.worldScale));
++  const terrain = {
++    heightAt(x, z) {
++      x = Math.max(0, Math.min(6000, x));
++      z = Math.max(0, Math.min(6000, z));
++      const sampler = samplers.find(item => x >= item.grid.x0 && z >= item.grid.z0 && x <= item.grid.x0 + 1000 && z <= item.grid.z0 + 1000);
++      if (!sampler) throw new Error(`No hay tile DEM para (${x.toFixed(2)}, ${z.toFixed(2)})`);
++      return sampler.heightAt(x, z) - cfg.verticalDatum;
++    },
++    normalAt(x, z, out) {
++      const e = 0.1;
++      const { Vector3 } = globalThis;
++      return (out ?? new Vector3()).set(
++        -(this.heightAt(x + e, z) - this.heightAt(x - e, z)) / (2 * e), 1,
++        -(this.heightAt(x, z + e) - this.heightAt(x, z - e)) / (2 * e),
++      ).normalize();
++    },
++  };
++  globalThis.Vector3 = (await import('@babylonjs/core/Maths/math.vector.js')).Vector3;
++  const roads = JSON.parse(readFileSync('public/roads/roads.json', 'utf8')).roads;
++  const after = process.argv.includes('--after');
++  const baseline = process.argv.includes('--baseline') || process.argv.includes('--before');
++  const driving = process.argv.includes('--driving');
++  let sampler = null;
++  let diagnosticBands = null;
++  if (after || baseline) {
++    await moduleFrom('src/world/road-surface.ts');
++    await moduleFrom('src/road-visuals.ts');
++    if (!baseline) await moduleFrom('src/road-profile.ts');
++    let source = readFileSync('src/road-draping.ts', 'utf8');
++    if (baseline) source = execFileSync('git', ['show', 'caef87e:src/road-draping.ts'], { encoding: 'utf8' });
++    if (!driving) {
++      const needle = 'stations: buffers[cls].stations })))';
++      if (!source.includes(needle)) throw new Error('No se encontró la llamada a createRenderedRoadSurface para activar geometryOnly');
++      source = source.replace(needle, 'stations: buffers[cls].stations })), { geometryOnly: true })');
+     }
+-    const values = { ROAD: [], TRACK: [], PATH: [] };
+-    for (const road of roads) {
+-        let previous = null;
+-        for (let i = 1; i < road.points.length; i++) {
+-            const a = road.points[i - 1], b = road.points[i], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+-            if (len < .01)
+-                continue;
+-            const n = Math.ceil(len / 1), dx = (b[0] - a[0]) / len, dz = (b[1] - a[1]) / len;
+-            for (let j = 0; j <= n; j++) {
+-                const x = a[0] + (b[0] - a[0]) * j / n, z = a[1] + (b[1] - a[1]) * j / n;
+-                const h = (x, z) => (after || baseline) ? sampler.heightAt(x, z) : terrain.heightAt(x, z);
+-                const contact=sampler?.sampleAt(x,z);
+-                const longitudinalSlope = contact?-(contact.normal.x*dx+contact.normal.z*dz)/contact.normal.y:(h(x + dx * .5, z + dz * .5) - h(x - dx * .5, z - dz * .5));
+-                const crossSlope = contact?(contact.normal.x*dz-contact.normal.z*dx)/contact.normal.y:(h(x - dz * road.width * .4, z + dx * road.width * .4) - h(x + dz * road.width * .4, z - dx * road.width * .4)) / (road.width * .8);
+-                const y = h(x, z);
+-                const dist = previous ? Math.hypot(x - previous.x, z - previous.z) : 0;
+-                const normal = (sampler ?? terrain).normalAt(x, z);
+-                const normalDeltaPerMeter = previous && dist > .001 ? Math.acos(Math.max(-1, Math.min(1, normal.x * previous.normal.x + normal.y * previous.normal.y + normal.z * previous.normal.z))) / dist : 0;
+-                const sample = { normalDeltaPerMeter, id: road.id, x, z, height: y, longitudinalSlope, crossSlope, heightDeltaPerMeter: dist > .001 ? Math.abs(y - previous.y) / dist : 0, slopeDerivative: dist > .001 ? Math.abs(longitudinalSlope - previous.s) / dist : 0 };
+-                values[road.class].push(sample);
+-                previous = { x, z, y, s: longitudinalSlope, normal };
+-            }
+-        }
++    source = source.replace('  return {\n    meshes,\n    surface:', '  return {\n    meshes,\n    diagnosticBands: CLASSES.map((cls) => ({ class: cls, ...typed[cls] })),\n    surface:');
++    const { loadRoadNetwork } = await moduleFrom('src/road-draping.ts', source);
++    const { NullEngine } = await import('@babylonjs/core/Engines/nullEngine.js');
++    const { Scene } = await import('@babylonjs/core/scene.js');
++    const engine = new NullEngine();
++    const scene = new Scene(engine);
++    const network = await loadRoadNetwork(scene, terrain, { fetchImpl: async () => ({ ok: true, json: async () => ({ roads }) }) });
++    sampler = network.surface;
++    diagnosticBands = network.diagnosticBands ?? null;
++  }
++
++  const mode = !after && !baseline ? 'RAW TERRAIN' : driving ? `DRIVING SURFACE ${after ? 'AFTER' : 'caef87e BEFORE'}` : `RENDERED ROAD GEOMETRY ${after ? 'AFTER' : 'caef87e BEFORE'}`;
++  const values = { ROAD: [], TRACK: [], PATH: [] };
++  const heightAt = (x, z) => sampler ? sampler.heightAt(x, z) : terrain.heightAt(x, z);
++  const normalAt = (x, z) => (sampler ?? terrain).normalAt(x, z);
++
++  // Sample once per chainage metre. Segment endpoints are excluded except for
++  // the route's final endpoint, so OSM vertices never get counted twice.
++  for (const road of roads) {
++    const cumulative = [0];
++    for (let i = 1; i < road.points.length; i++) {
++      const a = road.points[i - 1], b = road.points[i];
++      cumulative.push(cumulative.at(-1) + Math.hypot(b[0] - a[0], b[1] - a[1]));
+     }
+-    const report = { mode: after ? 'actual final ribbon triangles AFTER' : baseline ? 'HEAD ribbon triangles BEFORE' : 'real triangular MDT', classes: {} };
+-    for (const [cls, rows] of Object.entries(values)) {
+-        const metrics = {};
+-        for (const key of ['longitudinalSlope', 'crossSlope', 'heightDeltaPerMeter', 'slopeDerivative', 'normalDeltaPerMeter']) {
+-            const sorted = rows.map(r => Math.abs(r[key])).sort((a, b) => a - b);
+-            metrics[key] = { p50: sorted[Math.floor(sorted.length * .5)], p95: sorted[Math.floor(sorted.length * .95)], p99: sorted[Math.floor(sorted.length * .99)], max: sorted.at(-1), worst: rows.slice().sort((a, b) => Math.abs(b[key]) - Math.abs(a[key])).slice(0, 5) };
+-        }
+-        report.classes[cls] = { count: rows.length, metrics, maxHeightDeltaPerMeter: metrics.heightDeltaPerMeter.max, maxCrossSlope: metrics.crossSlope.max, maxSlopeDerivative: metrics.slopeDerivative.max };
++    const total = cumulative.at(-1);
++    if (!(total > 0)) continue;
++    const intervalCount = Math.max(1, Math.ceil(total));
++    const chainages = Array.from({ length: intervalCount + 1 }, (_, i) => total * i / intervalCount);
++    let previous = null;
++    for (const chainage of chainages) {
++      const point = pointAt(road.points, chainage);
++      const beforeChainage = Math.max(0, chainage - 0.5);
++      const aheadChainage = Math.min(total, chainage + 0.5);
++      const before = pointAt(road.points, beforeChainage);
++      const ahead = pointAt(road.points, aheadChainage);
++      let dx = ahead.x - before.x, dz = ahead.z - before.z;
++      const tangentLength = Math.hypot(dx, dz) || 1;
++      dx /= tangentLength; dz /= tangentLength;
++      const nx = -dz, nz = dx;
++      const contact = sampler?.sampleAt(point.x, point.z) ?? null;
++      const centerY = contact?.height ?? heightAt(point.x, point.z);
++      const centerlineFiniteSlope = (heightAt(ahead.x, ahead.z) - heightAt(before.x, before.z)) / Math.max(1e-6, aheadChainage - beforeChainage);
++      const sourceBranchSlope = contact?.normal ? {
++        longitudinalSlope: -(contact.normal.x * dx + contact.normal.z * dz) / (Math.abs(contact.normal.y) < 1e-9 ? 1e-9 : contact.normal.y),
++        crossSlope: (contact.normal.x * dz - contact.normal.z * dx) / (Math.abs(contact.normal.y) < 1e-9 ? 1e-9 : contact.normal.y),
++      } : null;
++      const longitudinalSlope = sourceBranchSlope?.longitudinalSlope ?? centerlineFiniteSlope;
++      const lateral = road.width * 0.4;
++      const sampleLateral = (sign) => {
++        const x = point.x + nx * lateral * sign, z = point.z + nz * lateral * sign;
++        const sideContact = sampler?.sampleAt(x, z) ?? null;
++        return {
++          x, z,
++          height: sideContact?.height ?? terrain.heightAt(x, z),
++          missing: Boolean(sampler && !sideContact),
++          skirt: sideContact?.skirt ?? false,
++          class: sideContact?.class ?? null,
++        };
++      };
++      const left = sampleLateral(1), right = sampleLateral(-1);
++      const crossSectionSlope = (left.height - right.height) / (2 * lateral);
++      const sourceBranchCrossSlope = sourceBranchSlope?.crossSlope ?? crossSectionSlope;
++      const crossSlope = sourceBranchCrossSlope;
++      // The caef87e buffers have no per-vertex tangent stream. There the
++      // source polyline tangent at this chainage is the independent ownership
++      // fallback; AFTER uses the rendered triangle's interpolated tangent.
++      const ownFacetBank = !contact ? null : baseline ? sourceBranchCrossSlope : contact.crossSlope;
++      const normal = contact?.normal ?? normalAt(point.x, point.z);
++      const normalDeltaPerMeter = previous
++        ? Math.acos(Math.max(-1, Math.min(1, normal.x * previous.normal.x + normal.y * previous.normal.y + normal.z * previous.normal.z))) / Math.max(1e-6, chainage - previous.chainage)
++        : 0;
++      const sample = {
++        id: road.id, class: road.class, chainageM: chainage, contactClass: contact?.class ?? null,
++        contactRoadId: contact?.roadId ?? null,
++        previousContactRoadId: previous?.contactRoadId ?? null,
++        ownerTransition: Boolean(previous?.contactRoadId && contact?.roadId && previous.contactRoadId !== contact.roadId),
++        contactSkirt: contact?.skirt ?? false, contactBridge: contact?.bridge ?? false,
++        centerlineMissing: Boolean(sampler && !contact), slopeSource: sourceBranchSlope ? 'sampled-triangle-normal-dot-source-tangent' : 'centerline-finite-fallback',
++        normalY: contact?.normal?.y ?? normal.y, nearVerticalContact: Boolean(contact && Math.abs(contact.normal.y) < 0.15),
++        ownFacetTangentSource: !contact ? null : baseline ? 'source-polyline-tangent-fallback' : 'rendered-triangle-tangent',
++        lateralMissing: left.missing || right.missing,
++        lateralLeft: { skirt: left.skirt, class: left.class }, lateralRight: { skirt: right.skirt, class: right.class },
++        lateralSkirt: left.skirt || right.skirt,
++        lateralClassMismatch: (left.class !== null && left.class !== road.class) || (right.class !== null && right.class !== road.class),
++        x: point.x, z: point.z, tangentX: dx, tangentZ: dz, height: centerY,
++        longitudinalSlope, crossSlope, sourceBranchCrossSlope, ownFacetBank, centerlineFiniteSlope, crossSectionSlope,
++        heightDeltaPerMeter: previous ? Math.abs(centerY - previous.height) / (chainage - previous.chainage) : 0,
++        // This is the delta along the highest sampled network surface. It may
++        // cross source-road ownership at junctions; ownerTransition marks that.
++        networkHeightDeltaPerMeter: previous ? Math.abs(centerY - previous.height) / (chainage - previous.chainage) : 0,
++        slopeDerivative: previous ? Math.abs(longitudinalSlope - previous.longitudinalSlope) / (chainage - previous.chainage) : 0,
++        normalDeltaPerMeter,
++      };
++      values[road.class].push(sample);
++      previous = { chainage, height: centerY, longitudinalSlope, normal, contactRoadId: contact?.roadId ?? null };
+     }
+-    mkdirSync('outputs/road-surface-20260930', { recursive: true });
+-    writeFileSync(`outputs/road-surface-20260930/${after ? 'after' : baseline ? 'before' : 'mdt'}.json`, JSON.stringify(report, null, 2));
+-    console.log(JSON.stringify(Object.fromEntries(Object.entries(report.classes).map(([k, v]) => [k, Object.fromEntries(Object.entries(v.metrics).map(([m, s]) => [m, { p95: s.p95, p99: s.p99, max: s.max }]))])), null, 2));
+-}
+-finally {
+-    for (const p of generated)
+-        rmSync(p, { force: true });
++  }
++
++  const report = { mode, sampling: { targetSpacingM: 1, duplicatePolylineVertices: false, metricsUseRoadCenterlineTangent: true }, ownerMetadata: diagnosticBands?.some(band => (band.owners || band.roadOrdinal) && band.roadIds) ? 'available' : 'unknown (buffer has no owner stream)', classes: {} };
++  for (const [className, rows] of Object.entries(values)) {
++    const metrics = {};
++    for (const key of Object.keys(metricBins).filter(key => !key.startsWith('triangle'))) metrics[key] = summarize(rows.filter(row => !row.contactSkirt), key);
++    const skirtRows = rows.filter(row => row.contactSkirt);
++    const mismatchRows = rows.filter(row => row.contactClass && row.contactClass !== className);
++    report.classes[className] = {
++      count: rows.length,
++      surfaceSamples: {
++        pavementOrUnmatched: rows.length - skirtRows.length,
++        skirtContact: skirtRows.length,
++        differentClassContact: mismatchRows.length,
++        ownerTransitions: rows.filter(row => row.ownerTransition).length,
++        unknownOwnerSamples: rows.filter(row => row.contactRoadId === null).length,
++        centerlineMissing: rows.filter(row => row.centerlineMissing).length,
++        lateral: {
++          missingEitherSide: rows.filter(row => row.lateralMissing).length,
++          skirtEitherSide: rows.filter(row => row.lateralSkirt).length,
++          differentClassEitherSide: rows.filter(row => row.lateralClassMismatch).length,
++        },
++        skirtMetrics: Object.fromEntries(Object.keys(metricBins).filter(key => !key.startsWith('triangle')).map(key => [key, summarize(skirtRows, key)])),
++        differentClassTop10: mismatchRows.slice().sort((a, b) => Math.max(Math.abs(b.longitudinalSlope), Math.abs(b.crossSlope)) - Math.max(Math.abs(a.longitudinalSlope), Math.abs(a.crossSlope))).slice(0, 10),
++        ownerTransitionTop10: rows.filter(row => row.ownerTransition).slice().sort((a, b) => b.networkHeightDeltaPerMeter - a.networkHeightDeltaPerMeter).slice(0, 10),
++      },
++      metrics,
++    };
++  }
++  if (diagnosticBands) {
++    const roleNames = { 0: 'PAVEMENT', 1: 'SKIRT', 2: 'BRIDGE', 3: 'SIGN', 4: 'PAINT', 5: 'TERMINAL_EARTHWORK' };
++    report.triangles = {};
++    for (const band of diagnosticBands) {
++      const grouped = Object.fromEntries(Object.values(roleNames).map(name => [name, []]));
++      const { positions, indices, roles } = band;
++      for (let i = 0; i < indices.length; i += 3) {
++        const ia = indices[i], ib = indices[i + 1], ic = indices[i + 2];
++        const role = Math.max(roles[ia], roles[ib], roles[ic]);
++        const a = ia * 3, b = ib * 3, c = ic * 3;
++        const abx = positions[b] - positions[a], aby = positions[b + 1] - positions[a + 1], abz = positions[b + 2] - positions[a + 2];
++        const acx = positions[c] - positions[a], acy = positions[c + 1] - positions[a + 1], acz = positions[c + 2] - positions[a + 2];
++        const nx = aby * acz - abz * acy, ny = abz * acx - abx * acz, nz = abx * acy - aby * acx;
++        const horizontalNormal = Math.hypot(nx, nz);
++        const slope = horizontalNormal / Math.max(1e-12, Math.abs(ny));
++        const angle = Math.atan2(horizontalNormal, Math.abs(ny)) * 180 / Math.PI;
++        const bucket = grouped[roleNames[role] ?? 'PAVEMENT_ROLE_INCLUDES_PAINT'];
++        bucket.push({ triangle: i / 3, slope, center: [
++          (positions[a] + positions[b] + positions[c]) / 3,
++          (positions[a + 2] + positions[b + 2] + positions[c + 2]) / 3,
++        ], triangleSlopeDeg: angle });
++      }
++      report.triangles[band.class] = Object.fromEntries(Object.entries(grouped).map(([role, rows]) => [role, {
++        count: rows.length,
++        nearVerticalCount: rows.filter(row => row.triangleSlopeDeg >= 80).length,
++        gradeRatio: summarize(rows.map(row => ({ ...row, triangleGrade: row.slope })), 'triangleGrade'),
++        slopeAngle: summarize(rows, 'triangleSlopeDeg'),
++      }]));
++    }
++  } else if (sampler) {
++    report.triangles = { unavailable: 'The diagnostic source did not expose typed road buffers.' };
++  }
++  const out = process.env.ROAD_DIAGNOSTIC_OUT ?? 'outputs/road-v3-20261001';
++  mkdirSync(out, { recursive: true });
++  const filename = !after && !baseline ? 'raw.json' : `${driving ? 'driving' : 'rendered'}-${after ? 'after' : 'before'}.json`;
++  writeFileSync(`${out}/${filename}`, JSON.stringify(report, null, 2));
++  console.log(JSON.stringify({ mode, classes: Object.fromEntries(Object.entries(report.classes).map(([key, value]) => [key, Object.fromEntries(Object.entries(value.metrics).map(([metric, summary]) => [metric, { p90: summary.p90, p95: summary.p95, p99: summary.p99, max: summary.max }]))])) }, null, 2));
++} finally {
++  for (const path of generated) rmSync(path, { force: true });
+ }
+diff --git a/scripts/runtime/check_motorcycle_gameplay.mjs b/scripts/runtime/check_motorcycle_gameplay.mjs
+index 9354daa..bce91c8 100644
+--- a/scripts/runtime/check_motorcycle_gameplay.mjs
++++ b/scripts/runtime/check_motorcycle_gameplay.mjs
+@@ -1,4 +1,4 @@
+ // Real motorcycle actor on scene terrain, steering and recovery evidence.
+ import {execFileSync} from 'node:child_process';import {writeFileSync,mkdirSync} from 'node:fs';
+ const args=process.argv.slice(2);const base=args.includes('--base')?args[args.indexOf('--base')+1]:'http://127.0.0.1:4193';execFileSync('agent-browser',['--session','moto-play','open',base+'/?vehicle=trail&player=0&vx=3631.02&vz=4762.92&vyaw=-2.585'],{encoding:'utf8',timeout:180000});const js=`(()=>{const v=window.__game.vehicle;if(v.category()!=='moto')throw Error('Expected motorcycle actor');v.teleport(3631.02,4762.92,Math.atan2(-0.528058067,-0.849208265));v.setState({speed:10});v.setInput({throttle:0.4,steer:0.35,handbrake:false,neutral:false});const turn=[];for(let i=0;i<120;i++){v.step(1/60,1/60);turn.push(v.telemetry());}const turning=v.telemetry();v.setInput({throttle:0,steer:0,handbrake:false,neutral:false});const recovery=[];for(let i=0;i<120;i++){v.step(1/60,1/60);recovery.push(v.telemetry());}const final=v.telemetry();return {url:location.href,preset:v.preset(),turn,recovery,turning,final};})()`;
+-execFileSync('agent-browser',['--session','moto-play','wait','--fn','!!window.__game?.vehicle'],{encoding:'utf8',timeout:180000});let r=JSON.parse(execFileSync('agent-browser',['--session','moto-play','eval',`JSON.stringify(${js})`],{encoding:'utf8',timeout:180000,maxBuffer:8e6}));r=typeof r==='string'?JSON.parse(r):r;r.summary={maxLeanDeg:Math.max(...r.turn.map(t=>Math.abs(t.leanRad)*180/Math.PI)),finalLeanDeg:r.final.leanRad*180/Math.PI,maxYawRate:Math.max(...r.turn.map(t=>Math.abs(t.yawRate))),start:{x:3631.02,z:4762.92},method:"Actual scene motorcycle actor.step, no player/world mission step"};r.checks={normalTurnNoFall:r.turn.every(t=>!t.fallen),visualLean:r.turn.some(t=>Math.abs(t.leanRad)>2*Math.PI/180),recoveryNoFall:r.recovery.every(t=>!t.fallen),leanRecovers:Math.abs(r.final.leanRad)<Math.abs(r.turning.leanRad)};mkdirSync('outputs/driving-priorities-20260930',{recursive:true});writeFileSync('outputs/driving-priorities-20260930/motorcycle_gameplay_report.json',JSON.stringify(r,null,2));console.log(r.checks,r.turning,r.final);if(Object.values(r.checks).some(v=>!v))process.exitCode=1;
++execFileSync('agent-browser',['--session','moto-play','wait','--fn','!!window.__game?.vehicle'],{encoding:'utf8',timeout:180000});let r=JSON.parse(execFileSync('agent-browser',['--session','moto-play','eval',`JSON.stringify(${js})`],{encoding:'utf8',timeout:180000,maxBuffer:8e6}));r=typeof r==='string'?JSON.parse(r):r;r.summary={maxLeanDeg:Math.max(...r.turn.map(t=>Math.abs(t.leanRad)*180/Math.PI)),finalLeanDeg:r.final.leanRad*180/Math.PI,maxYawRate:Math.max(...r.turn.map(t=>Math.abs(t.yawRate))),start:{x:3631.02,z:4762.92},method:"Actual scene motorcycle actor.step, no player/world mission step"};r.checks={normalTurnNoFall:r.turn.every(t=>!t.fallen),visualLean:r.turn.some(t=>Math.abs(t.leanRad)>2*Math.PI/180),recoveryNoFall:r.recovery.every(t=>!t.fallen),leanRecovers:Math.abs(r.final.leanRad)<Math.abs(r.turning.leanRad)};const out=args.includes('--out-dir')?args[args.indexOf('--out-dir')+1]:'outputs/driving-priorities-20260930';mkdirSync(out,{recursive:true});writeFileSync(out+'/motorcycle_gameplay_report.json',JSON.stringify(r,null,2));console.log(r.checks,r.turning,r.final);if(Object.values(r.checks).some(v=>!v))process.exitCode=1;
+diff --git a/scripts/runtime/check_water_contacts.mjs b/scripts/runtime/check_water_contacts.mjs
+index dbbde5b..4394105 100644
+--- a/scripts/runtime/check_water_contacts.mjs
++++ b/scripts/runtime/check_water_contacts.mjs
+@@ -1,7 +1,7 @@
+ // Checks real loaded scene query behavior at mapped bridges, river and river edge.
+ import {execFileSync} from 'node:child_process';
+ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+-const args=process.argv.slice(2);const base=args.includes('--base')?args[args.indexOf('--base')+1]:'http://127.0.0.1:4193';execFileSync('agent-browser',['--session','driving','open',base+'/?player=0'],{encoding:'utf8',timeout:180000});execFileSync('agent-browser',['--session','driving','wait','--fn','!!window.__game?.roads?.sampleAt && !!window.__game?.water'],{encoding:'utf8',timeout:180000});const out='outputs/driving-priorities-20260930';mkdirSync(out,{recursive:true});
++const args=process.argv.slice(2);const base=args.includes('--base')?args[args.indexOf('--base')+1]:'http://127.0.0.1:4193';execFileSync('agent-browser',['--session','driving','open',base+'/?player=0'],{encoding:'utf8',timeout:180000});execFileSync('agent-browser',['--session','driving','wait','--fn','!!window.__game?.roads?.sampleAt && !!window.__game?.water'],{encoding:'utf8',timeout:180000});const out=args.includes('--out-dir')?args[args.indexOf('--out-dir')+1]:'outputs/driving-priorities-20260930';mkdirSync(out,{recursive:true});
+ const roads=JSON.parse(readFileSync('public/roads/roads.json')).roads.filter(r=>r.bridge).map(r=>({id:r.id,class:r.class,x:r.points.reduce((a,p)=>a+p[0],0)/r.points.length,z:r.points.reduce((a,p)=>a+p[1],0)/r.points.length}));
+ const ribbons=JSON.parse(readFileSync('public/water/water.json')).ribbons.flatMap(r=>r.points.filter((_,i)=>i%20===0).map(p=>({x:p[0],z:p[1]})));
+ const expr=`(()=>{const g=window.__game;const bridges=${JSON.stringify(roads)}.map(p=>({...p,road:g.roads.sampleAt(p.x,p.z),waterY:g.water.surfaceHeightAt(p.x,p.z),depth2D:g.water.depthAt(p.x,p.z),contactDepth:g.water.contactDepthAt(p.x,p.z)})).filter(p=>p.depth2D>0);const bridgeWetStations=g.roads.stations().filter(p=>g.water.depthAt(p.x,p.z)>0&&g.roads.sampleAt(p.x,p.z)?.bridge).map(p=>({x:p.x,z:p.z,class:p.class,contactDepth:g.water.contactDepthAt(p.x,p.z)}));const river=${JSON.stringify(ribbons)}.find(p=>p.x>50&&p.z>50&&!g.roads.sampleAt(p.x,p.z)&&g.water.depthAt(p.x,p.z)>0);if(!river)throw Error('No river away from roads');const riverY=g.terrainHeightAt(river.x,river.z);const positive={...river,terrainY:riverY,waterY:g.water.surfaceHeightAt(river.x,river.z),contactDepth:g.water.contactDepthAt(river.x,river.z,riverY)};const edge=Array.from({length:401},(_,i)=>{const x=river.x+(i-200)*0.025;return {x,z:river.z,contactDepth:g.water.contactDepthAt(x,river.z,g.terrainHeightAt(x,river.z))};});const negative=bridges.filter(p=>p.road.height>p.waterY+0.12);const checks={mappedBridgesHaveWater:bridges.length>0,clearBridgesHaveNoContact:negative.length>0&&negative.every(p=>p.contactDepth===0),allMappedBridgeDecksDry:bridges.filter(p=>p.road?.bridge).every(p=>p.contactDepth===0),allWetBridgeStationsDry:bridgeWetStations.length>0&&bridgeWetStations.every(p=>p.contactDepth===0),realRiverHasContact:positive.contactDepth>0,edgeFiniteNonnegative:edge.every(p=>Number.isFinite(p.contactDepth)&&p.contactDepth>=0),edgeWetRegionContiguous:edge.slice(1).filter((p,i)=>(p.contactDepth>0)!==(edge[i].contactDepth>0)).length<=2,aboveRiverNoContact:g.water.contactDepthAt(river.x,river.z,positive.waterY+0.5)===0};return {url:location.href,checks,bridges,bridgeWetStations,positive,edge,maxContactDepthDerivative:Math.max(...edge.slice(1).map((p,i)=>Math.abs(p.contactDepth-edge[i].contactDepth)/0.025)),method:'Real loaded scene height-aware queries; actual drag logic checked separately by mission/gameplay harness'};})()`;
+diff --git a/scripts/runtime/check_water_gameplay.mjs b/scripts/runtime/check_water_gameplay.mjs
+index 786df7a..e2c8e04 100644
+--- a/scripts/runtime/check_water_gameplay.mjs
++++ b/scripts/runtime/check_water_gameplay.mjs
+@@ -1,4 +1,4 @@
+ // Runs actual player.step -> stepSimulation -> water rules with zero gas.
+ import {execFileSync} from 'node:child_process';import {writeFileSync,mkdirSync} from 'node:fs';
+ const args=process.argv.slice(2);const base=args.includes('--base')?args[args.indexOf('--base')+1]:'http://127.0.0.1:4193';execFileSync('agent-browser',['--session','water-play','open',base+'/?vx=2992.171&vz=3542.183&vyaw=0'],{encoding:'utf8',timeout:180000});execFileSync('agent-browser',['--session','water-play','wait','--fn','!!window.__game?.player && !!window.__game?.roads?.sampleAt'],{encoding:'utf8',timeout:180000});const js=`(()=>{const g=window.__game;if(g.player.mode()==="driving")g.player.toggleVehicle();g.player.teleport(3188.81,3446.18,0);g.player.inject({forward:0,turn:0,run:false});g.player.step(0.1,1/120);const walking={player:g.player.telemetry(),road:g.roads.sampleAt(3188.81,3446.18),waterDepth:g.water.contactDepthAt(3188.81,3446.18,g.player.telemetry().y)};if(g.player.mode()!=="driving"){g.player.teleport(2992.171,3542.183,0);g.player.toggleVehicle();}const trial=(p)=>{g.player.teleport(p.x,p.z,p.yaw);g.vehicle.setState({speed:15});g.player.inject({throttle:0,steer:0,handbrake:false,neutral:false});g.player.step(0.1,1/120);return {p,mode:g.player.mode(),water:g.water.estadoAgua(),calado:g.water.calado(),telemetry:g.vehicle.telemetry(),surface:g.runtime().surface};};const bridge=trial({x:3188.81,z:3446.18,yaw:Math.atan2(15.96,-2.16)}),river=trial({x:4514.73,z:57.42,yaw:0});const checks={walkingBridgeDry:walking.waterDepth===0,walkingUsesDeck:Math.abs(walking.player.y-walking.road.height)<1e-5,bridgeDry:bridge.water==='seco'&&bridge.calado===0,bridgeNoWaterSpeedCap:bridge.telemetry.speed>14,bridgeRoadSurface:bridge.surface.type==='ROAD',riverWet:river.water==='vadeando',riverSpeedLimited:river.telemetry.speed<12,riverMud:river.surface.type==='MUD'};return {url:location.href,checks,walking,bridge,river,method:'Actual player.step advances world and water rules; teleports isolate positive and negative contact fixtures, no claim of full route drive'};})()`;
+-let r=JSON.parse(execFileSync('agent-browser',['--session','water-play','eval',`JSON.stringify(${js})`],{encoding:'utf8',timeout:180000,maxBuffer:8e6}));r=typeof r==='string'?JSON.parse(r):r;mkdirSync('outputs/driving-priorities-20260930',{recursive:true});writeFileSync('outputs/driving-priorities-20260930/water_gameplay_report.json',JSON.stringify(r,null,2));console.log(r.checks);if(Object.values(r.checks).some(v=>!v))process.exitCode=1;
++let r=JSON.parse(execFileSync('agent-browser',['--session','water-play','eval',`JSON.stringify(${js})`],{encoding:'utf8',timeout:180000,maxBuffer:8e6}));r=typeof r==='string'?JSON.parse(r):r;const out=args.includes('--out-dir')?args[args.indexOf('--out-dir')+1]:'outputs/driving-priorities-20260930';mkdirSync(out,{recursive:true});writeFileSync(out+'/water_gameplay_report.json',JSON.stringify(r,null,2));console.log(r.checks);if(Object.values(r.checks).some(v=>!v))process.exitCode=1;
+diff --git a/scripts/terrain/test_terrain_orthophoto.mjs b/scripts/terrain/test_terrain_orthophoto.mjs
+index 0244b0e..29ec1b2 100644
+--- a/scripts/terrain/test_terrain_orthophoto.mjs
++++ b/scripts/terrain/test_terrain_orthophoto.mjs
+@@ -27,10 +27,12 @@ try {
+   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.mjs');
+   transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.mjs');
+   transpile('src/terrain.ts', 'terrain.mjs');
++  transpile('src/terrain-road-cutouts.ts', 'terrain-road-cutouts.mjs');
+   for (const file of ['terrain.mjs', 'terrain-orthophoto.mjs']) {
+     const p = resolve(temp, file);
+     let code = readFileSync(p, 'utf8')
+       .replace(/(['"])\.\/config\1/g, '$1./config.mjs$1')
++      .replace(/(['"])\.\/terrain-road-cutouts\1/g, '$1./terrain-road-cutouts.mjs$1')
+       .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.mjs$1')
+       .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.mjs$1');
+     code = code.replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.mjs$1');
+diff --git a/scripts/vehicle/assert_heightfield_datum.mjs b/scripts/vehicle/assert_heightfield_datum.mjs
+index 280bc65..306d181 100644
+--- a/scripts/vehicle/assert_heightfield_datum.mjs
++++ b/scripts/vehicle/assert_heightfield_datum.mjs
+@@ -40,10 +40,12 @@ const files = [
+   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.gen.mjs'),
+   transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.gen.mjs'),
+   transpile('src/terrain.ts', 'terrain.gen.mjs'),
++  transpile('src/terrain-road-cutouts.ts', 'terrain-road-cutouts.gen.mjs'),
+ ];
+ for (const f of files) {
+   const rewritten = f.text
+     .replace(/(['"])\.\/config\1/g, '$1./config.gen.mjs$1')
++    .replace(/(['"])\.\/terrain-road-cutouts\1/g, '$1./terrain-road-cutouts.gen.mjs$1')
+     .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.gen.mjs$1')
+     .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.gen.mjs$1')
+     .replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.gen.mjs$1')
+diff --git a/src/main.ts b/src/main.ts
+index d084a58..95a158f 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -684,6 +684,8 @@ async function bootstrap(): Promise<void> {
+       // El faldón de mezcla de la pista se dibuja solo a lo largo de la ruta jugable.
+       trackBlendCorridor: { points: FIRST_ROUTE.polyline, radiusM: 30 },
+     });
++    const roadCutouts = terrain.setRoadCutouts(roads.gradingTriangles());
++    console.info('[vias] corte local MDT bajo calzada y faldones', roadCutouts);
+     console.info(
+       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
+         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,
+diff --git a/src/road-draping.ts b/src/road-draping.ts
+index d10c6fb..c0a3b9d 100644
+--- a/src/road-draping.ts
++++ b/src/road-draping.ts
+@@ -2,6 +2,7 @@
+  * OSM XZ, footprint trims and bridge deck semantics remain unchanged.
+  * Wheel contacts query the final rendered triangles through RoadNetwork.surface. */
+ 
++import { buildRoadProfile } from './road-profile';
+ import { createRenderedRoadSurface, type RoadSurfaceSampler } from './world/road-surface';
+ import { Mesh } from '@babylonjs/core/Meshes/mesh';
+ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+@@ -10,8 +11,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+ import { Color3 } from '@babylonjs/core/Maths/math.color';
+ import type { Scene } from '@babylonjs/core/scene';
+ import {
+-  calculateTriangleTerrainLift,
+-  levelRoadProfile,
+   parseSpeedLimitKph,
+   ROAD_CLEARANCE_SAMPLES,
+   ROAD_SURFACE_CLEARANCE_M,
+@@ -96,14 +95,13 @@ export const DRAPING = {
+    */
+   verticalOffsetM: { ROAD: 0.12, TRACK: 0.1, PATH: 0.08 },
+   /**
+-   * Cota del borde libre de los faldones (m). Queda por debajo del offset de
+-   * cualquier calzada para que en cruces el z-buffer resuelva a favor del asfalto.
++   * Cota del borde libre de los faldones (m). Con el MDT recortado debe
++   * coincidir con el terreno: un lift dejaría una rendija visible al cielo.
+    */
+-  skirtLiftM: 0.04,
++  skirtLiftM: 0,
+ } as const;
+ /** Cota del faldón: banda de mezcla apoyada en el terreno, nunca superficie de rodadura. */
+ const SKIRT_LIFT_M = DRAPING.skirtLiftM;
+-const SURFACE_CLEARANCE_M = DRAPING.surfaceClearanceM;
+ /**
+  * Tiras laterales del detalle de rodadas de una pista (fracción del semiancho y tinte
+  * R/G/B). Su largo fija la fila transversal de esos tramos: la malla reserva exactamente
+@@ -291,6 +289,12 @@ interface ClassBuffers {
+   readonly indices: number[];
+   /** ROLE_PAVEMENT | ROLE_SKIRT, uno por vértice. */
+   readonly roles: number[];
++  readonly tangents: number[];
++  readonly footprint: number[];
++  readonly terminals: { vertices: number[]; road: number; x: number; z: number }[];
++  readonly owners: number[];
++  readonly roadIds: string[];
++  readonly profileGroups: { vertices: number[]; t: number; road: number; cls: RoadClass; x: number; z: number; width: number }[];
+   readonly stations: { x: number; z: number; dx: number; dz: number }[];
+   roadCount: number;
+   triangles: number;
+@@ -298,15 +302,18 @@ interface ClassBuffers {
+ }
+ 
+ function emptyBuffers(): ClassBuffers {
+-  return { positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0, signs: 0 };
++  return { terminals: [], owners: [], roadIds: [], footprint: [], tangents: [], profileGroups: [], positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0, signs: 0 };
+ }
+ 
+ interface TypedClass {
+   readonly positions: Float32Array;
+   readonly normals: Float32Array;
+   readonly colors: Float32Array;
+-  readonly indices: Uint32Array;
++  indices: Uint32Array;
+   readonly roles: Uint8Array;
++  readonly tangents: Float32Array;
++  readonly roadOrdinal: Uint32Array;
++  readonly roadIds: readonly string[];
+ }
+ 
+ interface LocalPolishZone {
+@@ -322,6 +329,9 @@ function toTyped(buffers: ClassBuffers): TypedClass {
+     colors: new Float32Array(buffers.colors),
+     indices: new Uint32Array(buffers.indices),
+     roles: new Uint8Array(buffers.roles),
++    tangents: new Float32Array(buffers.tangents),
++    roadOrdinal: new Uint32Array(buffers.owners),
++    roadIds: buffers.roadIds,
+   };
+ }
+ 
+@@ -340,7 +350,7 @@ function buildRoad(
+   terrain: RoadTerrain,
+   trackPolish?: LocalPolishZone,
+   roadPolish?: LocalPolishZone,
+-  blendCorridor?: LoadRoadNetworkOptions['trackBlendCorridor'],
++  _blendCorridor?: LoadRoadNetworkOptions['trackBlendCorridor'],
+ ): void {
+   const clearance = road.clearance ?? null;
+   // Solo las vías con perfil de recorte se subdividen al paso fino publicado
+@@ -370,18 +380,7 @@ function buildRoad(
+     );
+   // La pista de tierra también recibe faldón de mezcla, pero solo en el corredor de la
+   // ruta jugable (ver `trackBlendCorridor`) y nunca en los tramos con rodadas detalladas.
+-  const cercaDeRuta =
+-    isTrackClass && blendCorridor !== undefined && blendCorridor.points.length > 0
+-      ? stations.some((station, index) => index % 4 === 0 && blendCorridor.points.some((point) => Math.hypot(station.x - point.x, station.z - point.z) <= blendCorridor.radiusM))
+-      : false;
+-  const useSkirt = (isRoadClass || (isTrackClass && !detallePista && cercaDeRuta)) && !road.bridge;
+-  const smoothProfile = isRoadClass && !road.bridge
+-    ? levelRoadProfile(
+-      stations.map((station) => station.t),
+-      stations.map((station) => terrain.heightAt(station.x, station.z)),
+-      { radiusM: 20, maxFillM: 0.6, transitionM: 18 },
+-    )
+-    : null;
++  const useSkirt = !road.bridge;
+ 
+   /**
+    * Límites laterales por estación. Sin perfil devuelve la calzada `width/2` y
+@@ -403,6 +402,10 @@ function buildRoad(
+       outerRight,
+     };
+   };
++  const profile = road.bridge ? null : buildRoadProfile(stations, stations.map(s => bandAt(s.t)), terrain, road.class);
++  const groups = stations.map(s => ({ vertices: [] as number[], t: s.t, road: buffers.roadCount, cls: road.class, x: s.x, z: s.z, width: road.width }));
++  buffers.profileGroups.push(...groups);
++  let activeStation = 0;
+   const sectionCount = road.bridge ? 2 : Math.max(3, Math.ceil(road.width / DRAPING.crossSectionSpacingM) + 1);
+   // Con rodadas detalladas la fila usa exactamente las tiras de TRACK_SECTION; sin
+   // perfil, la retícula transversal de siempre. Ambas rutas reservan el mismo número
+@@ -419,6 +422,7 @@ function buildRoad(
+   const up = new Vector3(0, 1, 0);
+ 
+   const pushVertex = (x: number, y: number, z: number, normal: Vector3, role: number, tint?: readonly [number, number, number]): void => {
++    if (role === ROLE_PAVEMENT || role === ROLE_BRIDGE || role === 4) groups[activeStation]!.vertices.push(buffers.positions.length / 3);
+     buffers.positions.push(x, y, z);
+     buffers.normals.push(normal.x, normal.y, normal.z);
+     const shade = roadVertexShade(road.class, x, z);
+@@ -430,9 +434,14 @@ function buildRoad(
+       1,
+     );
+     buffers.roles.push(role);
++    buffers.owners.push(buffers.roadCount);
++    const previous = stations[Math.max(0, activeStation - 1)]!, next = stations[Math.min(stations.length - 1, activeStation + 1)]!;
++    const length = Math.hypot(next.x - previous.x, next.z - previous.z) || 1;
++    buffers.tangents.push((next.x - previous.x) / length, (next.z - previous.z) / length);
+   };
+ 
+   for (let i = 0; i < stations.length; i++) {
++    activeStation = i;
+     const station = stations[i]!;
+     const prev = stations[Math.max(0, i - 1)]!;
+     const next = stations[Math.min(stations.length - 1, i + 1)]!;
+@@ -450,21 +459,14 @@ function buildRoad(
+     const nx = -dz;
+     const nz = dx;
+ 
+-    const centerY = smoothProfile?.[i] ?? terrain.heightAt(station.x, station.z);
++    const centerY = profile?.[i]?.centerHeight ?? terrain.heightAt(station.x, station.z);
+     const bridgeT = station.t / totalLength;
+ 
+     // Altura de calzada en un punto lateral. ROAD no-puente: aplanado parcial.
+     const pavementY = (px: number, pz: number): number => {
+       if (road.bridge) return startY + (endY - startY) * bridgeT + offset;
+-      const terrainY = terrain.heightAt(px, pz);
+-      if (isRoadClass) {
+-        const flattenedY = terrainY + DRAPING.roadFlattenLerp * (centerY - terrainY);
+-        // A lateral bank can be higher than the centreline. Never bury the
+-        // asphalt below that bank; the extra cross-sections let the shoulder
+-        // meet this protected surface without green terrain cutting through.
+-        return Math.max(terrainY, flattenedY) + offset;
+-      }
+-      return terrainY + offset;
++      const lateral = (px - station.x) * nx + (pz - station.z) * nz;
++      return centerY + profile![i]!.desiredBank * lateral + offset;
+     };
+ 
+     const band = bandAt(station.t);
+@@ -514,6 +516,7 @@ function buildRoad(
+   // Tonos de sección: borde terroso, hombro, rodada, franja central y simetría.
+   // Cada franja sigue terrain.heightAt; no modifica las cotas ni la física.
+   const appendTrackSection = (stationIndex: number, strength: number): number => {
++    activeStation = stationIndex;
+     const station = stations[stationIndex]!;
+     const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
+     const nx = -direction.dz;
+@@ -529,7 +532,7 @@ function buildRoad(
+         1 + (green - 1) * strength,
+         1 + (blue - 1) * strength,
+       ];
+-      pushVertex(x, terrain.heightAt(x, z) + offset, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
++      pushVertex(x, profile![stationIndex]!.centerHeight + profile![stationIndex]!.desiredBank * fraction * sideHalf + offset, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
+     }
+     return first;
+   };
+@@ -546,25 +549,24 @@ function buildRoad(
+   ): void => {
+     const first = buffers.positions.length / 3;
+     for (const stationIndex of [startStation, endStation]) {
++      activeStation = stationIndex;
+       const station = stations[stationIndex]!;
+       const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
+       const nx = -direction.dz;
+       const nz = direction.dx;
+       const band = bandAt(station.t);
+-      const centerY = smoothProfile?.[stationIndex] ?? terrain.heightAt(station.x, station.z);
++      const centerY = profile![stationIndex]!.centerHeight;
+       for (const fraction of [from, to]) {
+         const sideHalf = fraction < 0 ? band.pavementRight : band.pavementLeft;
+         const x = station.x + nx * fraction * sideHalf;
+         const z = station.z + nz * fraction * sideHalf;
+-        const groundY = terrain.heightAt(x, z);
+-        const flattenedY = groundY + DRAPING.roadFlattenLerp * (centerY - groundY);
+-        const y = Math.max(groundY, flattenedY) + offset + 0.025;
++        const y = centerY + profile![stationIndex]!.desiredBank * fraction * sideHalf + offset + 0.025;
+         const tint: readonly [number, number, number] = [
+           1 + (color[0] - 1) * strength,
+           1 + (color[1] - 1) * strength,
+           1 + (color[2] - 1) * strength,
+         ];
+-        pushVertex(x, y, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
++        pushVertex(x, y, z, terrain.normalAt(x, z, scratch), 4, tint);
+       }
+     }
+     quad(first, first + 1, first + 3, first + 2);
+@@ -611,6 +613,45 @@ function buildRoad(
+     }
+   }
+ 
++  if (!road.bridge) {
++    const left = useSkirt ? pavementVertices : 0;
++    const right = useSkirt ? pavementVertices + 1 : pavementVertices - 1;
++    const point = (row: number, side: number): readonly [number, number] => {
++      const v = baseVertex + row * verticesPerStation + side;
++      return [buffers.positions[v * 3]!, buffers.positions[v * 3 + 2]!];
++    };
++    const linear = (start: number, middle: number, end: number, side: number): boolean => {
++      const a = point(start, side), b = point(middle, side), c = point(end, side);
++      const dx = c[0] - a[0], dz = c[1] - a[1], length = Math.hypot(dx, dz);
++      if (length < 1e-8 || length > 100) return false;
++      const along = ((b[0] - a[0]) * dx + (b[1] - a[1]) * dz) / (length * length);
++      return along >= 0 && along <= 1 && Math.abs(dx * (b[1] - a[1]) - dz * (b[0] - a[0])) / length < 1e-7;
++    };
++    // Dissolve only collinear boundary vertices. Bends and clearance-width
++    // changes stay exact; this does not simplify any rendered road geometry.
++    for (let start = 0; start < gaps;) {
++      let end = start + 1;
++      while (end < gaps && linear(start, end, end + 1, left) && linear(start, end, end + 1, right)) end++;
++      const a = point(start, left), b = point(start, right), c = point(end, right), d = point(end, left);
++      const corners = [a,b,c,d];
++      const turns = corners.map((p,i)=>{const q=corners[(i+1)%4]!,r=corners[(i+2)%4]!;return (q[0]-p[0])*(r[1]-q[1])-(q[1]-p[1])*(r[0]-q[0]);});
++      if (turns.every(t=>t>=-1e-9)||turns.every(t=>t<=1e-9)) {
++        for (const p of [a,b,c,a,c,d]) buffers.footprint.push(...p);
++      } else {
++        // Folded or concave station quads (hairpins/trimmed corners) cannot
++        // dissolve transverse edges: retain the exact mesh triangle union.
++        const emit = (v: number): void => { buffers.footprint.push(buffers.positions[v*3]!,buffers.positions[v*3+2]!); };
++        for(let row=start;row<end;row++){
++          const va=baseVertex+row*verticesPerStation,vb=va+verticesPerStation;
++          const quadFoot=(a:number,b:number,c:number,d:number):void=>{for(const v of [a,b,c,a,c,d])emit(v);};
++          for(let strip=0;strip<pavementVertices-1;strip++)quadFoot(va+strip,va+strip+1,vb+strip+1,vb+strip);
++          if(useSkirt){quadFoot(va+pavementVertices,va,vb,vb+pavementVertices);quadFoot(va+pavementVertices-1,va+pavementVertices+1,vb+pavementVertices+1,vb+pavementVertices-1);}
++        }
++      }
++      start = end;
++    }
++  }
++
+   // Señales de velocidad con geometría low-poly integrada en el único buffer
+   // de ROAD. Solo se usan límites numéricos presentes en los metadatos OSM.
+   const speedLimit = parseSpeedLimitKph(road.maxspeed);
+@@ -696,6 +737,12 @@ function buildRoad(
+     buffers.signs += 1;
+   }
+ 
++  if (!road.bridge && useSkirt) for (const row of [0, stations.length-1]) {
++    const a=baseVertex+row*verticesPerStation;
++    buffers.terminals.push({road:buffers.roadCount,x:stations[row]!.x,z:stations[row]!.z,
++      vertices:[a+pavementVertices,...Array.from({length:pavementVertices},(_,i)=>a+i),a+pavementVertices+1]});
++  }
++  buffers.roadIds.push(road.id);
+   buffers.roadCount += 1;
+   const roadPavementTriangles = (pavementVertices - 1) * 2;
+   const trackDetailedTriangles = (TRACK_SECTION.length - 1) * 2;
+@@ -705,37 +752,178 @@ function buildRoad(
+     polishedRoadGaps * roadMarkTriangles;
+ }
+ 
+-/** Eleva vértices locales si un triángulo de la cinta atraviesa la malla DEM. */
+-function clearTrianglesFromTerrain(buffers: ClassBuffers, terrain: RoadTerrain): number {
+-  const vertexCount = buffers.positions.length / 3;
+-  const lifts = new Float32Array(vertexCount);
+-  for (let i = 0; i < buffers.indices.length; i += 3) {
+-    const ia = buffers.indices[i]!;
+-    const ib = buffers.indices[i + 1]!;
+-    const ic = buffers.indices[i + 2]!;
+-    const roles = [buffers.roles[ia], buffers.roles[ib], buffers.roles[ic]];
+-    if (roles.some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
+-    const needed = calculateTriangleTerrainLift(
+-      [{ x: buffers.positions[ia * 3]!, y: buffers.positions[ia * 3 + 1]!, z: buffers.positions[ia * 3 + 2]! },
+-       { x: buffers.positions[ib * 3]!, y: buffers.positions[ib * 3 + 1]!, z: buffers.positions[ib * 3 + 2]! },
+-       { x: buffers.positions[ic * 3]!, y: buffers.positions[ic * 3 + 1]!, z: buffers.positions[ic * 3 + 2]! }],
+-      terrain.heightAt,
+-      roles.includes(ROLE_SKIRT) ? SKIRT_LIFT_M : SURFACE_CLEARANCE_M,
+-    );
+-    if (needed > 0) {
+-      lifts[ia] = Math.max(lifts[ia]!, needed);
+-      lifts[ib] = Math.max(lifts[ib]!, needed);
+-      lifts[ic] = Math.max(lifts[ic]!, needed);
++/** Keep a bridge linear while connecting its endpoints to the built approach
++ * centres. Copying raw DEM endpoints after levelling an approach creates a step. */
++function connectBridgeDecks(buffers: Record<RoadClass, ClassBuffers>): void {
++  const all = CLASSES.flatMap(cls => buffers[cls].profileGroups);
++  const centers = new Map<typeof all[number], number>();
++  for (const g of all) {
++    const b = buffers[g.cls];
++    const vertex = g.vertices.filter(v => b.roles[v] !== 4).sort((a, c) =>
++      Math.hypot(b.positions[a * 3]! - g.x, b.positions[a * 3 + 2]! - g.z) - Math.hypot(b.positions[c * 3]! - g.x, b.positions[c * 3 + 2]! - g.z))[0];
++    if (vertex !== undefined) centers.set(g, b.positions[vertex * 3 + 1]!);
++  }
++  for (const cls of CLASSES) {
++    const b = buffers[cls], groups = b.profileGroups;
++    for (let i = 0; i < groups.length; i++) {
++      const start = groups[i]!;
++      if (!start.vertices.some(v => b.roles[v] === ROLE_BRIDGE)) continue;
++      let last = i;
++      while (last + 1 < groups.length && groups[last + 1]!.road === start.road) last++;
++      const end = groups[last]!;
++      const support = (endpoint: typeof start): number => {
++        let y = centers.get(endpoint)!;
++        for (const g of all) {
++          if (g === endpoint || Math.hypot(g.x - endpoint.x, g.z - endpoint.z) > .06) continue;
++          if (buffers[g.cls].roles[g.vertices[0]!] === ROLE_BRIDGE) continue;
++          y = Math.max(y, centers.get(g)!);
++        }
++        return y;
++      };
++      const y0 = support(start), y1 = support(end), length = end.t - start.t || 1;
++      for (let j = i; j <= last; j++) {
++        const g = groups[j]!, y = y0 + (y1 - y0) * (g.t - start.t) / length;
++        for (const v of g.vertices) b.positions[v * 3 + 1] = y;
++      }
++      i = last;
++    }
++  }
++}
++
++/** Join actual centreline crossings at a common local deck. It affects only
++ * the overlapping widths plus a cosine approach, never the source DEM/XZ. */
++function reconcileJunctions(roads: readonly RoadSource[], buffers: Record<RoadClass, ClassBuffers>): void {
++  const segments: { road: RoadSource; key: string; a: readonly [number, number]; b: readonly [number, number] }[] = [];
++  const ordinals: Record<RoadClass, number> = { ROAD: 0, TRACK: 0, PATH: 0 };
++  const groups = new Map<string, ClassBuffers['profileGroups']>();
++  for (const road of roads) {
++    const ordinal = ordinals[road.class]++, key = `${road.class}/${ordinal}`;
++    groups.set(key, buffers[road.class].profileGroups.filter(g => g.road === ordinal));
++    if (road.bridge) continue;
++    for (let i = 1; i < road.points.length; i++) segments.push({ road, key, a: road.points[i - 1]!, b: road.points[i]! });
++  }
++  const events: { x: number; z: number; radius: number; keys: Set<string> }[] = [];
++  const cells = new Map<string, number[]>(), tested = new Set<string>();
++  for (let i = 0; i < segments.length; i++) {
++    const s = segments[i]!;
++    for (let x = Math.floor((Math.min(s.a[0], s.b[0]) - s.road.width) / 32); x <= Math.floor((Math.max(s.a[0], s.b[0]) + s.road.width) / 32); x++) {
++      for (let z = Math.floor((Math.min(s.a[1], s.b[1]) - s.road.width) / 32); z <= Math.floor((Math.max(s.a[1], s.b[1]) + s.road.width) / 32); z++) {
++        const cell = `${x},${z}`, previous = cells.get(cell) ?? [];
++        for (const j of previous) {
++          const other = segments[j]!, pair = `${j}/${i}`;
++          if (other.key === s.key || tested.has(pair)) continue;
++          tested.add(pair);
++          const ax = s.b[0] - s.a[0], az = s.b[1] - s.a[1], bx = other.b[0] - other.a[0], bz = other.b[1] - other.a[1];
++          const det = ax * bz - az * bx;
++          let px: number, pz: number;
++          const cx = other.a[0] - s.a[0], cz = other.a[1] - s.a[1];
++          const u = Math.abs(det) > 1e-8 ? (cx * bz - cz * bx) / det : Infinity;
++          const v = Math.abs(det) > 1e-8 ? (cx * az - cz * ax) / det : Infinity;
++          if (u >= -1e-6 && u <= 1.000001 && v >= -1e-6 && v <= 1.000001) {
++            px = s.a[0] + u * ax; pz = s.a[1] + u * az;
++          } else {
++            // Footprints also meet at T-junctions and rounded/parallel OSM
++            // endpoints whose centrelines do not mathematically intersect.
++            const closest = (p: readonly [number, number], a: readonly [number, number], b: readonly [number, number]) => {
++              const dx = b[0] - a[0], dz = b[1] - a[1], len2 = dx * dx + dz * dz;
++              const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (len2 || 1)));
++              const x = a[0] + t * dx, z = a[1] + t * dz;
++              return { distance: Math.hypot(x - p[0], z - p[1]), x: (x + p[0]) / 2, z: (z + p[1]) / 2 };
++            };
++            const near = [closest(s.a, other.a, other.b), closest(s.b, other.a, other.b), closest(other.a, s.a, s.b), closest(other.b, s.a, s.b)].sort((a, b) => a.distance - b.distance)[0]!;
++            if (near.distance > (s.road.width + other.road.width) * .5) continue;
++            px = near.x; pz = near.z;
++          }
++          const radius = Math.max(s.road.width, other.road.width) * .65;
++          events.push({ x: px, z: pz, radius, keys: new Set([s.key, other.key]) });
++        }
++        previous.push(i); cells.set(cell, previous);
++      }
+     }
+   }
+-  let maxLift = 0;
+-  for (let vertex = 0; vertex < vertexCount; vertex++) {
+-    const lift = lifts[vertex]!;
+-    if (lift <= 0) continue;
+-    buffers.positions[vertex * 3 + 1]! += lift;
+-    maxLift = Math.max(maxLift, lift);
++  // Coincident multiway nodes form one deck. Targets read immutable profiles;
++  // no pair can feed a height modified by an earlier pair back into the next.
++  const parent = events.map((_, i) => i);
++  const find = (i: number): number => { while (parent[i] !== i) { parent[i] = parent[parent[i]!]!; i = parent[i]!; } return i; };
++  const extents = events.map(e => ({ minX: e.x, maxX: e.x, minZ: e.z, maxZ: e.z, radius: e.radius }));
++  const eventCells = new Map<string, number[]>();
++  for (let i = 0; i < events.length; i++) {
++    const e = events[i]!, cx = Math.floor(e.x / 32), cz = Math.floor(e.z / 32);
++    for (let x = cx - 1; x <= cx + 1; x++) for (let z = cz - 1; z <= cz + 1; z++) {
++      for (const j of eventCells.get(`${x},${z}`) ?? []) {
++        const p = events[j]!;
++        if (Math.hypot(p.x - e.x, p.z - e.z) <= .25) {
++          const a = find(i), b = find(j), ea = extents[a]!, eb = extents[b]!;
++          const minX = Math.min(ea.minX, eb.minX), maxX = Math.max(ea.maxX, eb.maxX);
++          const minZ = Math.min(ea.minZ, eb.minZ), maxZ = Math.max(ea.maxZ, eb.maxZ), radius = Math.max(ea.radius, eb.radius);
++          // Prevent chains of nearby nodes from flattening a whole road.
++          if (maxX - minX <= radius * 2 && maxZ - minZ <= radius * 2) {
++            parent[a] = b; extents[b] = { minX, maxX, minZ, maxZ, radius };
++          }
++        }
++      }
++    }
++    const key = `${cx},${cz}`, list = eventCells.get(key) ?? []; list.push(i); eventCells.set(key, list);
++  }
++  const clusters = new Map<number, typeof events>();
++  events.forEach((e, i) => { const root = find(i), list = clusters.get(root) ?? []; list.push(e); clusters.set(root, list); });
++  const original = Object.fromEntries(CLASSES.map(cls => [cls, buffers[cls].positions.slice()])) as Record<RoadClass, number[]>;
++  const planes: { x: number; z: number; radius: number; y: number; gx: number; gz: number }[] = [];
++  for (const cluster of clusters.values()) {
++    const x = cluster.reduce((sum, e) => sum + e.x, 0) / cluster.length;
++    const z = cluster.reduce((sum, e) => sum + e.z, 0) / cluster.length;
++    const radius = Math.max(...cluster.map(e => e.radius + Math.hypot(e.x - x, e.z - z)));
++    const keys = [...new Set(cluster.flatMap(e => [...e.keys]))].sort((a,b) => {
++      const ga=groups.get(a)![0]!,gb=groups.get(b)![0]!;
++      return CLASSES.indexOf(ga.cls)-CLASSES.indexOf(gb.cls)||gb.width-ga.width||buffers[ga.cls].roadIds[ga.road]!.localeCompare(buffers[gb.cls].roadIds[gb.road]!);
++    });
++    const list = groups.get(keys[0]!)!;
++    const center = (g: typeof list[number]): number => {
++      const p=original[g.cls];let vertex=-1,distance=Infinity;
++      for(const v of g.vertices){if(buffers[g.cls].roles[v]===4)continue;const d=Math.hypot(p[v*3]!-g.x,p[v*3+2]!-g.z);if(d<distance){distance=d;vertex=v;}}
++      return vertex<0?NaN:p[vertex*3+1]!;
++    };
++    let closest=Infinity,y=NaN,gx=0,gz=0;
++    for(let i=1;i<list.length;i++){
++      const a=list[i-1]!,b=list[i]!,dx=b.x-a.x,dz=b.z-a.z,len2=dx*dx+dz*dz;
++      const t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(len2||1)));
++      const d=Math.hypot(x-a.x-t*dx,z-a.z-t*dz);
++      if(d<closest){const ya=center(a),yb=center(b);closest=d;y=ya*(1-t)+yb*t;gx=(yb-ya)*dx/(len2||1);gz=(yb-ya)*dz/(len2||1);}
++    }
++    if(Number.isFinite(y))planes.push({x,z,radius,y,gx,gz});
+   }
+-  return maxLift;
++  // One continuous junction field for all ribbons. Preserve the principal
++  // road's longitudinal grade instead of flattening each pair into a plateau.
++  // Bridges are separate grade-separated decks and never receive this field.
++  for(const cls of CLASSES)for(const g of buffers[cls].profileGroups){
++    if(g.vertices.some(v=>buffers[cls].roles[v]===ROLE_BRIDGE))continue;
++    const nearby=planes.map(p=>{const distance=Math.hypot(g.x-p.x,g.z-p.z),approach=12;
++      const weight=distance<=p.radius?1:distance<p.radius+approach?.5*(1+Math.cos(Math.PI*(distance-p.radius)/approach)):0;
++      return {p,weight};}).filter(p=>p.weight>0);
++    if(!nearby.length)continue;
++    const weight=nearby.reduce((sum,p)=>sum+p.weight,0),blend=Math.max(...nearby.map(p=>p.weight));
++    const b=buffers[cls];
++    for(const v of g.vertices){const index=v*3+1,px=b.positions[v*3]!,pz=b.positions[v*3+2]!;
++      const target=nearby.reduce((sum,{p,weight})=>sum+(p.y+p.gx*(px-p.x)+p.gz*(pz-p.z))*weight,0)/weight+(b.roles[v]===4?.025:0);
++      b.positions[index]=original[cls][index]!*(1-blend)+target*blend;
++    }
++  }
++
++}
++
++/** Close the exposed cut/fill face only at isolated OSM termini. Shared nodes
++ * use the junction field; bridges remain grade-separated. No XZ is extended. */
++function closeTerminalEarthworks(roads: readonly RoadSource[], buffers: Record<RoadClass,ClassBuffers>, terrain:RoadTerrain):void {
++  const nodes=new Map<string,Set<string>>();
++  for(const road of roads)for(const p of road.points){const key=`${p[0]},${p[1]}`,ids=nodes.get(key)??new Set<string>();ids.add(road.id);nodes.set(key,ids);}
++  for(const cls of CLASSES){const b=buffers[cls];for(const terminal of b.terminals){
++    if((nodes.get(`${terminal.x},${terminal.z}`)?.size??0)>1)continue;
++    const first=b.positions.length/3;
++    for(const v of terminal.vertices){const x=b.positions[v*3]!,z=b.positions[v*3+2]!,top=b.positions[v*3+1]!,bottom=terrain.heightAt(x,z);
++      for(const y of [top,bottom]){b.positions.push(x,y,z);b.normals.push(0,1,0);b.colors.push(...b.colors.slice(v*4,v*4+4));b.roles.push(5);b.owners.push(terminal.road);b.tangents.push(b.tangents[v*2]!,b.tangents[v*2+1]!);}
++    }
++    for(let i=0;i<terminal.vertices.length-1;i++){const a=first+i*2,c=a+2;b.indices.push(a,a+1,c+1,a,c+1,c);}
++  }}
+ }
+ 
+ /* ------------------------------------------------------------------------- *
+@@ -795,8 +983,9 @@ export interface RoadAuditReport {
+       readonly skirt: ResidualSummary | null;
+       /** Residual del deck de puente (por diseño NO se drapea). */
+       readonly bridge: ResidualSummary | null;
+-      /** Separación firmada con el terreno en vértices, centros y aristas de triángulo. */
++      /** Signed relation to RAW MDT. Negative values are designed cuts; the rendered terrain is excised inside the ribbon footprint. */
+       readonly surfaceClearance: {
++        readonly reference: 'RAW_MDT';
+         readonly samples: number;
+         readonly belowTerrain: number;
+         readonly minM: number;
+@@ -884,8 +1073,28 @@ function createMaterial(scene: Scene, spec: MaterialSpec): PBRMaterial {
+ }
+ 
+ function createMesh(scene: Scene, name: string, data: TypedClass, material: PBRMaterial): Mesh {
++  // Width trims can collapse a side to the centreline. Faces with zero XZ
++  // footprint are curtains/degenerates, never road surface.
++  const valid: number[] = [];
++  for (let i = 0; i < data.indices.length; i += 3) {
++    const a = data.indices[i]! * 3, b = data.indices[i + 1]! * 3, c = data.indices[i + 2]! * 3;
++    if ([a, b, c].some(v => (data.roles[v / 3] === ROLE_SIGN || data.roles[v / 3] === 5))) { valid.push(data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!); continue; }
++    const area = (data.positions[b]! - data.positions[a]!) * (data.positions[c + 2]! - data.positions[a + 2]!) - (data.positions[b + 2]! - data.positions[a + 2]!) * (data.positions[c]! - data.positions[a]!);
++    if (Math.abs(area) > 1e-4) valid.push(data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!);
++  }
++  // Compact the typed index view used by mesh, contacts and audit together.
++  data.indices = new Uint32Array(valid);
+   const vertexData = new VertexData();
+   vertexData.positions = data.positions;
++  VertexData.ComputeNormals(data.positions, data.indices, data.normals);
++  // Ribbons use two-sided winding inherited from the draping mesh. Lighting
++  // support faces must point upward, just like the triangle contact normal.
++  for (let i = 0; i < data.normals.length; i += 3) {
++    if (data.roles[i / 3] === ROLE_SIGN || data.normals[i + 1]! >= 0) continue;
++    data.normals[i] = -data.normals[i]!;
++    data.normals[i + 1] = -data.normals[i + 1]!;
++    data.normals[i + 2] = -data.normals[i + 2]!;
++  }
+   vertexData.normals = data.normals;
+   vertexData.colors = data.colors;
+   vertexData.indices = data.indices;
+@@ -965,12 +1174,15 @@ export async function loadRoadNetwork(
+     buildRoad(buffers[road.class], road, surface, options.polishTrackAt, options.polishRoadAt, options.trackBlendCorridor);
+   }
+ 
++  reconcileJunctions(roads, buffers);
+   const maxTerrainClearanceLiftM: Record<RoadClass, number> = {
+-    ROAD: clearTrianglesFromTerrain(buffers.ROAD, surface),
+-    TRACK: clearTrianglesFromTerrain(buffers.TRACK, surface),
+-    PATH: clearTrianglesFromTerrain(buffers.PATH, surface),
++    ROAD: 0,
++    TRACK: 0,
++    PATH: 0,
+   };
+ 
++  connectBridgeDecks(buffers);
++  closeTerminalEarthworks(roads,buffers,surface);
+   const typed: Record<RoadClass, TypedClass> = {
+     ROAD: toTyped(buffers.ROAD),
+     TRACK: toTyped(buffers.TRACK),
+@@ -996,8 +1208,9 @@ export async function loadRoadNetwork(
+     const b = buffers[cls];
+     const classVertices = b.positions.length / 3;
+     vertexCount += classVertices;
+-    triangleCount += b.triangles;
+-    byClass[cls] = { roads: b.roadCount, stations: b.stations.length, vertices: classVertices, triangles: b.triangles };
++    const classTriangles = typed[cls].indices.length / 3;
++    triangleCount += classTriangles;
++    byClass[cls] = { roads: b.roadCount, stations: b.stations.length, vertices: classVertices, triangles: classTriangles };
+   }
+ 
+   const stats: RoadDrapingStats = {
+@@ -1039,7 +1252,7 @@ export async function loadRoadNetwork(
+         const role = roles[v];
+         if (role === ROLE_SKIRT) skirt.push(sample);
+         else if (role === ROLE_BRIDGE) bridge.push(sample);
+-        else if (role !== ROLE_SIGN) pavement.push(sample);
++        else if (role !== ROLE_SIGN && role !== 5) pavement.push(sample);
+       }
+       let clearanceSamples = 0;
+       let belowTerrain = 0;
+@@ -1051,7 +1264,7 @@ export async function loadRoadNetwork(
+         const ia = indices[i]!;
+         const ib = indices[i + 1]!;
+         const ic = indices[i + 2]!;
+-        if ([roles[ia], roles[ib], roles[ic]].some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
++        if ([roles[ia], roles[ib], roles[ic]].some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN || role === 5)) continue;
+         const ax = positions[ia * 3]!;
+         const ay = positions[ia * 3 + 1]!;
+         const az = positions[ia * 3 + 2]!;
+@@ -1080,6 +1293,7 @@ export async function loadRoadNetwork(
+         skirt: skirt.length > 0 ? summarize(skirt) : null,
+         bridge: bridge.length > 0 ? summarize(bridge) : null,
+         surfaceClearance: {
++          reference: 'RAW_MDT',
+           samples: clearanceSamples,
+           belowTerrain,
+           minM: Number.isFinite(minClearance) ? minClearance : 0,
+@@ -1123,15 +1337,7 @@ export async function loadRoadNetwork(
+     surface: createRenderedRoadSurface(surface, CLASSES.map((cls) => ({ class: cls, ...typed[cls], stations: buffers[cls].stations }))),
+     stats,
+     gradingTriangles: () => {
+-      const triangles: number[] = [];
+-      for (const cls of CLASSES) {
+-        const data = typed[cls];
+-        for (let i = 0; i < data.indices.length; i += 3) {
+-          const vertices = [data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!];
+-          if (vertices.some((v) => data.roles[v] !== ROLE_PAVEMENT && data.roles[v] !== ROLE_SKIRT)) continue;
+-          for (const v of vertices) triangles.push(data.positions[v * 3]!, data.positions[v * 3 + 2]!);
+-        }
+-      }
++      const triangles = CLASSES.flatMap((cls) => buffers[cls].footprint);
+       return new Float32Array(triangles);
+     },
+     mapLines: () => mapLines,
+diff --git a/src/terrain.ts b/src/terrain.ts
+index b68e06f..10e88ae 100644
+--- a/src/terrain.ts
++++ b/src/terrain.ts
+@@ -11,6 +11,12 @@ import type { Scene } from '@babylonjs/core/scene';
+ import { FrameTaskQueue, type FrameTaskHandle, type FrameTaskRunStats } from './runtime/frame-task-queue';
+ import type { TerrainConfig } from './config';
+ import { loadTerrainOrthophotoTexture, terrainTileOrthophotoUV, type TerrainTextureFactory } from './terrain-orthophoto';
++import {
++  createRoadCutoutIndex,
++  cutTerrainTriangles,
++  type RoadCutoutIndex,
++  type TerrainCutoutStats,
++} from './terrain-road-cutouts';
+ import {
+   assertValidGrid,
+   containsPoint,
+@@ -104,7 +110,10 @@ interface TileMeshEntry {
+   mesh: Mesh | null;
+   readonly min: Vector3;
+   readonly max: Vector3;
+-  readonly triangles: number;
++  triangles: number;
++  vertices: number;
++  indices: number;
++  roadCutoutApplied: boolean;
+   buildHandle: FrameTaskHandle | null;
+   wanted: boolean;
+   state: 'UNLOADED' | 'QUEUED' | 'LOADING' | 'ACTIVE' | 'CACHED';
+@@ -130,6 +139,15 @@ export interface TerrainResidencyStats {
+   readonly lastTaskFrameMs: number;
+   readonly maxTaskFrameMs: number;
+   readonly initialGeometryBuildMs: number;
++  readonly roadCutoutBuildMs: number;
++  readonly roadCutoutRemovedAreaM2: number;
++  readonly roadCutoutAddedVertices: number;
++  readonly roadCutoutTriangleDelta: number;
++}
++
++export interface TerrainRoadCutoutStats extends TerrainCutoutStats {
++  readonly affectedTiles: number;
++  readonly elapsedMs: number;
+ }
+ 
+ /**
+@@ -148,7 +166,8 @@ function createTileMeshBuildTask(
+   globalMinMeters: number,
+   globalMaxMeters: number,
+   orthophotoUVs: Float32Array | null,
+-): { readonly step: () => boolean; readonly getMesh: () => Mesh } {
++  roadCutouts: RoadCutoutIndex | null,
++): { readonly step: () => boolean; readonly getMesh: () => Mesh; readonly getGeometryStats: () => { vertices: number; indices: number; cutout: TerrainCutoutStats } } {
+   const grid = tile.grid;
+   const columns = grid.columns;
+   const rows = grid.rows;
+@@ -164,6 +183,7 @@ function createTileMeshBuildTask(
+   const normalScratch = new Vector3();
+   let row = 0;
+   let mesh: Mesh | null = null;
++  let geometryStats: { vertices: number; indices: number; cutout: TerrainCutoutStats } | null = null;
+   const step = (): boolean => {
+     const rowEnd = Math.min(rows, row + 6);
+     for (; row < rowEnd; row++) {
+@@ -221,21 +241,50 @@ function createTileMeshBuildTask(
+     }
+   }
+ 
++    let finalPositions: Float32Array<ArrayBufferLike> = positions;
++    let finalNormals: Float32Array<ArrayBufferLike> = normals;
++    let finalColors: Float32Array<ArrayBufferLike> = colors;
++    let finalUVs: Float32Array<ArrayBufferLike> = uvs;
++    let finalIndices: Uint16Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> = indices;
++    let cutoutStats: TerrainCutoutStats = {
++      sourceTriangles: indices.length / 3,
++      clippedTriangles: 0,
++      removedTriangles: 0,
++      outputTriangles: indices.length / 3,
++      addedVertices: 0,
++      removedAreaM2: 0,
++      candidateTests: 0,
++    };
++    if (roadCutouts) {
++      const cut = cutTerrainTriangles({ positions, normals, colors, uvs, indices }, roadCutouts);
++      finalPositions = cut.positions;
++      finalNormals = cut.normals;
++      finalColors = cut.colors;
++      finalUVs = cut.uvs;
++      finalIndices = cut.indices;
++      cutoutStats = cut.stats;
++    }
++
+     const vertexData = new VertexData();
+-    vertexData.positions = positions;
+-    vertexData.normals = normals;
+-    vertexData.colors = colors;
+-    vertexData.uvs = uvs;
+-    vertexData.indices = indices;
++    vertexData.positions = finalPositions;
++    vertexData.normals = finalNormals;
++    vertexData.colors = finalColors;
++    vertexData.uvs = finalUVs;
++    vertexData.indices = finalIndices;
+     mesh = new Mesh(`terrain:${tile.id}`, scene);
+     vertexData.applyToMesh(mesh, false);
+     mesh.material = material;
+     mesh.useVertexColors = true;
+     mesh.receiveShadows = true;
+     mesh.isPickable = false;
++    geometryStats = { vertices: finalPositions.length / 3, indices: finalIndices.length, cutout: cutoutStats };
+     return true;
+   };
+-  return { step, getMesh: () => { if (!mesh) throw new Error(`terrain: tile ${tile.id} is not built`); return mesh; } };
++  return {
++    step,
++    getMesh: () => { if (!mesh) throw new Error(`terrain: tile ${tile.id} is not built`); return mesh; },
++    getGeometryStats: () => { if (!geometryStats) throw new Error(`terrain: tile ${tile.id} has no geometry stats`); return geometryStats; },
++  };
+ }
+ 
+ /** Distancia 3D mínima de un punto al AABB. 0 si está dentro. */
+@@ -281,6 +330,8 @@ export interface WorldTerrain {
+   activeTriangles(): number;
+   /** Advances cooperative mesh preparation. Call once just before scene.render(). */
+   runDeferredTasks(budgetMs: number): FrameTaskRunStats;
++  /** Remove only rendered DEM surface beneath projected road pavement/skirts. CPU heightfields stay raw. */
++  setRoadCutouts(triangles: Float32Array): TerrainRoadCutoutStats;
+   /** CPU height samples remain resident; byte counts are payload estimates, not heap/VRAM measurements. */
+   residencyStats(): TerrainResidencyStats;
+   /** Centro del área cubierta, en unidades de mundo. */
+@@ -439,6 +490,11 @@ export async function loadTerrain(
+   const queue = new FrameTaskQueue();
+   const entries: TileMeshEntry[] = [];
+   let initialGeometryBuildMs = 0;
++  let roadCutoutIndex: RoadCutoutIndex | null = null;
++  let roadCutoutBuildMs = 0;
++  let roadCutoutRemovedAreaM2 = 0;
++  let roadCutoutAddedVertices = 0;
++  let roadCutoutTriangleDelta = 0;
+   for (let i = 0; i < tileData.length; i++) {
+     const tile = tileData[i]!;
+     const grid = tile.grid;
+@@ -458,18 +514,26 @@ export async function loadTerrain(
+         grid.z0 + (grid.rows - 1) * grid.dz,
+       ),
+       triangles: (grid.columns - 1) * (grid.rows - 1) * 2,
++      vertices: grid.columns * grid.rows,
++      indices: (grid.columns - 1) * (grid.rows - 1) * 6,
++      roadCutoutApplied: false,
+       buildHandle: null,
+       wanted: true,
+       state: 'CACHED',
+     };
+     const build = createTileMeshBuildTask(
+       scene, tile, samplers[i]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+-      orthophotoLoaded ? terrainTileOrthophotoUV(grid, config.bounds) : null,
++      orthophotoLoaded ? terrainTileOrthophotoUV(grid, config.bounds) : null, roadCutoutIndex,
+     );
+     const buildStarted = performance.now();
+     while (!build.step()) { /* Initial resident set is prepared before the first render. */ }
+     initialGeometryBuildMs += performance.now() - buildStarted;
+     entry.mesh = build.getMesh();
++    const geometry = build.getGeometryStats();
++    entry.vertices = geometry.vertices;
++    entry.indices = geometry.indices;
++    entry.triangles = geometry.indices / 3;
++    entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
+     entries.push(entry);
+   }
+ 
+@@ -532,12 +596,17 @@ export async function loadTerrain(
+           step: () => {
+             build ??= createTileMeshBuildTask(
+               scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+-              orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null,
++              orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, roadCutoutIndex,
+             );
+             if (entry.state === 'QUEUED') entry.state = 'LOADING';
+             const done = build.step();
+             if (done) {
+               entry.mesh = build.getMesh();
++              const geometry = build.getGeometryStats();
++              entry.vertices = geometry.vertices;
++              entry.indices = geometry.indices;
++              entry.triangles = geometry.indices / 3;
++              entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
+               entry.mesh.setEnabled(false);
+               entry.buildHandle = null;
+               entry.state = 'CACHED';
+@@ -560,6 +629,99 @@ export async function loadTerrain(
+     return enabled;
+   };
+ 
++  const setRoadCutouts = (triangles: Float32Array): TerrainRoadCutoutStats => {
++    const started = performance.now();
++    // Keep an owned copy: RoadNetwork may dispose or reuse its returned buffer.
++    const nextIndex = createRoadCutoutIndex(new Float32Array(triangles), 20);
++    const replacements: { entry: TileMeshEntry; mesh: Mesh; geometry: ReturnType<ReturnType<typeof createTileMeshBuildTask>['getGeometryStats']> }[] = [];
++
++    // Any in-flight build used the previous footprint snapshot. Cancel it; a
++    // later cull will enqueue a new build with the committed index.
++    for (const entry of entries) {
++      entry.buildHandle?.cancel();
++      entry.buildHandle = null;
++      if (!entry.mesh && (entry.state === 'QUEUED' || entry.state === 'LOADING')) entry.state = 'UNLOADED';
++    }
++
++    try {
++      if (nextIndex) {
++        for (let index = 0; index < entries.length; index++) {
++          const entry = entries[index]!;
++          if (!entry.mesh || (!entry.roadCutoutApplied && !nextIndex.hasBounds(entry.min.x, entry.max.x, entry.min.z, entry.max.z))) continue;
++          const tile = tileData[index]!;
++          const build = createTileMeshBuildTask(
++            scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
++            orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, nextIndex,
++          );
++          while (!build.step()) { /* The footprint is installed before rendering begins. */ }
++          replacements.push({ entry, mesh: build.getMesh(), geometry: build.getGeometryStats() });
++        }
++      } else {
++        for (let index = 0; index < entries.length; index++) {
++          const entry = entries[index]!;
++          if (!entry.mesh || !entry.roadCutoutApplied) continue;
++          const tile = tileData[index]!;
++          const build = createTileMeshBuildTask(
++            scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
++            orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, null,
++          );
++          while (!build.step()) { /* Restore the raw triangulated DEM. */ }
++          replacements.push({ entry, mesh: build.getMesh(), geometry: build.getGeometryStats() });
++        }
++      }
++    } catch (error) {
++      for (const replacement of replacements) replacement.mesh.dispose(false, false);
++      throw error;
++    }
++
++    let sourceTriangles = 0;
++    let clippedTriangles = 0;
++    let removedTriangles = 0;
++    let outputTriangles = 0;
++    let addedVertices = 0;
++    let removedAreaM2 = 0;
++    let candidateTests = 0;
++    let triangleDelta = 0;
++    for (const replacement of replacements) {
++      const { entry, mesh, geometry } = replacement;
++      const wasEnabled = entry.mesh?.isEnabled() ?? false;
++      const oldTriangles = entry.triangles;
++      const oldVertices = entry.vertices;
++      mesh.setEnabled(wasEnabled);
++      entry.mesh?.dispose(false, false);
++      entry.mesh = mesh;
++      entry.triangles = geometry.indices / 3;
++      entry.indices = geometry.indices;
++      entry.vertices = geometry.vertices;
++      entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
++      sourceTriangles += geometry.cutout.sourceTriangles;
++      clippedTriangles += geometry.cutout.clippedTriangles;
++      removedTriangles += geometry.cutout.removedTriangles;
++      outputTriangles += geometry.cutout.outputTriangles;
++      addedVertices += geometry.vertices - oldVertices;
++      removedAreaM2 += geometry.cutout.removedAreaM2;
++      candidateTests += geometry.cutout.candidateTests;
++      triangleDelta += geometry.indices / 3 - oldTriangles;
++    }
++    roadCutoutIndex = nextIndex;
++    const elapsedMs = performance.now() - started;
++    roadCutoutBuildMs += elapsedMs;
++    roadCutoutRemovedAreaM2 = removedAreaM2;
++    roadCutoutAddedVertices = addedVertices;
++    roadCutoutTriangleDelta = triangleDelta;
++    return {
++      sourceTriangles,
++      clippedTriangles,
++      removedTriangles,
++      outputTriangles,
++      addedVertices,
++      removedAreaM2,
++      candidateTests,
++      affectedTiles: replacements.filter((replacement) => replacement.geometry.cutout.clippedTriangles > 0).length,
++      elapsedMs,
++    };
++  };
++
+   const activeTriangles = (): number => {
+     let total = 0;
+     for (const entry of entries) {
+@@ -594,6 +756,7 @@ export async function loadTerrain(
+     normalAt,
+     sampleHeight: (x, z) => ({ height: heightAt(x, z), normal: normalAt(x, z) }),
+     cull,
++    setRoadCutouts,
+     activeTriangles,
+     runDeferredTasks: (budgetMs) => {
+       const stats = queue.runFrame(budgetMs);
+@@ -622,10 +785,7 @@ export async function loadTerrain(
+         if (!entry.mesh) continue;
+         residentGpuMeshes++;
+         residentTriangles += entry.triangles;
+-        const grid = tileData.find((item) => item.id === entry.id)!.grid;
+-        const vertices = grid.columns * grid.rows;
+-        const indices = (grid.columns - 1) * (grid.rows - 1) * 6;
+-        residentGpuGeometryBytesEstimate += vertices * (3 + 3 + 4 + 2) * 4 + indices * 2;
++        residentGpuGeometryBytesEstimate += entry.vertices * (3 + 3 + 4 + 2) * 4 + entry.indices * (entry.vertices > 65535 ? 4 : 2);
+       }
+       const retainedCpuHeightSamples = samplers.reduce((sum, sampler) => sum + sampler.grid.heights.length, 0);
+       return {
+@@ -646,6 +806,10 @@ export async function loadTerrain(
+         lastTaskFrameMs,
+         maxTaskFrameMs,
+         initialGeometryBuildMs,
++        roadCutoutBuildMs,
++        roadCutoutRemovedAreaM2,
++        roadCutoutAddedVertices,
++        roadCutoutTriangleDelta,
+       };
+     },
+     center,
+diff --git a/src/world/road-surface.ts b/src/world/road-surface.ts
+index 2b45d45..062b084 100644
+--- a/src/world/road-surface.ts
++++ b/src/world/road-surface.ts
+@@ -2,6 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+ import type { RoadClass, RoadTerrain } from '../road-draping';
+ export interface RoadSurfaceSample {
+     height: number;
++    /** Source OSM way owning this rendered triangle, when the buffer carries ownership metadata. */
++    roadId?: string;
+     normal: Vector3;
+     longitudinalSlope: number;
+     crossSlope: number;
+@@ -22,8 +24,13 @@ export function createRenderedRoadSurface(terrain: RoadTerrain, bands: readonly
+     positions: ArrayLike<number>;
+     indices: ArrayLike<number>;
+     roles: ArrayLike<number>;
++    owners?: ArrayLike<number>;
++    /** Alias accepted by diagnostic buffers that name the stream explicitly. */
++    roadOrdinal?: ArrayLike<number>;
++    roadIds?: readonly string[];
++    tangents?: ArrayLike<number>;
+     stations?: readonly {x:number;z:number;dx:number;dz:number}[];
+-}[]): RoadSurfaceSampler {
++}[], options: { geometryOnly?: boolean } = {}): RoadSurfaceSampler {
+     const cells = new Map<string, {
+         band: typeof bands[number];
+         a: number;
+@@ -64,19 +71,23 @@ export function createRenderedRoadSurface(terrain: RoadTerrain, bands: readonly
+             const normal = new Vector3(nx, ny, nz).normalize();
+             if (normal.y < 0)
+                 normal.scaleInPlace(-1);
+-            // A near-vertical triangle is a skirt/overlap seam, not a drivable
+-            // pavement facet. Ignore it for contact and diagnostics so a road
+-            // crossing cannot inject a false wall normal into the vehicle.
+-            const minSupportY = band.class === 'ROAD' ? 0.95 : band.class === 'TRACK' ? 0.9 : 0.85;
+-            if (normal.y < minSupportY)
++            // Reject near-vertical support only. A real mountain grade must keep
++            // its visible triangle height; falling back to the unexcavated MDT
++            // after a cut would put wheel contacts above the road.
++            const minSupportY = [a, b, c].some(v => band.roles[v] === 1) ? .35 : .15;
++            if (!options.geometryOnly && normal.y < minSupportY)
+                 continue;
+-            const tx = 0, tz = 1;
+-            best = { height, normal, class: band.class, bridge: band.roles[a] === 2, skirt: [a,b,c].some(v=>band.roles[v]===1), longitudinalSlope: -(normal.x * tx + normal.z * tz) / normal.y, crossSlope: (normal.x * tz - normal.z * tx) / normal.y };
++            let tx = band.tangents ? (band.tangents[a * 2]! + band.tangents[b * 2]! + band.tangents[c * 2]!) / 3 : 0;
++            let tz = band.tangents ? (band.tangents[a * 2 + 1]! + band.tangents[b * 2 + 1]! + band.tangents[c * 2 + 1]!) / 3 : 1;
++            const tangentLength = Math.hypot(tx, tz) || 1; tx /= tangentLength; tz /= tangentLength;
++            const ownerOrdinal = (band.owners ?? band.roadOrdinal)?.[a];
++            const roadId = ownerOrdinal === undefined ? undefined : band.roadIds?.[ownerOrdinal];
++            best = { height, ...(roadId === undefined ? {} : { roadId }), normal, class: band.class, bridge: band.roles[a] === 2, skirt: [a,b,c].some(v=>band.roles[v]===1), tangentX: tx, tangentZ: tz, longitudinalSlope: -(normal.x * tx + normal.z * tz) / normal.y, crossSlope: (normal.x * tz - normal.z * tx) / normal.y };
+         }
+-        if (best) {
+-            let distance = Infinity, tx = 0, tz = 1;
++        if (best && !options.geometryOnly) {
++            let distance = Infinity, tx = best.tangentX ?? 0, tz = best.tangentZ ?? 1;
+             const cellX = Math.floor(x / size), cellZ = Math.floor(z / size);
+-            for (let ix = cellX - 1; ix <= cellX + 1; ix++) for (let iz = cellZ - 1; iz <= cellZ + 1; iz++) {
++            if (!bands.some(b => b.class === best!.class && b.tangents)) for (let ix = cellX - 1; ix <= cellX + 1; ix++) for (let iz = cellZ - 1; iz <= cellZ + 1; iz++) {
+                 for (const direction of directions.get(`${best.class}/${ix},${iz}`) ?? []) {
+                     const d = Math.hypot(direction.x - x, direction.z - z);
+                     if (d < distance) { distance = d; tx = direction.dx; tz = direction.dz; }
