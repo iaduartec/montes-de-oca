@@ -364,6 +364,395 @@
         "beforeView": "output/real_structures/model/dam.png",
         "afterView": "output/real_structures/model/after_dam.png"
       }
+    },
+    {
+      "id": "building-818885706",
+      "osmWayIds": [
+        818885706
+      ],
+      "kind": "village-building",
+      "status": "corrected",
+      "confidence": "observed",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.308599,42.388687000000004,-3.308312,42.388906&WIDTH=640&HEIGHT=640",
+      "author": "Instituto Geografico Nacional / Sistema Cartografico Nacional",
+      "license": "CC BY 4.0",
+      "capturedAt": null,
+      "locatedBy": {
+        "osmWayIds": [
+          818885706
+        ],
+        "wgs84Bounds": [
+          -3.308519,
+          42.388747,
+          -3.308392,
+          42.388846
+        ],
+        "crs": "EPSG:4326"
+      },
+      "sources": [
+        {
+          "provider": "IGN/CNIG",
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.308599,42.388687000000004,-3.308312,42.388906&WIDTH=640&HEIGHT=640",
+          "license": "CC BY 4.0",
+          "localReference": "outputs/village-fidelity-20261004/references/818885706.png",
+          "captureDate": null,
+          "retrievedAt": "2026-10-04",
+          "note": "PNOA maximum actuality service; flight year unverified. GetCapabilities licence independently checked; pixels remain reference-only."
+        },
+        {
+          "provider": "OpenStreetMap contributors",
+          "url": "https://www.openstreetmap.org/way/818885706",
+          "license": "ODbL 1.0",
+          "localSnapshot": "data/gameplay/raw/osm_buildings_villafranca.json",
+          "note": "Versioned 2026-09-25 OSM snapshot; footprint and geographic position retained."
+        }
+      ],
+      "observedFeatures": [
+        "A north-south two-slope roof ridge is visible inside the mapped footprint."
+      ],
+      "visibleFeature": "A north-south two-slope roof ridge is visible inside the mapped footprint.",
+      "before": "Current runtime heuristic: shed; inferred geometry, not measured roof survey.",
+      "proposedCorrection": "Use explicit per-building override: gable; preserve the mapped XZ and LiDAR/OSM maximum height.",
+      "implementation": {
+        "status": "accepted",
+        "module": "src/environment/village-building-overrides.ts",
+        "scope": "roof profile only",
+        "preserve": [
+          "OSM footprint",
+          "world position",
+          "height source",
+          "geographic coordinates",
+          "gameplay"
+        ],
+        "parameters": {
+          "roofShape": "gable",
+          "ridgeRadians": 1.5707963267948966
+        },
+        "acceptedBy": "root orchestrator after independent source review and actual fixed-camera before/after inspection"
+      },
+      "comparison": {
+        "beforeView": "outputs/village-fidelity-20261004/before/house_818885706.png",
+        "afterView": "outputs/village-fidelity-20261004/after/house_818885706.png",
+        "cameraManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+        "decision": "ACCEPT_SCOPED_ROOF_PROFILE",
+        "review": "outputs/village-fidelity-20261004/review/village-final-review.md",
+        "report": "outputs/village-fidelity-20261004/review/village-comparison.json"
+      },
+      "limitations": "Gable shape observed; approximately north-south ridge from PNOA, not a measured roof survey. Pitch and facade details unverified. Existing maximum datum retained.",
+      "after": "Clipped north-south gable replaces the inferred shed; the rendered polygon is closed and retains the prior maximum roof datum."
+    },
+    {
+      "id": "building-818885708",
+      "osmWayIds": [
+        818885708
+      ],
+      "kind": "village-building",
+      "status": "corrected",
+      "confidence": "probable",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3085058000000003,42.3884817,-3.3081788,42.388708699999995&WIDTH=640&HEIGHT=640",
+      "author": "Instituto Geografico Nacional / Sistema Cartografico Nacional",
+      "license": "CC BY 4.0",
+      "capturedAt": null,
+      "locatedBy": {
+        "osmWayIds": [
+          818885708
+        ],
+        "wgs84Bounds": [
+          -3.3084258,
+          42.3885417,
+          -3.3082588,
+          42.3886487
+        ],
+        "crs": "EPSG:4326"
+      },
+      "sources": [
+        {
+          "provider": "IGN/CNIG",
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3085058000000003,42.3884817,-3.3081788,42.388708699999995&WIDTH=640&HEIGHT=640",
+          "license": "CC BY 4.0",
+          "localReference": "outputs/village-fidelity-20261004/references/818885708.png",
+          "captureDate": null,
+          "retrievedAt": "2026-10-04",
+          "note": "PNOA maximum actuality service; flight year unverified. GetCapabilities licence independently checked; pixels remain reference-only."
+        },
+        {
+          "provider": "OpenStreetMap contributors",
+          "url": "https://www.openstreetmap.org/way/818885708",
+          "license": "ODbL 1.0",
+          "localSnapshot": "data/gameplay/raw/osm_buildings_villafranca.json",
+          "note": "Versioned 2026-09-25 OSM snapshot; footprint and geographic position retained."
+        }
+      ],
+      "observedFeatures": [
+        "The principal roof has hipped ends rather than the generated long gable."
+      ],
+      "visibleFeature": "The principal roof has hipped ends rather than the generated long gable.",
+      "before": "Current runtime heuristic selects a single shed plane over this concave footprint, rather than the observed hipped main roof.",
+      "proposedCorrection": "Use explicit per-building override: hip; preserve the mapped XZ and LiDAR/OSM maximum height.",
+      "implementation": {
+        "status": "accepted",
+        "module": "src/environment/village-building-overrides.ts",
+        "scope": "roof profile only",
+        "preserve": [
+          "OSM footprint",
+          "world position",
+          "height source",
+          "geographic coordinates",
+          "gameplay"
+        ],
+        "parameters": {
+          "roofShape": "hip"
+        },
+        "acceptedBy": "root orchestrator after independent source review and actual fixed-camera before/after inspection"
+      },
+      "comparison": {
+        "beforeView": "outputs/village-fidelity-20261004/before/house_818885708.png",
+        "afterView": "outputs/village-fidelity-20261004/after/house_818885708.png",
+        "cameraManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+        "decision": "ACCEPT_SCOPED_ROOF_PROFILE",
+        "review": "outputs/village-fidelity-20261004/review/village-final-review.md",
+        "report": "outputs/village-fidelity-20261004/review/village-comparison.json"
+      },
+      "limitations": "Observed hip end planes; whole compound-roof fit is probable. No measured roof pitches, secondary ridge dimensions, or facade details. OSM footprint and existing height convention retained.",
+      "after": "Clipped hipped ends replace the inferred shed within the concave OSM plan; secondary roof volumes remain a probable approximation."
+    },
+    {
+      "id": "building-474364245",
+      "osmWayIds": [
+        474364245
+      ],
+      "kind": "village-building",
+      "status": "corrected",
+      "confidence": "probable",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.309286,42.387329,-3.3089839999999997,42.387544&WIDTH=640&HEIGHT=640",
+      "author": "Instituto Geografico Nacional / Sistema Cartografico Nacional",
+      "license": "CC BY 4.0",
+      "capturedAt": null,
+      "locatedBy": {
+        "osmWayIds": [
+          474364245
+        ],
+        "wgs84Bounds": [
+          -3.309206,
+          42.387389,
+          -3.309064,
+          42.387484
+        ],
+        "crs": "EPSG:4326"
+      },
+      "sources": [
+        {
+          "provider": "IGN/CNIG",
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.309286,42.387329,-3.3089839999999997,42.387544&WIDTH=640&HEIGHT=640",
+          "license": "CC BY 4.0",
+          "localReference": "outputs/village-fidelity-20261004/references/474364245.png",
+          "captureDate": null,
+          "retrievedAt": "2026-10-04",
+          "note": "PNOA maximum actuality service; flight year unverified. GetCapabilities licence independently checked; pixels remain reference-only."
+        },
+        {
+          "provider": "OpenStreetMap contributors",
+          "url": "https://www.openstreetmap.org/way/474364245",
+          "license": "ODbL 1.0",
+          "localSnapshot": "data/gameplay/raw/osm_buildings_villafranca.json",
+          "note": "Versioned 2026-09-25 OSM snapshot; footprint and geographic position retained."
+        }
+      ],
+      "observedFeatures": [
+        "A triangular northern hip end and central ridge are visible within this footprint."
+      ],
+      "visibleFeature": "A triangular northern hip end and central ridge are visible within this footprint.",
+      "before": "Current runtime heuristic: shed; inferred geometry, not measured roof survey.",
+      "proposedCorrection": "Use explicit per-building override: hip; preserve the mapped XZ and LiDAR/OSM maximum height.",
+      "implementation": {
+        "status": "accepted",
+        "module": "src/environment/village-building-overrides.ts",
+        "scope": "roof profile only",
+        "preserve": [
+          "OSM footprint",
+          "world position",
+          "height source",
+          "geographic coordinates",
+          "gameplay"
+        ],
+        "parameters": {
+          "roofShape": "hip"
+        },
+        "acceptedBy": "root orchestrator after independent source review and actual fixed-camera before/after inspection"
+      },
+      "comparison": {
+        "beforeView": "outputs/village-fidelity-20261004/before/house_474364245.png",
+        "afterView": "outputs/village-fidelity-20261004/after/house_474364245.png",
+        "cameraManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+        "decision": "ACCEPT_SCOPED_ROOF_PROFILE",
+        "review": "outputs/village-fidelity-20261004/review/village-final-review.md",
+        "report": "outputs/village-fidelity-20261004/review/village-comparison.json"
+      },
+      "limitations": "Observed hip end planes; whole compound-roof fit is probable. No measured roof pitches, secondary ridge dimensions, or facade details. OSM footprint and existing height convention retained.",
+      "after": "Clipped hipped ends replace the inferred shed within the OSM plan; the attached roof arrangement remains approximate."
+    },
+    {
+      "id": "building-474649085",
+      "osmWayIds": [
+        474649085
+      ],
+      "kind": "village-building",
+      "status": "corrected",
+      "confidence": "observed",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.309303,42.387218000000004,-3.309005,42.387408&WIDTH=640&HEIGHT=640",
+      "author": "Instituto Geografico Nacional / Sistema Cartografico Nacional",
+      "license": "CC BY 4.0",
+      "capturedAt": null,
+      "locatedBy": {
+        "osmWayIds": [
+          474649085
+        ],
+        "wgs84Bounds": [
+          -3.309223,
+          42.387278,
+          -3.309085,
+          42.387348
+        ],
+        "crs": "EPSG:4326"
+      },
+      "sources": [
+        {
+          "provider": "IGN/CNIG",
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.309303,42.387218000000004,-3.309005,42.387408&WIDTH=640&HEIGHT=640",
+          "license": "CC BY 4.0",
+          "localReference": "outputs/village-fidelity-20261004/references/474649085.png",
+          "captureDate": null,
+          "retrievedAt": "2026-10-04",
+          "note": "PNOA maximum actuality service; flight year unverified. GetCapabilities licence independently checked; pixels remain reference-only."
+        },
+        {
+          "provider": "OpenStreetMap contributors",
+          "url": "https://www.openstreetmap.org/way/474649085",
+          "license": "ODbL 1.0",
+          "localSnapshot": "data/gameplay/raw/osm_buildings_villafranca.json",
+          "note": "Versioned 2026-09-25 OSM snapshot; footprint and geographic position retained."
+        }
+      ],
+      "observedFeatures": [
+        "Continuous approximately north-south gable ridge; the current principal footprint axis selects an almost east-west ridge."
+      ],
+      "visibleFeature": "Continuous approximately north-south gable ridge; the current principal footprint axis selects an almost east-west ridge.",
+      "before": "Current runtime gable ridge follows PCA axis 82.4 degrees from north, almost east-west; the observed roof ridge is approximately north-south.",
+      "proposedCorrection": "Keep the gable profile and use an explicit approximate north-south ridge axis over the unchanged mapped footprint and maximum height.",
+      "implementation": {
+        "status": "accepted",
+        "module": "src/environment/village-building-overrides.ts",
+        "scope": "roof profile only",
+        "preserve": [
+          "OSM footprint",
+          "world position",
+          "height source",
+          "geographic coordinates",
+          "gameplay"
+        ],
+        "parameters": {
+          "roofShape": "gable",
+          "ridgeRadians": 1.5707963267948966,
+          "gablePeakRise": 1
+        },
+        "acceptedBy": "root orchestrator after independent source review and actual fixed-camera before/after inspection"
+      },
+      "comparison": {
+        "beforeView": "outputs/village-fidelity-20261004/before/house_474649085.png",
+        "afterView": "outputs/village-fidelity-20261004/after/house_474649085.png",
+        "cameraManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+        "decision": "ACCEPT_SCOPED_ROOF_PROFILE",
+        "review": "outputs/village-fidelity-20261004/review/village-final-review.md",
+        "report": "outputs/village-fidelity-20261004/review/village-comparison.json"
+      },
+      "limitations": "Gable shape observed; approximately north-south ridge from PNOA, not a measured roof survey. Pitch and facade details unverified. Existing maximum datum retained.",
+      "after": "North-south gable orientation replaces the inferred PCA direction; the prior maximum roof datum and roof-to-wall joins are preserved."
+    },
+    {
+      "id": "building-672017718",
+      "osmWayIds": [
+        672017718
+      ],
+      "kind": "village-building",
+      "status": "corrected",
+      "confidence": "artistic",
+      "sourceUrl": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3102624,42.388238699999995,-3.3094444,42.388783700000005&WIDTH=1024&HEIGHT=1024",
+      "author": "Instituto Geografico Nacional / Sistema Cartografico Nacional",
+      "license": "CC BY 4.0",
+      "capturedAt": null,
+      "locatedBy": {
+        "osmWayIds": [
+          672017718
+        ],
+        "wgs84Bounds": [
+          -3.3102024,
+          42.3882887,
+          -3.3095044,
+          42.3887337
+        ],
+        "crs": "EPSG:4326"
+      },
+      "sources": [
+        {
+          "provider": "IGN/CNIG",
+          "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3102624,42.388238699999995,-3.3094444,42.388783700000005&WIDTH=1024&HEIGHT=1024",
+          "license": "CC BY 4.0",
+          "localReference": "outputs/village-fidelity-20261004/references/672017718.png",
+          "captureDate": null,
+          "retrievedAt": "2026-10-04",
+          "note": "PNOA maximum actuality service; flight year unverified. GetCapabilities licence independently checked; pixels remain reference-only."
+        },
+        {
+          "provider": "OpenStreetMap contributors",
+          "url": "https://www.openstreetmap.org/way/672017718",
+          "license": "ODbL 1.0",
+          "localSnapshot": "data/gameplay/raw/osm_buildings_villafranca.json",
+          "note": "Versioned 2026-09-25 OSM snapshot; footprint and geographic position retained."
+        }
+      ],
+      "observedFeatures": [
+        "Connected Antiguo Hospital roof planes are warm weathered brown/red, with a small blue-grey glazing patch; the whole-roof pale grey palette disagrees."
+      ],
+      "visibleFeature": "Connected Antiguo Hospital roof planes are warm weathered brown/red, with a small blue-grey glazing patch; the whole-roof pale grey palette disagrees.",
+      "before": "Current runtime heuristic: pale grey chapa palette; inferred geometry, not measured roof survey.",
+      "proposedCorrection": "Use explicit per-building override: muted weathered terracotta roof appearance; preserve the mapped XZ and LiDAR/OSM maximum height.",
+      "implementation": {
+        "status": "accepted",
+        "module": "src/environment/village-building-overrides.ts",
+        "scope": "roof appearance only",
+        "preserve": [
+          "OSM footprint",
+          "world position",
+          "height source",
+          "geographic coordinates",
+          "gameplay"
+        ],
+        "parameters": {
+          "roofKind": "teja",
+          "roofTint": [
+            0.92,
+            0.82,
+            0.72
+          ]
+        },
+        "acceptedBy": "root orchestrator after independent source review and actual fixed-camera before/after inspection"
+      },
+      "comparison": {
+        "beforeView": "outputs/village-fidelity-20261004/before/house_672017718.png",
+        "afterView": "outputs/village-fidelity-20261004/after/house_672017718.png",
+        "cameraManifest": "outputs/village-fidelity-20261004/before/camera-manifest.json",
+        "decision": "ACCEPT_APPEARANCE_ONLY",
+        "review": "outputs/village-fidelity-20261004/review/village-final-review.md",
+        "report": "outputs/village-fidelity-20261004/review/village-comparison.json"
+      },
+      "limitations": "Observed warm roof colour supports an original artistic teja/tint choice, not an exact material or colour measurement. Main massing remains one broad procedural surface, unlike the pitched multi-wing PNOA roof; small blue-grey glazing is unrepresented.",
+      "after": "Muted terracotta appearance replaces the pale-grey procedural roof; this acceptance covers appearance only and preserves the incomplete existing compound massing.",
+      "remainingWork": {
+        "status": "blocked",
+        "scope": "compound roof massing and glazing",
+        "reason": "Requires a supported multi-volume decomposition preserving the 30-vertex OSM footprint and vertical alignment; appearance acceptance does not clear this scope."
+      }
     }
-  ]
+  ],
+  "userPhotoManifest": "assets/environment/real-structures/user-photos.json"
 }

@@ -21,8 +21,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const args = process.argv.slice(2);
 const phaseArg = args.find((value) => value.startsWith('--phase='));
 const phase = phaseArg ? phaseArg.slice('--phase='.length) : 'source';
-if (phase !== 'source' && phase !== 'final') {
-  console.error(`unknown phase "${phase}" (expected source or final)`);
+if (!['source', 'final', 'village'].includes(phase)) {
+  console.error(`unknown phase "${phase}" (expected source, final or village)`);
   process.exit(1);
 }
 
@@ -44,7 +44,11 @@ const rawWater = JSON.parse(readFileSync(resolve(root, 'data/water/raw/osm_water
 const rawRoads = JSON.parse(readFileSync(resolve(root, 'data/roads/raw/osm_highways_window.json'), 'utf8')).elements;
 const rawById = new Map([...rawBuildings, ...rawWater, ...rawRoads].map((element) => [element.id, element]));
 
-const EXPECTED_TARGETS = 11;
+const ORIGINAL_TARGET_IDS = [
+  'house-474364247', 'house-474364248', 'house-818885678', 'house-1509797545',
+  'house-1509797544', 'house-305647007', 'house-310458426', 'house-433198559',
+  'church-90614388', 'plaza-645040295-741760074', 'dam-168459142',
+];
 const source = ledger.source ?? {};
 check('esquema versionado', ledger.schemaVersion === 1, `schemaVersion ${ledger.schemaVersion}`);
 check('la fuente esta fechada y localizada',
@@ -60,7 +64,8 @@ check('la fuente declara solo planta/cubierta',
   source.note ? 'nota presente' : 'falta nota');
 
 const targets = Array.isArray(ledger.targets) ? ledger.targets : [];
-check(`hay ${EXPECTED_TARGETS} objetivos`, targets.length === EXPECTED_TARGETS, `${targets.length} registros`);
+check('se conservan los once objetivos originales',
+  ORIGINAL_TARGET_IDS.every((id) => targets.some((target) => target.id === id)), `${targets.length} registros`);
 check('ids unicos', new Set(targets.map((target) => target.id)).size === targets.length);
 
 function bboxOfWays(ids) {
@@ -102,10 +107,15 @@ for (const target of targets) {
     typeof target.author === 'string' && target.author.length > 0
     && typeof target.license === 'string' && target.license.length > 0,
     `${target.author} · ${target.license}`);
-  check(`${label}: fecha de captura`,
-    typeof target.capturedAt === 'string' && /20\d\d/.test(target.capturedAt), target.capturedAt);
+  const currentPnoa = target.kind === 'village-building' && target.sources?.some((entry) =>
+    entry.provider === 'IGN/CNIG' && entry.captureDate === null
+    && /^\d{4}-\d{2}-\d{2}$/.test(entry.retrievedAt ?? '')
+    && entry.note?.includes('flight year unverified'));
+  check(`${label}: fecha de captura o desconocimiento explicito`,
+    (typeof target.capturedAt === 'string' && /20\d\d/.test(target.capturedAt))
+    || (target.capturedAt === null && currentPnoa), target.capturedAt ?? 'vuelo desconocido; recuperacion registrada');
   check(`${label}: confianza declarada`,
-    ['observado', 'aproximado', 'sin evidencia'].includes(target.confidence), target.confidence);
+    ['observado', 'aproximado', 'sin evidencia', 'observed', 'probable', 'artistic'].includes(target.confidence), target.confidence);
 
   if (target.status === 'corrected') {
     corrected++;
@@ -129,6 +139,9 @@ for (const target of targets) {
     blocked++;
     check(`${label}: blocker justificado`, typeof target.blockerReason === 'string' && target.blockerReason.length > 10);
     check(`${label}: no inventa correccion`, target.proposedCorrection === undefined);
+  } else if (['unreviewed', 'reference-only', 'evidence-ready'].includes(target.status)) {
+    check(`${label}: sin resultado corregido inventado`, !target.after);
+    if (phase === 'final') check(`${label}: correccion pendiente declarada`, target.status === 'reference-only');
   } else {
     check(`${label}: estado valido`, false, `status "${target.status}"`);
   }
@@ -148,6 +161,37 @@ if (phase === 'final') {
     const focal = JSON.parse(readFileSync(resolve(root, 'public/village/focal-sites/manifest.json'), 'utf8'));
     check(`${dam.id}: manifiesto focal refleja la coronacion curva`,
       (focal.assets?.dam?.crestPoints ?? 0) >= 3, `crestPoints ${focal.assets?.dam?.crestPoints}`);
+  }
+}
+
+if (phase === 'village') {
+  const { VILLAGE_BUILDING_OVERRIDES } = await import('../../src/environment/village-building-overrides.ts');
+  const fixedIds = [818885706, 818885708, 474364245, 474649085, 672017718];
+  const beforePath = 'outputs/village-fidelity-20261004/before/capture-report.json';
+  const afterPath = 'outputs/village-fidelity-20261004/after/capture-report.json';
+  const before = existsSync(resolve(root, beforePath)) ? JSON.parse(readFileSync(resolve(root, beforePath), 'utf8')) : null;
+  const after = existsSync(resolve(root, afterPath)) ? JSON.parse(readFileSync(resolve(root, afterPath), 'utf8')) : null;
+  check('village: capturas antes/despues sin errores', before?.errors?.length === 0 && after?.errors?.length === 0);
+  for (const id of fixedIds) {
+    const target = targets.find((entry) => entry.id === `building-${id}`);
+    const implementation = target?.implementation;
+    const runtime = VILLAGE_BUILDING_OVERRIDES[id];
+    check(`village ${id}: correccion aceptada`, target?.status === 'corrected' && implementation?.status === 'accepted');
+    check(`village ${id}: parametros coinciden con runtime`, Boolean(runtime && implementation?.parameters)
+      && Object.keys(runtime).length === Object.keys(implementation.parameters).length
+      && Object.entries(implementation.parameters).every(([key, value]) => JSON.stringify(runtime[key]) === JSON.stringify(value)));
+    for (const key of ['beforeView', 'afterView']) {
+      check(`village ${id}: ${key} existe`, typeof target?.comparison?.[key] === 'string'
+        && existsSync(resolve(root, target.comparison[key])));
+    }
+    const a = before?.views?.find((view) => view.name === `house_${id}`);
+    const b = after?.views?.find((view) => view.name === `house_${id}`);
+    check(`village ${id}: misma camara y preset`, Boolean(a && b)
+      && JSON.stringify(a.camera) === JSON.stringify(b.camera)
+      && before.quality === after.quality && JSON.stringify(before.viewport) === JSON.stringify(after.viewport));
+    check(`village ${id}: referencia reutilizable conservada`, target?.sources?.some((entry) =>
+      entry.provider === 'IGN/CNIG' && entry.license === 'CC BY 4.0'
+      && typeof entry.localReference === 'string' && existsSync(resolve(root, entry.localReference))));
   }
 }
 
