@@ -12,6 +12,12 @@ import { FrameTaskQueue, type FrameTaskHandle, type FrameTaskRunStats } from './
 import type { TerrainConfig } from './config';
 import { loadTerrainOrthophotoTexture, terrainTileOrthophotoUV, type TerrainTextureFactory } from './terrain-orthophoto';
 import {
+  createRoadCutoutIndex,
+  cutTerrainTriangles,
+  type RoadCutoutIndex,
+  type TerrainCutoutStats,
+} from './terrain-road-cutouts';
+import {
   assertValidGrid,
   containsPoint,
   createHeightfield,
@@ -104,7 +110,10 @@ interface TileMeshEntry {
   mesh: Mesh | null;
   readonly min: Vector3;
   readonly max: Vector3;
-  readonly triangles: number;
+  triangles: number;
+  vertices: number;
+  indices: number;
+  roadCutoutApplied: boolean;
   buildHandle: FrameTaskHandle | null;
   wanted: boolean;
   state: 'UNLOADED' | 'QUEUED' | 'LOADING' | 'ACTIVE' | 'CACHED';
@@ -130,6 +139,15 @@ export interface TerrainResidencyStats {
   readonly lastTaskFrameMs: number;
   readonly maxTaskFrameMs: number;
   readonly initialGeometryBuildMs: number;
+  readonly roadCutoutBuildMs: number;
+  readonly roadCutoutRemovedAreaM2: number;
+  readonly roadCutoutAddedVertices: number;
+  readonly roadCutoutTriangleDelta: number;
+}
+
+export interface TerrainRoadCutoutStats extends TerrainCutoutStats {
+  readonly affectedTiles: number;
+  readonly elapsedMs: number;
 }
 
 /**
@@ -148,7 +166,8 @@ function createTileMeshBuildTask(
   globalMinMeters: number,
   globalMaxMeters: number,
   orthophotoUVs: Float32Array | null,
-): { readonly step: () => boolean; readonly getMesh: () => Mesh } {
+  roadCutouts: RoadCutoutIndex | null,
+): { readonly step: () => boolean; readonly getMesh: () => Mesh; readonly getGeometryStats: () => { vertices: number; indices: number; cutout: TerrainCutoutStats } } {
   const grid = tile.grid;
   const columns = grid.columns;
   const rows = grid.rows;
@@ -164,6 +183,7 @@ function createTileMeshBuildTask(
   const normalScratch = new Vector3();
   let row = 0;
   let mesh: Mesh | null = null;
+  let geometryStats: { vertices: number; indices: number; cutout: TerrainCutoutStats } | null = null;
   const step = (): boolean => {
     const rowEnd = Math.min(rows, row + 6);
     for (; row < rowEnd; row++) {
@@ -221,21 +241,50 @@ function createTileMeshBuildTask(
     }
   }
 
+    let finalPositions: Float32Array<ArrayBufferLike> = positions;
+    let finalNormals: Float32Array<ArrayBufferLike> = normals;
+    let finalColors: Float32Array<ArrayBufferLike> = colors;
+    let finalUVs: Float32Array<ArrayBufferLike> = uvs;
+    let finalIndices: Uint16Array<ArrayBufferLike> | Uint32Array<ArrayBufferLike> = indices;
+    let cutoutStats: TerrainCutoutStats = {
+      sourceTriangles: indices.length / 3,
+      clippedTriangles: 0,
+      removedTriangles: 0,
+      outputTriangles: indices.length / 3,
+      addedVertices: 0,
+      removedAreaM2: 0,
+      candidateTests: 0,
+    };
+    if (roadCutouts) {
+      const cut = cutTerrainTriangles({ positions, normals, colors, uvs, indices }, roadCutouts);
+      finalPositions = cut.positions;
+      finalNormals = cut.normals;
+      finalColors = cut.colors;
+      finalUVs = cut.uvs;
+      finalIndices = cut.indices;
+      cutoutStats = cut.stats;
+    }
+
     const vertexData = new VertexData();
-    vertexData.positions = positions;
-    vertexData.normals = normals;
-    vertexData.colors = colors;
-    vertexData.uvs = uvs;
-    vertexData.indices = indices;
+    vertexData.positions = finalPositions;
+    vertexData.normals = finalNormals;
+    vertexData.colors = finalColors;
+    vertexData.uvs = finalUVs;
+    vertexData.indices = finalIndices;
     mesh = new Mesh(`terrain:${tile.id}`, scene);
     vertexData.applyToMesh(mesh, false);
     mesh.material = material;
     mesh.useVertexColors = true;
     mesh.receiveShadows = true;
     mesh.isPickable = false;
+    geometryStats = { vertices: finalPositions.length / 3, indices: finalIndices.length, cutout: cutoutStats };
     return true;
   };
-  return { step, getMesh: () => { if (!mesh) throw new Error(`terrain: tile ${tile.id} is not built`); return mesh; } };
+  return {
+    step,
+    getMesh: () => { if (!mesh) throw new Error(`terrain: tile ${tile.id} is not built`); return mesh; },
+    getGeometryStats: () => { if (!geometryStats) throw new Error(`terrain: tile ${tile.id} has no geometry stats`); return geometryStats; },
+  };
 }
 
 /** Distancia 3D mínima de un punto al AABB. 0 si está dentro. */
@@ -281,6 +330,8 @@ export interface WorldTerrain {
   activeTriangles(): number;
   /** Advances cooperative mesh preparation. Call once just before scene.render(). */
   runDeferredTasks(budgetMs: number): FrameTaskRunStats;
+  /** Remove only rendered DEM surface beneath projected road pavement/skirts. CPU heightfields stay raw. */
+  setRoadCutouts(triangles: Float32Array): TerrainRoadCutoutStats;
   /** CPU height samples remain resident; byte counts are payload estimates, not heap/VRAM measurements. */
   residencyStats(): TerrainResidencyStats;
   /** Centro del área cubierta, en unidades de mundo. */
@@ -439,6 +490,11 @@ export async function loadTerrain(
   const queue = new FrameTaskQueue();
   const entries: TileMeshEntry[] = [];
   let initialGeometryBuildMs = 0;
+  let roadCutoutIndex: RoadCutoutIndex | null = null;
+  let roadCutoutBuildMs = 0;
+  let roadCutoutRemovedAreaM2 = 0;
+  let roadCutoutAddedVertices = 0;
+  let roadCutoutTriangleDelta = 0;
   for (let i = 0; i < tileData.length; i++) {
     const tile = tileData[i]!;
     const grid = tile.grid;
@@ -458,18 +514,26 @@ export async function loadTerrain(
         grid.z0 + (grid.rows - 1) * grid.dz,
       ),
       triangles: (grid.columns - 1) * (grid.rows - 1) * 2,
+      vertices: grid.columns * grid.rows,
+      indices: (grid.columns - 1) * (grid.rows - 1) * 6,
+      roadCutoutApplied: false,
       buildHandle: null,
       wanted: true,
       state: 'CACHED',
     };
     const build = createTileMeshBuildTask(
       scene, tile, samplers[i]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
-      orthophotoLoaded ? terrainTileOrthophotoUV(grid, config.bounds) : null,
+      orthophotoLoaded ? terrainTileOrthophotoUV(grid, config.bounds) : null, roadCutoutIndex,
     );
     const buildStarted = performance.now();
     while (!build.step()) { /* Initial resident set is prepared before the first render. */ }
     initialGeometryBuildMs += performance.now() - buildStarted;
     entry.mesh = build.getMesh();
+    const geometry = build.getGeometryStats();
+    entry.vertices = geometry.vertices;
+    entry.indices = geometry.indices;
+    entry.triangles = geometry.indices / 3;
+    entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
     entries.push(entry);
   }
 
@@ -532,12 +596,17 @@ export async function loadTerrain(
           step: () => {
             build ??= createTileMeshBuildTask(
               scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
-              orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null,
+              orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, roadCutoutIndex,
             );
             if (entry.state === 'QUEUED') entry.state = 'LOADING';
             const done = build.step();
             if (done) {
               entry.mesh = build.getMesh();
+              const geometry = build.getGeometryStats();
+              entry.vertices = geometry.vertices;
+              entry.indices = geometry.indices;
+              entry.triangles = geometry.indices / 3;
+              entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
               entry.mesh.setEnabled(false);
               entry.buildHandle = null;
               entry.state = 'CACHED';
@@ -558,6 +627,99 @@ export async function loadTerrain(
       if (visible) enabled++;
     }
     return enabled;
+  };
+
+  const setRoadCutouts = (triangles: Float32Array): TerrainRoadCutoutStats => {
+    const started = performance.now();
+    // Keep an owned copy: RoadNetwork may dispose or reuse its returned buffer.
+    const nextIndex = createRoadCutoutIndex(new Float32Array(triangles), 20);
+    const replacements: { entry: TileMeshEntry; mesh: Mesh; geometry: ReturnType<ReturnType<typeof createTileMeshBuildTask>['getGeometryStats']> }[] = [];
+
+    // Any in-flight build used the previous footprint snapshot. Cancel it; a
+    // later cull will enqueue a new build with the committed index.
+    for (const entry of entries) {
+      entry.buildHandle?.cancel();
+      entry.buildHandle = null;
+      if (!entry.mesh && (entry.state === 'QUEUED' || entry.state === 'LOADING')) entry.state = 'UNLOADED';
+    }
+
+    try {
+      if (nextIndex) {
+        for (let index = 0; index < entries.length; index++) {
+          const entry = entries[index]!;
+          if (!entry.mesh || (!entry.roadCutoutApplied && !nextIndex.hasBounds(entry.min.x, entry.max.x, entry.min.z, entry.max.z))) continue;
+          const tile = tileData[index]!;
+          const build = createTileMeshBuildTask(
+            scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+            orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, nextIndex,
+          );
+          while (!build.step()) { /* The footprint is installed before rendering begins. */ }
+          replacements.push({ entry, mesh: build.getMesh(), geometry: build.getGeometryStats() });
+        }
+      } else {
+        for (let index = 0; index < entries.length; index++) {
+          const entry = entries[index]!;
+          if (!entry.mesh || !entry.roadCutoutApplied) continue;
+          const tile = tileData[index]!;
+          const build = createTileMeshBuildTask(
+            scene, tile, samplers[index]!, material, config.verticalDatum, globalMinMeters, globalMaxMeters,
+            orthophotoLoaded ? terrainTileOrthophotoUV(tile.grid, config.bounds) : null, null,
+          );
+          while (!build.step()) { /* Restore the raw triangulated DEM. */ }
+          replacements.push({ entry, mesh: build.getMesh(), geometry: build.getGeometryStats() });
+        }
+      }
+    } catch (error) {
+      for (const replacement of replacements) replacement.mesh.dispose(false, false);
+      throw error;
+    }
+
+    let sourceTriangles = 0;
+    let clippedTriangles = 0;
+    let removedTriangles = 0;
+    let outputTriangles = 0;
+    let addedVertices = 0;
+    let removedAreaM2 = 0;
+    let candidateTests = 0;
+    let triangleDelta = 0;
+    for (const replacement of replacements) {
+      const { entry, mesh, geometry } = replacement;
+      const wasEnabled = entry.mesh?.isEnabled() ?? false;
+      const oldTriangles = entry.triangles;
+      const oldVertices = entry.vertices;
+      mesh.setEnabled(wasEnabled);
+      entry.mesh?.dispose(false, false);
+      entry.mesh = mesh;
+      entry.triangles = geometry.indices / 3;
+      entry.indices = geometry.indices;
+      entry.vertices = geometry.vertices;
+      entry.roadCutoutApplied = geometry.cutout.clippedTriangles > 0;
+      sourceTriangles += geometry.cutout.sourceTriangles;
+      clippedTriangles += geometry.cutout.clippedTriangles;
+      removedTriangles += geometry.cutout.removedTriangles;
+      outputTriangles += geometry.cutout.outputTriangles;
+      addedVertices += geometry.vertices - oldVertices;
+      removedAreaM2 += geometry.cutout.removedAreaM2;
+      candidateTests += geometry.cutout.candidateTests;
+      triangleDelta += geometry.indices / 3 - oldTriangles;
+    }
+    roadCutoutIndex = nextIndex;
+    const elapsedMs = performance.now() - started;
+    roadCutoutBuildMs += elapsedMs;
+    roadCutoutRemovedAreaM2 = removedAreaM2;
+    roadCutoutAddedVertices = addedVertices;
+    roadCutoutTriangleDelta = triangleDelta;
+    return {
+      sourceTriangles,
+      clippedTriangles,
+      removedTriangles,
+      outputTriangles,
+      addedVertices,
+      removedAreaM2,
+      candidateTests,
+      affectedTiles: replacements.filter((replacement) => replacement.geometry.cutout.clippedTriangles > 0).length,
+      elapsedMs,
+    };
   };
 
   const activeTriangles = (): number => {
@@ -594,6 +756,7 @@ export async function loadTerrain(
     normalAt,
     sampleHeight: (x, z) => ({ height: heightAt(x, z), normal: normalAt(x, z) }),
     cull,
+    setRoadCutouts,
     activeTriangles,
     runDeferredTasks: (budgetMs) => {
       const stats = queue.runFrame(budgetMs);
@@ -622,10 +785,7 @@ export async function loadTerrain(
         if (!entry.mesh) continue;
         residentGpuMeshes++;
         residentTriangles += entry.triangles;
-        const grid = tileData.find((item) => item.id === entry.id)!.grid;
-        const vertices = grid.columns * grid.rows;
-        const indices = (grid.columns - 1) * (grid.rows - 1) * 6;
-        residentGpuGeometryBytesEstimate += vertices * (3 + 3 + 4 + 2) * 4 + indices * 2;
+        residentGpuGeometryBytesEstimate += entry.vertices * (3 + 3 + 4 + 2) * 4 + entry.indices * (entry.vertices > 65535 ? 4 : 2);
       }
       const retainedCpuHeightSamples = samplers.reduce((sum, sampler) => sum + sampler.grid.heights.length, 0);
       return {
@@ -646,6 +806,10 @@ export async function loadTerrain(
         lastTaskFrameMs,
         maxTaskFrameMs,
         initialGeometryBuildMs,
+        roadCutoutBuildMs,
+        roadCutoutRemovedAreaM2,
+        roadCutoutAddedVertices,
+        roadCutoutTriangleDelta,
       };
     },
     center,

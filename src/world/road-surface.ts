@@ -2,6 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { RoadClass, RoadTerrain } from '../road-draping';
 export interface RoadSurfaceSample {
     height: number;
+    /** Source OSM way owning this rendered triangle, when the buffer carries ownership metadata. */
+    roadId?: string;
     normal: Vector3;
     longitudinalSlope: number;
     crossSlope: number;
@@ -22,8 +24,13 @@ export function createRenderedRoadSurface(terrain: RoadTerrain, bands: readonly 
     positions: ArrayLike<number>;
     indices: ArrayLike<number>;
     roles: ArrayLike<number>;
+    owners?: ArrayLike<number>;
+    /** Alias accepted by diagnostic buffers that name the stream explicitly. */
+    roadOrdinal?: ArrayLike<number>;
+    roadIds?: readonly string[];
+    tangents?: ArrayLike<number>;
     stations?: readonly {x:number;z:number;dx:number;dz:number}[];
-}[]): RoadSurfaceSampler {
+}[], options: { geometryOnly?: boolean } = {}): RoadSurfaceSampler {
     const cells = new Map<string, {
         band: typeof bands[number];
         a: number;
@@ -64,19 +71,23 @@ export function createRenderedRoadSurface(terrain: RoadTerrain, bands: readonly 
             const normal = new Vector3(nx, ny, nz).normalize();
             if (normal.y < 0)
                 normal.scaleInPlace(-1);
-            // A near-vertical triangle is a skirt/overlap seam, not a drivable
-            // pavement facet. Ignore it for contact and diagnostics so a road
-            // crossing cannot inject a false wall normal into the vehicle.
-            const minSupportY = band.class === 'ROAD' ? 0.95 : band.class === 'TRACK' ? 0.9 : 0.85;
-            if (normal.y < minSupportY)
+            // Reject near-vertical support only. A real mountain grade must keep
+            // its visible triangle height; falling back to the unexcavated MDT
+            // after a cut would put wheel contacts above the road.
+            const minSupportY = [a, b, c].some(v => band.roles[v] === 1) ? .35 : .15;
+            if (!options.geometryOnly && normal.y < minSupportY)
                 continue;
-            const tx = 0, tz = 1;
-            best = { height, normal, class: band.class, bridge: band.roles[a] === 2, skirt: [a,b,c].some(v=>band.roles[v]===1), longitudinalSlope: -(normal.x * tx + normal.z * tz) / normal.y, crossSlope: (normal.x * tz - normal.z * tx) / normal.y };
+            let tx = band.tangents ? (band.tangents[a * 2]! + band.tangents[b * 2]! + band.tangents[c * 2]!) / 3 : 0;
+            let tz = band.tangents ? (band.tangents[a * 2 + 1]! + band.tangents[b * 2 + 1]! + band.tangents[c * 2 + 1]!) / 3 : 1;
+            const tangentLength = Math.hypot(tx, tz) || 1; tx /= tangentLength; tz /= tangentLength;
+            const ownerOrdinal = (band.owners ?? band.roadOrdinal)?.[a];
+            const roadId = ownerOrdinal === undefined ? undefined : band.roadIds?.[ownerOrdinal];
+            best = { height, ...(roadId === undefined ? {} : { roadId }), normal, class: band.class, bridge: band.roles[a] === 2, skirt: [a,b,c].some(v=>band.roles[v]===1), tangentX: tx, tangentZ: tz, longitudinalSlope: -(normal.x * tx + normal.z * tz) / normal.y, crossSlope: (normal.x * tz - normal.z * tx) / normal.y };
         }
-        if (best) {
-            let distance = Infinity, tx = 0, tz = 1;
+        if (best && !options.geometryOnly) {
+            let distance = Infinity, tx = best.tangentX ?? 0, tz = best.tangentZ ?? 1;
             const cellX = Math.floor(x / size), cellZ = Math.floor(z / size);
-            for (let ix = cellX - 1; ix <= cellX + 1; ix++) for (let iz = cellZ - 1; iz <= cellZ + 1; iz++) {
+            if (!bands.some(b => b.class === best!.class && b.tangents)) for (let ix = cellX - 1; ix <= cellX + 1; ix++) for (let iz = cellZ - 1; iz <= cellZ + 1; iz++) {
                 for (const direction of directions.get(`${best.class}/${ix},${iz}`) ?? []) {
                     const d = Math.hypot(direction.x - x, direction.z - z);
                     if (d < distance) { distance = d; tx = direction.dx; tz = direction.dz; }

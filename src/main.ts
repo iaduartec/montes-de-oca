@@ -684,6 +684,8 @@ async function bootstrap(): Promise<void> {
       // El faldón de mezcla de la pista se dibuja solo a lo largo de la ruta jugable.
       trackBlendCorridor: { points: FIRST_ROUTE.polyline, radiusM: 30 },
     });
+    const roadCutouts = terrain.setRoadCutouts(roads.gradingTriangles());
+    console.info('[vias] corte local MDT bajo calzada y faldones', roadCutouts);
     console.info(
       `[vias] ${roads.stats.roads} segmentos · ${roads.stats.vertices} vértices · ` +
         `${roads.stats.triangles} triángulos · ${roads.stats.meshes} mallas · ${roads.stats.bridges} puentes`,

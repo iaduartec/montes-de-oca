@@ -14,7 +14,7 @@
     "test:player": "node scripts/player/test_controls.mjs && node scripts/player/test_movement.mjs",
     "test:skybox": "node scripts/environment/test_skybox.mjs",
     "test:datum": "node scripts/vehicle/assert_heightfield_datum.mjs",
-    "test:terrain": "node scripts/terrain/validate_terrain.mjs",
+    "test:terrain": "node scripts/terrain/validate_terrain.mjs && node scripts/terrain/test_road_cutouts.mjs",
     "test:terrain-orthophoto": "python3 scripts/terrain/test_pnoa_orthophoto_fetch.py && python3 scripts/terrain/test_terrain_orthophoto_builder.py && python3 scripts/terrain/test_validate_terrain_orthophoto.py && node scripts/terrain/test_terrain_orthophoto.mjs && python3 scripts/terrain/build_terrain_orthophoto.py --check && python3 scripts/terrain/validate_terrain_orthophoto.py",
     "test:roads": "python3 scripts/roads/validate_roads.py",
     "test:road-visuals": "node scripts/roads/test_road_visuals.mjs && node scripts/roads/test_road_material.mjs && node scripts/roads/test_track_art.mjs",
@@ -44,9 +44,9 @@
     "test:vegetation-color": "node scripts/environment/test_vegetation_color.mjs",
     "test:water": "python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs",
     "test:motorcycle": "node scripts/vehicle/validate_motorcycle.mjs",
-    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface",
+    "test:runtime": "node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface && node scripts/terrain/test_road_cutouts.mjs",
     "test:water-contact": "node scripts/water/test_water_contact.mjs",
-    "test:road-surface": "node scripts/roads/test_road_surface.mjs",
+    "test:road-surface": "node scripts/roads/test_road_surface.mjs && node scripts/roads/test_road_geometry.mjs",
     "diagnose:road-surface": "node scripts/roads/diagnose_surface.mjs"
   },
   "dependencies": {

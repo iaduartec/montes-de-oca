@@ -27,10 +27,12 @@ try {
   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.mjs');
   transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.mjs');
   transpile('src/terrain.ts', 'terrain.mjs');
+  transpile('src/terrain-road-cutouts.ts', 'terrain-road-cutouts.mjs');
   for (const file of ['terrain.mjs', 'terrain-orthophoto.mjs']) {
     const p = resolve(temp, file);
     let code = readFileSync(p, 'utf8')
       .replace(/(['"])\.\/config\1/g, '$1./config.mjs$1')
+      .replace(/(['"])\.\/terrain-road-cutouts\1/g, '$1./terrain-road-cutouts.mjs$1')
       .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.mjs$1')
       .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.mjs$1');
     code = code.replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.mjs$1');
