@@ -5,7 +5,7 @@
 // Verifica contra la APP REAL, en modo misión (a pie, como arranca el juego):
 //   A. arranque: actor `estandar`, categoría todoterreno;
 //   B. los 8 ids del catálogo se conducen (velocidad > 0 tras dar gas);
-//   C. las dos motos se inclinan, caen y se recuperan;
+//   C. las dos motos se inclinan al girar fuerte sin caerse y vuelven erguidas al frenar;
 //   D. cambio rechazado con el vehículo en movimiento y sin apoyo (no toca
 //      tarjeta, preset ni storage);
 //   E. diez cambios entre categorías dejan los recursos gráficos en la línea base;
@@ -108,19 +108,28 @@ async function connect(wsUrl) {
 
 /** Let asynchronous GLB/HDR loads settle before comparing whole-scene geometry. */
 async function waitForStableResources(cdp, label) {
-  await wait(3000);
+  await wait(500);
   let previous = '';
   let stableSamples = 0;
   let snapshot;
   for (let sample = 1; sample <= 80; sample++) {
+    await waitForRenderedFrames(cdp);
     snapshot = await cdp.evaluate('window.__game.perf()');
     const signature = `${snapshot.drawCalls}/${snapshot.triangles}/${snapshot.vertices}`;
-    stableSamples = signature === previous ? stableSamples + 1 : 0;
+    const renderedFrame = [snapshot.fps, snapshot.frameTimeMs, snapshot.drawCalls, snapshot.triangles,
+      snapshot.vertices, snapshot.activeMeshes].every(value => Number.isFinite(value) && value > 0);
+    stableSamples = renderedFrame && signature === previous ? stableSamples + 1 : 0;
     if (stableSamples >= 4) return { snapshot, samples: sample, stableSamples: stableSamples + 1 };
-    previous = signature;
+    previous = renderedFrame ? signature : '';
     await wait(250);
   }
   throw new Error(`${label}: scene resources did not stabilize; last sample=${previous}`);
+}
+
+// Wait across a pair of browser animation callbacks so screenshots follow a
+// real post-mutation render instead of capturing the previous canvas contents.
+async function waitForRenderedFrames(cdp) {
+  await cdp.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');
 }
 
 async function waitReady(cdp, probe) {
@@ -249,7 +258,7 @@ async function main() {
     report.por_id = perId;
     check('los 8 vehículos se conducen', drivable.length === 8, `${drivable.length}: ${drivable.join(', ')}`);
 
-    // ---- C. motos: inclinación, caída y recuperación ----
+    // ---- C. motos: inclinación estable en curva y retorno al frenar ----
     const motoReport = {};
     for (const id of MOTOS) {
       const r = await cdp.evaluate(`(function () {
@@ -260,14 +269,21 @@ async function main() {
         v.step(2.0, 1/60);
         var fell = v.telemetry().fallen === true;
         var lean = v.telemetry().leanRad;
+        var yawRate = v.telemetry().yawRate;
+        var turnSpeed = v.telemetry().speed;
+        v.setInput({ throttle: 0, steer: 0, handbrake: true, neutral: false });
+        v.step(2.0, 1/60);
+        var final = v.telemetry();
         v.setInput(null);
-        var recovered = v.recover();
-        var after = v.telemetry().fallen === true;
         v.setState({ speed: 0, lateral: 0 });
-        return { category: v.category(), fell: fell, lean: lean, recovered: recovered, stillFallen: after };
+        return { category: v.category(), fell: fell, lean: lean, yawRate: yawRate, turnSpeed: turnSpeed,
+          uprightLean: final.leanRad, finalSpeed: final.speed, finalFallen: final.fallen };
       })()`);
       motoReport[id] = r;
-      check(`moto ${id}: cae y se recupera`, r.category === 'moto' && r.fell === true && r.recovered === true && r.stillFallen === false, JSON.stringify(r));
+      check(`moto ${id}: curva fuerte estable y retorno erguido al frenar`,
+        r.category === 'moto' && !r.fell && Math.abs(r.lean) >= 0.2 && Math.sign(r.lean) === Math.sign(r.yawRate) &&
+          !r.finalFallen && Math.abs(r.uprightLean) < 0.15 && Math.abs(r.finalSpeed) < 0.2 && r.finalSpeed < r.turnSpeed,
+        JSON.stringify(r));
     }
     report.motos = motoReport;
 
@@ -377,6 +393,7 @@ async function main() {
         v.setInput(null);
       })()`);
       await wait(400);
+      await waitForRenderedFrames(cdp);
       const path = resolve(OUT_DIR, shot.file);
       await cdp.screenshot(path);
       shotPaths.push(path);
@@ -400,10 +417,12 @@ async function main() {
     })()`);
     const brakeOff = await brakeLampCapture(false);
     await wait(400);
+    await waitForRenderedFrames(cdp);
     const brakeOffPath = resolve(OUT_DIR, '04_brake_lights_off.png');
     await cdp.screenshot(brakeOffPath);
     const brakeOn = await brakeLampCapture(true);
     await wait(400);
+    await waitForRenderedFrames(cdp);
     const brakeOnPath = resolve(OUT_DIR, '05_brake_lights_on.png');
     await cdp.screenshot(brakeOnPath);
     report.luces_freno = {
