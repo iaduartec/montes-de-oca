@@ -9,6 +9,14 @@ Estas reglas se aplican al trabajo en este juego. Conserva la arquitectura, juga
 - `.agents/skills/` contiene las guías especializadas activas. Consulta solo las pertinentes para cada tarea.
 - `outputs/babylon-game-overhaul-kit/` es un artefacto histórico de distribución. No lo uses ni lo trates como configuración activa de agentes; la configuración vigente está en los tres elementos anteriores.
 
+## Coordinación de agentes
+
+- La política de roles, modelos y vías de ejecución está en `orchestration/MODEL_POOL.md`; el prompt activo es `orchestration/ORQUESTADOR-PRINCIPAL.md`. Ambos complementan estas reglas, sin revocarlas.
+- Un único writer por archivo, incluidos reportes, logs y archivos generados. Cada packet declara rutas exactas, dependencias, restricciones y verificaciones; no se despacha si hay ownership solapado.
+- Solo el orquestador escribe el registro `orchestration/workers.tsv`, integra archivos compartidos y realiza commits. Los workers no hacen commit, no limpian el árbol y no revierten cambios ajenos.
+- Inspecciona `git status` antes de editar y antes de commit. Si un archivo cambia desde la lectura inicial, detén esa edición y concilia el diff con su dueño; no lo sobrescribas.
+- Registra solo despachos reales, conservando el historial. Un packet preparado no prueba que un worker se haya ejecutado. Quien implementa no revisa su propio resultado; el orquestador reproduce la validación antes de ACCEPT / FIX / REVERT.
+
 ## Antes de cambiar código
 
 - Inspecciona el repositorio, los scripts del proyecto, la versión instalada de Babylon.js, el motor de renderizado, la gestión de escenas y el flujo de assets. Considera autoritativos la versión instalada y las convenciones del proyecto; contrasta las API actuales con la [documentación oficial de Babylon.js](https://doc.babylonjs.com/).

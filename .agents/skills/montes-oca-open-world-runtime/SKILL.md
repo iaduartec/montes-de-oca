@@ -20,3 +20,11 @@ description: Cambia streaming de terreno, presupuesto por frame, superficies, su
 - Impactos: usa velocidad vertical real de suspensión, cooldown 220 ms, reinicio al cambiar vehículo y supresión de teleports/parado/a pie. No conviertas frenadas o teleports en colisiones inventadas. Al cerrar un control de sonido devuelve foco al canvas; verifica F/W después del click.
 - HIGH conserva bandas y sombras originales; LOW/MEDIUM reducen presupuestos y renderScale, ULTRA aumenta sombras. Cambiar preset en la UI reinicia partida, anunciado al jugador.
 - Gates: `npm run typecheck`, `npm run build`, `npm test`, `npm run test:runtime`, recorrido real `scripts/milestone/drive_milestone.mjs` y capturas fijas `scripts/runtime/capture_runtime.mjs`. Revisa imágenes directamente y errores de consola. El POC 3D Tiles queda aislado; adopción exige comparación equivalente y jerarquía/LOD útil.
+
+## Geometry and contact contract
+
+- DECISION: Road heights come from final triangles; rendered profile is built by station separately from the driving normal safety bounds.
+- WHY: A limited driving bank can mask a twisted mesh and clearance lifts can create visible ridges.
+- INVARIANT: Preserve OSM XZ, trimmed widths, datum and linear bridge decks. Bounded station cuts/fills use local rendered-MDT footprint excision with preserved exterior UV/height attributes; CPU heightfields remain raw. Apply cutouts again on tile rebuild. Junction targets use immutable profiles, stable OSM-ID priorities and the principal road grade; never mutate targets pair by pair. Report shoulder samples separately and audit them explicitly. Cutouts are a measured bootstrap operation, not an unbudgeted per-frame task.
+- VALIDATION: Run `test:road-surface`, separate raw/rendered/driving diagnostics, actual water/motorcycle harnesses and the complete mission after code stops changing.
+- ANTI-PATTERN: Calling bounded sampler normals proof of rendered geometry, or using a Vite reload interrupted harness as gameplay evidence.
