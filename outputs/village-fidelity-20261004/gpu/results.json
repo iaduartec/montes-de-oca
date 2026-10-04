@@ -1,0 +1,247 @@
+{
+  "status": "BLOCKED_COMPARISON",
+  "target": "RTX 2070 8 GB",
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 (0x00001F02) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "quality": "HIGH",
+  "sample_seconds": 12,
+  "camera_mode": "free; excludes actors and NPC",
+  "rows": [
+    {
+      "artifact": "before-village-pair.json",
+      "scene": "village",
+      "width": 1920,
+      "height": 1080,
+      "frames": 1440,
+      "fps_mean": 120.00200003333389,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.400000000001455
+      },
+      "draw_calls": 53,
+      "triangles": 1133866,
+      "active_meshes": 51,
+      "textures": 39,
+      "js_heap_bytes": 371999385
+    },
+    {
+      "artifact": "before-village-pair.json",
+      "scene": "village",
+      "width": 2560,
+      "height": 1440,
+      "frames": 1227,
+      "fps_mean": 102.32333172106678,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 16.799999999999272,
+        "p99": 33.29999999999927
+      },
+      "draw_calls": 53,
+      "triangles": 1133866,
+      "active_meshes": 51,
+      "textures": 39,
+      "js_heap_bytes": 729949813
+    },
+    {
+      "artifact": "after-village-pair.json",
+      "scene": "village",
+      "width": 1920,
+      "height": 1080,
+      "frames": 71,
+      "fps_mean": 0.8390976981541031,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.399999999999636,
+        "p99": 8.400000000001455
+      },
+      "draw_calls": 53,
+      "triangles": 1134996,
+      "active_meshes": 51,
+      "textures": 39,
+      "js_heap_bytes": 264285349
+    },
+    {
+      "artifact": "after-village-pair.json",
+      "scene": "village",
+      "width": 2560,
+      "height": 1440,
+      "frames": 1440,
+      "fps_mean": 120.00400013333778,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.400000000001455
+      },
+      "draw_calls": 44,
+      "triangles": 1036474,
+      "active_meshes": 40,
+      "textures": 39,
+      "js_heap_bytes": 674039202
+    },
+    {
+      "artifact": "after-final.json",
+      "scene": "village",
+      "width": 1920,
+      "height": 1080,
+      "frames": 0,
+      "fps_mean": null,
+      "frame_time_ms": {},
+      "draw_calls": 0,
+      "triangles": 0,
+      "active_meshes": 51,
+      "textures": 39,
+      "js_heap_bytes": 256561916
+    },
+    {
+      "artifact": "after-final.json",
+      "scene": "road",
+      "width": 1920,
+      "height": 1080,
+      "frames": 1440,
+      "fps_mean": 120.00300007500189,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.400000000001455
+      },
+      "draw_calls": 60,
+      "triangles": 1179314,
+      "active_meshes": 60,
+      "textures": 39,
+      "js_heap_bytes": 445056833
+    },
+    {
+      "artifact": "after-1920-visible.json",
+      "scene": "forest",
+      "width": 1920,
+      "height": 1080,
+      "frames": 159,
+      "fps_mean": 4.522493002935354,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.5,
+        "p99": 25.100000000000364
+      },
+      "draw_calls": 27,
+      "triangles": 1048567,
+      "active_meshes": 18,
+      "textures": 39,
+      "js_heap_bytes": 257368535
+    },
+    {
+      "artifact": "after-1920-visible.json",
+      "scene": "aerial",
+      "width": 1920,
+      "height": 1080,
+      "frames": 0,
+      "fps_mean": null,
+      "frame_time_ms": {},
+      "draw_calls": 0,
+      "triangles": 0,
+      "active_meshes": 46,
+      "textures": 39,
+      "js_heap_bytes": 428436792
+    },
+    {
+      "artifact": "after-2560.json",
+      "scene": "village",
+      "width": 2560,
+      "height": 1440,
+      "frames": 667,
+      "fps_mean": 8.296205636444599,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.5
+      },
+      "draw_calls": 53,
+      "triangles": 1134996,
+      "active_meshes": 51,
+      "textures": 39,
+      "js_heap_bytes": 264965145
+    },
+    {
+      "artifact": "after-2560.json",
+      "scene": "road",
+      "width": 2560,
+      "height": 1440,
+      "frames": 586,
+      "fps_mean": 117.00810670500385,
+      "frame_time_ms": {
+        "p50": 8.299999999999272,
+        "p95": 8.400000000001455,
+        "p99": 8.5
+      },
+      "draw_calls": 60,
+      "triangles": 1179314,
+      "active_meshes": 60,
+      "textures": 39,
+      "js_heap_bytes": 437871015
+    },
+    {
+      "artifact": "after-2560.json",
+      "scene": "track",
+      "width": 2560,
+      "height": 1440,
+      "frames": 1437,
+      "fps_mean": 119.7529938248456,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.5
+      },
+      "draw_calls": 34,
+      "triangles": 988751,
+      "active_meshes": 24,
+      "textures": 39,
+      "js_heap_bytes": 604303079
+    },
+    {
+      "artifact": "after-2560.json",
+      "scene": "forest",
+      "width": 2560,
+      "height": 1440,
+      "frames": 333,
+      "fps_mean": 6.31594520111449,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.400000000001455
+      },
+      "draw_calls": 27,
+      "triangles": 1048567,
+      "active_meshes": 18,
+      "textures": 39,
+      "js_heap_bytes": 771431563
+    },
+    {
+      "artifact": "after-2560.json",
+      "scene": "aerial",
+      "width": 2560,
+      "height": 1440,
+      "frames": 1438,
+      "fps_mean": 119.83632924156437,
+      "frame_time_ms": {
+        "p50": 8.300000000001091,
+        "p95": 8.400000000001455,
+        "p99": 8.5
+      },
+      "draw_calls": 46,
+      "triangles": 1125235,
+      "active_meshes": 46,
+      "textures": 39,
+      "js_heap_bytes": 955673996
+    }
+  ],
+  "comparison_acceptance": {
+    "village_1920": "rejected due AFTER mean timing contradiction",
+    "village_2560": "rejected because AFTER camera/workload differs",
+    "all_other_rows": "standalone diagnostics or invalid; no paired acceptance"
+  },
+  "cleanup": {
+    "chrome_cdp_9239": "closed",
+    "preview_4188": "stopped",
+    "preview_4189": "stopped",
+    "source_edits_by_validation": 0
+  }
+}

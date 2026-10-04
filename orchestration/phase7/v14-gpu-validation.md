@@ -12,3 +12,5 @@ VALIDATION: actual browser scene, finite positive rAF/draw/triangle counts, comp
 REPORT: STATUS / FILES / WHAT / VERIFY / RISKS / BLOCKERS.
 
 ROOT REVIEW: review/gpu-acceptance.md. 1080p paired AFTER includes an ~84-second rAF suspension; 1440p AFTER points down at a different scene despite desired camera metadata. No target FPS delta accepted; attempts retained as diagnostics. Bounded retries stopped.
+
+DELIVERY: gpu/review.md, results.json, manifest.json, paired raw reports and PNGs. Own Chrome CDP9239 and previews4188/4189 stopped; source ownership unchanged. Root independently rejected timing/camera mismatch.
