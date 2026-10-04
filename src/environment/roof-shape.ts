@@ -1,4 +1,4 @@
-export type RoofShape = 'flat' | 'gable' | 'hip' | 'shed';
+export type RoofShape = 'flat' | 'gable' | 'hip' | 'shed' | 'compound';
 
 export interface RoofShapeOptions {
   readonly elongated: boolean;

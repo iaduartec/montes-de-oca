@@ -48,6 +48,206 @@ export function triangulateGableRoof(polygon: readonly RoofPoint[], o: GableRoof
   return triangulatePartitioned(polygon, lines, height);
 }
 
+export interface GlazingPatchOptions {
+  readonly uMin: number;
+  readonly uMax: number;
+  readonly vMin: number;
+  readonly vMax: number;
+  readonly roofKind?: 'teja' | 'chapa' | 'pizarra' | undefined;
+  readonly roofTint?: readonly [number, number, number] | undefined;
+}
+
+export interface CompoundRoofWing {
+  readonly name: string;
+  readonly polygon: readonly RoofPoint[];
+  readonly roofShape?: 'hip' | 'gable' | undefined;
+  readonly roofKind?: 'teja' | 'chapa' | 'pizarra' | undefined;
+  readonly roofTint?: readonly [number, number, number] | undefined;
+  readonly ridgeRadians?: number | undefined;
+  readonly glazingPatch?: GlazingPatchOptions | undefined;
+}
+
+export interface CompoundRoofOptions {
+  readonly polygon: readonly RoofPoint[];
+  readonly wings: readonly CompoundRoofWing[];
+  readonly topY: number;
+}
+
+export interface CompoundRoofWingSurface {
+  readonly name: string;
+  readonly roofKind: 'teja' | 'chapa' | 'pizarra';
+  readonly roofTint?: readonly [number, number, number] | undefined;
+  readonly triangles: readonly RoofTriangle[];
+}
+
+export interface CompoundRoofSurface {
+  readonly triangles: readonly RoofTriangle[];
+  readonly wings: readonly CompoundRoofWingSurface[];
+  readonly heightAt: (p: RoofPoint) => number;
+}
+
+export function inside(p: readonly RoofPoint[], x: number, z: number): boolean {
+  let hit = false;
+  for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+    const a = p[i]!, b = p[j]!, dx = b[0] - a[0], dz = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+    if (Math.hypot(x - (a[0] + dx * t), z - (a[1] + dz * t)) < 1e-6) return true;
+    if ((a[1] > z) !== (b[1] > z) && x < (b[0] - a[0]) * (z - a[1]) / (b[1] - a[1]) + a[0]) hit = !hit;
+  }
+  return hit;
+}
+
+export function triangulateCompoundRoof(o: CompoundRoofOptions): CompoundRoofSurface {
+  const allTriangles: RoofTriangle[] = [];
+  const wingsResult: CompoundRoofWingSurface[] = [];
+
+  const wingEvaluators: {
+    readonly wing: CompoundRoofWing;
+    readonly heightAt: (p: RoofPoint) => number;
+    readonly center: RoofPoint;
+  }[] = [];
+
+  for (const wing of o.wings) {
+    const twiceArea = wing.polygon.reduce((sum, a, i) => {
+      const b = wing.polygon[(i + 1) % wing.polygon.length]!;
+      return sum + a[0] * b[1] - b[0] * a[1];
+    }, 0);
+    const signed = twiceArea / 2;
+    let cx = 0, cz = 0;
+    for (let i = 0; i < wing.polygon.length; i++) {
+      const a = wing.polygon[i]!, b = wing.polygon[(i + 1) % wing.polygon.length]!;
+      const crossVal = a[0] * b[1] - b[0] * a[1];
+      cx += (a[0] + b[0]) * crossVal;
+      cz += (a[1] + b[1]) * crossVal;
+    }
+    const center: RoofPoint = [cx / (6 * signed), cz / (6 * signed)];
+    let axis: RoofPoint;
+    if (wing.ridgeRadians !== undefined) {
+      axis = [Math.cos(wing.ridgeRadians), Math.sin(wing.ridgeRadians)];
+    } else {
+      let cxx = 0, czz = 0, cxz = 0;
+      for (const p of wing.polygon) {
+        cxx += (p[0] - center[0]) ** 2;
+        czz += (p[1] - center[1]) ** 2;
+        cxz += (p[0] - center[0]) * (p[1] - center[1]);
+      }
+      const theta = 0.5 * Math.atan2(2 * cxz, cxx - czz);
+      axis = [Math.cos(theta), Math.sin(theta)];
+    }
+
+    let halfU = 0, halfV = 0;
+    for (const p of wing.polygon) {
+      const dx = p[0] - center[0], dz = p[1] - center[1];
+      halfU = Math.max(halfU, Math.abs(dx * axis[0] + dz * axis[1]));
+      halfV = Math.max(halfV, Math.abs(-dx * axis[1] + dz * axis[0]));
+    }
+
+    const u = axis;
+    const v: RoofPoint = [-u[1], u[0]];
+    const uMin = wing.glazingPatch?.uMin;
+    const uMax = wing.glazingPatch?.uMax;
+    const vMin = wing.glazingPatch?.vMin;
+    const vMax = wing.glazingPatch?.vMax;
+
+    if (wing.roofShape === 'gable') {
+      const rise = Math.min(Math.max(0.25 * (2 * halfV), 0.4), 3);
+      const projectV = (p: RoofPoint): number => dot(sub(p, center), v);
+      const lines = [-halfV, 0, halfV].map(at => (p: RoofPoint) => projectV(p) - at);
+      const height = (p: RoofPoint): number => o.topY - rise * (Math.abs(projectV(p)) / Math.max(halfV, 1e-3));
+      wingEvaluators.push({ wing, heightAt: height, center });
+      const tris = triangulatePartitioned(wing.polygon, lines, height);
+      allTriangles.push(...tris);
+      wingsResult.push({
+        name: wing.name,
+        roofKind: wing.roofKind ?? 'teja',
+        roofTint: wing.roofTint,
+        triangles: tris,
+      });
+    } else {
+      const ridgeHalfU = Math.max(0, halfU - halfV);
+      const drop = Math.min(Math.max(0.45 * Math.min(halfU, halfV), 0.5), 2.2);
+      const hipOpts: HipRoofSurfaceOptions = { center, axis, halfU, halfV, ridgeHalfU, topY: o.topY, drop };
+      const lines: ((p: RoofPoint) => number)[] = [];
+      const addU = (at: number) => lines.push(p => dot(sub(p, center), u) - at);
+      const addV = (at: number) => lines.push(p => dot(sub(p, center), v) - at);
+      addU(0); addU(ridgeHalfU); addU(-ridgeHalfU);
+      addU(ridgeHalfU + halfV); addU(-ridgeHalfU - halfV);
+      addV(0); addV(halfV); addV(-halfV);
+      for (const su of [-1, 1]) for (const sv of [-1, 1]) {
+        lines.push(p => sv * dot(sub(p, center), v) - su * dot(sub(p, center), u) + ridgeHalfU);
+      }
+      if (wing.glazingPatch) {
+        addU(wing.glazingPatch.uMin);
+        addU(wing.glazingPatch.uMax);
+        addV(wing.glazingPatch.vMin);
+        addV(wing.glazingPatch.vMax);
+      }
+      const height = (p: RoofPoint): number => hipRoofHeight(p, hipOpts);
+      wingEvaluators.push({ wing, heightAt: height, center });
+      const tris = triangulatePartitioned(wing.polygon, lines, height);
+      allTriangles.push(...tris);
+
+      if (wing.glazingPatch && uMin !== undefined && uMax !== undefined && vMin !== undefined && vMax !== undefined) {
+        const glazingTris: RoofTriangle[] = [];
+        const mainTris: RoofTriangle[] = [];
+        for (const tri of tris) {
+          const [a, b, c] = tri;
+          const cx = (a[0] + b[0] + c[0]) / 3;
+          const cz = (a[2] + b[2] + c[2]) / 3;
+          const cu = (cx - center[0]) * u[0] + (cz - center[1]) * u[1];
+          const cv = -(cx - center[0]) * u[1] + (cz - center[1]) * u[0];
+          if (cu >= uMin - 1e-4 && cu <= uMax + 1e-4 && cv >= vMin - 1e-4 && cv <= vMax + 1e-4) {
+            glazingTris.push(tri);
+          } else {
+            mainTris.push(tri);
+          }
+        }
+        wingsResult.push({
+          name: `${wing.name}-main`,
+          roofKind: wing.roofKind ?? 'teja',
+          roofTint: wing.roofTint,
+          triangles: mainTris,
+        });
+        wingsResult.push({
+          name: `${wing.name}-glazing`,
+          roofKind: wing.glazingPatch.roofKind ?? 'chapa',
+          roofTint: wing.glazingPatch.roofTint,
+          triangles: glazingTris,
+        });
+      } else {
+        wingsResult.push({
+          name: wing.name,
+          roofKind: wing.roofKind ?? 'teja',
+          roofTint: wing.roofTint,
+          triangles: tris,
+        });
+      }
+    }
+  }
+
+  const heightAt = (p: RoofPoint): number => {
+    for (const ev of wingEvaluators) {
+      if (inside(ev.wing.polygon, p[0], p[1])) return ev.heightAt(p);
+    }
+    let closestEv = wingEvaluators[0]!;
+    let minDist = Infinity;
+    for (const ev of wingEvaluators) {
+      const dist = Math.hypot(p[0] - ev.center[0], p[1] - ev.center[1]);
+      if (dist < minDist) {
+        minDist = dist;
+        closestEv = ev;
+      }
+    }
+    return closestEv.heightAt(p);
+  };
+
+  return {
+    triangles: allTriangles,
+    wings: wingsResult,
+    heightAt,
+  };
+}
+
 function triangulatePartitioned(
   polygon: readonly RoofPoint[],
   lines: readonly ((p: RoofPoint) => number)[],
