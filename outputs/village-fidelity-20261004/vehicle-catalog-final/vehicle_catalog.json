@@ -1,0 +1,226 @@
+{
+  "generado_por": "scripts/vehicle/drive_catalog.mjs",
+  "base": "http://127.0.0.1:4199",
+  "fecha": "2026-10-04T18:09:20.153Z",
+  "arranque": {
+    "preset": "estandar",
+    "category": "todoterreno"
+  },
+  "visual_audit_estandar": {
+    "glbLoaded": true,
+    "glbMeshCount": 30,
+    "unregisteredCasterMeshes": 0,
+    "wheelCenterClearanceM": [
+      0.3791359710588438,
+      0.3808428821227494,
+      0.38136788672430555,
+      0.37861514987652356
+    ],
+    "wheelRadiusM": 0.38
+  },
+  "baseline": {
+    "fps": 0.6556904092163873,
+    "frameTimeMs": 1507.0999999996275,
+    "drawCalls": 196,
+    "triangles": 1933730,
+    "vertices": 1314179,
+    "activeMeshes": 101
+  },
+  "estabilizacion_base": {
+    "snapshot": {
+      "fps": 0.6556904092163873,
+      "frameTimeMs": 1507.0999999996275,
+      "drawCalls": 196,
+      "triangles": 1933730,
+      "vertices": 1314179,
+      "activeMeshes": 101
+    },
+    "samples": 5,
+    "stableSamples": 5
+  },
+  "por_id": {
+    "estandar": {
+      "changed": true,
+      "category": "todoterreno",
+      "speed": 5.628
+    },
+    "patrulla": {
+      "changed": true,
+      "category": "todoterreno",
+      "speed": 6.44
+    },
+    "carga": {
+      "changed": true,
+      "category": "todoterreno",
+      "speed": 3.21
+    },
+    "explorador": {
+      "changed": true,
+      "category": "coche",
+      "speed": 6.967
+    },
+    "turismo": {
+      "changed": true,
+      "category": "coche",
+      "speed": 6.387
+    },
+    "rally": {
+      "changed": true,
+      "category": "coche",
+      "speed": 7.239
+    },
+    "trail": {
+      "changed": true,
+      "category": "moto",
+      "speed": 5.961
+    },
+    "enduro": {
+      "changed": true,
+      "category": "moto",
+      "speed": 6.471
+    }
+  },
+  "motos": {
+    "trail": {
+      "category": "moto",
+      "fell": false,
+      "lean": 0.645675692440987,
+      "yawRate": 0.6224979978004659,
+      "turnSpeed": 11.94882820262553,
+      "uprightLean": 2.931690126987151e-11,
+      "finalSpeed": 0,
+      "finalFallen": false
+    },
+    "enduro": {
+      "category": "moto",
+      "fell": false,
+      "lean": 0.6230819747598686,
+      "yawRate": 0.49541112776947976,
+      "turnSpeed": 14.257132162475788,
+      "uprightLean": 2.344346335744881e-11,
+      "finalSpeed": 0,
+      "finalFallen": false
+    }
+  },
+  "rechazo_movimiento": {
+    "ok": false,
+    "before": "turismo",
+    "after": "turismo",
+    "storage": "turismo"
+  },
+  "rechazo_apoyo": {
+    "ok": false,
+    "before": "turismo",
+    "after": "turismo"
+  },
+  "cambios": [
+    {
+      "id": "estandar",
+      "ok": true
+    },
+    {
+      "id": "turismo",
+      "ok": true
+    },
+    {
+      "id": "trail",
+      "ok": true
+    },
+    {
+      "id": "patrulla",
+      "ok": true
+    },
+    {
+      "id": "rally",
+      "ok": true
+    },
+    {
+      "id": "enduro",
+      "ok": true
+    },
+    {
+      "id": "carga",
+      "ok": true
+    },
+    {
+      "id": "explorador",
+      "ok": true
+    },
+    {
+      "id": "trail",
+      "ok": true
+    },
+    {
+      "id": "turismo",
+      "ok": true
+    },
+    {
+      "id": "estandar",
+      "ok": true
+    }
+  ],
+  "recursos": {
+    "baseline": {
+      "fps": 0.6556904092163873,
+      "frameTimeMs": 1507.0999999996275,
+      "drawCalls": 196,
+      "triangles": 1933730,
+      "vertices": 1314179,
+      "activeMeshes": 101
+    },
+    "after": {
+      "fps": 0.6964224777318946,
+      "frameTimeMs": 1471.9000000003725,
+      "drawCalls": 196,
+      "triangles": 1933730,
+      "vertices": 1314179,
+      "activeMeshes": 101
+    }
+  },
+  "estabilizacion_final": {
+    "snapshot": {
+      "fps": 0.6964224777318946,
+      "frameTimeMs": 1471.9000000003725,
+      "drawCalls": 196,
+      "triangles": 1933730,
+      "vertices": 1314179,
+      "activeMeshes": 101
+    },
+    "samples": 5,
+    "stableSamples": 5
+  },
+  "entrada": {
+    "estandar": {
+      "changed": true,
+      "category": "todoterreno",
+      "inside": "driving",
+      "outside": "on-foot"
+    },
+    "enduro": {
+      "changed": true,
+      "category": "moto",
+      "inside": "driving",
+      "outside": "on-foot"
+    }
+  },
+  "capturas": [
+    "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/vehicle-catalog-final/01_todoterreno.png",
+    "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/vehicle-catalog-final/02_coche.png",
+    "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/vehicle-catalog-final/03_moto.png"
+  ],
+  "luces_freno": {
+    "apagadas": {
+      "seleccionado": true,
+      "vehiculo": "estandar",
+      "velocidad": 0,
+      "captura": "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/vehicle-catalog-final/04_brake_lights_off.png"
+    },
+    "frenando": {
+      "seleccionado": true,
+      "vehiculo": "estandar",
+      "velocidad": 11.340304365256955,
+      "captura": "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/vehicle-catalog-final/05_brake_lights_on.png"
+    }
+  },
+  "errores_consola": []
+}

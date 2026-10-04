@@ -1,0 +1,8 @@
+typecheck	0
+build	0
+test	0
+test:runtime	0
+test:road-surface	0
+test:water-contact	0
+test:motorcycle	0
+test:village-fidelity	0

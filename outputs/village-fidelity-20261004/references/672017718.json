@@ -1,0 +1,14 @@
+{
+  "osmWayId": 672017718,
+  "url": "https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&FORMAT=image/png&SRS=EPSG:4326&BBOX=-3.3102624,42.388238699999995,-3.3094444,42.388783700000005&WIDTH=1024&HEIGHT=1024",
+  "bbox": [
+    -3.3102624,
+    42.388238699999995,
+    -3.3094444,
+    42.388783700000005
+  ],
+  "provider": "IGN/CNIG",
+  "license": "CC BY 4.0",
+  "retrievedAt": "2026-10-04",
+  "captureYear": null
+}

@@ -1,0 +1,30 @@
+{
+  "snapshotDate": "2026-10-04",
+  "sourceHead": "349d98494c1108060e6a0cf7f87f4803701c6a07",
+  "audit": "docs/vehicles/VEHICLE_ART_AUDIT.md",
+  "scope": "static catalogue/model/provenance review with existing capture evidence; not per-ID visual acceptance",
+  "catalogue": {
+    "selectableIds": ["estandar", "patrulla", "carga", "explorador", "turismo", "rally", "trail", "enduro"],
+    "categories": {"todoterreno": 3, "coche": 3, "moto": 2},
+    "externalVehicleGlbs": ["public/vehicles/four-door-utility.glb"],
+    "sharedGlbUsers": ["estandar", "patrulla"],
+    "proceduralModels": ["carga", "explorador", "turismo", "rally", "trail", "enduro"]
+  },
+  "evidence": [
+    {"path": "src/vehicle/catalog.ts", "supports": "catalogue IDs and category count"},
+    {"path": "src/vehicle/model.ts", "supports": "four-wheel model builders and shared utility GLB/fallback path"},
+    {"path": "src/vehicle/motorcycle-model.ts", "supports": "procedural motorcycle builders"},
+    {"path": "public/vehicles/ATTRIBUTION.md", "supports": "generic SUV attribution claims and limits"},
+    {"path": "outputs/village-fidelity-20261004/before/spawn.png", "supports": "actual-game playable default vehicle context; not a GLB load assertion"},
+    {"path": "outputs/village-fidelity-20261004/before/capture-report.json", "supports": "whole-scene telemetry and SwiftShader backend"},
+    {"path": "output/vehicle_catalog.json", "supports": "legacy 2026-09-29 all-eight switch/driving smoke; only three category screenshots"},
+    {"path": "assets/characters/kenney-animated-characters-3/asset.json", "supports": "stylized NPC/player asset license metadata"},
+    {"path": "src/environment/village-npcs.ts", "supports": "NPC use of player humanoid model and animation groups"}
+  ],
+  "limitations": [
+    "Manufacturer names in display labels/comments are not evidence of an authentic make-specific asset.",
+    "No saved source flag proves the generic SUV GLB loaded before the spawn screenshot.",
+    "No close visual capture exists for every vehicle ID; static audit is provisional for rendered fidelity."
+  ],
+  "decision": "Eight playable catalogue variants are supported by source and legacy smoke evidence. One generic utility SUV GLB path is shared by two IDs; six entries are procedural. Per-ID visual acceptance awaits fresh stable-source captures."
+}

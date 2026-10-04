@@ -1,0 +1,1098 @@
+{
+  "generado_por": "scripts/milestone/drive_milestone.mjs",
+  "base": "http://127.0.0.1:4188",
+  "out_dir": "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/gameplay/mission",
+  "budget_s": 300,
+  "fecha": "2026-10-04T17:36:30.046Z",
+  "checks": [
+    {
+      "name": "api.route expone first-route",
+      "ok": true,
+      "value": {
+        "waypoints": 15,
+        "polyline": 238
+      },
+      "threshold": "polyline > 100 puntos"
+    },
+    {
+      "name": "api.route.checkpoints incluye track-entry",
+      "ok": true,
+      "value": [
+        "start",
+        "junction",
+        "track-entry",
+        "target",
+        "return"
+      ],
+      "threshold": "incluye 'track-entry'"
+    },
+    {
+      "name": "pueblo cargado y batcheado (meshes <= 20 con > 300 casas)",
+      "ok": true,
+      "value": {
+        "buildings": 329,
+        "meshes": 10,
+        "triangles": 36655,
+        "footprintAreaM2": 28186.1,
+        "tallestM": 13.34298154488586,
+        "droppedAtSpawn": 0,
+        "detailedBuildings": 142,
+        "courtyardWalls": 23,
+        "lidarAdjustedBuildings": 265,
+        "lidarFallbackBuildings": 65,
+        "roofLiftedBuildings": 3,
+        "maxRoofLiftM": 0.8300000000001546,
+        "streetPoles": 54
+      },
+      "threshold": "buildings > 300 y meshes <= 20"
+    },
+    {
+      "name": "diez vecinos animados con rutas cargados en Villafranca",
+      "ok": true,
+      "value": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 88,
+        "tiers": {
+          "FULL": 6,
+          "REDUCED": 4,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      },
+      "threshold": "10 personajes; dos Idle y ocho Idle/Walk"
+    },
+    {
+      "name": "vegetacion cargada y batcheada (meshes <= 21 con arboles/arbustos/hierba > 0)",
+      "ok": true,
+      "value": {
+        "trees": 23790,
+        "shrubs": 3019,
+        "grassTufts": 6310,
+        "meshes": 21,
+        "instances": 33119,
+        "near": 16060,
+        "mid": 9745,
+        "far": 7314,
+        "excludedByCorridor": 244,
+        "excludedByCanopyCorridor": 244
+      },
+      "threshold": "trees/shrubs/grassTufts > 0 y meshes <= 21"
+    },
+    {
+      "name": "vegetacion sin troncos dentro del corredor; solo excluye copas que lo invaden",
+      "ok": true,
+      "value": {
+        "total": 244,
+        "copas": 244
+      },
+      "threshold": "exclusiones = copas y al menos una"
+    },
+    {
+      "name": "FASE B: 4x4 sobre soporte renderizado (|y - supportHeight| <= 0.5 m)",
+      "ok": true,
+      "value": 0.1296,
+      "threshold": "<= 0.5"
+    },
+    {
+      "name": "FASE B: spawn sobre route.start (<= 1 m)",
+      "ok": true,
+      "value": 0,
+      "threshold": "<= 1"
+    },
+    {
+      "name": "FASE B: arranca a pie y detenido",
+      "ok": true,
+      "value": {
+        "mode": "on-foot",
+        "speed": 0
+      },
+      "threshold": "mode='on-foot' y |v|<0.01"
+    },
+    {
+      "name": "FASE B: misión en NOT_STARTED",
+      "ok": true,
+      "value": "NOT_STARTED",
+      "threshold": "NOT_STARTED"
+    },
+    {
+      "name": "entra al 4x4 con la TECLA F -> driving",
+      "ok": true,
+      "value": {
+        "mode": "driving",
+        "mission": "ACTIVE"
+      },
+      "threshold": "mode='driving'"
+    },
+    {
+      "name": "misión pasa a ACTIVE al conducir",
+      "ok": true,
+      "value": "ACTIVE",
+      "threshold": "ACTIVE"
+    },
+    {
+      "name": "FASE C: llega al objetivo dentro del presupuesto",
+      "ok": true,
+      "value": {
+        "state": "TARGET_REACHED",
+        "distancia_restante_m": 8,
+        "ultima_pose": {
+          "x": 4175.186875527244,
+          "z": 2067.8091791222987,
+          "y": 239.58521725459227,
+          "speed": 7.742472739680338,
+          "yawDeg": -202.7239850520717,
+          "slopeForwardDeg": -2.840148085457442,
+          "wheelResidualMaxM": 0.00007023812176498723,
+          "airborne": false,
+          "contacts": [
+            239.31342456984572,
+            239.37415430582496,
+            239.4334758377044,
+            239.52261564013966
+          ]
+        },
+        "tiempo_sim_s": 208.5
+      },
+      "threshold": "TARGET_REACHED en <= 300 s"
+    },
+    {
+      "name": "FASE C: sin atasco silencioso",
+      "ok": true,
+      "value": null,
+      "threshold": "|v| < 0.5 m/s por > 5 s"
+    },
+    {
+      "name": "FASE C: conduce sobre la polilínea (desvío lateral máx)",
+      "ok": true,
+      "value": 4.94,
+      "threshold": "<= 15 m"
+    },
+    {
+      "name": "FASE C: velocidad bajo control",
+      "ok": true,
+      "value": 15.23,
+      "threshold": "<= 20 m/s"
+    },
+    {
+      "name": "FASE G: reparar DESDE EL COCHE no funciona",
+      "ok": true,
+      "value": {
+        "state": "TARGET_REACHED",
+        "progress": 0
+      },
+      "threshold": "sigue TARGET_REACHED y progreso 0"
+    },
+    {
+      "name": "FASE F: baja del 4x4 -> on-foot",
+      "ok": true,
+      "value": {
+        "mode": "on-foot",
+        "distObj": 3.508556112959005,
+        "canEnter": true
+      },
+      "threshold": "mode='on-foot'"
+    },
+    {
+      "name": "FASE F: caminando queda en el radio real del repetidor",
+      "ok": true,
+      "value": 3.51,
+      "threshold": "<= 6 m"
+    },
+    {
+      "name": "FASE G: mantener E repara (progreso 1 y REPAIRED)",
+      "ok": true,
+      "value": {
+        "state": "REPAIRED",
+        "progress": 1,
+        "sim_s": 2.02
+      },
+      "threshold": "REPAIRED con progreso 1"
+    },
+    {
+      "name": "FASE H: vuelve a quedar a tiro del 4x4",
+      "ok": true,
+      "value": {
+        "canEnter": true,
+        "distanceToVehicleM": 2,
+        "reason": "canEnter"
+      },
+      "threshold": "canEnter = true"
+    },
+    {
+      "name": "FASE H: vuelve a subir -> driving y RETURNING",
+      "ok": true,
+      "value": {
+        "mode": "driving",
+        "mission": "RETURNING",
+        "canEnter": false
+      },
+      "threshold": "driving + RETURNING"
+    },
+    {
+      "name": "FASE H: regresa y COMPLETA dentro del presupuesto",
+      "ok": true,
+      "value": {
+        "state": "COMPLETED",
+        "distancia_restante_m": 24.8,
+        "ultima_pose": {
+          "x": 3084.8997904311227,
+          "z": 3910.417079339324,
+          "y": 75.29992472420331,
+          "speed": 14.05530316764736,
+          "yawDeg": -353.86393878302925,
+          "slopeForwardDeg": -1.2497057825944051,
+          "wheelResidualMaxM": 0.000006062706816578611,
+          "airborne": false,
+          "contacts": [
+            75.1078099529883,
+            75.10771839101237,
+            75.16156179997405,
+            75.16138332843258
+          ]
+        },
+        "tiempo_sim_s": 175.5
+      },
+      "threshold": "COMPLETED en <= 300 s"
+    },
+    {
+      "name": "FASE H: regreso sobre la polilínea (desvío lateral máx)",
+      "ok": true,
+      "value": 9.38,
+      "threshold": "<= 15 m"
+    },
+    {
+      "name": "FASE H: regreso bajo control (velocidad máx)",
+      "ok": true,
+      "value": 14.61,
+      "threshold": "<= 20 m/s"
+    },
+    {
+      "name": "FASE H: regreso sin derrape masivo",
+      "ok": true,
+      "value": 0.018,
+      "threshold": "<= 0.5"
+    },
+    {
+      "name": "sin excepciones ni console.error",
+      "ok": true,
+      "value": 0,
+      "threshold": "0",
+      "detail": []
+    },
+    {
+      "name": "7 capturas escritas",
+      "ok": true,
+      "value": [],
+      "threshold": "sin faltantes"
+    }
+  ],
+  "errores_consola": [],
+  "capturas": [
+    "01_spawn_villafranca.png",
+    "02_road.png",
+    "03_track_entry.png",
+    "04_offroad.png",
+    "05_target.png",
+    "06_interaction.png",
+    "07_return.png"
+  ],
+  "notas": [
+    "Chrome headless SwiftShader (CPU); FPS/frame no es señal de rendimiento.",
+    "draw calls y triángulos sí son válidos. El FPS real se mide en la GPU del usuario a 1920x1080 (objetivo ~60 fps RTX 2070)."
+  ],
+  "pueblo": {
+    "buildings": 329,
+    "meshes": 10,
+    "triangles": 36655,
+    "footprintAreaM2": 28186.1,
+    "tallestM": 13.34298154488586,
+    "droppedAtSpawn": 0,
+    "detailedBuildings": 142,
+    "courtyardWalls": 23,
+    "lidarAdjustedBuildings": 265,
+    "lidarFallbackBuildings": 65,
+    "roofLiftedBuildings": 3,
+    "maxRoofLiftM": 0.8300000000001546,
+    "streetPoles": 54
+  },
+  "puebloNpcs": {
+    "characters": 10,
+    "meshes": 10,
+    "triangles": 16040,
+    "animations": 18,
+    "animationSamples": 88,
+    "tiers": {
+      "FULL": 6,
+      "REDUCED": 4,
+      "VISUAL": 0,
+      "SLEEP": 0
+    },
+    "routeValidation": {
+      "candidatesPassed": 134,
+      "sampleStepM": 0.25,
+      "rejected": {
+        "road": 62,
+        "building": 36,
+        "wall": 37,
+        "water": 0,
+        "terrain": 1,
+        "anchor": 175,
+        "spacing": 37
+      }
+    }
+  },
+  "vegetacion": {
+    "trees": 23790,
+    "shrubs": 3019,
+    "grassTufts": 6310,
+    "meshes": 21,
+    "instances": 33119,
+    "near": 16060,
+    "mid": 9745,
+    "far": 7314,
+    "excludedByCorridor": 244,
+    "excludedByCanopyCorridor": 244
+  },
+  "perf_antes": {
+    "fps": 0.37357434689864455,
+    "frameTimeMs": 47,
+    "drawCalls": 196,
+    "triangles": 1933730,
+    "vertices": 1314179,
+    "activeMeshes": 101
+  },
+  "datum": {
+    "verticalDatum": 870,
+    "maxAbsDiffM": 0,
+    "ok": true,
+    "samples": [
+      {
+        "tile": "tile_0_0#0",
+        "x": 500,
+        "z": 500,
+        "absoluteM": 1164,
+        "worldY": 294,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_0#1",
+        "x": 1500,
+        "z": 500,
+        "absoluteM": 1127,
+        "worldY": 257,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_0#2",
+        "x": 2500,
+        "z": 500,
+        "absoluteM": 1072,
+        "worldY": 202,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_0#3",
+        "x": 3500,
+        "z": 500,
+        "absoluteM": 1060,
+        "worldY": 190,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_0#4",
+        "x": 4500,
+        "z": 500,
+        "absoluteM": 1138,
+        "worldY": 268,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_0#5",
+        "x": 5500,
+        "z": 500,
+        "absoluteM": 1115,
+        "worldY": 245,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_1#6",
+        "x": 500,
+        "z": 1500,
+        "absoluteM": 1140,
+        "worldY": 270,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_1#7",
+        "x": 1500,
+        "z": 1500,
+        "absoluteM": 1075,
+        "worldY": 205,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_1#8",
+        "x": 2500,
+        "z": 1500,
+        "absoluteM": 1022,
+        "worldY": 152,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_1#9",
+        "x": 3500,
+        "z": 1500,
+        "absoluteM": 1065,
+        "worldY": 195,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_1#10",
+        "x": 4500,
+        "z": 1500,
+        "absoluteM": 1105,
+        "worldY": 235,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_1#11",
+        "x": 5500,
+        "z": 1500,
+        "absoluteM": 1056,
+        "worldY": 186,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_2#12",
+        "x": 500,
+        "z": 2500,
+        "absoluteM": 1164,
+        "worldY": 294,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_2#13",
+        "x": 1500,
+        "z": 2500,
+        "absoluteM": 1092,
+        "worldY": 222,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_2#14",
+        "x": 2500,
+        "z": 2500,
+        "absoluteM": 1056,
+        "worldY": 186,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_2#15",
+        "x": 3500,
+        "z": 2500,
+        "absoluteM": 1028,
+        "worldY": 158,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_2#16",
+        "x": 4500,
+        "z": 2500,
+        "absoluteM": 1079,
+        "worldY": 209,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_2#17",
+        "x": 5500,
+        "z": 2500,
+        "absoluteM": 1084,
+        "worldY": 214,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_3#18",
+        "x": 500,
+        "z": 3500,
+        "absoluteM": 1134,
+        "worldY": 264,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_3#19",
+        "x": 1500,
+        "z": 3500,
+        "absoluteM": 1132,
+        "worldY": 262,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_3#20",
+        "x": 2500,
+        "z": 3500,
+        "absoluteM": 1011,
+        "worldY": 141,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_3#21",
+        "x": 3500,
+        "z": 3500,
+        "absoluteM": 986,
+        "worldY": 116,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_3#22",
+        "x": 4500,
+        "z": 3500,
+        "absoluteM": 1066,
+        "worldY": 196,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_3#23",
+        "x": 5500,
+        "z": 3500,
+        "absoluteM": 1044,
+        "worldY": 174,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_4#24",
+        "x": 500,
+        "z": 4500,
+        "absoluteM": 1099,
+        "worldY": 229,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_4#25",
+        "x": 1500,
+        "z": 4500,
+        "absoluteM": 1069,
+        "worldY": 199,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_4#26",
+        "x": 2500,
+        "z": 4500,
+        "absoluteM": 1009,
+        "worldY": 139,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_4#27",
+        "x": 3500,
+        "z": 4500,
+        "absoluteM": 939,
+        "worldY": 69,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_4#28",
+        "x": 4500,
+        "z": 4500,
+        "absoluteM": 977,
+        "worldY": 107,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_4#29",
+        "x": 5500,
+        "z": 4500,
+        "absoluteM": 990,
+        "worldY": 120,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_0_5#30",
+        "x": 500,
+        "z": 5500,
+        "absoluteM": 1094,
+        "worldY": 224,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_1_5#31",
+        "x": 1500,
+        "z": 5500,
+        "absoluteM": 1068,
+        "worldY": 198,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_2_5#32",
+        "x": 2500,
+        "z": 5500,
+        "absoluteM": 1028,
+        "worldY": 158,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_5#33",
+        "x": 3500,
+        "z": 5500,
+        "absoluteM": 913,
+        "worldY": 43,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_4_5#34",
+        "x": 4500,
+        "z": 5500,
+        "absoluteM": 928,
+        "worldY": 58,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_5_5#35",
+        "x": 5500,
+        "z": 5500,
+        "absoluteM": 905,
+        "worldY": 35,
+        "diffM": 0
+      },
+      {
+        "tile": "tile_3_3#21",
+        "x": 3097.2583703002892,
+        "z": 3945.020086259581,
+        "absoluteM": 944.5483259399422,
+        "worldY": 74.54832593994217,
+        "diffM": 0
+      }
+    ]
+  },
+  "spawn": {
+    "x": 3087.53,
+    "z": 3935.05,
+    "y": 75.58555417744935,
+    "groundY": 75.45594083532312,
+    "rawTerrainY": 75,
+    "residual": 0.000005469788789014274,
+    "speed": 0,
+    "mode": "on-foot",
+    "startX": 3087.53,
+    "startZ": 3935.05,
+    "distToStart": 0,
+    "mission": {
+      "name": "REPETIDOR SIN SEÑAL",
+      "state": "NOT_STARTED",
+      "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
+      "hint": "Entrá al 4x4 (F) para arrancar",
+      "distanceToTargetM": 2170.0093070309385,
+      "distanceToReturnM": 2.000000000000196,
+      "repairProgress": 0,
+      "repaired": false,
+      "elapsedS": 0,
+      "completed": false
+    }
+  },
+  "pulsacion_f": {
+    "tecla": "KeyF",
+    "via": "Input.dispatchKeyEvent",
+    "mode": "driving",
+    "mission": "ACTIVE"
+  },
+  "metricas": {
+    "road": {
+      "reason": "stopS",
+      "simSeconds": 23.09999999999997,
+      "frames": 1386,
+      "projS": 320.4137090427397,
+      "trackTotal": 2355.0537209972617,
+      "missionState": "ACTIVE",
+      "distanceToTargetM": 1906.4274471119365,
+      "distanceToReturnM": 316.4885067399776,
+      "minDistToStopPoint": null,
+      "final": {
+        "x": 3079.8679423262215,
+        "z": 3618.6542544996782,
+        "y": 77.24214505635213,
+        "speed": 15.198882957607381,
+        "yawDeg": -198.58550113714813,
+        "slopeForwardDeg": -3.4388280440602097,
+        "wheelResidualMaxM": 0.028631896972569848,
+        "airborne": false,
+        "contacts": [
+          76.78361853185731,
+          77.10753528588567,
+          76.96210143144447,
+          77.21382063060196
+        ]
+      },
+      "stats": {
+        "meanSpeed": 13.783465923321735,
+        "maxSpeed": 15.233692707312255,
+        "p50SlopeDeg": 0.4562052380103397,
+        "p95SlopeDeg": 7.809482476601445,
+        "maxSlopeDeg": 15.919834109814774,
+        "meanResidualM": 0.03504996772889824,
+        "maxResidualM": 0.49698580971966066,
+        "airborneFrames": 0,
+        "slippingFrames": 0,
+        "skiddingFrames": 0,
+        "maxLateralM": 2.9730757910804915,
+        "meanLateralM": 0.3766545140063139,
+        "skiddingFraction": 0
+      }
+    },
+    "track_entry": {
+      "reason": "stopS",
+      "simSeconds": 23.816666666666595,
+      "frames": 1429,
+      "projS": 666.1632146015602,
+      "trackTotal": 2355.0537209972617,
+      "missionState": "ACTIVE",
+      "distanceToTargetM": 1585.7180755399345,
+      "distanceToReturnM": 601.681898625051,
+      "minDistToStopPoint": null,
+      "final": {
+        "x": 3273.7924176139627,
+        "z": 3362.924647548592,
+        "y": 86.4909687576414,
+        "speed": 13.672895819554247,
+        "yawDeg": -218.10293844860533,
+        "slopeForwardDeg": 10.978564046975757,
+        "wheelResidualMaxM": 0.19977958530289186,
+        "airborne": false,
+        "contacts": [
+          87.06383734906535,
+          86.82435217413922,
+          86.48813563031426,
+          86.30412232150076
+        ]
+      },
+      "stats": {
+        "meanSpeed": 14.14600933394999,
+        "maxSpeed": 15.219939606278093,
+        "p50SlopeDeg": 1.279830849109358,
+        "p95SlopeDeg": 8.817657330535745,
+        "maxSlopeDeg": 12.878100009143871,
+        "meanResidualM": 0.043572819618092756,
+        "maxResidualM": 0.3668734723768523,
+        "airborneFrames": 0,
+        "slippingFrames": 4,
+        "skiddingFrames": 93,
+        "maxLateralM": 4.9426693906624175,
+        "meanLateralM": 1.2275493387940426,
+        "skiddingFraction": 0.06508047585724283
+      }
+    },
+    "offroad": {
+      "reason": "stopS",
+      "simSeconds": 71.73333333333055,
+      "frames": 4304,
+      "projS": 1510.1298700332761,
+      "trackTotal": 2355.0537209972617,
+      "missionState": "ACTIVE",
+      "distanceToTargetM": 791.7611833866422,
+      "distanceToReturnM": 1418.5503703365605,
+      "minDistToStopPoint": null,
+      "final": {
+        "x": 3617.1820680684727,
+        "z": 2619.08881517243,
+        "y": 185.29473074379305,
+        "speed": 12.291289064654729,
+        "yawDeg": -190.4740084058241,
+        "slopeForwardDeg": 2.6238492932276505,
+        "wheelResidualMaxM": 0.000013426664281723788,
+        "airborne": false,
+        "contacts": [
+          185.30654963759827,
+          185.31351568139462,
+          185.17736072441863,
+          185.1855280954929
+        ]
+      },
+      "stats": {
+        "meanSpeed": 11.720324872507623,
+        "maxSpeed": 13.620030015310316,
+        "p50SlopeDeg": 7.076786413093185,
+        "p95SlopeDeg": 13.248941480913693,
+        "maxSlopeDeg": 14.783509495318853,
+        "meanResidualM": 0.0897724064425971,
+        "maxResidualM": 0.33245117187505,
+        "airborneFrames": 0,
+        "slippingFrames": 0,
+        "skiddingFrames": 0,
+        "maxLateralM": 1.930010893274958,
+        "meanLateralM": 0.5183110817271321,
+        "skiddingFraction": 0
+      }
+    },
+    "target": {
+      "reason": "stopPoint",
+      "simSeconds": 89.84999999999619,
+      "frames": 5391,
+      "projS": 2347.078665978835,
+      "trackTotal": 2355.0537209972617,
+      "missionState": "TARGET_REACHED",
+      "distanceToTargetM": 7.975061841711976,
+      "distanceToReturnM": 2160.9224331367654,
+      "minDistToStopPoint": 7.975061841711976,
+      "final": {
+        "x": 4175.186875527244,
+        "z": 2067.8091791222987,
+        "y": 239.58521725459227,
+        "speed": 7.742472739680338,
+        "yawDeg": -202.7239850520717,
+        "slopeForwardDeg": -2.840148085457442,
+        "wheelResidualMaxM": 0.00007023812176498723,
+        "airborne": false,
+        "contacts": [
+          239.31342456984572,
+          239.37415430582496,
+          239.4334758377044,
+          239.52261564013966
+        ]
+      },
+      "stats": {
+        "meanSpeed": 9.281122054852656,
+        "maxSpeed": 12.226658133559248,
+        "p50SlopeDeg": 3.0957590104938992,
+        "p95SlopeDeg": 9.098681201665787,
+        "maxSlopeDeg": 11.255471066466766,
+        "meanResidualM": 0.010498353367110818,
+        "maxResidualM": 0.20245885810729192,
+        "airborneFrames": 0,
+        "slippingFrames": 0,
+        "skiddingFrames": 0,
+        "maxLateralM": 1.6060469957840453,
+        "meanLateralM": 0.4732246411575443,
+        "skiddingFraction": 0
+      }
+    },
+    "return": {
+      "reason": "stopState",
+      "simSeconds": 175.45000000003176,
+      "frames": 10527,
+      "projS": 2330.2807349353,
+      "trackTotal": 2355.0537209972626,
+      "missionState": "COMPLETED",
+      "distanceToTargetM": 2148.910128997434,
+      "distanceToReturnM": 24.772944569658573,
+      "minDistToStopPoint": 24.772944569658573,
+      "final": {
+        "x": 3084.8997904311227,
+        "z": 3910.417079339324,
+        "y": 75.29992472420331,
+        "speed": 14.05530316764736,
+        "yawDeg": -353.86393878302925,
+        "slopeForwardDeg": -1.2497057825944051,
+        "wheelResidualMaxM": 0.000006062706816578611,
+        "airborne": false,
+        "contacts": [
+          75.1078099529883,
+          75.10771839101237,
+          75.16156179997405,
+          75.16138332843258
+        ]
+      },
+      "stats": {
+        "meanSpeed": 13.253525998996771,
+        "maxSpeed": 14.610957830217647,
+        "p50SlopeDeg": -3.0599891827496433,
+        "p95SlopeDeg": 3.0757892639928612,
+        "maxSlopeDeg": 13.914818938169294,
+        "meanResidualM": 0.07286322555560873,
+        "maxResidualM": 1.679155273437459,
+        "airborneFrames": 27,
+        "slippingFrames": 103,
+        "skiddingFrames": 193,
+        "maxLateralM": 9.38355558630127,
+        "meanLateralM": 0.877132676321495,
+        "skiddingFraction": 0.01833380830246034
+      }
+    }
+  },
+  "reparar_desde_coche": {
+    "startState": "TARGET_REACHED",
+    "endState": "TARGET_REACHED",
+    "startProgress": 0,
+    "endProgress": 0,
+    "simSeconds": 3.016666666666661,
+    "distanceToTargetM": 2.898404715360937
+  },
+  "caminata": {
+    "reason": "arrived",
+    "simSeconds": 0,
+    "telemetry": {
+      "mode": "on-foot",
+      "x": 4175.317060464331,
+      "y": 239.21250871386414,
+      "z": 2062.3602546655293,
+      "yawDeg": 157.29029357014534,
+      "speedMps": 0,
+      "running": false,
+      "moving": false,
+      "interact": false,
+      "distanceToVehicleM": 2.0000000000001203,
+      "canEnter": true
+    },
+    "mission": {
+      "name": "REPETIDOR SIN SEÑAL",
+      "state": "TARGET_REACHED",
+      "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
+      "hint": "Mantené E para restablecer el enlace",
+      "distanceToTargetM": 3.508556112959005,
+      "distanceToReturnM": 2165.6979408944626,
+      "repairProgress": 0,
+      "repaired": false,
+      "elapsedS": 211.91666666672745,
+      "completed": false
+    }
+  },
+  "reparacion": {
+    "simSeconds": 2.0166666666666644,
+    "mission": {
+      "name": "REPETIDOR SIN SEÑAL",
+      "state": "REPAIRED",
+      "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
+      "hint": "Volvé a Villafranca",
+      "distanceToTargetM": 3.508556112959005,
+      "distanceToReturnM": 2165.6979408944626,
+      "repairProgress": 1,
+      "repaired": true,
+      "elapsedS": 213.93333333339572,
+      "completed": false
+    },
+    "samples": [
+      {
+        "t": 0.2,
+        "progress": 0.1,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 0.4,
+        "progress": 0.2,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 0.6,
+        "progress": 0.3,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 0.8,
+        "progress": 0.4,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 1,
+        "progress": 0.5,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 1.2,
+        "progress": 0.6,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 1.4,
+        "progress": 0.7,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 1.6,
+        "progress": 0.8,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 1.8,
+        "progress": 0.9,
+        "state": "TARGET_REACHED"
+      },
+      {
+        "t": 2,
+        "progress": 1,
+        "state": "TARGET_REACHED"
+      }
+    ]
+  },
+  "caminata_al_4x4": {
+    "reason": "canEnter",
+    "simSeconds": 0,
+    "telemetry": {
+      "mode": "on-foot",
+      "x": 4175.317060464331,
+      "y": 239.21250871386414,
+      "z": 2062.3602546655293,
+      "yawDeg": 157.29029357014534,
+      "speedMps": 0,
+      "running": false,
+      "moving": false,
+      "interact": false,
+      "distanceToVehicleM": 2.0000000000001203,
+      "canEnter": true
+    },
+    "mission": {
+      "name": "REPETIDOR SIN SEÑAL",
+      "state": "REPAIRED",
+      "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
+      "hint": "Volvé a Villafranca",
+      "distanceToTargetM": 3.508556112959005,
+      "distanceToReturnM": 2165.6979408944626,
+      "repairProgress": 1,
+      "repaired": true,
+      "elapsedS": 213.93333333339572,
+      "completed": false
+    }
+  },
+  "simetria": {
+    "x": 3087.53,
+    "z": 3935.05,
+    "yawDeg": -180,
+    "slopeForwardDeg": -2.0816756826910767,
+    "fromSpeed": 5,
+    "toSpeedThrottle": 10.897572871326723,
+    "toSpeedBrake": -0.41228446270367425,
+    "aThrottle": 5.897572871326723,
+    "aBrake": -5.412284462703674,
+    "delta": 0.4852884086230489
+  },
+  "perf_despues": {
+    "fps": 0.4893469176037646,
+    "frameTimeMs": 2358.5999999996275,
+    "drawCalls": 177,
+    "triangles": 2110127,
+    "vertices": 962210,
+    "activeMeshes": 83
+  },
+  "mision_final": {
+    "name": "REPETIDOR SIN SEÑAL",
+    "state": "COMPLETED",
+    "objective": "Llegá al repetidor al fondo de la pista, restablecé el enlace y volvé a Villafranca",
+    "hint": "Misión cumplida",
+    "distanceToTargetM": 2167.1946162525765,
+    "distanceToReturnM": 1.8864274448392289,
+    "repairProgress": 1,
+    "repaired": true,
+    "elapsedS": 389.566666666641,
+    "completed": true
+  },
+  "inject_toggle": {
+    "before": "driving",
+    "after": "on-foot",
+    "restored": "driving",
+    "funciona": true,
+    "nota": "Sonda de regresión del bug de integración: el flanco de F inyectado se levantaba pero nadie lo consumía, así que la tecla F no hacía NADA. Si funciona=true, main.ts consume el flanco en el loop de simulación. El arnés además entra/sale con KeyF real por CDP."
+  }
+}
