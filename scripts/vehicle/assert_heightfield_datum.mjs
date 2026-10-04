@@ -40,10 +40,12 @@ const files = [
   transpile('src/terrain-orthophoto.ts', 'terrain-orthophoto.gen.mjs'),
   transpile('src/runtime/frame-task-queue.ts', 'frame-task-queue.gen.mjs'),
   transpile('src/terrain.ts', 'terrain.gen.mjs'),
+  transpile('src/terrain-road-cutouts.ts', 'terrain-road-cutouts.gen.mjs'),
 ];
 for (const f of files) {
   const rewritten = f.text
     .replace(/(['"])\.\/config\1/g, '$1./config.gen.mjs$1')
+    .replace(/(['"])\.\/terrain-road-cutouts\1/g, '$1./terrain-road-cutouts.gen.mjs$1')
     .replace(/(['"])\.\/heightfield\1/g, '$1./heightfield.gen.mjs$1')
     .replace(/(['"])\.\/terrain-orthophoto\1/g, '$1./terrain-orthophoto.gen.mjs$1')
     .replace(/(['"])\.\/runtime\/frame-task-queue\1/g, '$1./frame-task-queue.gen.mjs$1')

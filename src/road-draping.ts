@@ -2,6 +2,7 @@
  * OSM XZ, footprint trims and bridge deck semantics remain unchanged.
  * Wheel contacts query the final rendered triangles through RoadNetwork.surface. */
 
+import { buildRoadProfile } from './road-profile';
 import { createRenderedRoadSurface, type RoadSurfaceSampler } from './world/road-surface';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
@@ -10,8 +11,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import {
-  calculateTriangleTerrainLift,
-  levelRoadProfile,
   parseSpeedLimitKph,
   ROAD_CLEARANCE_SAMPLES,
   ROAD_SURFACE_CLEARANCE_M,
@@ -96,14 +95,13 @@ export const DRAPING = {
    */
   verticalOffsetM: { ROAD: 0.12, TRACK: 0.1, PATH: 0.08 },
   /**
-   * Cota del borde libre de los faldones (m). Queda por debajo del offset de
-   * cualquier calzada para que en cruces el z-buffer resuelva a favor del asfalto.
+   * Cota del borde libre de los faldones (m). Con el MDT recortado debe
+   * coincidir con el terreno: un lift dejaría una rendija visible al cielo.
    */
-  skirtLiftM: 0.04,
+  skirtLiftM: 0,
 } as const;
 /** Cota del faldón: banda de mezcla apoyada en el terreno, nunca superficie de rodadura. */
 const SKIRT_LIFT_M = DRAPING.skirtLiftM;
-const SURFACE_CLEARANCE_M = DRAPING.surfaceClearanceM;
 /**
  * Tiras laterales del detalle de rodadas de una pista (fracción del semiancho y tinte
  * R/G/B). Su largo fija la fila transversal de esos tramos: la malla reserva exactamente
@@ -291,6 +289,12 @@ interface ClassBuffers {
   readonly indices: number[];
   /** ROLE_PAVEMENT | ROLE_SKIRT, uno por vértice. */
   readonly roles: number[];
+  readonly tangents: number[];
+  readonly footprint: number[];
+  readonly terminals: { vertices: number[]; road: number; x: number; z: number }[];
+  readonly owners: number[];
+  readonly roadIds: string[];
+  readonly profileGroups: { vertices: number[]; t: number; road: number; cls: RoadClass; x: number; z: number; width: number }[];
   readonly stations: { x: number; z: number; dx: number; dz: number }[];
   roadCount: number;
   triangles: number;
@@ -298,15 +302,18 @@ interface ClassBuffers {
 }
 
 function emptyBuffers(): ClassBuffers {
-  return { positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0, signs: 0 };
+  return { terminals: [], owners: [], roadIds: [], footprint: [], tangents: [], profileGroups: [], positions: [], normals: [], colors: [], indices: [], roles: [], stations: [], roadCount: 0, triangles: 0, signs: 0 };
 }
 
 interface TypedClass {
   readonly positions: Float32Array;
   readonly normals: Float32Array;
   readonly colors: Float32Array;
-  readonly indices: Uint32Array;
+  indices: Uint32Array;
   readonly roles: Uint8Array;
+  readonly tangents: Float32Array;
+  readonly roadOrdinal: Uint32Array;
+  readonly roadIds: readonly string[];
 }
 
 interface LocalPolishZone {
@@ -322,6 +329,9 @@ function toTyped(buffers: ClassBuffers): TypedClass {
     colors: new Float32Array(buffers.colors),
     indices: new Uint32Array(buffers.indices),
     roles: new Uint8Array(buffers.roles),
+    tangents: new Float32Array(buffers.tangents),
+    roadOrdinal: new Uint32Array(buffers.owners),
+    roadIds: buffers.roadIds,
   };
 }
 
@@ -340,7 +350,7 @@ function buildRoad(
   terrain: RoadTerrain,
   trackPolish?: LocalPolishZone,
   roadPolish?: LocalPolishZone,
-  blendCorridor?: LoadRoadNetworkOptions['trackBlendCorridor'],
+  _blendCorridor?: LoadRoadNetworkOptions['trackBlendCorridor'],
 ): void {
   const clearance = road.clearance ?? null;
   // Solo las vías con perfil de recorte se subdividen al paso fino publicado
@@ -370,18 +380,7 @@ function buildRoad(
     );
   // La pista de tierra también recibe faldón de mezcla, pero solo en el corredor de la
   // ruta jugable (ver `trackBlendCorridor`) y nunca en los tramos con rodadas detalladas.
-  const cercaDeRuta =
-    isTrackClass && blendCorridor !== undefined && blendCorridor.points.length > 0
-      ? stations.some((station, index) => index % 4 === 0 && blendCorridor.points.some((point) => Math.hypot(station.x - point.x, station.z - point.z) <= blendCorridor.radiusM))
-      : false;
-  const useSkirt = (isRoadClass || (isTrackClass && !detallePista && cercaDeRuta)) && !road.bridge;
-  const smoothProfile = isRoadClass && !road.bridge
-    ? levelRoadProfile(
-      stations.map((station) => station.t),
-      stations.map((station) => terrain.heightAt(station.x, station.z)),
-      { radiusM: 20, maxFillM: 0.6, transitionM: 18 },
-    )
-    : null;
+  const useSkirt = !road.bridge;
 
   /**
    * Límites laterales por estación. Sin perfil devuelve la calzada `width/2` y
@@ -403,6 +402,10 @@ function buildRoad(
       outerRight,
     };
   };
+  const profile = road.bridge ? null : buildRoadProfile(stations, stations.map(s => bandAt(s.t)), terrain, road.class);
+  const groups = stations.map(s => ({ vertices: [] as number[], t: s.t, road: buffers.roadCount, cls: road.class, x: s.x, z: s.z, width: road.width }));
+  buffers.profileGroups.push(...groups);
+  let activeStation = 0;
   const sectionCount = road.bridge ? 2 : Math.max(3, Math.ceil(road.width / DRAPING.crossSectionSpacingM) + 1);
   // Con rodadas detalladas la fila usa exactamente las tiras de TRACK_SECTION; sin
   // perfil, la retícula transversal de siempre. Ambas rutas reservan el mismo número
@@ -419,6 +422,7 @@ function buildRoad(
   const up = new Vector3(0, 1, 0);
 
   const pushVertex = (x: number, y: number, z: number, normal: Vector3, role: number, tint?: readonly [number, number, number]): void => {
+    if (role === ROLE_PAVEMENT || role === ROLE_BRIDGE || role === 4) groups[activeStation]!.vertices.push(buffers.positions.length / 3);
     buffers.positions.push(x, y, z);
     buffers.normals.push(normal.x, normal.y, normal.z);
     const shade = roadVertexShade(road.class, x, z);
@@ -430,9 +434,14 @@ function buildRoad(
       1,
     );
     buffers.roles.push(role);
+    buffers.owners.push(buffers.roadCount);
+    const previous = stations[Math.max(0, activeStation - 1)]!, next = stations[Math.min(stations.length - 1, activeStation + 1)]!;
+    const length = Math.hypot(next.x - previous.x, next.z - previous.z) || 1;
+    buffers.tangents.push((next.x - previous.x) / length, (next.z - previous.z) / length);
   };
 
   for (let i = 0; i < stations.length; i++) {
+    activeStation = i;
     const station = stations[i]!;
     const prev = stations[Math.max(0, i - 1)]!;
     const next = stations[Math.min(stations.length - 1, i + 1)]!;
@@ -450,21 +459,14 @@ function buildRoad(
     const nx = -dz;
     const nz = dx;
 
-    const centerY = smoothProfile?.[i] ?? terrain.heightAt(station.x, station.z);
+    const centerY = profile?.[i]?.centerHeight ?? terrain.heightAt(station.x, station.z);
     const bridgeT = station.t / totalLength;
 
     // Altura de calzada en un punto lateral. ROAD no-puente: aplanado parcial.
     const pavementY = (px: number, pz: number): number => {
       if (road.bridge) return startY + (endY - startY) * bridgeT + offset;
-      const terrainY = terrain.heightAt(px, pz);
-      if (isRoadClass) {
-        const flattenedY = terrainY + DRAPING.roadFlattenLerp * (centerY - terrainY);
-        // A lateral bank can be higher than the centreline. Never bury the
-        // asphalt below that bank; the extra cross-sections let the shoulder
-        // meet this protected surface without green terrain cutting through.
-        return Math.max(terrainY, flattenedY) + offset;
-      }
-      return terrainY + offset;
+      const lateral = (px - station.x) * nx + (pz - station.z) * nz;
+      return centerY + profile![i]!.desiredBank * lateral + offset;
     };
 
     const band = bandAt(station.t);
@@ -514,6 +516,7 @@ function buildRoad(
   // Tonos de sección: borde terroso, hombro, rodada, franja central y simetría.
   // Cada franja sigue terrain.heightAt; no modifica las cotas ni la física.
   const appendTrackSection = (stationIndex: number, strength: number): number => {
+    activeStation = stationIndex;
     const station = stations[stationIndex]!;
     const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
     const nx = -direction.dz;
@@ -529,7 +532,7 @@ function buildRoad(
         1 + (green - 1) * strength,
         1 + (blue - 1) * strength,
       ];
-      pushVertex(x, terrain.heightAt(x, z) + offset, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
+      pushVertex(x, profile![stationIndex]!.centerHeight + profile![stationIndex]!.desiredBank * fraction * sideHalf + offset, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
     }
     return first;
   };
@@ -546,25 +549,24 @@ function buildRoad(
   ): void => {
     const first = buffers.positions.length / 3;
     for (const stationIndex of [startStation, endStation]) {
+      activeStation = stationIndex;
       const station = stations[stationIndex]!;
       const direction = buffers.stations[buffers.stations.length - stations.length + stationIndex]!;
       const nx = -direction.dz;
       const nz = direction.dx;
       const band = bandAt(station.t);
-      const centerY = smoothProfile?.[stationIndex] ?? terrain.heightAt(station.x, station.z);
+      const centerY = profile![stationIndex]!.centerHeight;
       for (const fraction of [from, to]) {
         const sideHalf = fraction < 0 ? band.pavementRight : band.pavementLeft;
         const x = station.x + nx * fraction * sideHalf;
         const z = station.z + nz * fraction * sideHalf;
-        const groundY = terrain.heightAt(x, z);
-        const flattenedY = groundY + DRAPING.roadFlattenLerp * (centerY - groundY);
-        const y = Math.max(groundY, flattenedY) + offset + 0.025;
+        const y = centerY + profile![stationIndex]!.desiredBank * fraction * sideHalf + offset + 0.025;
         const tint: readonly [number, number, number] = [
           1 + (color[0] - 1) * strength,
           1 + (color[1] - 1) * strength,
           1 + (color[2] - 1) * strength,
         ];
-        pushVertex(x, y, z, terrain.normalAt(x, z, scratch), ROLE_PAVEMENT, tint);
+        pushVertex(x, y, z, terrain.normalAt(x, z, scratch), 4, tint);
       }
     }
     quad(first, first + 1, first + 3, first + 2);
@@ -608,6 +610,45 @@ function buildRoad(
     if (useSkirt) {
       quad(a + pavementVertices, a + 0, b + 0, b + pavementVertices); // faldón izquierdo
       quad(a + pavementVertices - 1, a + pavementVertices + 1, b + pavementVertices + 1, b + pavementVertices - 1); // faldón derecho
+    }
+  }
+
+  if (!road.bridge) {
+    const left = useSkirt ? pavementVertices : 0;
+    const right = useSkirt ? pavementVertices + 1 : pavementVertices - 1;
+    const point = (row: number, side: number): readonly [number, number] => {
+      const v = baseVertex + row * verticesPerStation + side;
+      return [buffers.positions[v * 3]!, buffers.positions[v * 3 + 2]!];
+    };
+    const linear = (start: number, middle: number, end: number, side: number): boolean => {
+      const a = point(start, side), b = point(middle, side), c = point(end, side);
+      const dx = c[0] - a[0], dz = c[1] - a[1], length = Math.hypot(dx, dz);
+      if (length < 1e-8 || length > 100) return false;
+      const along = ((b[0] - a[0]) * dx + (b[1] - a[1]) * dz) / (length * length);
+      return along >= 0 && along <= 1 && Math.abs(dx * (b[1] - a[1]) - dz * (b[0] - a[0])) / length < 1e-7;
+    };
+    // Dissolve only collinear boundary vertices. Bends and clearance-width
+    // changes stay exact; this does not simplify any rendered road geometry.
+    for (let start = 0; start < gaps;) {
+      let end = start + 1;
+      while (end < gaps && linear(start, end, end + 1, left) && linear(start, end, end + 1, right)) end++;
+      const a = point(start, left), b = point(start, right), c = point(end, right), d = point(end, left);
+      const corners = [a,b,c,d];
+      const turns = corners.map((p,i)=>{const q=corners[(i+1)%4]!,r=corners[(i+2)%4]!;return (q[0]-p[0])*(r[1]-q[1])-(q[1]-p[1])*(r[0]-q[0]);});
+      if (turns.every(t=>t>=-1e-9)||turns.every(t=>t<=1e-9)) {
+        for (const p of [a,b,c,a,c,d]) buffers.footprint.push(...p);
+      } else {
+        // Folded or concave station quads (hairpins/trimmed corners) cannot
+        // dissolve transverse edges: retain the exact mesh triangle union.
+        const emit = (v: number): void => { buffers.footprint.push(buffers.positions[v*3]!,buffers.positions[v*3+2]!); };
+        for(let row=start;row<end;row++){
+          const va=baseVertex+row*verticesPerStation,vb=va+verticesPerStation;
+          const quadFoot=(a:number,b:number,c:number,d:number):void=>{for(const v of [a,b,c,a,c,d])emit(v);};
+          for(let strip=0;strip<pavementVertices-1;strip++)quadFoot(va+strip,va+strip+1,vb+strip+1,vb+strip);
+          if(useSkirt){quadFoot(va+pavementVertices,va,vb,vb+pavementVertices);quadFoot(va+pavementVertices-1,va+pavementVertices+1,vb+pavementVertices+1,vb+pavementVertices-1);}
+        }
+      }
+      start = end;
     }
   }
 
@@ -696,6 +737,12 @@ function buildRoad(
     buffers.signs += 1;
   }
 
+  if (!road.bridge && useSkirt) for (const row of [0, stations.length-1]) {
+    const a=baseVertex+row*verticesPerStation;
+    buffers.terminals.push({road:buffers.roadCount,x:stations[row]!.x,z:stations[row]!.z,
+      vertices:[a+pavementVertices,...Array.from({length:pavementVertices},(_,i)=>a+i),a+pavementVertices+1]});
+  }
+  buffers.roadIds.push(road.id);
   buffers.roadCount += 1;
   const roadPavementTriangles = (pavementVertices - 1) * 2;
   const trackDetailedTriangles = (TRACK_SECTION.length - 1) * 2;
@@ -705,37 +752,209 @@ function buildRoad(
     polishedRoadGaps * roadMarkTriangles;
 }
 
-/** Eleva vértices locales si un triángulo de la cinta atraviesa la malla DEM. */
-function clearTrianglesFromTerrain(buffers: ClassBuffers, terrain: RoadTerrain): number {
-  const vertexCount = buffers.positions.length / 3;
-  const lifts = new Float32Array(vertexCount);
-  for (let i = 0; i < buffers.indices.length; i += 3) {
-    const ia = buffers.indices[i]!;
-    const ib = buffers.indices[i + 1]!;
-    const ic = buffers.indices[i + 2]!;
-    const roles = [buffers.roles[ia], buffers.roles[ib], buffers.roles[ic]];
-    if (roles.some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
-    const needed = calculateTriangleTerrainLift(
-      [{ x: buffers.positions[ia * 3]!, y: buffers.positions[ia * 3 + 1]!, z: buffers.positions[ia * 3 + 2]! },
-       { x: buffers.positions[ib * 3]!, y: buffers.positions[ib * 3 + 1]!, z: buffers.positions[ib * 3 + 2]! },
-       { x: buffers.positions[ic * 3]!, y: buffers.positions[ic * 3 + 1]!, z: buffers.positions[ic * 3 + 2]! }],
-      terrain.heightAt,
-      roles.includes(ROLE_SKIRT) ? SKIRT_LIFT_M : SURFACE_CLEARANCE_M,
-    );
-    if (needed > 0) {
-      lifts[ia] = Math.max(lifts[ia]!, needed);
-      lifts[ib] = Math.max(lifts[ib]!, needed);
-      lifts[ic] = Math.max(lifts[ic]!, needed);
+/** Keep a bridge linear while connecting its endpoints to the built approach
+ * centres. Copying raw DEM endpoints after levelling an approach creates a step. */
+function connectBridgeDecks(buffers: Record<RoadClass, ClassBuffers>): void {
+  const all = CLASSES.flatMap(cls => buffers[cls].profileGroups);
+  const centers = new Map<typeof all[number], number>();
+  for (const g of all) {
+    const b = buffers[g.cls];
+    const vertex = g.vertices.filter(v => b.roles[v] !== 4).sort((a, c) =>
+      Math.hypot(b.positions[a * 3]! - g.x, b.positions[a * 3 + 2]! - g.z) - Math.hypot(b.positions[c * 3]! - g.x, b.positions[c * 3 + 2]! - g.z))[0];
+    if (vertex !== undefined) centers.set(g, b.positions[vertex * 3 + 1]!);
+  }
+  for (const cls of CLASSES) {
+    const b = buffers[cls], groups = b.profileGroups;
+    for (let i = 0; i < groups.length; i++) {
+      const start = groups[i]!;
+      if (!start.vertices.some(v => b.roles[v] === ROLE_BRIDGE)) continue;
+      let last = i;
+      while (last + 1 < groups.length && groups[last + 1]!.road === start.road) last++;
+      const end = groups[last]!;
+      const support = (endpoint: typeof start): number => {
+        let y = centers.get(endpoint)!;
+        for (const g of all) {
+          if (g === endpoint || Math.hypot(g.x - endpoint.x, g.z - endpoint.z) > .06) continue;
+          if (buffers[g.cls].roles[g.vertices[0]!] === ROLE_BRIDGE) continue;
+          y = Math.max(y, centers.get(g)!);
+        }
+        return y;
+      };
+      const y0 = support(start), y1 = support(end), length = end.t - start.t || 1;
+      for (let j = i; j <= last; j++) {
+        const g = groups[j]!, y = y0 + (y1 - y0) * (g.t - start.t) / length;
+        for (const v of g.vertices) b.positions[v * 3 + 1] = y;
+      }
+      i = last;
     }
   }
-  let maxLift = 0;
-  for (let vertex = 0; vertex < vertexCount; vertex++) {
-    const lift = lifts[vertex]!;
-    if (lift <= 0) continue;
-    buffers.positions[vertex * 3 + 1]! += lift;
-    maxLift = Math.max(maxLift, lift);
+}
+
+/** Join actual centreline crossings at a common local deck. It affects only
+ * the overlapping widths plus a cosine approach, never the source DEM/XZ. */
+function reconcileJunctions(roads: readonly RoadSource[], buffers: Record<RoadClass, ClassBuffers>): void {
+  const segments: { road: RoadSource; key: string; a: readonly [number, number]; b: readonly [number, number] }[] = [];
+  const ordinals: Record<RoadClass, number> = { ROAD: 0, TRACK: 0, PATH: 0 };
+  const groups = new Map<string, ClassBuffers['profileGroups']>();
+  for (const road of roads) {
+    const ordinal = ordinals[road.class]++, key = `${road.class}/${ordinal}`;
+    groups.set(key, buffers[road.class].profileGroups.filter(g => g.road === ordinal));
+    if (road.bridge) continue;
+    for (let i = 1; i < road.points.length; i++) segments.push({ road, key, a: road.points[i - 1]!, b: road.points[i]! });
   }
-  return maxLift;
+  const events: { x: number; z: number; radius: number; keys: Set<string> }[] = [];
+  const cells = new Map<string, number[]>(), tested = new Set<string>();
+  for (let i = 0; i < segments.length; i++) {
+    const s = segments[i]!;
+    for (let x = Math.floor((Math.min(s.a[0], s.b[0]) - s.road.width) / 32); x <= Math.floor((Math.max(s.a[0], s.b[0]) + s.road.width) / 32); x++) {
+      for (let z = Math.floor((Math.min(s.a[1], s.b[1]) - s.road.width) / 32); z <= Math.floor((Math.max(s.a[1], s.b[1]) + s.road.width) / 32); z++) {
+        const cell = `${x},${z}`, previous = cells.get(cell) ?? [];
+        for (const j of previous) {
+          const other = segments[j]!, pair = `${j}/${i}`;
+          if (other.key === s.key || tested.has(pair)) continue;
+          tested.add(pair);
+          const ax = s.b[0] - s.a[0], az = s.b[1] - s.a[1], bx = other.b[0] - other.a[0], bz = other.b[1] - other.a[1];
+          const det = ax * bz - az * bx;
+          let px: number, pz: number;
+          const cx = other.a[0] - s.a[0], cz = other.a[1] - s.a[1];
+          const u = Math.abs(det) > 1e-8 ? (cx * bz - cz * bx) / det : Infinity;
+          const v = Math.abs(det) > 1e-8 ? (cx * az - cz * ax) / det : Infinity;
+          if (u >= -1e-6 && u <= 1.000001 && v >= -1e-6 && v <= 1.000001) {
+            px = s.a[0] + u * ax; pz = s.a[1] + u * az;
+          } else {
+            // Footprints also meet at T-junctions and rounded/parallel OSM
+            // endpoints whose centrelines do not mathematically intersect.
+            const closest = (p: readonly [number, number], a: readonly [number, number], b: readonly [number, number]) => {
+              const dx = b[0] - a[0], dz = b[1] - a[1], len2 = dx * dx + dz * dz;
+              const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (len2 || 1)));
+              const x = a[0] + t * dx, z = a[1] + t * dz;
+              return { distance: Math.hypot(x - p[0], z - p[1]), x: (x + p[0]) / 2, z: (z + p[1]) / 2 };
+            };
+            const near = [closest(s.a, other.a, other.b), closest(s.b, other.a, other.b), closest(other.a, s.a, s.b), closest(other.b, s.a, s.b)].sort((a, b) => a.distance - b.distance)[0]!;
+            if (near.distance > (s.road.width + other.road.width) * .5) continue;
+            px = near.x; pz = near.z;
+          }
+          const radius = Math.max(s.road.width, other.road.width) * .65;
+          events.push({ x: px, z: pz, radius, keys: new Set([s.key, other.key]) });
+        }
+        previous.push(i); cells.set(cell, previous);
+      }
+    }
+  }
+  // Coincident multiway nodes form one deck. Targets read immutable profiles;
+  // no pair can feed a height modified by an earlier pair back into the next.
+  const parent = events.map((_, i) => i);
+  const find = (i: number): number => { while (parent[i] !== i) { parent[i] = parent[parent[i]!]!; i = parent[i]!; } return i; };
+  const extents = events.map(e => ({ minX: e.x, maxX: e.x, minZ: e.z, maxZ: e.z, radius: e.radius }));
+  const eventCells = new Map<string, number[]>();
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i]!, cx = Math.floor(e.x / 32), cz = Math.floor(e.z / 32);
+    for (let x = cx - 1; x <= cx + 1; x++) for (let z = cz - 1; z <= cz + 1; z++) {
+      for (const j of eventCells.get(`${x},${z}`) ?? []) {
+        const p = events[j]!;
+        if (Math.hypot(p.x - e.x, p.z - e.z) <= .25) {
+          const a = find(i), b = find(j), ea = extents[a]!, eb = extents[b]!;
+          const minX = Math.min(ea.minX, eb.minX), maxX = Math.max(ea.maxX, eb.maxX);
+          const minZ = Math.min(ea.minZ, eb.minZ), maxZ = Math.max(ea.maxZ, eb.maxZ), radius = Math.max(ea.radius, eb.radius);
+          // Prevent chains of nearby nodes from flattening a whole road.
+          if (maxX - minX <= radius * 2 && maxZ - minZ <= radius * 2) {
+            parent[a] = b; extents[b] = { minX, maxX, minZ, maxZ, radius };
+          }
+        }
+      }
+    }
+    const key = `${cx},${cz}`, list = eventCells.get(key) ?? []; list.push(i); eventCells.set(key, list);
+  }
+  const clusters = new Map<number, typeof events>();
+  events.forEach((e, i) => { const root = find(i), list = clusters.get(root) ?? []; list.push(e); clusters.set(root, list); });
+  const original = Object.fromEntries(CLASSES.map(cls => [cls, buffers[cls].positions.slice()])) as Record<RoadClass, number[]>;
+  const planes: { x: number; z: number; radius: number; y: number; gx: number; gz: number }[] = [];
+  for (const cluster of clusters.values()) {
+    const x = cluster.reduce((sum, e) => sum + e.x, 0) / cluster.length;
+    const z = cluster.reduce((sum, e) => sum + e.z, 0) / cluster.length;
+    const radius = Math.max(...cluster.map(e => e.radius + Math.hypot(e.x - x, e.z - z)));
+    const keys = [...new Set(cluster.flatMap(e => [...e.keys]))].sort((a,b) => {
+      const ga=groups.get(a)![0]!,gb=groups.get(b)![0]!;
+      return CLASSES.indexOf(ga.cls)-CLASSES.indexOf(gb.cls)||gb.width-ga.width||buffers[ga.cls].roadIds[ga.road]!.localeCompare(buffers[gb.cls].roadIds[gb.road]!);
+    });
+    const list = groups.get(keys[0]!)!;
+    const center = (g: typeof list[number]): number => {
+      const p=original[g.cls];let vertex=-1,distance=Infinity;
+      for(const v of g.vertices){if(buffers[g.cls].roles[v]===4)continue;const d=Math.hypot(p[v*3]!-g.x,p[v*3+2]!-g.z);if(d<distance){distance=d;vertex=v;}}
+      return vertex<0?NaN:p[vertex*3+1]!;
+    };
+    let closest=Infinity,y=NaN,gx=0,gz=0;
+    for(let i=1;i<list.length;i++){
+      const a=list[i-1]!,b=list[i]!,dx=b.x-a.x,dz=b.z-a.z,len2=dx*dx+dz*dz;
+      const t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(len2||1)));
+      const d=Math.hypot(x-a.x-t*dx,z-a.z-t*dz);
+      if(d<closest){const ya=center(a),yb=center(b);closest=d;y=ya*(1-t)+yb*t;gx=(yb-ya)*dx/(len2||1);gz=(yb-ya)*dz/(len2||1);}
+    }
+    if(Number.isFinite(y))planes.push({x,z,radius,y,gx,gz});
+  }
+  // One continuous junction field for all ribbons. Preserve the principal
+  // road's longitudinal grade instead of flattening each pair into a plateau.
+  // Bridges are separate grade-separated decks and never receive this field.
+  // A tight inside bend can bring adjacent station edges almost together in
+  // XZ even when their centerline stations are metres apart. Reusing a
+  // centerline weight there creates a height step across a nearly zero-length
+  // pavement edge. Use per-vertex falloff only for those compressed pairs;
+  // regular sections retain the established shared cross-section weight.
+  for(const cls of CLASSES){
+    const b=buffers[cls],byRoad=new Map<number,typeof b.profileGroups[number][]>();
+    for(const g of b.profileGroups){const list=byRoad.get(g.road)??[];list.push(g);byRoad.set(g.road,list);}
+    const compressed=new Set<typeof b.profileGroups[number]>();
+    const pavementVertices=(g:typeof b.profileGroups[number])=>g.vertices.filter(v=>b.roles[v]===ROLE_PAVEMENT);
+    const minCompressedEdgeM=Math.min(.5,DRAPING.subdivisionM*.2);
+    for(const groupsForRoad of byRoad.values())for(let i=0;i<groupsForRoad.length-1;i++){
+      const a=groupsForRoad[i]!,c=groupsForRoad[i+1]!,av=pavementVertices(a),cv=pavementVertices(c);let closest=Infinity;
+      for(const va of av)for(const vc of cv)closest=Math.min(closest,Math.hypot(b.positions[va*3]!-b.positions[vc*3]!,b.positions[va*3+2]!-b.positions[vc*3+2]!));
+      if(closest<minCompressedEdgeM){compressed.add(a);compressed.add(c);}
+    }
+    for(const g of b.profileGroups){
+      if(g.vertices.some(v=>b.roles[v]===ROLE_BRIDGE))continue;
+      if(compressed.has(g)){
+        // Centerline reach is a conservative prefilter; every actual weight
+        // and plane target is evaluated from the rendered pavement vertex.
+        const candidates=planes.filter(p=>Math.hypot(g.x-p.x,g.z-p.z)<p.radius+12+g.width*.5);
+        for(const v of g.vertices){if(b.roles[v]!==ROLE_PAVEMENT)continue;const index=v*3+1,px=b.positions[v*3]!,pz=b.positions[v*3+2]!;
+          const nearby=candidates.map(p=>{const distance=Math.hypot(px-p.x,pz-p.z),approach=12;
+            const weight=distance<=p.radius?1:distance<p.radius+approach?.5*(1+Math.cos(Math.PI*(distance-p.radius)/approach)):0;
+            return {p,weight};}).filter(p=>p.weight>0);
+          if(!nearby.length)continue;
+          const weight=nearby.reduce((sum,p)=>sum+p.weight,0),blend=Math.max(...nearby.map(p=>p.weight));
+          const target=nearby.reduce((sum,{p,weight})=>sum+(p.y+p.gx*(px-p.x)+p.gz*(pz-p.z))*weight,0)/weight;
+          b.positions[index]=original[cls][index]!*(1-blend)+target*blend;
+        }
+        continue;
+      }
+      const nearby=planes.map(p=>{const distance=Math.hypot(g.x-p.x,g.z-p.z),approach=12;
+        const weight=distance<=p.radius?1:distance<p.radius+approach?.5*(1+Math.cos(Math.PI*(distance-p.radius)/approach)):0;
+        return {p,weight};}).filter(p=>p.weight>0);
+      if(!nearby.length)continue;
+      const weight=nearby.reduce((sum,p)=>sum+p.weight,0),blend=Math.max(...nearby.map(p=>p.weight));
+      for(const v of g.vertices){const index=v*3+1,px=b.positions[v*3]!,pz=b.positions[v*3+2]!;
+        const target=nearby.reduce((sum,{p,weight})=>sum+(p.y+p.gx*(px-p.x)+p.gz*(pz-p.z))*weight,0)/weight+(b.roles[v]===4?.025:0);
+        b.positions[index]=original[cls][index]!*(1-blend)+target*blend;
+      }
+    }
+  }
+
+}
+
+/** Close the exposed cut/fill face only at isolated OSM termini. Shared nodes
+ * use the junction field; bridges remain grade-separated. No XZ is extended. */
+function closeTerminalEarthworks(roads: readonly RoadSource[], buffers: Record<RoadClass,ClassBuffers>, terrain:RoadTerrain):void {
+  const nodes=new Map<string,Set<string>>();
+  for(const road of roads)for(const p of road.points){const key=`${p[0]},${p[1]}`,ids=nodes.get(key)??new Set<string>();ids.add(road.id);nodes.set(key,ids);}
+  for(const cls of CLASSES){const b=buffers[cls];for(const terminal of b.terminals){
+    if((nodes.get(`${terminal.x},${terminal.z}`)?.size??0)>1)continue;
+    const first=b.positions.length/3;
+    for(const v of terminal.vertices){const x=b.positions[v*3]!,z=b.positions[v*3+2]!,top=b.positions[v*3+1]!,bottom=terrain.heightAt(x,z);
+      for(const y of [top,bottom]){b.positions.push(x,y,z);b.normals.push(0,1,0);b.colors.push(...b.colors.slice(v*4,v*4+4));b.roles.push(5);b.owners.push(terminal.road);b.tangents.push(b.tangents[v*2]!,b.tangents[v*2+1]!);}
+    }
+    for(let i=0;i<terminal.vertices.length-1;i++){const a=first+i*2,c=a+2;b.indices.push(a,a+1,c+1,a,c+1,c);}
+  }}
 }
 
 /* ------------------------------------------------------------------------- *
@@ -795,8 +1014,9 @@ export interface RoadAuditReport {
       readonly skirt: ResidualSummary | null;
       /** Residual del deck de puente (por diseño NO se drapea). */
       readonly bridge: ResidualSummary | null;
-      /** Separación firmada con el terreno en vértices, centros y aristas de triángulo. */
+      /** Signed relation to RAW MDT. Negative values are designed cuts; the rendered terrain is excised inside the ribbon footprint. */
       readonly surfaceClearance: {
+        readonly reference: 'RAW_MDT';
         readonly samples: number;
         readonly belowTerrain: number;
         readonly minM: number;
@@ -884,8 +1104,28 @@ function createMaterial(scene: Scene, spec: MaterialSpec): PBRMaterial {
 }
 
 function createMesh(scene: Scene, name: string, data: TypedClass, material: PBRMaterial): Mesh {
+  // Width trims can collapse a side to the centreline. Faces with zero XZ
+  // footprint are curtains/degenerates, never road surface.
+  const valid: number[] = [];
+  for (let i = 0; i < data.indices.length; i += 3) {
+    const a = data.indices[i]! * 3, b = data.indices[i + 1]! * 3, c = data.indices[i + 2]! * 3;
+    if ([a, b, c].some(v => (data.roles[v / 3] === ROLE_SIGN || data.roles[v / 3] === 5))) { valid.push(data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!); continue; }
+    const area = (data.positions[b]! - data.positions[a]!) * (data.positions[c + 2]! - data.positions[a + 2]!) - (data.positions[b + 2]! - data.positions[a + 2]!) * (data.positions[c]! - data.positions[a]!);
+    if (Math.abs(area) > 1e-4) valid.push(data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!);
+  }
+  // Compact the typed index view used by mesh, contacts and audit together.
+  data.indices = new Uint32Array(valid);
   const vertexData = new VertexData();
   vertexData.positions = data.positions;
+  VertexData.ComputeNormals(data.positions, data.indices, data.normals);
+  // Ribbons use two-sided winding inherited from the draping mesh. Lighting
+  // support faces must point upward, just like the triangle contact normal.
+  for (let i = 0; i < data.normals.length; i += 3) {
+    if (data.roles[i / 3] === ROLE_SIGN || data.normals[i + 1]! >= 0) continue;
+    data.normals[i] = -data.normals[i]!;
+    data.normals[i + 1] = -data.normals[i + 1]!;
+    data.normals[i + 2] = -data.normals[i + 2]!;
+  }
   vertexData.normals = data.normals;
   vertexData.colors = data.colors;
   vertexData.indices = data.indices;
@@ -965,12 +1205,15 @@ export async function loadRoadNetwork(
     buildRoad(buffers[road.class], road, surface, options.polishTrackAt, options.polishRoadAt, options.trackBlendCorridor);
   }
 
+  reconcileJunctions(roads, buffers);
   const maxTerrainClearanceLiftM: Record<RoadClass, number> = {
-    ROAD: clearTrianglesFromTerrain(buffers.ROAD, surface),
-    TRACK: clearTrianglesFromTerrain(buffers.TRACK, surface),
-    PATH: clearTrianglesFromTerrain(buffers.PATH, surface),
+    ROAD: 0,
+    TRACK: 0,
+    PATH: 0,
   };
 
+  connectBridgeDecks(buffers);
+  closeTerminalEarthworks(roads,buffers,surface);
   const typed: Record<RoadClass, TypedClass> = {
     ROAD: toTyped(buffers.ROAD),
     TRACK: toTyped(buffers.TRACK),
@@ -996,8 +1239,9 @@ export async function loadRoadNetwork(
     const b = buffers[cls];
     const classVertices = b.positions.length / 3;
     vertexCount += classVertices;
-    triangleCount += b.triangles;
-    byClass[cls] = { roads: b.roadCount, stations: b.stations.length, vertices: classVertices, triangles: b.triangles };
+    const classTriangles = typed[cls].indices.length / 3;
+    triangleCount += classTriangles;
+    byClass[cls] = { roads: b.roadCount, stations: b.stations.length, vertices: classVertices, triangles: classTriangles };
   }
 
   const stats: RoadDrapingStats = {
@@ -1039,7 +1283,7 @@ export async function loadRoadNetwork(
         const role = roles[v];
         if (role === ROLE_SKIRT) skirt.push(sample);
         else if (role === ROLE_BRIDGE) bridge.push(sample);
-        else if (role !== ROLE_SIGN) pavement.push(sample);
+        else if (role !== ROLE_SIGN && role !== 5) pavement.push(sample);
       }
       let clearanceSamples = 0;
       let belowTerrain = 0;
@@ -1051,7 +1295,7 @@ export async function loadRoadNetwork(
         const ia = indices[i]!;
         const ib = indices[i + 1]!;
         const ic = indices[i + 2]!;
-        if ([roles[ia], roles[ib], roles[ic]].some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN)) continue;
+        if ([roles[ia], roles[ib], roles[ic]].some((role) => role === ROLE_BRIDGE || role === ROLE_SIGN || role === 5)) continue;
         const ax = positions[ia * 3]!;
         const ay = positions[ia * 3 + 1]!;
         const az = positions[ia * 3 + 2]!;
@@ -1080,6 +1324,7 @@ export async function loadRoadNetwork(
         skirt: skirt.length > 0 ? summarize(skirt) : null,
         bridge: bridge.length > 0 ? summarize(bridge) : null,
         surfaceClearance: {
+          reference: 'RAW_MDT',
           samples: clearanceSamples,
           belowTerrain,
           minM: Number.isFinite(minClearance) ? minClearance : 0,
@@ -1123,15 +1368,7 @@ export async function loadRoadNetwork(
     surface: createRenderedRoadSurface(surface, CLASSES.map((cls) => ({ class: cls, ...typed[cls], stations: buffers[cls].stations }))),
     stats,
     gradingTriangles: () => {
-      const triangles: number[] = [];
-      for (const cls of CLASSES) {
-        const data = typed[cls];
-        for (let i = 0; i < data.indices.length; i += 3) {
-          const vertices = [data.indices[i]!, data.indices[i + 1]!, data.indices[i + 2]!];
-          if (vertices.some((v) => data.roles[v] !== ROLE_PAVEMENT && data.roles[v] !== ROLE_SKIRT)) continue;
-          for (const v of vertices) triangles.push(data.positions[v * 3]!, data.positions[v * 3 + 2]!);
-        }
-      }
+      const triangles = CLASSES.flatMap((cls) => buffers[cls].footprint);
       return new Float32Array(triangles);
     },
     mapLines: () => mapLines,

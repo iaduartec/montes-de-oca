@@ -408,7 +408,7 @@ async function main() {
     errores_consola: [],
     capturas: [],
     notas: [
-      'FPS/frame medidos en Chrome headless con SwiftShader (CPU): NO son señal de rendimiento.',
+      flag('--external-cdp') ? 'Chrome CDP externo; recorrido acelerado por player.step. FPS del harness no es benchmark.' : 'Chrome headless SwiftShader (CPU); FPS/frame no es señal de rendimiento.',
       'draw calls y triángulos sí son válidos. El FPS real se mide en la GPU del usuario a 1920x1080 (objetivo ~60 fps RTX 2070).',
     ],
   };
@@ -430,7 +430,7 @@ async function main() {
     const cdpPort = Number(arg('--cdp-port', '')) || (await freePort());
     const profile = `/tmp/opencode/chrome-cdp-profile-milestone-${cdpPort}`;
     log(`Chrome CDP en ${cdpPort}`);
-    chrome = spawn(
+    if (!flag('--external-cdp')) chrome = spawn(
       CHROME,
       [
         '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--hide-scrollbars',
@@ -565,12 +565,12 @@ async function main() {
     // ===================== FASE B: aparición =====================
     const spawnInfo = await cdp.evaluate(`(function () {
       var g = window.__game, v = g.vehicle.telemetry();
-      return { x: v.x, z: v.z, y: v.y, groundY: g.terrainHeightAt(v.x, v.z), residual: v.wheelResidualMaxM,
+      return { x: v.x, z: v.z, y: v.y, groundY: g.roads?.sampleAt(v.x, v.z)?.height ?? g.terrainHeightAt(v.x, v.z), rawTerrainY: g.terrainHeightAt(v.x, v.z), residual: v.wheelResidualMaxM,
                speed: v.speed, mode: g.player.mode(), startX: g.route.start.x, startZ: g.route.start.z,
                distToStart: Math.hypot(v.x - g.route.start.x, v.z - g.route.start.z), mission: g.mission.snapshot() };
     })()`);
     report.spawn = spawnInfo;
-    check('FASE B: 4x4 sobre el terreno (|y - heightAt| <= 0.5 m)', Math.abs(spawnInfo.y - spawnInfo.groundY) <= 0.5, +Math.abs(spawnInfo.y - spawnInfo.groundY).toFixed(4), '<= 0.5');
+    check('FASE B: 4x4 sobre soporte renderizado (|y - supportHeight| <= 0.5 m)', Math.abs(spawnInfo.y - spawnInfo.groundY) <= 0.5, +Math.abs(spawnInfo.y - spawnInfo.groundY).toFixed(4), '<= 0.5');
     check('FASE B: spawn sobre route.start (<= 1 m)', spawnInfo.distToStart <= 1, +spawnInfo.distToStart.toFixed(3), '<= 1');
     check('FASE B: arranca a pie y detenido', spawnInfo.mode === 'on-foot' && Math.abs(spawnInfo.speed) < 0.01, { mode: spawnInfo.mode, speed: +spawnInfo.speed.toFixed(3) }, "mode='on-foot' y |v|<0.01");
     check('FASE B: misión en NOT_STARTED', spawnInfo.mission.state === 'NOT_STARTED', spawnInfo.mission.state, 'NOT_STARTED');
@@ -724,6 +724,7 @@ async function main() {
     for (const e of report.errores_consola) console.error(`${LOG_PREFIX}   ${e}`);
   } finally {
     try { writeFileSync(resolve(OUT_DIR, 'drive_report.json'), JSON.stringify(report, null, 2) + '\n'); } catch {}
+    if (flag('--external-cdp') && cdp) { await cdp.send('Page.close').catch(() => {}); cdp.ws.close(); }
     if (chrome) chrome.kill('SIGKILL');
     if (serverChild) { try { process.kill(-serverChild.pid, 'SIGKILL'); } catch { try { serverChild.kill('SIGKILL'); } catch {} } }
   }
@@ -736,7 +737,7 @@ async function main() {
     for (const c of report.checks.filter((c) => !c.ok)) console.log(`- ${c.name}: valor=${JSON.stringify(c.value)} umbral=${JSON.stringify(c.threshold)}${c.detail ? ' detalle=' + JSON.stringify(c.detail) : ''}`);
   }
   const fps = report.perf_despues ? report.perf_despues.fps.toFixed(1) : 'n/a';
-  console.log(`\nFPS headless ${fps} (NO es señal de rendimiento: SwiftShader CPU). Draw calls/triángulos sí valen.`);
+  console.log(`\nFPS headless ${fps} (NO es benchmark: recorrido acelerado). Draw calls/triángulos sí valen.`);
   console.log(`Reporte: ${resolve(OUT_DIR, 'drive_report.json')}`);
   console.log(`RESULTADO: ${exitCode === 0 ? 'OK' : 'FALLO'}`);
   return exitCode;
