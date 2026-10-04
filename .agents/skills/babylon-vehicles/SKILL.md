@@ -13,3 +13,11 @@ description: Úsala al mejorar modelos, materiales, ruedas, presentación de con
 6. Prueba vistas cercanas y de conducción, movimiento, giros, sombras y luces representativas. Compara draw calls, número de mallas/materiales y LOD/instancias antes y después.
 
 Usa los sistemas actuales de vehículos y físicas; no presupongas un plugin concreto de físicas Babylon.
+
+## Road changes and motorcycles
+
+- DECISION: Preserve assisted motorcycle stability and recovery unless a real gameplay regression is reproduced.
+- WHY: Road banking, support heights and junctions can affect riders without a motorcycle code defect.
+- INVARIANT: Both wheel heights use final road/terrain support; water contact compares actual world Y with water Y.
+- VALIDATION: Run `test:motorcycle`, `test:water-contact`, long turns, slalom, low-speed turns, braking turns and ROAD/TRACK transitions in the actual actor.
+- ANTI-PATTERN: Rewriting physics to compensate for visible road geometry, or declaring eight finished GLBs from an eight-entry catalog.

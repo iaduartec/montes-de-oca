@@ -20,7 +20,7 @@ Use this skill for runtime art and rendering work in this game. Read the reposit
 - Assets served by Vite live under `public/` and should be resolved with `src/public-url.ts`. Register the loader with `import '@babylonjs/loaders/glTF'`; use `SceneLoader.LoadAssetContainerAsync` when the actor needs to validate content, attach it under the established root, and dispose its resources deliberately.
 - An unavailable or invalid asset must be reported clearly and leave a visible working fallback. Do not silently claim a placeholder is finished art. Keep source files and conversion settings when they materially support rebuilding the shipped GLB.
 - Map idle and locomotion clips from actual movement state, avoid root-motion drift when gameplay owns position, transition intentionally, and dispose animation groups/container with the actor. Do not claim a walk cycle exists when the supplied GLB only has idle and run.
-- No separate NPC population or AI system has been found in the game baseline; confirm current source before planning NPC-specific work.
+- Village NPC patrols and simulation tiers already exist; inspect their current runtime before planning changes.
 
 ## Lighting and cost
 
@@ -41,6 +41,20 @@ Use this skill for runtime art and rendering work in this game. Read the reposit
 The player can use `public/characters/field-player.glb`, built from the retained Kenney Animated Characters 3 source pack under `assets/characters/kenney-animated-characters-3/` with `scripts/player/build_kenney_character.py`. Its license and source are recorded in `asset.json`; the GLB contains Idle, retargeted Walk, and Run groups. Refresh these paths and properties from the live checkout before relying on this note.
 
 The default 4x4 and patrol use `public/vehicles/four-door-utility.glb`. It is a generic four-door SUV, not a Mitsubishi or Nissan model; `public/vehicles/ATTRIBUTION.md` preserves the provider's CC0 and AI-origin claims without presenting them as independently verified. The runtime validates four named wheel pivots and drawable meshes, drives those pivots, and retains a visible procedural fallback. The NullEngine model validator does not prove the asynchronous GLB loaded: verify the actual browser scene and wheel pose with the vehicle capture harness before claiming the asset works. Refresh the live asset, loader, manifest, and triangle/draw measurements before relying on this note.
+
+## Comparable road evidence
+
+- DECISION: Diagnose RAW TERRAIN, RENDERED ROAD GEOMETRY and DRIVING SURFACE separately; reuse spatially separated baseline worst-point cameras for final captures, positioned above the local slope.
+- WHY: Contact normal caps, steep-facet rejection and overlays can hide road geometry tails.
+- INVARIANT: Rendered diagnostics bypass driving filtering/clamps; include percentiles, histograms, contacts, skirts and overlap flags. Keep baseline code isolated if implementation has started.
+- VALIDATION: Inspect the actual PNGs, triangle heights and console alongside the statistical report. Use independent browser sessions for concurrent harnesses; restart mission after any HMR reload.
+- ANTI-PATTERN: Reporting only improved maxima, mixing shoulder slopes with pavement without labels, or claiming target GPU FPS from software rendering.
+
+- DECISION: Close exposed cut/fill only at isolated OSM termini using separately labelled earthwork faces; retain the centreline and XZ footprint.
+- WHY: A graded cross-section can leave an open wedge against raw MDT at an isolated end even when lateral skirts and contact are correct.
+- INVARIANT: Terminal earthwork faces are rendered, excluded from driving contacts and reported apart from pavement; shared OSM nodes use the junction field.
+- VALIDATION: Inspect matching endpoint captures, retain the closure through mesh filtering and run road-surface plus actual mission/moto/water harnesses.
+- ANTI-PATTERN: Adding broad vertical side seals without a localized cause or accepting vertex/index growth as proof that faces rendered.
 
 ## Village fidelity comparisons
 
