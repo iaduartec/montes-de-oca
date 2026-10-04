@@ -25,6 +25,7 @@ export interface VillageLandmarkStats {
 export interface VillageLandmarks {
   readonly stats: VillageLandmarkStats;
   readonly coveredBuildingIds: ReadonlySet<number>;
+  readonly coveredWallIds: ReadonlySet<number>;
   readonly replacesDam: boolean;
   dispose(): void;
 }
@@ -42,15 +43,16 @@ interface LandmarkAsset {
   readonly yawRad?: number;
   readonly baseM?: number;
   readonly coveredBuildingId?: number;
+  readonly coveredWallIds?: readonly number[];
   readonly replacesDam?: boolean;
 }
 
 const ASSETS: readonly LandmarkAsset[] = [
   { name: 'ermita-oca', file: '../oca-site/ermita.glb', anchorX: 2820.008064, anchorZ: 2122.016251, bytes: 159116, baseM: 972, coveredBuildingId: 216539679 },
   { name: 'campa-oca', file: '../oca-site/campa.glb', anchorX: 2834.475411, anchorZ: 2169.524367, bytes: 10784, baseM: 972 },
-  { name: 'iglesia', file: 'church.glb', anchorX: 3067.357, anchorZ: 3976.874, bytes: 89792, coveredBuildingId: 90614388 },
-  { name: 'plaza', file: 'plaza.glb', anchorX: 3063.04, anchorZ: 4012.346, bytes: 119344 },
-  { name: 'presa', file: 'dam.glb', anchorX: 2440.325, anchorZ: 1513.065, bytes: 12332, baseM: 1010, replacesDam: true },
+  { name: 'iglesia', file: 'church.glb', anchorX: 3067.357, anchorZ: 3976.874, bytes: 114468, coveredBuildingId: 90614388, coveredWallIds: [474646355] },
+  { name: 'plaza', file: 'plaza.glb', anchorX: 3063.04, anchorZ: 4012.346, bytes: 140508, coveredWallIds: [645040294] },
+  { name: 'presa', file: 'dam.glb', anchorX: 2440.325, anchorZ: 1513.065, bytes: 12392, baseM: 1010, replacesDam: true },
 ];
 
 function resetAndPlace(container: AssetContainer, asset: LandmarkAsset, terrain: WorldTerrain, surfaceCache: FacadeSurfaceCache): number {
@@ -124,6 +126,7 @@ export async function loadVillageLandmarks(
   const containers: AssetContainer[] = [];
   const surfaceCache: FacadeSurfaceCache = new Map();
   const coveredBuildingIds = new Set<number>();
+  const coveredWallIds = new Set<number>();
   let meshes = 0;
   let triangles = 0;
   let bytes = 0;
@@ -141,6 +144,9 @@ export async function loadVillageLandmarks(
       bytes += asset.bytes;
       sites++;
       if (asset.coveredBuildingId !== undefined) coveredBuildingIds.add(asset.coveredBuildingId);
+      if (asset.coveredWallIds !== undefined) {
+        for (const wallId of asset.coveredWallIds) coveredWallIds.add(wallId);
+      }
       if (asset.replacesDam) replacesDam = true;
       console.info(`[hitos] ${asset.name}: ${addedMeshes} mallas cargadas`);
     } catch (error) {
@@ -152,6 +158,7 @@ export async function loadVillageLandmarks(
   return {
     stats: { sites, meshes, triangles, bytes },
     coveredBuildingIds,
+    coveredWallIds,
     replacesDam,
     dispose: () => {
       for (const container of containers) container.dispose();

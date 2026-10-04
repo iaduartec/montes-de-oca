@@ -28,6 +28,13 @@ STONE_PAVING_LIGHT = (0.14, 0.115, 0.078, 1.0)
 WOOD = (0.32, 0.23, 0.15, 1.0)
 WOOD_LIGHT = (0.44, 0.33, 0.22, 1.0)
 METAL = (0.20, 0.21, 0.19, 1.0)
+FRONTON_GREEN = (0.13, 0.22, 0.15, 1.0)
+FRONTON_GREEN_DARK = (0.09, 0.16, 0.11, 1.0)
+FRONTON_CHAPA = (0.88, 0.88, 0.85, 1.0)
+FRONTON_LINE = (0.92, 0.92, 0.90, 1.0)
+FRONTON_COURT = (0.24, 0.19, 0.16, 1.0)
+TERRACE_PAVING = (0.21, 0.205, 0.20, 1.0)
+TERRACE_PAVING_LIGHT = (0.24, 0.23, 0.22, 1.0)
 
 
 class MeshBatch:
@@ -271,17 +278,39 @@ def add_arch_mark(batch, center, plane, axis, width=1.0, spring=10.5, radius=0.7
         ], STONE_LIGHT if index % 2 == 0 else STONE)
 
 
-def make_church(building, collection):
+def make_church(building, collection, grids, vertical_datum):
     footprint = building['footprint']
     anchor = polygon_centroid(footprint)
+    anchor_y = sample_terrain_height(grids, anchor[0], anchor[1], vertical_datum)
     points = localize(footprint, anchor)
     xmin = min(p[0] for p in points)
     xmax = max(p[0] for p in points)
     ymin = min(p[1] for p in points)
     ymax = max(p[1] for p in points)
     batch = MeshBatch()
-    # OSM footprint and the existing type-derived wall estimate remain authoritative.
-    add_polygon_walls(batch, points, 5.8)
+
+    # Grounded walls: sample terrain height for each footprint node so the stone walls
+    # and plinth course plunge solidly into the terrain and never float on any side.
+    for i, (x0, y0) in enumerate(points):
+        x1, y1 = points[(i + 1) % len(points)]
+        wx0, wz0 = footprint[i]
+        wx1, wz1 = footprint[(i + 1) % len(footprint)]
+        g0 = sample_terrain_height(grids, wx0, wz0, vertical_datum) - anchor_y
+        g1 = sample_terrain_height(grids, wx1, wz1, vertical_datum) - anchor_y
+        b0 = min(-0.4, g0 - 0.6)
+        b1 = min(-0.4, g1 - 0.6)
+        # Main dressed-stone wall
+        batch.face([(x0, y0, b0), (x1, y1, b1), (x1, y1, 5.8), (x0, y0, 5.8)], STONE if i % 3 else STONE_LIGHT)
+        # Deep masonry plinth (zócalo de cimentación) anchoring into slope
+        plinth0 = min(1.8, max(g0 + 0.45, b0 + 0.35))
+        plinth1 = min(1.8, max(g1 + 0.45, b1 + 0.35))
+        batch.face([(x0, y0, b0), (x1, y1, b1), (x1, y1, plinth1), (x0, y0, plinth0)], STONE_SHADE)
+
+    # Underside solid floor closing to prevent light leaking from low camera angles
+    facets = triangulate_simple_polygon(points)
+    for facet in facets:
+        batch.face([(points[idx][0], points[idx][1], -0.25) for idx in facet], STONE_SHADE)
+
     # PNOA 2023 shows crossing ridges: the north-south nave meets the east-west
     # transept. The photograph is used only for the low-poly visual read; no
     # photographic pixels or unverified façade dimensions are carried over.
@@ -318,7 +347,9 @@ def make_church(building, collection):
     tw = 6.3
     half = tw / 2
     tower_lift = 5.2
-    batch.box(tx, ty, 4.0, tw, tw, 8.0, STONE, STONE_LIGHT)
+    tower_ground = sample_terrain_height(grids, anchor[0] + tx, anchor[1] + ty, vertical_datum) - anchor_y
+    tower_base = min(-0.6, tower_ground - 0.6)
+    batch.box(tx, ty, (8.0 + tower_base) / 2, tw, tw, 8.0 - tower_base, STONE, STONE_LIGHT)
     # The solid square shaft deliberately projects above the crossing nave roof
     # before the open bell stage begins. The supplied plaza photo shows the clock
     # well above the nave ridge; extend the shaft instead of floating the belfry.
@@ -392,6 +423,92 @@ def make_church(building, collection):
     add_window_y(batch, center_x - 5.8, gable_y + 0.035, 2.15, width=1.25, height=1.55)
     add_window_y(batch, center_x + 10.1, gable_y + 0.035, 2.15, width=1.25, height=1.55)
 
+    # Elevated terrace pathway, retaining wall (muro de contención) and railings
+    # between the church east elevation and the lower carretera (Calle Mayor).
+    # Follows OSM retaining_wall way 474646355 at X ~ 3087.5.
+    t_x0 = xmax - 0.4
+    t_x1 = 20.4  # world X = 3067.357 + 20.4 = 3087.757
+    t_y0 = ymin - 1.5
+    t_y1 = ymax + 0.8
+    t_steps = 14
+    dy = (t_y1 - t_y0) / t_steps
+    wall_thick = 0.45
+    plaza_metal = (0.045, 0.048, 0.045, 1.0)
+
+    for s in range(t_steps):
+        sy0 = t_y0 + s * dy
+        sy1 = sy0 + dy
+        wy0 = anchor[1] + sy0
+        wy1 = anchor[1] + sy1
+
+        # Sample terrain elevations: at church edge, at retaining wall edge, and down at the road
+        g_ch0 = sample_terrain_height(grids, anchor[0] + t_x0, wy0, vertical_datum) - anchor_y
+        g_ch1 = sample_terrain_height(grids, anchor[0] + t_x0, wy1, vertical_datum) - anchor_y
+        g_wall0 = sample_terrain_height(grids, anchor[0] + t_x1, wy0, vertical_datum) - anchor_y
+        g_wall1 = sample_terrain_height(grids, anchor[0] + t_x1, wy1, vertical_datum) - anchor_y
+        g_road0 = sample_terrain_height(grids, anchor[0] + t_x1 + 2.5, wy0, vertical_datum) - anchor_y
+        g_road1 = sample_terrain_height(grids, anchor[0] + t_x1 + 2.5, wy1, vertical_datum) - anchor_y
+
+        walk_h0 = max(g_ch0, g_wall0) + 0.12
+        walk_h1 = max(g_ch1, g_wall1) + 0.12
+        parapet_h0 = walk_h0 + 0.85
+        parapet_h1 = walk_h1 + 0.85
+        base_h0 = min(g_road0, g_wall0) - 0.5
+        base_h1 = min(g_road1, g_wall1) - 0.5
+
+        # Paved terrace walkway (camino)
+        batch.face([
+            (t_x0, sy0, walk_h0),
+            (t_x1, sy0, walk_h0),
+            (t_x1, sy1, walk_h1),
+            (t_x0, sy1, walk_h1),
+        ], TERRACE_PAVING if s % 2 else TERRACE_PAVING_LIGHT)
+
+        # Outer retaining wall face (facing east down towards the road)
+        batch.face([
+            (t_x1 + wall_thick, sy0, base_h0),
+            (t_x1 + wall_thick, sy0, parapet_h0),
+            (t_x1 + wall_thick, sy1, parapet_h1),
+            (t_x1 + wall_thick, sy1, base_h1),
+        ], STONE if s % 2 else STONE_LIGHT)
+
+        # Inner parapet face
+        batch.face([
+            (t_x1, sy0, walk_h0),
+            (t_x1, sy1, walk_h1),
+            (t_x1, sy1, parapet_h1),
+            (t_x1, sy0, parapet_h0),
+        ], STONE_SHADE)
+
+        # Parapet stone coping
+        batch.face([
+            (t_x1, sy0, parapet_h0),
+            (t_x1, sy1, parapet_h1),
+            (t_x1 + wall_thick, sy1, parapet_h1),
+            (t_x1 + wall_thick, sy0, parapet_h0),
+        ], STONE_LIGHT)
+
+        # Metal railing on top of the parapet
+        mid_y = (sy0 + sy1) / 2
+        mid_parapet = (parapet_h0 + parapet_h1) / 2
+        batch.box(t_x1 + wall_thick / 2, mid_y, mid_parapet + 0.45,
+                  0.06, dy, 0.06, plaza_metal)
+        if s % 2 == 0 or s == t_steps - 1:
+            batch.box(t_x1 + wall_thick / 2, sy0, parapet_h0 + 0.22,
+                      0.07, 0.07, 0.48, plaza_metal)
+
+    # Close south returning wall of the terrace
+    g_south_road = sample_terrain_height(grids, anchor[0] + t_x1 + 1.5, anchor[1] + t_y0, vertical_datum) - anchor_y
+    g_south_church = sample_terrain_height(grids, anchor[0] + t_x0, anchor[1] + t_y0, vertical_datum) - anchor_y
+    south_base = min(g_south_road, g_south_church) - 0.5
+    south_top = g_south_church + 0.12
+    batch.face([
+        (t_x0, t_y0, south_base),
+        (t_x1 + wall_thick, t_y0, south_base),
+        (t_x1 + wall_thick, t_y0, south_top + 0.85),
+        (t_x0, t_y0, south_top),
+    ], STONE_SHADE)
+
     obj = batch.create_object('focal:church', collection)
     obj['osm_way_id'] = 90614388
     obj['height_reference_m'] = 12.8
@@ -400,8 +517,9 @@ def make_church(building, collection):
     obj['footprint_source'] = 'public/village/buildings.json'
     obj['photo_reference'] = 'Gerd Eichmann, CC BY-SA 4.0; user-provided fotos/Iglesia_plaza.jpg (author, license and date unknown)'
     obj['roof_evidence'] = 'PNOA MA 2023: crossed N-S nave and E-W transept ridges'
-    obj['reconstruction_note'] = 'Tower height and details are stylized visual interpretation; no photo pixels included'
+    obj['reconstruction_note'] = 'Tower height, plinth, elevated terrace path and retaining wall are stylized visual interpretation; no photo pixels included'
     return obj, anchor
+
 
 
 def inside_polygon(point, polygon):
@@ -579,21 +697,35 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
 
     # Rebuild the mapped square as a continuous, fine-grained paving surface that
     # samples the exact runtime terrain triangles at shared vertices. A narrow
-    # exclusion around the existing living_street leaves its runtime road and
-    # collision meshes fully authoritative; building interiors are omitted too.
-    road_clearance = road.get('width', 5.0) / 2 + road.get('clearance', {}).get('skirtM', 0.6)
-    edge_profile = road.get('clearance') or {}
-    def road_clearance_at(t, side):
-        band = edge_profile.get('bandLeft' if side > 0 else 'bandRight')
-        if not band or len(band) < 2:
-            return road_clearance - 0.02
-        position = max(0.0, min(1.0, t)) * (len(band) - 1)
-        index = min(len(band) - 2, int(position))
-        fraction = position - index
-        return band[index] * (1 - fraction) + band[index + 1] * fraction - 0.02
-    # The earlier 4 m panels left large empty wedges. Interior cells use a fine,
-    # terrain-conforming grid; partial perimeter cells are clipped to the actual
-    # OSM ring to keep its outline smooth rather than stair-stepped.
+def make_plaza(collection, road, source, world_polygon, grids, building_footprints, vertical_datum):
+    p0, p1 = road['points'][0], road['points'][-1]
+    dx, dz = p1[0] - p0[0], p1[1] - p0[1]
+    length = math.hypot(dx, dz)
+    # Anchor: 8 m north of the living_street centerline
+    anchor = ((p0[0] + p1[0]) / 2 + dz / length * 8, (p0[1] + p1[1]) / 2 - dx / length * 8)
+    anchor_y = sample_terrain_height(grids, anchor[0], anchor[1], vertical_datum)
+    batch = MeshBatch()
+    # Linear vertex colours based on grey paving visible in user's photo.
+    paving_palette = ((0.2075, 0.2035, 0.1975, 1.0), (0.2095, 0.2055, 0.1995, 1.0),
+                      (0.2115, 0.2075, 0.2015, 1.0), (0.2085, 0.2045, 0.1985, 1.0))
+    paving_light = (0.265, 0.254, 0.235, 1.0)
+    plaza_metal = (0.045, 0.048, 0.045, 1.0)
+
+    # Municipal frontón geometry references along OSM wall way 645040294
+    f_p0 = (3050.367, 3997.966)
+    f_p1 = (3058.832, 4003.443)
+    flen = math.hypot(f_p1[0] - f_p0[0], f_p1[1] - f_p0[1])
+    fwx = (f_p1[0] - f_p0[0]) / flen
+    fwy = (f_p1[1] - f_p0[1]) / flen
+    fnx, fny = -fwy, fwx
+
+    def is_fronton_court(wx, wz):
+        longit = (wx - f_p0[0]) * fwx + (wz - f_p0[1]) * fwy
+        transv = (wx - f_p0[0]) * fnx + (wz - f_p0[1]) * fny
+        return 0.0 <= longit <= flen and 0.0 <= transv <= 14.0
+
+    # Continuous 100% pedestrian square paving draped across the entire OSM square.
+    # No road corridor cutout: the entire square is pedestrian stone paving.
     min_x, max_x = min(x for x, _ in world_polygon), max(x for x, _ in world_polygon)
     min_z, max_z = min(z for _, z in world_polygon), max(z for _, z in world_polygon)
     cell_size = 1.0
@@ -613,30 +745,9 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
             if len(clipped) < 3 or polygon_area(clipped) < 0.01:
                 z += cell_size
                 continue
-            road_points = road['points']
-            road_clearance_clipped = False
-            if len(road_points) == 2:
-                rx, rz = road_points[-1][0] - road_points[0][0], road_points[-1][1] - road_points[0][1]
-                t = ((center[0] - road_points[0][0]) * rx + (center[1] - road_points[0][1]) * rz) / (rx * rx + rz * rz or 1.0)
-                if 0.0 <= t <= 1.0:
-                    signed = rx * (center[1] - road_points[0][1]) - rz * (center[0] - road_points[0][0])
-                    side = 1.0 if signed >= 0 else -1.0
-                    clipped = clip_polygon_to_road_edge(
-                        clipped, road_points, side, road_clearance_at,
-                    )
-                    # A previously interior square may now be clipped by the
-                    # road: emit that clipped shape, never its original corners.
-                    full_cell = full_cell and clipped == corners
-                    road_clearance_clipped = True
-                    if len(clipped) < 3 or polygon_area(clipped) < 0.01:
-                        z += cell_size
-                        continue
             sample_points = list(clipped)
             if inside_polygon(center, clipped):
                 sample_points.append(center)
-            if not road_clearance_clipped and any(distance_to_polyline(point, road_points) < road_clearance for point in sample_points):
-                z += cell_size
-                continue
             if any(inside_polygon(point, footprint) for point in sample_points for footprint in building_footprints):
                 z += cell_size
                 continue
@@ -644,17 +755,16 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
                    for footprint in building_footprints for px, pz in footprint):
                 z += cell_size
                 continue
-            # A deterministic, restrained per-slab tint helps the stone read as
-            # paving without raster textures or a repeated high-contrast pattern.
+
             cell_ix, cell_iz = round(x / cell_size), round(z / cell_size)
             tint_hash = (cell_ix * 73856093 + cell_iz * 19349663) & 0xFFFFFFFF
             tint_hash ^= tint_hash >> 13
             tint_hash = (tint_hash * 1274126177) & 0xFFFFFFFF
-            # Approximate mottled grey slabs, without adding mesh cost.
-            paving_color = paving_palette[(tint_hash >> 29) & 3]
+            paving_color = FRONTON_COURT if is_fronton_court(center[0], center[1]) else paving_palette[(tint_hash >> 29) & 3]
+
             if full_cell:
                 verts = [
-                    (wx - anchor[0], wz - anchor[1], sample_terrain_height(grids, wx, wz, vertical_datum) - anchor_y + 0.04)
+                    (wx - anchor[0], wz - anchor[1], sample_terrain_height(grids, wx, wz, vertical_datum) - anchor_y + 0.14)
                     for wx, wz in corners
                 ]
                 batch.face([verts[0], verts[1], verts[2]], paving_color)
@@ -668,7 +778,7 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
                 for facet in facets:
                     verts = [
                         (clipped[index][0] - anchor[0], clipped[index][1] - anchor[1],
-                         sample_terrain_height(grids, *clipped[index], vertical_datum) - anchor_y + 0.04)
+                         sample_terrain_height(grids, *clipped[index], vertical_datum) - anchor_y + 0.14)
                         for index in facet
                     ]
                     batch.face(verts, paving_color)
@@ -677,9 +787,7 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
             z += cell_size
         x += cell_size
 
-    # A restrained raised forecourt and access ramp echo the local user's photo.
-    # The image has no known author, license, date, or camera pose, so this layout
-    # is explicitly an approximate, non-georeferenced reconstruction.
+    # Raised forecourt and access ramp
     platform_cx, platform_cy = source['platformApproximateCenterWorldXZ']
     half_x, half_y = 6.0, 2.8
     platform_points = [
@@ -688,23 +796,23 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
         (platform_cx + half_x, platform_cy + half_y),
         (platform_cx - half_x, platform_cy + half_y),
     ]
-    platform_heights = [sample_terrain_height(grids, x, z, vertical_datum) + 0.22 for x, z in platform_points]
-    local_platform = [(x - anchor[0], z - anchor[1], h - anchor_y) for (x, z), h in zip(platform_points, platform_heights)]
+    platform_heights = [sample_terrain_height(grids, px, pz, vertical_datum) + 0.22 for px, pz in platform_points]
+    local_platform = [(px - anchor[0], pz - anchor[1], h - anchor_y) for (px, pz), h in zip(platform_points, platform_heights)]
     batch.face([local_platform[0], local_platform[1], local_platform[2]], paving_light)
     batch.face([local_platform[0], local_platform[2], local_platform[3]], paving_palette[1])
-    for i, (x, z) in enumerate(platform_points):
+    for i, (px, pz) in enumerate(platform_points):
         nx, nz = platform_points[(i + 1) % 4]
-        base0 = sample_terrain_height(grids, x, z, vertical_datum) - anchor_y + 0.04
+        base0 = sample_terrain_height(grids, px, pz, vertical_datum) - anchor_y + 0.04
         base1 = sample_terrain_height(grids, nx, nz, vertical_datum) - anchor_y + 0.04
         top0, top1 = platform_heights[i] - anchor_y, platform_heights[(i + 1) % 4] - anchor_y
         batch.face([
-            (x - anchor[0], z - anchor[1], base0),
+            (px - anchor[0], pz - anchor[1], base0),
             (nx - anchor[0], nz - anchor[1], base1),
             (nx - anchor[0], nz - anchor[1], top1),
-            (x - anchor[0], z - anchor[1], top0),
+            (px - anchor[0], pz - anchor[1], top0),
         ], STONE_SHADE)
 
-    # Three broad treads descend from the west end, clear of the road corridor.
+    # Three broad treads descend from the west end
     stair_x = platform_cx - half_x - 0.45
     for step in range(3):
         step_y = platform_cy + half_y - (step + 0.5) * 0.62
@@ -713,8 +821,7 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
         batch.box(stair_x - anchor[0], step_y - anchor[1], ground + tread_height / 2,
                   0.9, 0.64, tread_height, paving_light)
 
-    # Metal handrails on the two sides of the descending treads and along the
-    # forecourt's north edge. These are recognizable low-poly cues, not a survey.
+    # Metal handrails on descending treads and north edge
     for rail_x in (stair_x - 0.42, stair_x + 0.42):
         ground0 = sample_terrain_height(grids, rail_x, platform_cy + 0.2, vertical_datum) - anchor_y
         ground1 = sample_terrain_height(grids, rail_x, platform_cy + 1.6, vertical_datum) - anchor_y
@@ -732,8 +839,155 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
         base = sample_terrain_height(grids, post_x, rail_z, vertical_datum) - anchor_y
         batch.box(post_x - anchor[0], rail_z - anchor[1], base + 0.42, 0.08, 0.08, 0.84, plaza_metal)
 
-    # Same world-minus-anchor frame as paving: resetAndPlace restores Blender
-    # east/north axes. Furniture must not independently mirror local X.
+    # Municipal Pelota Court (Frontón de la Plaza) — along mapped OSM wall 645040294
+    fx0, fy0 = f_p0[0] - anchor[0], f_p0[1] - anchor[1]
+    fx1, fy1 = f_p1[0] - anchor[0], f_p1[1] - anchor[1]
+    fg0 = sample_terrain_height(grids, f_p0[0], f_p0[1], vertical_datum) - anchor_y
+    fg1 = sample_terrain_height(grids, f_p1[0], f_p1[1], vertical_datum) - anchor_y
+    f_base = min(fg0, fg1) - 0.5
+    f_top = max(fg0, fg1) + 8.5
+    f_thick = 0.65
+    court_floor = max(fg0, fg1) + 0.14
+    chapa_h = 1.0
+
+    # Back face of frontis (exterior stone wall facing southwest)
+    batch.face([
+        (fx0 - fnx * f_thick, fy0 - fny * f_thick, f_base),
+        (fx1 - fnx * f_thick, fy1 - fny * f_thick, f_base),
+        (fx1 - fnx * f_thick, fy1 - fny * f_thick, f_top),
+        (fx0 - fnx * f_thick, fy0 - fny * f_thick, f_top),
+    ], STONE)
+
+    # Right side end of frontis (facing southeast)
+    batch.face([
+        (fx1 - fnx * f_thick, fy1 - fny * f_thick, f_base),
+        (fx1, fy1, f_base),
+        (fx1, fy1, f_top),
+        (fx1 - fnx * f_thick, fy1 - fny * f_thick, f_top),
+    ], STONE_LIGHT)
+
+    # Coping on top of frontis
+    batch.face([
+        (fx0 - fnx * f_thick, fy0 - fny * f_thick, f_top),
+        (fx1 - fnx * f_thick, fy1 - fny * f_thick, f_top),
+        (fx1 + fnx * 0.05, fy1 + fny * 0.05, f_top),
+        (fx0 + fnx * 0.05, fy0 + fny * 0.05, f_top),
+    ], STONE_LIGHT)
+
+    # Front playing face (facing northeast into court):
+    # 1. Lower zone below chapa (0.0 to 1.0m above court floor)
+    batch.face([
+        (fx0, fy0, f_base),
+        (fx1, fy1, f_base),
+        (fx1, fy1, court_floor + chapa_h),
+        (fx0, fy0, court_floor + chapa_h),
+    ], FRONTON_GREEN_DARK)
+
+    # 2. La Chapa (horizontal metal fault line at 1.0m height, width 0.14m)
+    batch.face([
+        (fx0 + fnx * 0.02, fy0 + fny * 0.02, court_floor + chapa_h),
+        (fx1 + fnx * 0.02, fy1 + fny * 0.02, court_floor + chapa_h),
+        (fx1 + fnx * 0.02, fy1 + fny * 0.02, court_floor + chapa_h + 0.14),
+        (fx0 + fnx * 0.02, fy0 + fny * 0.02, court_floor + chapa_h + 0.14),
+    ], FRONTON_CHAPA)
+
+    # 3. Main green playing face (above chapa to 8.0m)
+    batch.face([
+        (fx0, fy0, court_floor + chapa_h + 0.14),
+        (fx1, fy1, court_floor + chapa_h + 0.14),
+        (fx1, fy1, f_top - 0.5),
+        (fx0, fy0, f_top - 0.5),
+    ], FRONTON_GREEN)
+
+    # 4. Upper fault zone (from 8.0m to top 8.5m)
+    batch.face([
+        (fx0, fy0, f_top - 0.5),
+        (fx1, fy1, f_top - 0.5),
+        (fx1, fy1, f_top),
+        (fx0, fy0, f_top),
+    ], STONE_SHADE)
+
+    # 5. Top limit line (white horizontal band at 8.0m)
+    batch.face([
+        (fx0 + fnx * 0.015, fy0 + fny * 0.015, f_top - 0.54),
+        (fx1 + fnx * 0.015, fy1 + fny * 0.015, f_top - 0.54),
+        (fx1 + fnx * 0.015, fy1 + fny * 0.015, f_top - 0.46),
+        (fx0 + fnx * 0.015, fy0 + fny * 0.015, f_top - 0.46),
+    ], FRONTON_LINE)
+
+    # 6. Right vertical boundary line
+    rx0, ry0 = fx1 - fwx * 0.16, fy1 - fwy * 0.16
+    batch.face([
+        (rx0 + fnx * 0.015, ry0 + fny * 0.015, court_floor + chapa_h),
+        (fx1 + fnx * 0.015, fy1 + fny * 0.015, court_floor + chapa_h),
+        (fx1 + fnx * 0.015, fy1 + fny * 0.015, f_top - 0.46),
+        (rx0 + fnx * 0.015, ry0 + fny * 0.015, f_top - 0.46),
+    ], FRONTON_LINE)
+
+    # Pared izquierda (left wall)
+    left_len = 8.5
+    left_thick = 0.5
+    steps = [
+        (0.0, 3.0, f_top, f_top - 2.5),
+        (3.0, 6.0, f_top - 2.5, f_top - 4.5),
+        (6.0, left_len, f_top - 4.5, f_top - 5.5),
+    ]
+    for d0, d1, h0, h1 in steps:
+        sp0_x, sp0_y = fx0 + fnx * d0, fy0 + fny * d0
+        sp1_x, sp1_y = fx0 + fnx * d1, fy0 + fny * d1
+        w_sp0 = (anchor[0] + sp0_x, anchor[1] + sp0_y)
+        w_sp1 = (anchor[0] + sp1_x, anchor[1] + sp1_y)
+        g_s0 = sample_terrain_height(grids, w_sp0[0], w_sp0[1], vertical_datum) - anchor_y
+        g_s1 = sample_terrain_height(grids, w_sp1[0], w_sp1[1], vertical_datum) - anchor_y
+        b_s = min(g_s0, g_s1) - 0.4
+
+        # Inner playing face
+        batch.face([
+            (sp0_x, sp0_y, b_s),
+            (sp1_x, sp1_y, b_s),
+            (sp1_x, sp1_y, h1),
+            (sp0_x, sp0_y, h0),
+        ], FRONTON_GREEN)
+
+        # Outer face (exterior stone wall)
+        out0_x, out0_y = sp0_x - fwx * left_thick, sp0_y - fwy * left_thick
+        out1_x, out1_y = sp1_x - fwx * left_thick, sp1_y - fwy * left_thick
+        batch.face([
+            (out1_x, out1_y, b_s),
+            (out0_x, out0_y, b_s),
+            (out0_x, out0_y, h0),
+            (out1_x, out1_y, h1),
+        ], STONE)
+
+        # Top sloped coping
+        batch.face([
+            (out0_x, out0_y, h0),
+            (sp0_x, sp0_y, h0),
+            (sp1_x, sp1_y, h1),
+            (out1_x, out1_y, h1),
+        ], STONE_LIGHT)
+
+    # Close the far end of the left wall
+    end_x, end_y = fx0 + fnx * left_len, fy0 + fny * left_len
+    end_out_x, end_out_y = end_x - fwx * left_thick, end_y - fwy * left_thick
+    end_g = sample_terrain_height(grids, anchor[0] + end_x, anchor[1] + end_y, vertical_datum) - anchor_y - 0.4
+    batch.face([
+        (end_x, end_y, end_g),
+        (end_out_x, end_out_y, end_g),
+        (end_out_x, end_out_y, f_top - 5.5),
+        (end_x, end_y, f_top - 5.5),
+    ], STONE_LIGHT)
+
+    # Numbered distance lines ("cuadros") on pared izquierda
+    for dist in (2.0, 4.0, 6.0, 8.0):
+        if dist < left_len:
+            cx, cy = fx0 + fnx * dist, fy0 + fny * dist
+            w_c = (anchor[0] + cx, anchor[1] + cy)
+            cg = sample_terrain_height(grids, w_c[0], w_c[1], vertical_datum) - anchor_y
+            batch.box(cx - fwx * 0.01, cy - fwy * 0.01, cg + 1.6,
+                      0.03, 0.12, 3.0, FRONTON_LINE)
+
+    # Furniture
     anchors = source['furnitureAnchorsWorldXZ']
     furniture = [
         (anchors[0], 'bench', 0.0),
@@ -758,21 +1012,21 @@ def make_plaza(collection, road, source, world_polygon, grids, building_footprin
         elif kind == 'planter':
             batch.box(sx, sy, ground + 0.28, 1.8, 1.5, 0.56, STONE_SHADE, STONE_LIGHT)
             batch.box(sx, sy, ground + 0.62, 1.5, 1.2, 0.18, STONE_LIGHT)
-            # Stylized foliage is merged into this single plaza mesh.
             batch.vertical_prism(sx, sy, 0.5, 5, ground + 0.72, ground + 1.35, (0.27, 0.33, 0.20, 1.0))
         else:
             batch.vertical_prism(sx, sy, 0.12, 6, ground, ground + 4.0, plaza_metal)
             batch.box(sx, sy, ground + 3.65, 0.7, 0.7, 0.6, WOOD_LIGHT, STONE_LIGHT)
     obj = batch.create_object('focal:plaza-and-access', collection)
-    obj['osm_way_ids'] = '645040295,741760074'
-    obj['placement_source'] = 'paving: OSM pedestrian polygon 645040295; anchor: 8 m north of OSM living_street centerline'
-    obj['surface_note'] = f'{paving_cells} continuous 1 m terrain-draped OSM paving cells ({partial_cells} clipped boundary cells, {clipped_cells_skipped} skipped slivers); road and collision meshes remain authoritative'
+    obj['osm_way_ids'] = '645040295,741760074,645040294'
+    obj['placement_source'] = 'paving: OSM pedestrian polygon 645040295; frontón: OSM wall 645040294'
+    obj['surface_note'] = f'{paving_cells} continuous 1 m terrain-draped OSM paving cells ({partial_cells} clipped boundary cells, {clipped_cells_skipped} skipped slivers); 100% pedestrian square'
     obj['paving_partial_cells'] = partial_cells
     obj['paving_boundary_slivers_skipped'] = clipped_cells_skipped
     obj['paving_road_edge_overlap_m'] = 0.02
     obj['furniture_note'] = 'world-minus-anchor coordinates; terrain-relative support heights; manual approximate positions, not surveyed'
     obj['photo_reference'] = 'user-provided fotos/Iglesia_plaza.jpg; author, license, date and camera pose unknown; platform is not georeferenced'
     return obj, anchor
+
 
 
 def make_dam(collection, raw):
@@ -897,7 +1151,7 @@ def build():
     scene.collection.children.link(church_collection)
     scene.collection.children.link(plaza_collection)
     scene.collection.children.link(dam_collection)
-    church_obj, church_anchor = make_church(building, church_collection)
+    church_obj, church_anchor = make_church(building, church_collection, terrain_grids, vertical_datum)
     plaza_obj, plaza_anchor = make_plaza(
         plaza_collection, plaza_road, source['sites']['plaza'], world_polygon,
         terrain_grids, building_footprints, vertical_datum,
@@ -921,8 +1175,8 @@ def build():
             'meshes': 1,
             'osmWayIds': [90614388] if site_id == 'church' else [645040295, 741760074],
             'features': {
-                'church': ['cross gable roof', 'extended tower shaft above nave ridge', 'bell tower belfry openings', 'clock face high on shaft', 'octagonal cupola and cross'],
-                'plaza': ['continuous draped paving', 'OSM-clipped perimeter', 'variable OSM road-edge profile with 0.02 m visual overlap', 'raised forecourt', 'ramp', 'railings'],
+                'church': ['cross gable roof', 'extended tower shaft above nave ridge', 'bell tower belfry openings', 'clock face high on shaft', 'octagonal cupola and cross', 'elevated retaining wall and terrace path'],
+                'plaza': ['continuous draped paving', 'OSM-clipped perimeter', 'variable OSM road-edge profile with 0.02 m visual overlap', 'raised forecourt', 'ramp', 'railings', 'fronton de pelota', '100% pedestrian square'],
                 'dam': ['curved crest', 'low-poly parapet'],
             }[site_id],
             **({'osmWayIds': [168459142], 'yawRad': round(dam_yaw, 8), 'baseM': water['dam']['baseM'], 'crestPoints': len(water['dam']['crest'])} if site_id == 'dam' else {}),

@@ -124,10 +124,10 @@
         3067.357,
         3976.874
       ],
-      "bytes": 89792,
-      "sha256": "e5a5d9273b6d0c5d23905914d9f5bbca435560468111cc607445a57c6a5f1c3f",
-      "verticalExtentM": 22.04,
-      "triangles": 1326,
+      "bytes": 114468,
+      "sha256": "32056b326dc6d458f830f386ab4bbe54c5e4242c245ed0e021c4d7a0a01086c7",
+      "verticalExtentM": 26.54,
+      "triangles": 1731,
       "meshes": 1,
       "osmWayIds": [
         90614388
@@ -137,7 +137,8 @@
         "extended tower shaft above nave ridge",
         "bell tower belfry openings",
         "clock face high on shaft",
-        "octagonal cupola and cross"
+        "octagonal cupola and cross",
+        "elevated retaining wall and terrace path"
       ],
       "reconstruction": "stylized approximation",
       "rasterTextures": 0
@@ -149,10 +150,10 @@
         3063.04,
         4012.346
       ],
-      "bytes": 119344,
-      "sha256": "05094243a93af7f565cb3f114bba02560a1ba8a4f8bdc3953b5d9bde72dc870f",
-      "verticalExtentM": 5.93,
-      "triangles": 2430,
+      "bytes": 140508,
+      "sha256": "6576980612189de4138aa251c3bf177c0720c98b57ea4c70a9bd61011b4f1df1",
+      "verticalExtentM": 12.76,
+      "triangles": 3014,
       "meshes": 1,
       "osmWayIds": [
         645040295,
@@ -164,7 +165,9 @@
         "variable OSM road-edge profile with 0.02 m visual overlap",
         "raised forecourt",
         "ramp",
-        "railings"
+        "railings",
+        "fronton de pelota",
+        "100% pedestrian square"
       ],
       "reconstruction": "stylized approximation",
       "rasterTextures": 0
@@ -176,8 +179,8 @@
         2440.325,
         1513.065
       ],
-      "bytes": 12332,
-      "sha256": "4506e6e075f4c72660904fd1647449cf07af548fb8799752e06821942c5dcf26",
+      "bytes": 12392,
+      "sha256": "bdbba7263f7863e1b63eace05e99415c0c698d5a9d3f19005dee8d9aab5498ed",
       "verticalExtentM": 5.2,
       "triangles": 174,
       "meshes": 1,
