@@ -76,6 +76,7 @@ Límites abiertos: faldón más alto y PATH discontinuo, Hospital compuesto, Fac
 - `67502e6` — evidence, auditoría, fotos y tooling reproducible.
 - `4c7d7ac` — capturas comparables y evidencia de aceptación.
 - `92054d4` — harnesses reproducibles de moto, agua y Road V3, conservando checks existentes.
+- `a7ae892` — OBJECTIVE, skills, despachos y cierre de aceptación acotada.
 
 El cierre documental y la comparación GPU se incorporan después de esta lista; consultar `git log` para sus hashes.
 

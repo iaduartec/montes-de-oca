@@ -1,0 +1,34 @@
+{
+  "status": "BLOCKED_COMPARISON",
+  "repo_head_at_report": "92054d44d6367e24ae0d7364d96502df990bcf50",
+  "repo_initial_head_observed": "349d98494c1108060e6a0cf7f87f4803701c6a07",
+  "after_dist_index_sha256": "7893b6e9cb14c8685f24f29b0f9098368719386553a5cede5b61f300084b2953",
+  "before_dist_index_sha256": "d394f40a75664939ff19ca262a22c17d264f438b10001db5b09c1f13a3fc3403",
+  "public_tree_sha256": "4126fed8e5b69e2f364e593548230812064c02c8a564749b258146c769d08866",
+  "source_file_sha256": {
+    "src/main.ts": "1851db324ffc95622e3acd975bcec73125d1a6ea52725a0a0dbadd193ea7b40a",
+    "src/environment/village.ts": "f7b252a41c856af93578ecf6a8df7ef4fa243f765e98210eda30a7a383477dbf",
+    "src/environment/village-facade-kits.ts": "3a9b63437e8ef2da0942e1da2da5e56cb3b805af11f2f44c33cc1dcc4462860e",
+    "src/environment/village-roof-geometry.ts": "52e21805b7e33aeaf76c4e4a92dafe212c6bd1b08d10a6ac82432c10f2f0316b",
+    "src/environment/village-building-overrides.ts": "f1cdd831ca247cbb648a976056e41728f63d471cb8827a7f0ab6ae13bd6df69b",
+    "src/road-draping.ts": "e8afeb9011f07caed613bab88ce50f7d5bfa0dd082dd574ef62cdb811e3c5b1e"
+  },
+  "before_restorations_sha256": {
+    "src/environment/village.ts": "99a67efc3776210b1d86aea828f0faf069af0029e410805a6fa7a39ebc516179",
+    "src/environment/village-facade-kits.ts": "2b11c34ea020d7359ab5f9918e56a3198ef315a0a0cd85c685b0203a35961ee2",
+    "src/road-draping.ts": "b654258bbf2f5f12a9ba342f262fd4a8961cba8177473404bd4708f67ef10a66"
+  },
+  "road_draping_snapshot_sha256": "b654258bbf2f5f12a9ba342f262fd4a8961cba8177473404bd4708f67ef10a66",
+  "build_logs": {
+    "before": "before-build.log",
+    "after": "../final-corrected/build.log"
+  },
+  "runner": "scripts/runtime/benchmark_gpu.mjs; output copy tightened startup readiness and brought dedicated tab forward",
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 (0x00001F02) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "chrome": "Chrome/154.0.8037.97 Windows 10 x64",
+  "windows_node": "v26.7.0",
+  "quality": "HIGH",
+  "sample_duration_seconds": 12,
+  "camera_mode": "free camera; actors and NPCs excluded",
+  "public_and_node_modules": "shared read-only symlinks in isolated baseline root"
+}
