@@ -84,6 +84,8 @@ export interface LoadVillageOptions {
   readonly pilotAssetUrl?: string;
   /** Edificios sustituidos por hitos externos que se cargaron correctamente. */
   readonly omitBuildingIds?: ReadonlySet<number>;
+  /** Muros mapeados sustituidos por hitos externos que se cargaron correctamente. */
+  readonly omitWallIds?: ReadonlySet<number>;
   /** Manifiesto y rejilla independiente del MDSnE IGN/CNIG. */
   readonly buildingHeightGridUrl?: string;
   /** Punto que NO puede quedar tapado por una casa (la aparición del 4x4). */
@@ -1875,7 +1877,10 @@ export async function loadVillage(
     !Array.isArray(wall.points) || wall.points.length < 2 || wall.points.some(point => point.length !== 2 || !point.every(Number.isFinite)))) {
     throw new Error('pueblo: invalid mapped wall geometry');
   }
-  const courtyardWalls = buildMappedWalls(plinths, wallData.walls, heightAt);
+  const wallsToRender = options.omitWallIds
+    ? wallData.walls.filter(wall => !options.omitWallIds!.has(wall.id))
+    : wallData.walls;
+  const courtyardWalls = buildMappedWalls(plinths, wallsToRender, heightAt);
 
   const materials: PBRMaterial[] = [];
   const surfaceCache: FacadeSurfaceCache = new Map();

@@ -743,7 +743,10 @@ async function bootstrap(): Promise<void> {
       url: publicUrl('/village/buildings.json'),
       buildingHeightGridUrl: publicUrl('/village/building_height_grid.json'),
       pilotAssetUrl: publicUrl('/village/pilot-houses.glb'),
-      ...(landmarks ? { omitBuildingIds: landmarks.coveredBuildingIds } : {}),
+      ...(landmarks ? {
+        omitBuildingIds: landmarks.coveredBuildingIds,
+        omitWallIds: landmarks.coveredWallIds,
+      } : {}),
       keepClearAt: { x: FIRST_ROUTE.start.x, z: FIRST_ROUTE.start.z },
       keepClearRadiusM: 12,
       roadClearance,
