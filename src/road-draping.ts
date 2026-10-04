@@ -510,7 +510,22 @@ function buildRoad(
 
   const gaps = stations.length - 1;
   const quad = (a0: number, a1: number, a2: number, a3: number): void => {
-    buffers.indices.push(a0, a1, a2, a0, a2, a3);
+    const p = buffers.positions;
+    const ax = p[a0 * 3]!, az = p[a0 * 3 + 2]!;
+    const bx = p[a1 * 3]!, bz = p[a1 * 3 + 2]!;
+    const cx = p[a2 * 3]!, cz = p[a2 * 3 + 2]!;
+    const dx = p[a3 * 3]!, dz = p[a3 * 3 + 2]!;
+    const area1_1 = Math.abs((bx - ax) * (cz - az) - (bz - az) * (cx - ax));
+    const area1_2 = Math.abs((cx - ax) * (dz - az) - (cz - az) * (dx - ax));
+    const minArea1 = Math.min(area1_1, area1_2);
+    const area2_1 = Math.abs((bx - ax) * (dz - az) - (bz - az) * (dx - ax));
+    const area2_2 = Math.abs((cx - bx) * (dz - bz) - (cz - bz) * (dx - bx));
+    const minArea2 = Math.min(area2_1, area2_2);
+    if (minArea2 > minArea1 + 1e-5) {
+      buffers.indices.push(a0, a1, a3, a1, a2, a3);
+    } else {
+      buffers.indices.push(a0, a1, a2, a0, a2, a3);
+    }
   };
   let polishedGaps = 0;
   // Tonos de sección: borde terroso, hombro, rodada, franja central y simetría.
