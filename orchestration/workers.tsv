@@ -21,3 +21,14 @@ v5-arnes	opencode-go/deepseek-v4.1-flash	orchestration/phase6/v5-arnes.md	milest
 d6-atmosfera	opencode-go/deepseek-v4.1-flash	orchestration/phase6/d6-atmosfera.md	milestone1
 r1-revision-critica	openai/gpt-6-sol (codex exec)	orchestration/phase6/r1-revision-critica.md	milestone1
 d7-test-mision	opencode-go/deepseek-v4.1-flash	orchestration/phase6/d7-test-mision.md	milestone1
+village_audit	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v1-village-audit.md	VILLAGE FIDELITY 2026-10-04
+roads_analysis	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v5-road-analysis.md	VILLAGE FIDELITY 2026-10-04
+capture_validation	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v9-capture-validation.md	VILLAGE FIDELITY 2026-10-04
+roads_analysis-implementation	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v7-road-fix.md	VILLAGE FIDELITY 2026-10-04
+village_audit-implementation	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v2-village-overrides.md	VILLAGE FIDELITY 2026-10-04
+capture_validation-review	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v8-cross-review.md	VILLAGE FIDELITY 2026-10-04
+final_visual_review	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v10-final-visual-review.md	VILLAGE FIDELITY 2026-10-04
+road_pair_review	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v11-road-pair-review.md	VILLAGE FIDELITY 2026-10-04
+village_fix	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v12-village-fix.md	VILLAGE FIDELITY 2026-10-04
+road_pair_review-visual	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v13-road-visual-pair.md	VILLAGE FIDELITY 2026-10-04
+village_fix-gpu	Codex / GPT-6 Luna / gpt-6-luna	orchestration/phase7/v14-gpu-validation.md	VILLAGE FIDELITY 2026-10-04

@@ -1,0 +1,31 @@
+npm notice run montes-de-oca-offroad@0.1.0 test:runtime
+npm notice run node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface && node scripts/terrain/test_road_cutouts.mjs
+PASS graphics quality profiles: defaults, HIGH compatibility, monotonic budgets
+PASS surfaces: real widths, asymmetric trims, boundaries, defaults and shared immutable tuning
+PASS audio lifecycle: gesture, surface/speed, ambient stereo, impact cooldown/envelope, bounded reuse, mute and disposal (mocked WebAudio; not auditory validation)
+BJS - [20:32:08]: Babylon.js v8.56.2 - Null engine
+PASS vehicle effects: bounded native pool, ROAD/MUD gating, speed/grip/slip response, persistent reuse and disposal (NullEngine; particle rendering not exercised)
+PASS vehicle surface multipliers and four-point damped suspension
+BJS - [20:32:09]: Babylon.js v8.56.2 - Null engine
+PASS NullEngine vehicle suspension: flat=0.0001 m plane, bump=0.0000 m, ramp transition max=0.0001 m, GLB swap=0.0000 m
+BJS - [20:32:09]: Babylon.js v8.56.2 - Null engine
+road palette and rendering invariants: OK (3 class meshes, unchanged per-vertex layout)
+PASS audio environment: indexed real layers, local bounded samples, distance envelopes, relative water pan, loader failure isolation and checked-in data
+PASS suspension impacts: transient, smooth motion, cooldown, teleport, walking and invalid sample
+npm notice run montes-de-oca-offroad@0.1.0 test:water-contact
+npm notice run node scripts/water/test_water_contact.mjs
+BJS - [20:32:10]: Babylon.js v8.56.2 - Null engine
+BJS - [20:32:10]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 2 triángulos · 0 KiB
+BJS - [20:32:10]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 160 triángulos · 0 KiB
+BJS - [20:32:10]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 160 triángulos · 0 KiB
+PASS water contact: road/bridge dry, river wet, rendered height and stable edge
+npm notice run montes-de-oca-offroad@0.1.0 test:road-surface
+npm notice run node scripts/roads/test_road_surface.mjs && node scripts/roads/test_road_geometry.mjs
+PASS road surface: real triangle contact, skirts/paint excluded, bridge metadata
+BJS - [20:32:11]: Babylon.js v8.56.2 - Null engine
+PASS rendered profiles, terminal closures, four intersection classes, bridge connector/order, footprint and wheel contact
+BJS - [20:32:14]: Babylon.js v8.56.2 - Null engine
+PASS terrain road cutouts: area, interpolated attributes/UV, raw CPU DEM, resident update and unload/rebuild lifecycle

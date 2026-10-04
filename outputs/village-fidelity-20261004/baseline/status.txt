@@ -1,0 +1,30 @@
+ M .agents/skills/babylon-vehicles/SKILL.md
+ M .agents/skills/montes-oca-game-visuals/SKILL.md
+ M .agents/skills/montes-oca-open-world-runtime/SKILL.md
+ M AGENTS.md
+ M OBJECTIVE.md
+ M orchestration/MODEL_POOL.md
+ M package.json
+ M scripts/milestone/drive_milestone.mjs
+ M scripts/roads/diagnose_surface.mjs
+ M scripts/runtime/check_motorcycle_gameplay.mjs
+ M scripts/runtime/check_water_contacts.mjs
+ M scripts/runtime/check_water_gameplay.mjs
+ M scripts/terrain/test_terrain_orthophoto.mjs
+ M scripts/vehicle/assert_heightfield_datum.mjs
+ M src/main.ts
+ M src/road-draping.ts
+ M src/terrain.ts
+ M src/world/road-surface.ts
+?? .workbuddy-ai/
+?? docs/audit/REVISION-HEAD-20260930.md
+?? orchestration/ORQUESTADOR-PRINCIPAL.md
+?? outputs/road-v3-20261001/
+?? outputs/village-fidelity-20261004/
+?? scripts/roads/capture_worst.mjs
+?? scripts/roads/test_road_geometry.mjs
+?? scripts/runtime/benchmark_gpu.mjs
+?? scripts/runtime/check_road_v3_gameplay.mjs
+?? scripts/terrain/test_road_cutouts.mjs
+?? src/road-profile.ts
+?? src/terrain-road-cutouts.ts

@@ -1,0 +1,1087 @@
+npm notice run montes-de-oca-offroad@0.1.0 test
+npm notice run npm run typecheck && node scripts/player/test_controls.mjs && node scripts/player/test_movement.mjs && node scripts/roads/test_road_visuals.mjs && node scripts/roads/test_road_material.mjs && node scripts/roads/test_track_art.mjs && node scripts/vehicle/assert_heightfield_datum.mjs && node scripts/terrain/validate_terrain.mjs && npm run test:terrain-orthophoto && python3 scripts/roads/validate_roads.py && node scripts/gameplay/build_first_route.mjs --check && node scripts/gameplay/validate_mission.mjs && node scripts/environment/verify_atmosphere.mjs && node scripts/environment/build_village.mjs --check && node scripts/environment/test_building_materials.mjs && node scripts/environment/test_village_facade_kits.mjs && node scripts/environment/build_mapped_walls.mjs --check && node scripts/environment/validate_village_npcs.mjs && node scripts/environment/validate_building_height_grid.mjs && node scripts/environment/test_roof_shape.mjs && node scripts/environment/test_roof_clearance.mjs && node scripts/environment/test_building_tint.mjs && node scripts/environment/test_vegetation_color.mjs && node scripts/environment/test_vegetation_canopy_clearance.mjs && node scripts/environment/build_vegetation.mjs --check && node scripts/environment/validate_village_pilot.mjs && npm run test:focal-sites && npm run test:real-structures && npm run test:village-fidelity && npm run test:minimap && npm run test:vehicle-models && npm run test:vehicle-brake-lights && npm run test:water && npm run test:vehicle-presets && npm run test:vehicle-catalog && npm run test:vehicle-switch && npm run test:vehicle-selector && npm run test:motorcycle && npm run test:runtime
+npm notice run montes-de-oca-offroad@0.1.0 typecheck
+npm notice run tsc --noEmit
+[OK  ] W produce avance positivo
+[OK  ] D produce giro a la derecha sin cambiar avance
+[OK  ] Shift activa correr
+[OK  ] soltar W/D detiene avance y giro
+[OK  ] las flechas verticales avanzan
+[OK  ] A gira a la izquierda y S retrocede
+[OK  ] perder el foco suelta todas las teclas
+[OK  ] el joystick entrega avance y giro
+
+8/8 checks OK
+TODO OK
+=== 1. avance, marcha atrás y giro ===
+[OK  ] girar mientras se avanza no supera la velocidad de caminata — 3.400000 vs 3.400000 m/s
+
+=== 1b. W avanza según el rumbo inicial del personaje ===
+[OK  ] W avanza hacia donde mira el personaje en la aparición — producto=1.000000 rumbo=-3.037375
+[OK  ] D gira en el sitio sin desplazar al personaje — yaw=0.450 posición=(1000.000, 1000.000)
+
+=== 2. convergencia de velocidad (no la salta) ===
+  rampa caminando: 0.00s:0.200  0.33s:3.400  0.67s:3.400  1.00s:3.400  1.33s:3.400  1.67s:3.400  2.00s:3.400
+  salto máximo por frame: 0.2000 m/s (≤ accel·dt)
+[OK  ] velocidad converge a WALK_SPEED_MPS — 3.400000 vs 3.4
+[OK  ] no salta la velocidad en un frame — salto max 0.200000
+  corriendo 3 s: v=6.8000 m/s
+[OK  ] velocidad converge a RUN_SPEED_MPS — 6.800000 vs 6.8
+
+=== 3. Y sigue al terreno inclinado ===
+  tras 4 s: (1001.319, 994.309)  y=389.7608  esperado=389.7608
+[OK  ] y == 0.25x+0.10z+40 en todo el recorrido (1e-9) — peor Δ=0.00e+0
+
+=== 4. nunca Y = 0 dentro de la ventana ===
+  fin: (20.000, 0.000)  minY=45.000  vioY0=false
+[OK  ] x/z recortados a [0,6000] — (20.00, 0.00)
+[OK  ] nunca devuelve y = 0 dentro de la ventana — minY=45.000
+
+=== 5. el giro es gradual y conserva posición al girar en el sitio ===
+  D gira a la derecha: 0.00s:4.3°  0.25s:68.8°  fin:85.9°
+  salto máximo por frame: 4.297° (≤ 4.5 rad/s · dt)
+[OK  ] D gira a la derecha sin movimiento lateral — yaw=1.500000 · posición=(1000, 1000)
+[OK  ] el giro no salta de golpe — salto max 4.2972°
+  sin input, yaw = 1.234000 (inicial 1.234000)
+[OK  ] sin input conserva la guiñada — 1.234000
+
+=== 6. dt grande (1 s) no teletransporta ===
+  un paso de dt=1 s movió 0.1200 m (≤ RUN·0.1 = 0.68 m)
+[OK  ] dt=1 s se satura a 0,1 s — 0.120000 m
+[OK  ] dt=1 s no supera la velocidad de carrera — 1.200000
+[OK  ] dt=0 y dt<0 no mueven al personaje — (1000, 1000) v=0
+
+=== 7. exitPosition: al costado y sobre el terreno ===
+  yaw=0 ⇒ derecho=+X. salida=(2002.000, 3000.000, y=840.5000)  dist=2.0000 m  a lo largo=2.0000 m  perpendicular=0.0000 m
+[OK  ] exitPosition está a un costado (no delante/atrás) — along=2
+[OK  ] exitPosition usa el ancho por defecto (2,0 m) — 2.000000 m
+[OK  ] exitPosition devuelve y del terreno — y=840.500000 vs 840.500000
+  yaw=90° ⇒ derecho=−Z. salida=(2000.000, 2998.000, y=839.8000)  Δ=(0.000, -2.000)
+[OK  ] exitPosition rota con la guiñada (derecha = −Z a 90°) — Δ=(0.0000, -2.0000)
+  sideM=3.5 ⇒ x=2003.500 (2000 + 3.5)
+[OK  ] exitPosition respeta sideM — x=2003.5
+  borde oeste: salida x=0.000 (recortada a ≥0), y=340.0000
+[OK  ] exitPosition recorta a la ventana (no devuelve y=0 de afuera) — x=0 y=340
+
+21/21 checks OK
+TODO OK
+road visuals: 18/18 checks OK
+BJS - [20:29:41]: Babylon.js v8.56.2 - Null engine
+road surface materials: 13/13 checks OK
+PASS track art bounds: TRACK 0.541..1.094, PATH 0.792..0.998, damp marks 2.64%
+verticalDatum = 870 m
+pueblo_villafranca     abs=944.5484 mundo=74.5484 (abs−mundo=870.0000 = datum) pass=true
+cumbre_max             abs=1194.0000 mundo=324.0000 (abs−mundo=870.0000 = datum) pass=true
+cumbre_secundaria      abs=1126.0000 mundo=256.0000 (abs−mundo=870.0000 = datum) pass=true
+punto_bajo_min         abs=870.0000 mundo=0.0000 (abs−mundo=870.0000 = datum) pass=true
+punto_bajo_secundario  abs=927.0000 mundo=57.0000 (abs−mundo=870.0000 = datum) pass=true
+
+=> OK: los dos heightAt difieren exactamente en verticalDatum.
+=== 1. esquema declarado vs config ===
+[OK  ] config: sampling 5 m — 5
+[OK  ] config: verticalDatum 870 — 870
+[OK  ] config: worldScale 1 — 1
+[OK  ] budget: sampling coincide con config — budget 5 vs config 5
+[OK  ] budget: tile_size 1000 m — 1000
+[OK  ] budget: 6x6 = 36 tiles — 6x6 = 36
+[OK  ] budget: 201 nodos por tile — 201
+[OK  ] config: ventana 6000 x 6000 m — E 6000 m x N 6000 m
+
+=== 2. los tiles REALES vs el presupuesto declarado ===
+[OK  ] tiles: existen exactamente 36 — 36
+[OK  ] tiles: todos 201x201 nodos
+[OK  ] tiles: todos dx = dz = 5 m
+[OK  ] tiles: heights completo (columns*rows)
+[OK  ] tiles: todos en la reticula 6x6 de 1000 m
+[OK  ] tiles: ids unicos y 36 distintos
+[OK  ] tiles: config lista exactamente los 36 que hay
+[OK  ] totales: vertices — real 1454436 vs declarado 1454436
+[OK  ] totales: triangulos — real 2880000 vs declarado 2880000
+[OK  ] totales: json_bytes — real 6935965 vs declarado 6935965
+[OK  ] totales: json_mib — real 6.61 vs declarado 6.61
+[OK  ] totales: malla_runtime_mib derivada del layout de vertices — derivada 83.06 MiB (48 B/vert + u16) vs declarada 83.06
+
+=== 3. rango del DEM y spans por tile ===
+[OK  ] DEM: cota minima 870 m — real 870 vs declarado 870
+[OK  ] DEM: cota maxima 1194 m — real 1194 vs declarado 1194
+[OK  ] tiles: heights_span declarado coincide con el real (36) — 0 discrepancias
+
+=== 4. costuras entre tiles vecinos (validando diff_max = 0) ===
+[OK  ] costuras: se compararon 60 pares de bordes — 60
+[OK  ] costuras: borde identico en los 60 pares (diff 0 m) — 0 m
+
+=== 5. invariante de interpolacion (diagonal SO->NE) ===
+[OK  ] interpolacion: heightAt == plano triangular SO->NE (1e-9) — error max 2.274e-13 m en 5000 muestras
+[OK  ] interpolacion: distinguible de bilineal (si no, el check es vacio) — 1382/5000 muestras difieren mas de 0.01 m (max 0.2923 m)
+
+=== 6. presupuesto en vista ===
+[OK  ] vista: hay entrada para el radio sugerido — radio 900 m
+[OK  ] vista: peor caso = tiles_frustum_max * 80000 tris — 4 tiles x 80000 = 320000
+[OK  ] vista: peor caso <= 320000 tris (4 tiles, medido en la app) — 320000
+[OK  ] vista: hay capturas medidas en la app — 4
+[OK  ] vista: ninguna captura supera 320000 tris en vista — 0 por encima
+[OK  ] vista: las capturas reportan 36 tiles
+
+33/33 checks OK
+TODO OK
+npm notice run montes-de-oca-offroad@0.1.0 test:terrain-orthophoto
+npm notice run python3 scripts/terrain/test_pnoa_orthophoto_fetch.py && python3 scripts/terrain/test_terrain_orthophoto_builder.py && python3 scripts/terrain/test_validate_terrain_orthophoto.py && node scripts/terrain/test_terrain_orthophoto.mjs && python3 scripts/terrain/build_terrain_orthophoto.py --check && python3 scripts/terrain/validate_terrain_orthophoto.py
+[ok] test_getmap_quadrants_match_config_extent
+[ok] test_rejects_nonimage_content_type
+[ok] test_rejects_bad_image_or_wrong_dimensions
+[ok] test_requires_date_resolution_for_each_tile_center
+[ok] test_failed_refetch_preserves_previous_snapshot
+[ok] test_publish_failure_rolls_back_to_previous_snapshot
+6/6 tests passed
+[ok] test_nw_ne_sw_se_quadrants_are_placed_north_up
+[ok] test_atlas_dimensions_and_pixel_scale
+[ok] test_manifest_hash_source_and_budgets
+[ok] test_check_rederives_identical_webp
+4/4 tests passed
+[ok] test_valid_fixture_passes
+[ok] test_missing_manifest_fields_fail
+[ok] test_exact_bounds_and_dimensions_are_enforced
+[ok] test_asset_mime_bytes_and_sha256_are_enforced
+[ok] test_flipped_quadrants_are_detected
+[ok] test_mismatched_source_and_output_hashes_fail
+[ok] test_official_provenance_and_attribution_are_required
+[ok] test_budget_overruns_are_rejected
+[ok] test_cli_root_flag_and_exit_codes
+[ok] test_real_public_asset_passes_when_present
+10/10 tests passed
+[OK  ] test_legacy_config_without_orthophoto_still_parses
+[OK  ] test_manifest_rejects_mismatched_crs_or_bounds
+[OK  ] test_tile_uv_maps_all_four_world_edges
+BJS - [20:31:09]: Babylon.js v8.56.2 - Null engine
+BJS - [20:31:09]: Babylon.js v8.56.2 - Null engine
+[OK  ] test_bad_texture_keeps_vertex_colour_fallback
+BJS - [20:31:09]: Babylon.js v8.56.2 - Null engine
+[OK  ] test_gpu_limit_skips_texture_creation
+BJS - [20:31:09]: Babylon.js v8.56.2 - Null engine
+[OK  ] test_gpu_tile_unload_keeps_cpu_sampler_and_rebuilds_nearby
+BJS - [20:31:09]: Babylon.js v8.56.2 - Null engine
+[OK  ] test_first_cull_uses_camera_moved_before_first_render
+[OK  ] test_frame_task_queue_priority_budget_and_cancel
+[OK  ] test_frame_task_queue_uses_remaining_budget_for_cooperative_steps
+9/9 checks passed
+[ok] --check identical: 7590072 bytes sha256=98501ed7a9766b3f72c5c8c039e61cdb980556c186d1231e59ddc40515227292 6144x6144 north-up EPSG:25830 E[471500,477500] N[4689000,4695000]
+[ok] orthophoto.webp 6144x6144 image/webp 7590072 bytes sha256=98501ed7a9766b3f72c5c8c039e61cdb980556c186d1231e59ddc40515227292
+[ok] coverage EPSG:25830 E[471500,477500] N[4689000,4695000] pixelSizeM=0.9765625
+[ok] source OI.OrthoimageCoverage dates=['2023-09'] resolutions=['0.25'] license='CC BY 4.0 scne.es'
+[ok] budgets file=7590072 <= 36700160 | decoded+mips=201326580 <= 209715200
+[ok] attribution /tmp/montes-village-verify-20261004/public/terrain/ATTRIBUTION.md
+[OK  ] roads: esquema basico completo — 0 incompletos
+[OK  ] roads: ids unicos — 436 segmentos
+[OK  ] roads: toda coordenada dentro de la ventana 6000x6000 — 0 fuera
+[OK  ] roads: length == largo de la polilinea — 0 descuadres
+[OK  ] roads: class en el enum
+[OK  ] roads: width > 0
+[OK  ] roads: speedFactor en (0,1]
+[OK  ] roads: tags crudos preservados
+[OK  ] roads: areas peatonales no se dibujan como lineas — 0 areas incluidas como vias
+[OK  ] stats: areas peatonales excluidas quedan trazadas — {'ways': 2, 'km': 0.241, 'km_by_class': {'sin_clase': 0.241}}
+[OK  ] roads: TRACK conserva tracktype
+[OK  ] roads: polilineas no atraviesan huellas de edificios — 0 tramos; muestra=[]
+[OK  ] clearance: esquema {stepM,renderStepM,skirtM,bandLeft,bandRight} — 0 con claves raras
+[OK  ] clearance: step/renderStep/skirt validos y renderStepM<=2.5m — 0 errores; pasos=[(1.0, 1.0, 0.0), (1.0, 1.0, 0.6)]; muestra=[]
+[OK  ] clearance: longitudes bandLeft/bandRight == estaciones del perfil — 0 descuadres; muestra=[]
+[OK  ] clearance: 0<=banda<=width/2+skirt y calzada+faldon coherente — 0 fuera de cota; muestra=[]
+[OK  ] clearance: banda exterior (calzada+faldon) no invade huellas — 0 pares; muestra=[]
+[OK  ] nav: nodes/edges/edgeMeta paralelos — 4014 aristas / 4014 meta
+[OK  ] nav: indices de arista validos
+[OK  ] nav: edgeMeta.length == hypot(nodos) — 0 descuadres
+[OK  ] nav: nodos dentro de la ventana — 0 fuera
+[OK  ] grafo: todo vertice de roads existe como nodo — 0 vias con vertices huerfanos
+[OK  ] grafo: todo tramo de roads existe como arista — 0 vias con tramos sin arista
+[OK  ] stats: km por clase == suma de roads.json — deltas={'PATH': 0.0, 'TRACK': 0.0, 'ROAD': 0.0} km_reales={'PATH': 26.674, 'TRACK': 91.515, 'ROAD': 20.592}
+[OK  ] stats: km por tracktype == suma de roads.json — deltas={'grade2': 0.0, 'grade4': 0.0, 'sin_tracktype': 0.0, 'grade1': 0.0, 'grade3': 0.0, 'grade5': 0.0} km_reales={'grade2': 19.603, 'grade4': 26.598, 'sin_tracktype': 18.594, 'grade1': 1.259, 'grade3': 7.851, 'grade5': 17.61}
+[OK  ] stats: conteo de ways — 469 bajados
+[OK  ] conectividad: distancia al arista mas cercana — 8.51 m
+[OK  ] conectividad: km alcanzados (todas_las_clases) — deltas={'PATH': 0.0, 'TRACK': 0.0, 'ROAD': 0.0} alcanzados={'PATH': 26.674, 'TRACK': 89.553, 'ROAD': 20.56}
+[OK  ] conectividad: km alcanzados (solo_rodables_ROAD_TRACK) — deltas={'TRACK': 0.0, 'ROAD': 0.0} alcanzados={'TRACK': 87.324, 'ROAD': 20.56}
+[OK  ] cobertura: 0 endpoints interiores no originales — 0
+[OK  ] cobertura: ningun vertice fuera de la ventana
+[OK  ] cobertura: auditoria de buffer OK
+[OK  ] cobertura: geometria de TRACK en el cuadrante noreste — 22.295 km
+[OK  ] cobertura: las 9 celdas del cuadrante NE tienen TRACK — 9/9
+[OK  ] conectividad: >= 95% de TRACK alcanzable desde Villafranca — 97.9%
+[OK  ] roads: 436 ejes publicados — 436 segmentos
+[OK  ] stats: segments_kept == ejes publicados — kept=436
+[OK  ] nav: sin cambios (nodos/aristas de stats) — nodos=3881/3881 aristas=4014/4014
+[OK  ] stats: footprint_clearance trae before/after/hidden_runs — claves=['after', 'before', 'clamped_roads', 'clamped_roads_by_class', 'clearance_margin_m', 'degraded_sample']
+[OK  ] clearance: after == 0 pares/edificios y banda dibujada sin solape — after=0/0 banda=0
+[OK  ] clearance: vias recortadas == perfiles publicados — clamped=62 perfiles=62
+[OK  ] clearance: ninguna via entera con banda cero — stats=[] recalculadas=[]
+[OK  ] clearance: hidden_runs cuantificados en stats — 2 runs en 2 vias; refinado=4; recalculados=2 intervalos cero; muestra=[{'road': '266152557', 'class': 'ROAD', 'side': 'right', 't0_m': 98.0, 't1_m': 99.0, 'length_m': 1.0, 'stations': 2, 'holgura_stations': 0, 'refinado_stations': 2, 'reason': 'refinado'}, {'road': '310174515', 'class': 'ROAD', 'side': 'right', 't0_m': 27.0, 't1_m': 28.0, 'length_m': 1.0, 'stations': 2, 'holgura_stations': 0, 'refinado_stations': 2, 'reason': 'refinado'}]
+
+43/43 checks OK
+TODO OK
+=== candidatas (top 6) ===
+  score  556.5 | 2.36 km | ROAD 661 TRACK 1700 PATH 0 | asc 184 m desc 20 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1295 m | objetivo (4178, 2060)
+  score  556.4 | 2.31 km | ROAD 661 TRACK 1647 PATH 0 | asc 184 m desc 19 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1253 m | objetivo (4158, 2110)
+  score  552.6 | 2.27 km | ROAD 661 TRACK 1609 PATH 0 | asc 183 m desc 19 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1222 m | objetivo (4139, 2142)
+  score  550.8 | 2.26 km | ROAD 661 TRACK 1597 PATH 0 | asc 182 m desc 18 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1212 m | objetivo (4134, 2154)
+  score  545.2 | 2.21 km | ROAD 661 TRACK 1553 PATH 0 | asc 180 m desc 18 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1185 m | objetivo (4125, 2197)
+  score  538.1 | 2.18 km | ROAD 661 TRACK 1519 PATH 0 | asc 178 m desc 18 m | pend p95 18.0° max 21.8° | >20° 2 | a carretera 1158 m | objetivo (4110, 2226)
+
+=== ruta elegida ===
+  Repetidor sin señal · 2361 m · asc 184 m · pend máx 21.8°
+  inicio (3087.53, 3935.05) yaw -3.037375
+  entrada a pista (3269.04, 3371.58) a 661 m
+  objetivo (4178.26, 2060.45) yaw -0.526965
+  waypoints 15
+  secuencia de vías: ROAD -> TRACK
+        0 m  start    ROAD  (3088, 3935)
+      176 m  road     ROAD  (3068, 3760)
+      436 m  road     ROAD  (3102, 3508)
+      568 m  road     ROAD  (3211, 3441)
+      661 m  junction ROAD  (3269, 3372)
+      947 m  track    TRACK (3441, 3143)
+     1172 m  track    TRACK (3520, 2933)
+     1257 m  track    TRACK (3528, 2850)
+     1379 m  track    TRACK (3602, 2754)
+     1523 m  track    TRACK (3618, 2611)
+     1634 m  track    TRACK (3661, 2509)
+     1856 m  track    TRACK (3822, 2358)
+     2082 m  track    TRACK (4033, 2287)
+     2161 m  track    TRACK (4097, 2241)
+     2361 m  target   TRACK (4178, 2060)
+  cota de mundo: inicio 75.0 m · objetivo 239.0 m · delta 164.0 m
+  OK  polilínea: 238 puntos, hueco máx 10.0 m, extremos correctos
+  OK  el archivo coincide con la derivación y el trazado es conducente
+=== ruta real: Repetidor sin señal ===
+inicio/regreso (3087.53, 3935.05) · objetivo (4178.26, 2060.45)
+defaults leídos: reachRadiusM=25 m · repairRadiusM=6 m · dt=0.01667 s
+
+=== caso 0: precondiciones ===
+[OK  ] 0. nombre de la misión — "REPETIDOR SIN SEÑAL"
+[OK  ] 0. arranca en NOT_STARTED — state=NOT_STARTED
+[OK  ] 0. arranca con progreso 0 — repairProgress=0
+[OK  ] 0. arranca con elapsedS 0 — elapsedS=0
+
+=== caso 1: NOT_STARTED → ACTIVE sólo al conducir ===
+[OK  ] 1. a pie con E sigue NOT_STARTED — state=NOT_STARTED esperado=NOT_STARTED
+[OK  ] 1. a pie no arranca el reloj — elapsedS=0 esperado=0
+[OK  ] 1. al subir al 4x4 pasa a ACTIVE — state=ACTIVE esperado=ACTIVE
+[OK  ] 1. al arrancar corre el reloj — elapsedS=0.017 esperado>0
+
+=== caso 2: ACTIVE → TARGET_REACHED a <= 25 m, y no antes ===
+[OK  ] 2. a 26 m (>25) sigue ACTIVE — state=ACTIVE esperado=ACTIVE d=26.00m
+[OK  ] 2. la distancia medida es ~26 m — d=26.000000m esperado=26
+[OK  ] 2. a 24 m (<=25) pasa a TARGET_REACHED — state=TARGET_REACHED esperado=TARGET_REACHED d=24.00m
+
+=== caso 3: reparar desde el coche NO avanza el progreso ===
+[OK  ] 3. precondición: está en TARGET_REACHED — state=TARGET_REACHED esperado=TARGET_REACHED
+[OK  ] 3. tras 10 s de E desde el coche sigue TARGET_REACHED — state=TARGET_REACHED esperado=TARGET_REACHED
+[OK  ] 3. el progreso desde el coche queda en 0 — repairProgress=0 esperado=0
+[OK  ] 3. el HUD pide bajar del 4x4 — hint="Bajá del 4x4 (F) y acercate"
+
+=== caso 4: a pie a 20 m (dentro de reach, fuera de repair) NO repara ===
+[OK  ] 4. a 20 m con E 10 s sigue TARGET_REACHED — state=TARGET_REACHED esperado=TARGET_REACHED d=20.00m
+[OK  ] 4. el progreso fuera del radio de reparación queda en 0 — repairProgress=0 esperado=0
+[OK  ] 4. el aviso de E aparece sólo dentro del radio de reparación — hint="Acercate al repetidor"
+[OK  ] 4b. a 7 m (>6) con E 5 s no repara — state=TARGET_REACHED repairProgress=0
+[OK  ] 4c. a 3 m (<6) sí repara (default repairRadiusM=6) — state=REPAIRED esperado=REPAIRED
+
+=== caso 5: a pie a 3 m + E durante repairSeconds → REPAIRED ===
+[OK  ] 5. mantener E a pie 2 s repara — state=REPAIRED tras 121 frames (2.02 s)
+[OK  ] 5. tarda ~2 s (120 frames de 1/60) — steps=121 esperado≈120
+
+=== caso 6: soltar E a mitad resetea el progreso (no se cocina) ===
+[OK  ] 6. a 1 s el progreso está a medias (test no vacío) — repairProgress=0.500 esperado≈0.5
+[OK  ] 6. soltar E resetea el progreso a 0 — repairProgress=0 esperado=0
+[OK  ] 6. soltar E no repara — state=TARGET_REACHED esperado=TARGET_REACHED
+
+=== caso 7: al reparar repairProgress = 1 (baliza verde) ===
+[OK  ] 7. repairProgress === 1 al reparar — repairProgress=1 esperado=1
+[OK  ] 7. repaired === true al reparar — repaired=true
+[OK  ] 7. sigue en 1 en los frames siguientes (a pie) — repairProgress=1 esperado=1
+
+=== caso 8: REPAIRED → RETURNING sólo al conducir ===
+[OK  ] 8. reparado y a pie sigue REPAIRED — state=REPAIRED esperado=REPAIRED
+[OK  ] 8. el aviso pide volver — hint="Volvé a Villafranca"
+[OK  ] 8. al conducir pasa a RETURNING — state=RETURNING esperado=RETURNING
+
+=== caso 9: RETURNING → COMPLETED a <= 25 m del regreso, no antes ===
+[OK  ] 9. a 26 m (>25) del regreso sigue RETURNING — state=RETURNING esperado=RETURNING d=26.00m
+[OK  ] 9. la distancia medida al regreso es ~26 m — d=26.000000m esperado=26
+[OK  ] 9. a 24 m (<=25) completa — state=COMPLETED esperado=COMPLETED d=24.00m
+[OK  ] 9. completed === true al completar — completed=true
+
+=== caso 10: reset() deja NOT_STARTED, elapsedS 0 y progreso 0 ===
+[OK  ] 10. reset → NOT_STARTED — state=NOT_STARTED esperado=NOT_STARTED
+[OK  ] 10. reset → elapsedS 0 — elapsedS=0 esperado=0
+[OK  ] 10. reset → repairProgress 0 — repairProgress=0 esperado=0
+[OK  ] 10. reset → repaired/completed false — repaired=false completed=false
+[OK  ] 10. tras reset se puede volver a arrancar — state=ACTIVE esperado=ACTIVE
+
+=== caso 11: COMPLETED es terminal ===
+[OK  ] 11. precondición: está en COMPLETED — state=COMPLETED esperado=COMPLETED
+[OK  ] 11. con E a pie no vuelve a TARGET_REACHED — state=COMPLETED esperado=COMPLETED
+[OK  ] 11. al manejar no vuelve a RETURNING — state=COMPLETED esperado=COMPLETED
+[OK  ] 11. el reloj queda congelado al completar — elapsedS=2.066666666666664 congelado=2.066666666666664
+
+44/44 checks OK
+TODO OK
+=== 0. la API exportada existe ===
+[OK  ] createAtmosphere es función
+[OK  ] export SUN_TO_SCENE — [object Object]
+[OK  ] export SUN_DISTANCE_M — 250
+[OK  ] export SUN_ANCHOR_Y — 162
+[OK  ] export SHADOW_RADIUS_M — 100
+[OK  ] export SHADOW_MAP_SIZE — 1024
+[OK  ] export FOG_DENSITY — 0.00025
+[OK  ] export FOG_DENSITY_DENSE — 0.0005
+
+=== 1. follow() mantiene al jugador sobre el eje y dentro del radio ===
+[OK  ] demo: rango Y de mundo derivado del DEM y el datum — Y ∈ [0, 324]
+[OK  ] sol a 250 m del ancla en las 8 muestras — 8/8
+[OK  ] ancla sobre el eje de la luz en las 8 muestras — 8/8
+[OK  ] el sol queda por encima del ancla en todas las muestras — 8/8
+[OK  ] el offset (sol − ancla) es constante: follow() no acumula deriva — offset base (97.73, 217.19, 76.02)
+[OK  ] peor corrimiento vertical 80.23 m < radio 100 m — ancla Y=162 · factor 0.4953
+[OK  ] mapa cuadrado de lado 2·radio (resolución declarada) — 1024² → 0.195 m/téxel
+
+=== 2. la densidad de niebla cumple lo que promete ===
+[OK  ] roundtrip niebla ↔ distancia en 8 combinaciones — 8/8
+[OK  ] la visibilidad cae con la distancia (monótona) — v(500)=0.984 v(1500)=0.869 v(3000)=0.570 v(6000)=0.105
+[OK  ] objetivo a 2169 m visible (74.5 % > 70 %) — densidad 0.00025
+[OK  ] esquina de la ventana (4243 m) desvaída (32.5 % < 35 %) — densidad 0.00025
+[OK  ] horizonte al 1 % a 8584 m > 6000 m (fuera de la ventana) — medio tapado a 3330 m
+[OK  ] la variante densa tapa más a la misma distancia — normal 0.869 vs densa 0.570
+
+21/21 checks OK
+TODO OK
+=== 1. el archivo commiteado es exactamente lo que se re-deriva ===
+[OK  ] re-deriva == commiteado (byte a byte) — 83714 bytes
+
+=== 2. hay datos de verdad (un JSON vacio NO pasa) ===
+[OK  ] buildings > 0 — 330
+[OK  ] meta.sha256 == sha256 del JSON crudo — 0b75fb00768d4ae5
+[OK  ] meta trae el timestamp OSM de la fuente — 2026-09-25T00:43:35Z
+[OK  ] meta.conteos.buildings == longitud real — 330
+[OK  ] el archivo crudo sigue teniendo el sha256 del manifiesto — 0b75fb00768d4ae5
+
+=== 3. geometria dentro de la ventana ===
+[OK  ] ningun vertice fuera de la ventana 6000x6000 — 0 vertices
+[OK  ] todos los footprints tienen >= 3 vertices — 0 malos
+[OK  ] ninguna altura <= 0 ni > 60 m — min 3.2 max 12.8
+[OK  ] labels en los conjuntos permitidos (heightSource/materialKind/roofKind) — 0 malos
+
+=== 4. el punto de aparicion queda libre ===
+[OK  ] spawn (3097.26, 3945.02) libre con radio >= 8 m — edificio mas cercano #818885707 a 17.4 m
+
+=== 5. ninguna base flotante (muestreo con semilla fija) ===
+      terreno real cargado: 4 tile(s), faldon = 1.5 m
+[OK  ] muestreados 250 edificios (1798 vertices) con semilla fija
+[OK  ] el min de terrain.heightAt cae dentro del rango construido — 0 fuera de rango
+[OK  ] el check atrapa un datum mal restado (dientes) — con +870 m el rango deja de cubrir
+      relieve max bajo un footprint: 6.83 m (faldon 1.5 m)
+      hundimiento max (terreno mas alto - base): 8.33 m
+      max |triangular - bilineal| en los mismos vertices: 0.325 m (la trampa del proyecto)
+      3/250 alturas OSM crudas intersectan terreno antes del ajuste runtime.
+
+=== 6. tejados de altura estimada despejados de la ladera ===
+[OK  ] el margen de cubierta coincide con runtime — 0.2 m
+[OK  ] el tope de elevación coincide con runtime — 1.6 m
+[OK  ] runtime eleva solo alturas levels/tipo; LiDAR y height explícita permanecen intactas
+[OK  ] ninguna casa fallback queda embebida y no se supera el tope — 3 elevadas · máximo 0.83 m · 0 enterradas
+      override runtime LiDAR rederivado: 265/330
+      intersecciones LiDAR sin modificar: 9 (máx 1.18 m; altura medida preservada)
+
+=== 7. el faldon esta sincronizado con el runtime ===
+[OK  ] src/environment/village.ts declara el mismo FALDON_M — 1.5
+[OK  ] la base del runtime usa terrain.heightAt (no una y precalculada)
+
+Descartes: {"sin_geometry":0,"abierto":0,"pocos_vertices":0,"area_minima":5,"fuera_ventana":0,"despeje_spawn":0,"altura_invalida":0}
+
+TODO OK
+BJS - [20:31:23]: Babylon.js v8.56.2 - Null engine
+building surface materials: 5/5 checks OK
+village facade kits: deterministic profiles and route frontage OK
+mapped walls: 23 sourced ways, projection/build OK
+BJS - [20:31:24]: Babylon.js v8.56.2 - Null engine
+[agua] 5 láminas · 60 cintas · 3 mallas · 33429 triángulos · 406 KiB
+[pueblo NPC] 10 vecinos animados · 8 rutas validadas/135 candidatas · paso 0.25 m · rechazos {"road":62,"building":36,"wall":37,"water":0,"terrain":0,"anchor":175,"spacing":37} · 10 mallas · 16040 triángulos
+NPC NullEngine sample: 10 skeletons; full tier 0 bone-matrix computes / 30 renders; reduced tier 0 / 30 renders; 40 sampled pose updates; 0 prepare calls
+village NPC placement, tiers, sampled animation and disposal: OK
+[OK  ] IGN/CNIG CC BY metadata is present
+[OK  ] source matches the fetch manifest
+[OK  ] raster is EPSG:25830 at 2.5 m
+[OK  ] Int16 matrix has the declared byte length — 328800 bytes
+[OK  ] runtime grid SHA-256 matches metadata — c0c86a420efad8e6af1e6bb83763daf479feb37ec1f370a731014e946c991db0
+[OK  ] grid has valid building heights — 5607 positive cells; max 27 m
+[OK  ] raster overlaps enough OSM footprints — 281/330 huellas con ≥4 celdas
+[OK  ] spawn view has LiDAR height samples — 21 huellas dentro de 90 m
+roof shape: 7/7 checks OK
+roof eave road clearance: 7/7 checks OK
+building tint: walls 32/32, roofs 32/32 distinct, deterministic
+vegetation instance tint: 32/32 colors stable and bounded
+PASS canopy clearance: profile/lobes/tilt covered; current maximum footprint 7.06 m
+vegetación: 33363 instancias · 24034 árboles · 3019 arbustos · 6310 matas
+  tier 16304 near / 9745 mid / 7314 far · excluidos 1746 por corredor + 8 por claro
+  por clase {"FOREST":26511,"GRASS":1017,"FIELDS":5835} · por siembra {"forest-trees":23739,"forest-understory":2772,"field-trees":295,"grass-shrubs":247,"grass-tufts":6310}
+
+=== 1. re-derivación contra el archivo commiteado ===
+[OK  ] existe el JSON commiteado — public/vegetation/vegetation.json
+[OK  ] instances reproducibles byte a byte — 33363 vs 33363
+[OK  ] meta reproducible (salvo "fecha")
+[OK  ] meta.scriptSha256 corresponde al script actual — regenerá el JSON: el script cambió
+[OK  ] meta.source.sha256 corresponde al landcover actual
+
+=== 2. invariantes de las instancias ===
+[OK  ] conteo total > 0 — 33363
+[OK  ] suma de tiers == total — 33363 vs 33363
+[OK  ] tier near > 0 — 16304
+[OK  ] tier mid > 0 — 9745
+[OK  ] tier far > 0 — 7314
+[OK  ] tipos: 4 árboles + 2 arbustos + hierba — 7 tipos distintos
+[OK  ] meta.conteos.total == instances.length — 33363
+[OK  ] ninguna instancia fuera de la ventana 6000×6000 — 0 fuera
+[OK  ] todas con la forma {x,z,type,scale,rotation,tier} — 0 malas
+[OK  ] ninguna dentro de un corredor (ruta + red vial) — 0 adentro
+[OK  ] ninguna dentro de un claro (inicio / objetivo) — 0 adentro
+
+=== 3. alturas contra el heightfield real (nada flotando) ===
+[OK  ] se pudieron leer los 36 tiles — 36
+[OK  ] altura finita en TODAS las instancias — 0 no finitas
+[OK  ] ninguna por debajo del DEM (>= min) — 0 bajo tierra
+[OK  ] ninguna por encima del DEM (<= max) — 0 volando
+[OK  ] residual vs nodo de grilla dentro del span de su celda — peor residual 4.240 m · exceso maximo 2.27e-13 m en 33363 muestras
+
+21/21 checks OK
+TODO OK
+[village-pilot] OK · 8 IDs OSM · 1945 tris · 195892 bytes · ab5ddc7d0f9e
+npm notice run montes-de-oca-offroad@0.1.0 test:focal-sites
+npm notice run node scripts/environment/validate_focal_sites.mjs
+OK: church, plaza, dam; 221468 bytes; 3930 triangles
+OK: including Oca 391368 bytes, 6576 triangles
+npm notice run montes-de-oca-offroad@0.1.0 test:real-structures
+npm notice run node scripts/environment/validate_real_structure_evidence.mjs --phase=source
+[OK  ] esquema versionado — schemaVersion 1
+[OK  ] la fuente esta fechada y localizada — PNOA 2023 (PNOA MA 2023) · 2023 · CC BY 4.0
+[OK  ] la fuente declara solo planta/cubierta — nota presente
+[OK  ] se conservan los once objetivos originales — 16 registros
+[OK  ] ids unicos
+[OK  ] house-474364247: ways OSM declarados — 474364247
+[OK  ] house-474364247: ways presentes en el crudo versionado
+[OK  ] house-474364247: bounds WGS84 coinciden con el crudo — crudo -3.30902,42.38813,-3.30888,42.38826
+[OK  ] house-474364247: imagen real localizada
+[OK  ] house-474364247: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364247: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364247: confianza declarada — observado
+[OK  ] house-474364247: discrepancia visible
+[OK  ] house-474364247: estado anterior descrito
+[OK  ] house-474364247: correccion propuesta
+[OK  ] house-474364247: resultado descrito
+[OK  ] house-474364247: comparacion antes/despues — output/real_structures/model/house_474364247.png -> output/real_structures/model/after_house_474364247.png
+[OK  ] house-474364247: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-474364248: ways OSM declarados — 474364248
+[OK  ] house-474364248: ways presentes en el crudo versionado
+[OK  ] house-474364248: bounds WGS84 coinciden con el crudo — crudo -3.30905,42.38802,-3.30890,42.38815
+[OK  ] house-474364248: imagen real localizada
+[OK  ] house-474364248: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364248: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364248: confianza declarada — observado
+[OK  ] house-474364248: discrepancia visible
+[OK  ] house-474364248: estado anterior descrito
+[OK  ] house-474364248: correccion propuesta
+[OK  ] house-474364248: resultado descrito
+[OK  ] house-474364248: comparacion antes/despues — output/real_structures/model/house_474364248.png -> output/real_structures/model/after_house_474364248.png
+[OK  ] house-474364248: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-818885678: ways OSM declarados — 818885678
+[OK  ] house-818885678: ways presentes en el crudo versionado
+[OK  ] house-818885678: bounds WGS84 coinciden con el crudo — crudo -3.30906,42.38800,-3.30893,42.38804
+[OK  ] house-818885678: imagen real localizada
+[OK  ] house-818885678: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-818885678: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-818885678: confianza declarada — sin evidencia
+[OK  ] house-818885678: blocker justificado
+[OK  ] house-818885678: no inventa correccion
+[OK  ] house-1509797545: ways OSM declarados — 1509797545
+[OK  ] house-1509797545: ways presentes en el crudo versionado
+[OK  ] house-1509797545: bounds WGS84 coinciden con el crudo — crudo -3.30908,42.38781,-3.30894,42.38802
+[OK  ] house-1509797545: imagen real localizada
+[OK  ] house-1509797545: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797545: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797545: confianza declarada — sin evidencia
+[OK  ] house-1509797545: blocker justificado
+[OK  ] house-1509797545: no inventa correccion
+[OK  ] house-1509797544: ways OSM declarados — 1509797544
+[OK  ] house-1509797544: ways presentes en el crudo versionado
+[OK  ] house-1509797544: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38774,-3.30897,42.38781
+[OK  ] house-1509797544: imagen real localizada
+[OK  ] house-1509797544: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797544: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797544: confianza declarada — sin evidencia
+[OK  ] house-1509797544: blocker justificado
+[OK  ] house-1509797544: no inventa correccion
+[OK  ] house-305647007: ways OSM declarados — 305647007
+[OK  ] house-305647007: ways presentes en el crudo versionado
+[OK  ] house-305647007: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38768,-3.30898,42.38774
+[OK  ] house-305647007: imagen real localizada
+[OK  ] house-305647007: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-305647007: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-305647007: confianza declarada — sin evidencia
+[OK  ] house-305647007: blocker justificado
+[OK  ] house-305647007: no inventa correccion
+[OK  ] house-310458426: ways OSM declarados — 310458426
+[OK  ] house-310458426: ways presentes en el crudo versionado
+[OK  ] house-310458426: bounds WGS84 coinciden con el crudo — crudo -3.30870,42.38769,-3.30860,42.38783
+[OK  ] house-310458426: imagen real localizada
+[OK  ] house-310458426: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-310458426: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-310458426: confianza declarada — sin evidencia
+[OK  ] house-310458426: blocker justificado
+[OK  ] house-310458426: no inventa correccion
+[OK  ] house-433198559: ways OSM declarados — 433198559
+[OK  ] house-433198559: ways presentes en el crudo versionado
+[OK  ] house-433198559: bounds WGS84 coinciden con el crudo — crudo -3.30871,42.38759,-3.30861,42.38770
+[OK  ] house-433198559: imagen real localizada
+[OK  ] house-433198559: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-433198559: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-433198559: confianza declarada — sin evidencia
+[OK  ] house-433198559: blocker justificado
+[OK  ] house-433198559: no inventa correccion
+[OK  ] church-90614388: ways OSM declarados — 90614388
+[OK  ] church-90614388: ways presentes en el crudo versionado
+[OK  ] church-90614388: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38855,-3.30878,42.38877
+[OK  ] church-90614388: imagen real localizada
+[OK  ] church-90614388: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] church-90614388: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] church-90614388: confianza declarada — aproximado
+[OK  ] church-90614388: discrepancia visible
+[OK  ] church-90614388: estado anterior descrito
+[OK  ] church-90614388: correccion propuesta
+[OK  ] church-90614388: resultado descrito
+[OK  ] church-90614388: comparacion antes/despues — output/real_structures/model/before_church_focal_sites.png -> output/real_structures/model/after_church_focal_sites.png
+[OK  ] church-90614388: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] plaza-645040295-741760074: ways OSM declarados — 645040295, 741760074
+[OK  ] plaza-645040295-741760074: ways presentes en el crudo versionado
+[OK  ] plaza-645040295-741760074: bounds WGS84 coinciden con el crudo — crudo -3.30924,42.38873,-3.30868,42.38918
+[OK  ] plaza-645040295-741760074: imagen real localizada
+[OK  ] plaza-645040295-741760074: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] plaza-645040295-741760074: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] plaza-645040295-741760074: confianza declarada — aproximado
+[OK  ] plaza-645040295-741760074: discrepancia visible
+[OK  ] plaza-645040295-741760074: estado anterior descrito
+[OK  ] plaza-645040295-741760074: correccion propuesta
+[OK  ] plaza-645040295-741760074: resultado descrito
+[OK  ] plaza-645040295-741760074: comparacion antes/despues — output/real_structures/model/before_plaza_focal_sites.png -> output/real_structures/model/after_plaza_focal_sites.png
+[OK  ] plaza-645040295-741760074: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] dam-168459142: ways OSM declarados — 168459142
+[OK  ] dam-168459142: ways presentes en el crudo versionado
+[OK  ] dam-168459142: bounds WGS84 coinciden con el crudo — crudo -3.31733,42.36586,-3.31565,42.36704
+[OK  ] dam-168459142: imagen real localizada
+[OK  ] dam-168459142: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] dam-168459142: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] dam-168459142: confianza declarada — observado
+[OK  ] dam-168459142: discrepancia visible
+[OK  ] dam-168459142: estado anterior descrito
+[OK  ] dam-168459142: correccion propuesta
+[OK  ] dam-168459142: resultado descrito
+[OK  ] dam-168459142: comparacion antes/despues — output/real_structures/model/dam.png -> output/real_structures/model/after_dam.png
+[OK  ] dam-168459142: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885706: ways OSM declarados — 818885706
+[OK  ] building-818885706: ways presentes en el crudo versionado
+[OK  ] building-818885706: bounds WGS84 coinciden con el crudo — crudo -3.30852,42.38875,-3.30839,42.38885
+[OK  ] building-818885706: imagen real localizada
+[OK  ] building-818885706: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885706: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885706: confianza declarada — observed
+[OK  ] building-818885706: discrepancia visible
+[OK  ] building-818885706: estado anterior descrito
+[OK  ] building-818885706: correccion propuesta
+[OK  ] building-818885706: resultado descrito
+[OK  ] building-818885706: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885706.png -> outputs/village-fidelity-20261004/after/house_818885706.png
+[OK  ] building-818885706: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885708: ways OSM declarados — 818885708
+[OK  ] building-818885708: ways presentes en el crudo versionado
+[OK  ] building-818885708: bounds WGS84 coinciden con el crudo — crudo -3.30843,42.38854,-3.30826,42.38865
+[OK  ] building-818885708: imagen real localizada
+[OK  ] building-818885708: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885708: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885708: confianza declarada — probable
+[OK  ] building-818885708: discrepancia visible
+[OK  ] building-818885708: estado anterior descrito
+[OK  ] building-818885708: correccion propuesta
+[OK  ] building-818885708: resultado descrito
+[OK  ] building-818885708: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885708.png -> outputs/village-fidelity-20261004/after/house_818885708.png
+[OK  ] building-818885708: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474364245: ways OSM declarados — 474364245
+[OK  ] building-474364245: ways presentes en el crudo versionado
+[OK  ] building-474364245: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38739,-3.30906,42.38748
+[OK  ] building-474364245: imagen real localizada
+[OK  ] building-474364245: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474364245: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474364245: confianza declarada — probable
+[OK  ] building-474364245: discrepancia visible
+[OK  ] building-474364245: estado anterior descrito
+[OK  ] building-474364245: correccion propuesta
+[OK  ] building-474364245: resultado descrito
+[OK  ] building-474364245: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474364245.png -> outputs/village-fidelity-20261004/after/house_474364245.png
+[OK  ] building-474364245: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474649085: ways OSM declarados — 474649085
+[OK  ] building-474649085: ways presentes en el crudo versionado
+[OK  ] building-474649085: bounds WGS84 coinciden con el crudo — crudo -3.30922,42.38728,-3.30909,42.38735
+[OK  ] building-474649085: imagen real localizada
+[OK  ] building-474649085: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474649085: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474649085: confianza declarada — observed
+[OK  ] building-474649085: discrepancia visible
+[OK  ] building-474649085: estado anterior descrito
+[OK  ] building-474649085: correccion propuesta
+[OK  ] building-474649085: resultado descrito
+[OK  ] building-474649085: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474649085.png -> outputs/village-fidelity-20261004/after/house_474649085.png
+[OK  ] building-474649085: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-672017718: ways OSM declarados — 672017718
+[OK  ] building-672017718: ways presentes en el crudo versionado
+[OK  ] building-672017718: bounds WGS84 coinciden con el crudo — crudo -3.31020,42.38829,-3.30950,42.38873
+[OK  ] building-672017718: imagen real localizada
+[OK  ] building-672017718: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-672017718: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-672017718: confianza declarada — artistic
+[OK  ] building-672017718: discrepancia visible
+[OK  ] building-672017718: estado anterior descrito
+[OK  ] building-672017718: correccion propuesta
+[OK  ] building-672017718: resultado descrito
+[OK  ] building-672017718: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_672017718.png -> outputs/village-fidelity-20261004/after/house_672017718.png
+[OK  ] building-672017718: la correccion no reclama fachada/vertical — solo planta/cubierta
+
+189 checks OK · 10 corregidos · 6 blockers · fase source
+TODO OK
+npm notice run montes-de-oca-offroad@0.1.0 test:village-fidelity
+npm notice run node scripts/environment/test_village_building_overrides.mjs && node scripts/environment/test_roof_shape.mjs && node scripts/environment/test_village_facade_kits.mjs && node scripts/environment/validate_real_structure_evidence.mjs --phase=source && python3 scripts/environment/register_user_photo.py --check
+BJS - [20:31:56]: Babylon.js v8.56.2 - Null engine
+[pueblo] 1 edificios · 2 mallas · 47 triángulos · 80.3 m² · más alto 9.6 m · 0 descartados en el spawn · 0 con detalle · 0 tapias · 0/1 alturas LiDAR IGN · 0 cubiertas elevadas (máx 0.00 m) · 0 postes de calle
+BJS - [20:31:56]: Babylon.js v8.56.2 - Null engine
+[pueblo] 1 edificios · 2 mallas · 28 triángulos · 82.9 m² · más alto 9.6 m · 0 descartados en el spawn · 0 con detalle · 0 tapias · 0/1 alturas LiDAR IGN · 0 cubiertas elevadas (máx 0.00 m) · 0 postes de calle
+BJS - [20:31:56]: Babylon.js v8.56.2 - Null engine
+[pueblo] 1 edificios · 5 mallas · 309 triángulos · 80.3 m² · más alto 9.6 m · 0 descartados en el spawn · 1 con detalle · 0 tapias · 0/1 alturas LiDAR IGN · 0 cubiertas elevadas (máx 0.00 m) · 0 postes de calle
+BJS - [20:31:56]: Babylon.js v8.56.2 - Null engine
+[pueblo] 1 edificios · 5 mallas · 187 triángulos · 80.3 m² · más alto 9.6 m · 0 descartados en el spawn · 1 con detalle · 0 tapias · 0/1 alturas LiDAR IGN · 0 cubiertas elevadas (máx 0.00 m) · 0 postes de calle
+village building overrides: source targets and concave hip geometry OK
+roof shape: 7/7 checks OK
+village facade kits: deterministic profiles and route frontage OK
+[OK  ] esquema versionado — schemaVersion 1
+[OK  ] la fuente esta fechada y localizada — PNOA 2023 (PNOA MA 2023) · 2023 · CC BY 4.0
+[OK  ] la fuente declara solo planta/cubierta — nota presente
+[OK  ] se conservan los once objetivos originales — 16 registros
+[OK  ] ids unicos
+[OK  ] house-474364247: ways OSM declarados — 474364247
+[OK  ] house-474364247: ways presentes en el crudo versionado
+[OK  ] house-474364247: bounds WGS84 coinciden con el crudo — crudo -3.30902,42.38813,-3.30888,42.38826
+[OK  ] house-474364247: imagen real localizada
+[OK  ] house-474364247: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364247: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364247: confianza declarada — observado
+[OK  ] house-474364247: discrepancia visible
+[OK  ] house-474364247: estado anterior descrito
+[OK  ] house-474364247: correccion propuesta
+[OK  ] house-474364247: resultado descrito
+[OK  ] house-474364247: comparacion antes/despues — output/real_structures/model/house_474364247.png -> output/real_structures/model/after_house_474364247.png
+[OK  ] house-474364247: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-474364248: ways OSM declarados — 474364248
+[OK  ] house-474364248: ways presentes en el crudo versionado
+[OK  ] house-474364248: bounds WGS84 coinciden con el crudo — crudo -3.30905,42.38802,-3.30890,42.38815
+[OK  ] house-474364248: imagen real localizada
+[OK  ] house-474364248: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364248: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364248: confianza declarada — observado
+[OK  ] house-474364248: discrepancia visible
+[OK  ] house-474364248: estado anterior descrito
+[OK  ] house-474364248: correccion propuesta
+[OK  ] house-474364248: resultado descrito
+[OK  ] house-474364248: comparacion antes/despues — output/real_structures/model/house_474364248.png -> output/real_structures/model/after_house_474364248.png
+[OK  ] house-474364248: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-818885678: ways OSM declarados — 818885678
+[OK  ] house-818885678: ways presentes en el crudo versionado
+[OK  ] house-818885678: bounds WGS84 coinciden con el crudo — crudo -3.30906,42.38800,-3.30893,42.38804
+[OK  ] house-818885678: imagen real localizada
+[OK  ] house-818885678: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-818885678: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-818885678: confianza declarada — sin evidencia
+[OK  ] house-818885678: blocker justificado
+[OK  ] house-818885678: no inventa correccion
+[OK  ] house-1509797545: ways OSM declarados — 1509797545
+[OK  ] house-1509797545: ways presentes en el crudo versionado
+[OK  ] house-1509797545: bounds WGS84 coinciden con el crudo — crudo -3.30908,42.38781,-3.30894,42.38802
+[OK  ] house-1509797545: imagen real localizada
+[OK  ] house-1509797545: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797545: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797545: confianza declarada — sin evidencia
+[OK  ] house-1509797545: blocker justificado
+[OK  ] house-1509797545: no inventa correccion
+[OK  ] house-1509797544: ways OSM declarados — 1509797544
+[OK  ] house-1509797544: ways presentes en el crudo versionado
+[OK  ] house-1509797544: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38774,-3.30897,42.38781
+[OK  ] house-1509797544: imagen real localizada
+[OK  ] house-1509797544: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797544: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797544: confianza declarada — sin evidencia
+[OK  ] house-1509797544: blocker justificado
+[OK  ] house-1509797544: no inventa correccion
+[OK  ] house-305647007: ways OSM declarados — 305647007
+[OK  ] house-305647007: ways presentes en el crudo versionado
+[OK  ] house-305647007: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38768,-3.30898,42.38774
+[OK  ] house-305647007: imagen real localizada
+[OK  ] house-305647007: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-305647007: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-305647007: confianza declarada — sin evidencia
+[OK  ] house-305647007: blocker justificado
+[OK  ] house-305647007: no inventa correccion
+[OK  ] house-310458426: ways OSM declarados — 310458426
+[OK  ] house-310458426: ways presentes en el crudo versionado
+[OK  ] house-310458426: bounds WGS84 coinciden con el crudo — crudo -3.30870,42.38769,-3.30860,42.38783
+[OK  ] house-310458426: imagen real localizada
+[OK  ] house-310458426: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-310458426: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-310458426: confianza declarada — sin evidencia
+[OK  ] house-310458426: blocker justificado
+[OK  ] house-310458426: no inventa correccion
+[OK  ] house-433198559: ways OSM declarados — 433198559
+[OK  ] house-433198559: ways presentes en el crudo versionado
+[OK  ] house-433198559: bounds WGS84 coinciden con el crudo — crudo -3.30871,42.38759,-3.30861,42.38770
+[OK  ] house-433198559: imagen real localizada
+[OK  ] house-433198559: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-433198559: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-433198559: confianza declarada — sin evidencia
+[OK  ] house-433198559: blocker justificado
+[OK  ] house-433198559: no inventa correccion
+[OK  ] church-90614388: ways OSM declarados — 90614388
+[OK  ] church-90614388: ways presentes en el crudo versionado
+[OK  ] church-90614388: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38855,-3.30878,42.38877
+[OK  ] church-90614388: imagen real localizada
+[OK  ] church-90614388: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] church-90614388: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] church-90614388: confianza declarada — aproximado
+[OK  ] church-90614388: discrepancia visible
+[OK  ] church-90614388: estado anterior descrito
+[OK  ] church-90614388: correccion propuesta
+[OK  ] church-90614388: resultado descrito
+[OK  ] church-90614388: comparacion antes/despues — output/real_structures/model/before_church_focal_sites.png -> output/real_structures/model/after_church_focal_sites.png
+[OK  ] church-90614388: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] plaza-645040295-741760074: ways OSM declarados — 645040295, 741760074
+[OK  ] plaza-645040295-741760074: ways presentes en el crudo versionado
+[OK  ] plaza-645040295-741760074: bounds WGS84 coinciden con el crudo — crudo -3.30924,42.38873,-3.30868,42.38918
+[OK  ] plaza-645040295-741760074: imagen real localizada
+[OK  ] plaza-645040295-741760074: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] plaza-645040295-741760074: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] plaza-645040295-741760074: confianza declarada — aproximado
+[OK  ] plaza-645040295-741760074: discrepancia visible
+[OK  ] plaza-645040295-741760074: estado anterior descrito
+[OK  ] plaza-645040295-741760074: correccion propuesta
+[OK  ] plaza-645040295-741760074: resultado descrito
+[OK  ] plaza-645040295-741760074: comparacion antes/despues — output/real_structures/model/before_plaza_focal_sites.png -> output/real_structures/model/after_plaza_focal_sites.png
+[OK  ] plaza-645040295-741760074: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] dam-168459142: ways OSM declarados — 168459142
+[OK  ] dam-168459142: ways presentes en el crudo versionado
+[OK  ] dam-168459142: bounds WGS84 coinciden con el crudo — crudo -3.31733,42.36586,-3.31565,42.36704
+[OK  ] dam-168459142: imagen real localizada
+[OK  ] dam-168459142: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] dam-168459142: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] dam-168459142: confianza declarada — observado
+[OK  ] dam-168459142: discrepancia visible
+[OK  ] dam-168459142: estado anterior descrito
+[OK  ] dam-168459142: correccion propuesta
+[OK  ] dam-168459142: resultado descrito
+[OK  ] dam-168459142: comparacion antes/despues — output/real_structures/model/dam.png -> output/real_structures/model/after_dam.png
+[OK  ] dam-168459142: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885706: ways OSM declarados — 818885706
+[OK  ] building-818885706: ways presentes en el crudo versionado
+[OK  ] building-818885706: bounds WGS84 coinciden con el crudo — crudo -3.30852,42.38875,-3.30839,42.38885
+[OK  ] building-818885706: imagen real localizada
+[OK  ] building-818885706: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885706: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885706: confianza declarada — observed
+[OK  ] building-818885706: discrepancia visible
+[OK  ] building-818885706: estado anterior descrito
+[OK  ] building-818885706: correccion propuesta
+[OK  ] building-818885706: resultado descrito
+[OK  ] building-818885706: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885706.png -> outputs/village-fidelity-20261004/after/house_818885706.png
+[OK  ] building-818885706: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885708: ways OSM declarados — 818885708
+[OK  ] building-818885708: ways presentes en el crudo versionado
+[OK  ] building-818885708: bounds WGS84 coinciden con el crudo — crudo -3.30843,42.38854,-3.30826,42.38865
+[OK  ] building-818885708: imagen real localizada
+[OK  ] building-818885708: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885708: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885708: confianza declarada — probable
+[OK  ] building-818885708: discrepancia visible
+[OK  ] building-818885708: estado anterior descrito
+[OK  ] building-818885708: correccion propuesta
+[OK  ] building-818885708: resultado descrito
+[OK  ] building-818885708: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885708.png -> outputs/village-fidelity-20261004/after/house_818885708.png
+[OK  ] building-818885708: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474364245: ways OSM declarados — 474364245
+[OK  ] building-474364245: ways presentes en el crudo versionado
+[OK  ] building-474364245: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38739,-3.30906,42.38748
+[OK  ] building-474364245: imagen real localizada
+[OK  ] building-474364245: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474364245: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474364245: confianza declarada — probable
+[OK  ] building-474364245: discrepancia visible
+[OK  ] building-474364245: estado anterior descrito
+[OK  ] building-474364245: correccion propuesta
+[OK  ] building-474364245: resultado descrito
+[OK  ] building-474364245: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474364245.png -> outputs/village-fidelity-20261004/after/house_474364245.png
+[OK  ] building-474364245: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474649085: ways OSM declarados — 474649085
+[OK  ] building-474649085: ways presentes en el crudo versionado
+[OK  ] building-474649085: bounds WGS84 coinciden con el crudo — crudo -3.30922,42.38728,-3.30909,42.38735
+[OK  ] building-474649085: imagen real localizada
+[OK  ] building-474649085: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474649085: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474649085: confianza declarada — observed
+[OK  ] building-474649085: discrepancia visible
+[OK  ] building-474649085: estado anterior descrito
+[OK  ] building-474649085: correccion propuesta
+[OK  ] building-474649085: resultado descrito
+[OK  ] building-474649085: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474649085.png -> outputs/village-fidelity-20261004/after/house_474649085.png
+[OK  ] building-474649085: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-672017718: ways OSM declarados — 672017718
+[OK  ] building-672017718: ways presentes en el crudo versionado
+[OK  ] building-672017718: bounds WGS84 coinciden con el crudo — crudo -3.31020,42.38829,-3.30950,42.38873
+[OK  ] building-672017718: imagen real localizada
+[OK  ] building-672017718: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-672017718: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-672017718: confianza declarada — artistic
+[OK  ] building-672017718: discrepancia visible
+[OK  ] building-672017718: estado anterior descrito
+[OK  ] building-672017718: correccion propuesta
+[OK  ] building-672017718: resultado descrito
+[OK  ] building-672017718: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_672017718.png -> outputs/village-fidelity-20261004/after/house_672017718.png
+[OK  ] building-672017718: la correccion no reclama fachada/vertical — solo planta/cubierta
+
+189 checks OK · 10 corregidos · 6 blockers · fase source
+TODO OK
+PASS 9 local photo records; unknown permissions remain unknown
+npm notice run montes-de-oca-offroad@0.1.0 test:minimap
+npm notice run node scripts/ui/validate_minimap.mjs
+OK minimap: route projection, heading-up rotation, pan, zoom bounds, missing heading, 10 Hz throttle
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-models
+npm notice run node scripts/vehicle/validate_models.mjs
+OK modelos de vehículo: tres identidades y kits intercambiables sin tocar la física
+BJS - [20:31:58]: Babylon.js v8.56.2 - Null engine
+estandar: meshes=14 triangles=760 sig=tri=408|bbox=-1.10,0.40,-2.35,1.10,1.77,2.25|sum=20675033
+patrulla: meshes=14 triangles=796 sig=tri=444|bbox=-1.05,0.40,-2.56,1.05,1.84,2.38|sum=23879555
+carga: meshes=14 triangles=880 sig=tri=528|bbox=-1.08,0.39,-2.33,1.08,1.60,2.12|sum=25192139
+explorador: meshes=13 triangles=604 sig=tri=252|bbox=-1.01,0.36,-1.85,1.01,1.30,1.85|sum=11290998
+turismo: meshes=13 triangles=772 sig=tri=420|bbox=-1.01,0.29,-2.31,1.01,1.20,2.31|sum=17490402
+rally: meshes=13 triangles=628 sig=tri=276|bbox=-1.03,0.42,-2.11,1.03,1.18,2.09|sum=11317542
+PASS four-wheel adapter: six distinct active bodies, pose, drive and disposal
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-brake-lights
+npm notice run node scripts/vehicle/validate_brake_lights.mjs
+BJS - [20:31:58]: Babylon.js v8.56.2 - Null engine
+PASS brake lights: forward braking, handbrake, release, one rear-material batch
+npm notice run montes-de-oca-offroad@0.1.0 test:water
+npm notice run python3 scripts/water/build_water.py --check && node scripts/water/validate_water.mjs
+[agua] OK: water.json + stats.json coinciden (5 láminas, 60 cintas, cota 1014.15, grilla 34x53, máx 8.3 m)
+=== 1. esquema y trazabilidad ===
+[OK  ] schemaVersion 1 — 1
+[OK  ] clave meta presente
+[OK  ] clave levelM presente
+[OK  ] clave sheets presente
+[OK  ] clave ribbons presente
+[OK  ] clave dam presente
+[OK  ] clave depthGrid presente
+[OK  ] meta.generadoPor es build_water.py — scripts/water/build_water.py
+[OK  ] meta.sourceSha256 coincide con el manifiesto del crudo — water e7829e82318c vs manifiesto e7829e82318c
+[OK  ] stats.levelM coincide con water.levelM — stats 1014.15 vs water 1014.15
+[OK  ] sha256 del crudo del anillo coincide con su manifiesto — b8fadcce78b1… (22 ways, 462 nodos)
+[OK  ] el anillo del embalse sale del crudo versionado (mismo orden, <5 cm) — 440 puntos vs crudo 440
+
+=== 2. láminas trianguladas ===
+[OK  ] hay al menos la lámina del embalse — 5
+[OK  ] láminas con anillo e índices coherentes
+[OK  ] índices dentro del anillo
+[OK  ] láminas dentro de la ventana [0, 6000] (±0,5 m)
+
+=== 3. área de triángulos vs área del polígono (< 0,5 %) ===
+[OK  ] áreas comparadas en 5 láminas (no vacío) — 5
+[OK  ] error relativo de área < 0,5 % en todas — peor lago-de-san-indalecio-martir 0.000 %
+
+=== 4. grilla de profundidad ===
+[OK  ] dimensiones coherentes (depthsDm = cols × rows) — 34x53 = 1802
+[OK  ] profundidades enteras en rango 0..200 dm (0..20 m) — máx 83 dm
+[OK  ] grilla a la cota del vaso — grilla 1014.15 vs vaso 1014.15
+
+=== 5. fondo hondo junto a la presa y 0 en la orilla ===
+[OK  ] hay celdas interiores (check no vacío) — máx en 2363.42,1317.06
+[OK  ] mínimo interior 0 dm (orilla mojada) — mín 0 dm
+[OK  ] máximo interior > 50 dm (5 m de vaso) — máx 83 dm
+[OK  ] la celda más honda está del lado de la presa (< 250 m del muro) — 195.2 m
+
+=== 6. muro de la presa ===
+[OK  ] coronación por encima del vaso (+0,6 m) — coronación 1014.75 vs vaso 1014.15
+[OK  ] base por debajo de la coronación — base 1010
+[OK  ] extremos dentro de la ventana — a 2371.75,1577.94 b 2508.9,1448.19
+[OK  ] ancho positivo — 6 m
+[OK  ] crest publica la coronación del way (≥ 3 nodos) — 18 nodos
+[OK  ] crest arranca y termina en a y b
+[OK  ] la coronación es un arco (largo real > cuerda + 1 m) — 216.4 m reales vs 188.8 m de cuerda
+
+=== 7. cota de lámina ≥ terreno bajo celdas mojadas ===
+[OK  ] cota ≥ terreno debajo en celdas mojadas (> 100 comprobadas, no vacío) — 336 celdas mojadas, máx terreno 1014 m en 2738.42,467.06 vs cota 1014.15, 0 sin DEM, 0 por encima
+
+=== 8. cintas de ríos y arroyos ===
+[OK  ] al menos 60 cintas de río/arroyo — 60 (ríos 7, arroyos 52, zanjas 1)
+[OK  ] cintas con ancho > 0, al menos 2 puntos de eje y calado > 0
+[OK  ] calado según tipo (river 0,25 / stream 0,18 / ditch 0,15, dentro del rango 0,15-0,25)
+[OK  ] ejes recortados a la ventana [0, 6000] con cota finita (> 1000 puntos, no vacío) — 15939 puntos, 0 mal
+
+=== 9. vado del Oca sobre la ruta (calado ≤ 0,35 m) ===
+[OK  ] el Oca cruza la ruta (al menos 1 cruce de río en stats.crucesRuta) — 1 de río sobre 1 cruces
+[OK  ] calado ≤ 0,35 m en TODOS los cruces de la ruta (río y arroyo) — máx 0.35 m en (3183.15, 3446.95) river
+[OK  ] calado re-derivado del DEM coincide (±0,05 m, no vacío) — 1/1 cruces, peor desvío 0.001 m
+
+=== 10. trazabilidad cintas ↔ crudo OSM ===
+[OK  ] stats.cintas.total coincide con water.ribbons — 60 vs 60
+[OK  ] cada way dibujable queda cubierto por el detalle o por los descartados (ids únicos, robusto a tramos) — 60 ways en 60 tramos + 0 descartados = 60 dibujables; 28 entubadas de 28
+[OK  ] cada cinta detalla un way dibujable real (no wastewater/dam/túnel) — 60 detalles
+[OK  ] el muro sale del way waterway=dam del crudo (<5 cm en extremos) — way 168459142 (18 nodos), EPSG:25830
+
+=== 11. superficie de cinta ≥ terreno + 0,02 m en todo el eje ===
+[OK  ] superficie de cinta ≥ terreno + 0,02 m en todo el eje (> 10 000 muestras, no vacío) — 197677 muestras, peor holgura 0.0202 m (river 0.0209, stream 0.0202, ditch 0.0370), 0 sin DEM
+
+=== 12. el eje del Oca usa el mismo marco UTM y cota que el DEM ===
+[OK  ] vértices del Oca a la cota triangular del DEM (±0,02 m, no vacío) — 2957 puntos, error máx 0.004 m en [2937.62,2239.57]
+[agua] ascenso local máximo muestreado del Oca: 2.18 m por estación; se conserva porque la cota coincide con el MDT y el sentido de flujo no está en OSM.
+
+46/46 checks OK
+TODO OK
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-presets
+npm notice run node scripts/vehicle/validate_presets.mjs
+[PASS] claves de VehicleParams extraídas del fuente (no hardcodeadas): 19 claves
+[PASS] DEFAULT_PRESET_ID declarado: "estandar"
+[PASS] hay 3 presets: 3 encontrados (estandar, patrulla, carga)
+[PASS] ids no vacíos: ["estandar","patrulla","carga"]
+[PASS] ids únicos: ["estandar","patrulla","carga"]
+[PASS] existe el preset por defecto: default=estandar
+[PASS] preset 'estandar': claves dentro de VehicleParams: 0 claves ok
+[PASS] preset 'patrulla': claves dentro de VehicleParams: 5 claves ok
+[PASS] preset 'carga': claves dentro de VehicleParams: 6 claves ok
+[PASS] preset 'estandar': mass=1800 en [900, 2600]: mass=1800
+[PASS] preset 'estandar': dragCoefficient=0.66 en [0.2, 1.2]: dragCoefficient=0.66
+[PASS] preset 'estandar': maxDriveForce=14000 en [8000, 20000]: maxDriveForce=14000
+[PASS] preset 'estandar': maxSpeed=32 en [16, 40]: maxSpeed=32
+[PASS] preset 'estandar': steerMax=0.55 en [0.3, 0.7]: steerMax=0.55
+[PASS] preset 'estandar': steerRate=6 en [4, 9]: steerRate=6
+[PASS] preset 'estandar': grip=0.8 en [0.6, 0.95]: grip=0.8
+[PASS] preset 'estandar': gripLateral=0.8 en [0.6, 0.95]: gripLateral=0.8
+[PASS] preset 'patrulla': mass=1200 en [900, 2600]: mass=1200
+[PASS] preset 'patrulla': dragCoefficient=0.45 en [0.2, 1.2]: dragCoefficient=0.45
+[PASS] preset 'patrulla': maxDriveForce=18000 en [8000, 20000]: maxDriveForce=18000
+[PASS] preset 'patrulla': maxSpeed=38 en [16, 40]: maxSpeed=38
+[PASS] preset 'patrulla': steerMax=0.55 en [0.3, 0.7]: steerMax=0.55
+[PASS] preset 'patrulla': steerRate=8 en [4, 9]: steerRate=8
+[PASS] preset 'patrulla': grip=0.8 en [0.6, 0.95]: grip=0.8
+[PASS] preset 'patrulla': gripLateral=0.8 en [0.6, 0.95]: gripLateral=0.8
+[PASS] preset 'carga': mass=2400 en [900, 2600]: mass=2400
+[PASS] preset 'carga': dragCoefficient=0.95 en [0.2, 1.2]: dragCoefficient=0.95
+[PASS] preset 'carga': maxDriveForce=10000 en [8000, 20000]: maxDriveForce=10000
+[PASS] preset 'carga': maxSpeed=22 en [16, 40]: maxSpeed=22
+[PASS] preset 'carga': steerMax=0.4 en [0.3, 0.7]: steerMax=0.4
+[PASS] preset 'carga': steerRate=6 en [4, 9]: steerRate=6
+[PASS] preset 'carga': grip=0.8 en [0.6, 0.95]: grip=0.8
+[PASS] preset 'carga': gripLateral=0.8 en [0.6, 0.95]: gripLateral=0.8
+[PASS] 'estandar' reproduce exactamente DEFAULT_VEHICLE_PARAMS: params {} (vacío)
+[PASS] applyPreset parte de DEFAULT_VEHICLE_PARAMS (fuente): Object.assign(params, DEFAULT_VEHICLE_PARAMS, preset.params)
+[PASS] applyPreset encadenado no deja residuos (patrulla→carga === carga): merge simulado idéntico
+[PASS] setPreset('estandar') restaura los defaults: merge simulado === defaults
+
+=> OK: presets válidos.
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-catalog
+npm notice run node scripts/vehicle/validate_catalog.mjs
+PASS vehicle catalog: eight unique entries, 3/3/2 categories, sourced names, legacy values and dimensions
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-switch
+npm notice run node scripts/vehicle/validate_switch.mjs
+PASS switch: detención, apoyo/espacio/agua, caída, atomicidad, rollback idempotente y fallo de creación
+npm notice run montes-de-oca-offroad@0.1.0 test:vehicle-selector
+npm notice run node scripts/vehicle/validate_selector.mjs
+[PASS] chip del vehículo en el DOM: #vehiculo-chip + aria-controls
+[PASS] panel como diálogo oculto: #vehiculos-panel role=dialog hidden
+[PASS] lista de tarjetas en el panel: .vehiculo-lista
+[PASS] botón táctil V en controles móviles: #mobile-controls [data-code="KeyV"]
+[PASS] CSS contiene #vehiculo-chip: #vehiculo-chip
+[PASS] CSS contiene #vehiculos-panel: #vehiculos-panel
+[PASS] CSS contiene .vehiculo-tarjeta: .vehiculo-tarjeta
+[PASS] CSS contiene .vehiculo-tarjeta.activa: .vehiculo-tarjeta.activa
+[PASS] CSS contiene .vehiculo-grupo: .vehiculo-grupo
+[PASS] CSS contiene .vehiculo-grupo-titulo: .vehiculo-grupo-titulo
+[PASS] CSS contiene :focus-visible: :focus-visible
+[PASS] exporta createVehicleSelector: createVehicleSelector
+[PASS] API incluye setCurrent: setCurrent
+[PASS] API incluye toggle: toggle
+[PASS] API incluye isOpen: isOpen
+[PASS] tarjetas construidas desde VEHICLE_CATALOG: grupos desde VEHICLE_CATALOG
+[PASS] sin miniaturas falsas: sin <img en selector.ts
+[PASS] foco gestionado (abrir/cerrar): foco a tarjeta y vuelta al canvas
+[PASS] Escape cierra el panel: Escape
+[PASS] KeyV conmuta el selector: keydown KeyV → toggle
+[PASS] UI y API comparten cambiarVehiculo: onSelect + setPreset → cambiarVehiculo
+[PASS] persist mantiene chip y tarjeta: persist → setCurrent
+[PASS] botón táctil V con click directo: querySelector KeyV + click
+[PASS] TECLAS_CONDUCIENDO menciona V: TECLAS_CONDUCIENDO
+[PASS] TECLAS_A_PIE menciona V: TECLAS_A_PIE
+[PASS] CONTROLES_LIBRE menciona V: CONTROLES_LIBRE
+[PASS] 8 vehículos en el catálogo: 8: estandar, patrulla, carga, explorador, turismo, rally, trail, enduro
+[PASS] ids únicos: estandar, patrulla, carga, explorador, turismo, rally, trail, enduro
+[PASS] 3 grupos: 3 todoterrenos, 3 coches, 2 motos: {"todoterreno":3,"coche":3,"moto":2}
+[PASS] default estandar presente: estandar
+
+TODO OK
+npm notice run montes-de-oca-offroad@0.1.0 test:motorcycle
+npm notice run node scripts/vehicle/validate_motorcycle.mjs
+BJS - [20:32:02]: Babylon.js v8.56.2 - Null engine
+PASS trail: drive, turn, instability, recovery, slope, two contacts, anchors and disposal
+PASS enduro: drive, turn, instability, recovery, slope, two contacts, anchors and disposal
+[geometría] trail: piezas=76 triángulos=1656 formas=22 alto=1.233 ancho=0.771
+[geometría] enduro: piezas=74 triángulos=1604 formas=21 alto=1.142 ancho=0.711
+PASS geometría de motos: trail (CRF300L) y enduro (450 SX-F) diferenciadas
+PASS motorcycle and legacy factory overload
+AFTER trail straight: roll 0.00°, yaw 0.000 rad/s, speed 20.28 m/s, fallen null
+AFTER trail gentle-turn: roll 35.34°, yaw 0.528 rad/s, speed 13.19 m/s, fallen null
+AFTER trail medium-turn: roll 37.24°, yaw 0.612 rad/s, speed 13.19 m/s, fallen null
+AFTER trail slalom: roll 35.94°, yaw 0.818 rad/s, speed 10.00 m/s, fallen null
+AFTER trail brake-and-turn: roll 37.24°, yaw 1.004 rad/s, speed 15.91 m/s, fallen null
+AFTER trail low-speed-turn: roll 0.92°, yaw 0.200 rad/s, speed 0.99 m/s, fallen null
+AFTER trail release-recovery: roll 36.51°, yaw 0.709 rad/s, speed 11.98 m/s, fallen null
+AFTER enduro straight: roll 0.00°, yaw 0.000 rad/s, speed 20.91 m/s, fallen null
+AFTER enduro gentle-turn: roll 41.14°, yaw 0.631 rad/s, speed 13.60 m/s, fallen null
+AFTER enduro medium-turn: roll 41.25°, yaw 0.705 rad/s, speed 13.60 m/s, fallen null
+AFTER enduro slalom: roll 40.64°, yaw 0.964 rad/s, speed 10.00 m/s, fallen null
+AFTER enduro brake-and-turn: roll 41.25°, yaw 1.162 rad/s, speed 15.89 m/s, fallen null
+AFTER enduro low-speed-turn: roll 1.05°, yaw 0.230 rad/s, speed 0.99 m/s, fallen null
+AFTER enduro release-recovery: roll 40.53°, yaw 0.845 rad/s, speed 11.98 m/s, fallen null
+npm notice run montes-de-oca-offroad@0.1.0 test:runtime
+npm notice run node scripts/runtime/test_quality.mjs && node scripts/runtime/test_surfaces.mjs && node scripts/runtime/test_audio.mjs && node scripts/runtime/test_vehicle_effects.mjs && node scripts/vehicle/test_surface_suspension.mjs && node scripts/vehicle/test_suspension_actor.mjs && node scripts/roads/test_road_palette.mjs && node scripts/runtime/test_audio_environment.mjs && node scripts/runtime/test_vehicle_impact.mjs && npm run test:water-contact && npm run test:road-surface && node scripts/terrain/test_road_cutouts.mjs
+PASS graphics quality profiles: defaults, HIGH compatibility, monotonic budgets
+PASS surfaces: real widths, asymmetric trims, boundaries, defaults and shared immutable tuning
+PASS audio lifecycle: gesture, surface/speed, ambient stereo, impact cooldown/envelope, bounded reuse, mute and disposal (mocked WebAudio; not auditory validation)
+BJS - [20:32:03]: Babylon.js v8.56.2 - Null engine
+PASS vehicle effects: bounded native pool, ROAD/MUD gating, speed/grip/slip response, persistent reuse and disposal (NullEngine; particle rendering not exercised)
+PASS vehicle surface multipliers and four-point damped suspension
+BJS - [20:32:03]: Babylon.js v8.56.2 - Null engine
+PASS NullEngine vehicle suspension: flat=0.0001 m plane, bump=0.0000 m, ramp transition max=0.0001 m, GLB swap=0.0000 m
+BJS - [20:32:03]: Babylon.js v8.56.2 - Null engine
+road palette and rendering invariants: OK (3 class meshes, unchanged per-vertex layout)
+PASS audio environment: indexed real layers, local bounded samples, distance envelopes, relative water pan, loader failure isolation and checked-in data
+PASS suspension impacts: transient, smooth motion, cooldown, teleport, walking and invalid sample
+npm notice run montes-de-oca-offroad@0.1.0 test:water-contact
+npm notice run node scripts/water/test_water_contact.mjs
+BJS - [20:32:04]: Babylon.js v8.56.2 - Null engine
+BJS - [20:32:04]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 2 triángulos · 0 KiB
+BJS - [20:32:04]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 160 triángulos · 0 KiB
+BJS - [20:32:04]: Setting vertex data kind 'position' with an empty array
+[agua] 0 láminas · 1 cintas · 2 mallas · 160 triángulos · 0 KiB
+PASS water contact: road/bridge dry, river wet, rendered height and stable edge
+npm notice run montes-de-oca-offroad@0.1.0 test:road-surface
+npm notice run node scripts/roads/test_road_surface.mjs && node scripts/roads/test_road_geometry.mjs
+PASS road surface: real triangle contact, skirts/paint excluded, bridge metadata
+BJS - [20:32:05]: Babylon.js v8.56.2 - Null engine
+PASS rendered profiles, terminal closures, four intersection classes, bridge connector/order, footprint and wheel contact
+BJS - [20:32:08]: Babylon.js v8.56.2 - Null engine
+PASS terrain road cutouts: area, interpolated attributes/UV, raw CPU DEM, resident update and unload/rebuild lifecycle

@@ -19,7 +19,7 @@ Los puntos de plaza y Calle Mayor se han alineado con el manifiesto fijo de capt
 
 ## Hallazgos que permiten cambios
 
-Las referencias PNOA individuales capturadas el 4 de octubre de 2026 sustentan cuatro cambios de geometría de cubierta (tres formas y una orientación) y una corrección artística de apariencia. La geometría visible permanece dentro de la huella OSM; la imagen acredita planta y cubierta, no fachadas ni alturas verticales medidas. La heurística actual se calcula con el centroide, el eje principal, el hash, los límites de convexidad y la selección de `src/environment/village.ts`.
+Las referencias PNOA individuales capturadas el 4 de octubre de 2026 sustentan cuatro cambios de geometría de cubierta (formas y orientación) y una corrección artística de apariencia. La geometría visible permanece dentro de la huella OSM; la imagen acredita planta y cubierta, no fachadas ni alturas verticales medidas. La heurística actual se calcula con el centroide, el eje principal, el hash, los límites de convexidad y la selección de `src/environment/village.ts`.
 
 | Way OSM | Runtime anterior | Evidencia PNOA | Decisión acotada | Confianza |
 | --- | --- | --- | --- | --- |

@@ -1,0 +1,8 @@
+npm run typecheck	0
+npm run build	0
+npm test	0
+npm run test:runtime	0
+npm run test:road-surface	0
+npm run test:water-contact	0
+npm run test:motorcycle	0
+npm run test:village-fidelity:final	0

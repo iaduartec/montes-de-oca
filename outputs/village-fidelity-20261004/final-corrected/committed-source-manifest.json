@@ -1,0 +1,58 @@
+{
+  "verifiedAt": "2026-10-04T18:33:17.115021+00:00",
+  "runtimeHead": "92054d44d6367e24ae0d7364d96502df990bcf50",
+  "gateHead": "4c7d7ac",
+  "note": "Isolated committed gates ran at 4c7d7ac; subsequent commit changes test harnesses only. All ten runtime sources match the frozen capture/gameplay manifest exactly.",
+  "sourceChecks": {
+    "src/environment/village.ts": {
+      "testedSha256": "f7b252a41c856af93578ecf6a8df7ef4fa243f765e98210eda30a7a383477dbf",
+      "committedSha256": "f7b252a41c856af93578ecf6a8df7ef4fa243f765e98210eda30a7a383477dbf",
+      "currentSha256": "f7b252a41c856af93578ecf6a8df7ef4fa243f765e98210eda30a7a383477dbf"
+    },
+    "src/environment/village-building-overrides.ts": {
+      "testedSha256": "f1cdd831ca247cbb648a976056e41728f63d471cb8827a7f0ab6ae13bd6df69b",
+      "committedSha256": "f1cdd831ca247cbb648a976056e41728f63d471cb8827a7f0ab6ae13bd6df69b",
+      "currentSha256": "f1cdd831ca247cbb648a976056e41728f63d471cb8827a7f0ab6ae13bd6df69b"
+    },
+    "src/environment/village-roof-geometry.ts": {
+      "testedSha256": "52e21805b7e33aeaf76c4e4a92dafe212c6bd1b08d10a6ac82432c10f2f0316b",
+      "committedSha256": "52e21805b7e33aeaf76c4e4a92dafe212c6bd1b08d10a6ac82432c10f2f0316b",
+      "currentSha256": "52e21805b7e33aeaf76c4e4a92dafe212c6bd1b08d10a6ac82432c10f2f0316b"
+    },
+    "src/environment/village-facade-kits.ts": {
+      "testedSha256": "3a9b63437e8ef2da0942e1da2da5e56cb3b805af11f2f44c33cc1dcc4462860e",
+      "committedSha256": "3a9b63437e8ef2da0942e1da2da5e56cb3b805af11f2f44c33cc1dcc4462860e",
+      "currentSha256": "3a9b63437e8ef2da0942e1da2da5e56cb3b805af11f2f44c33cc1dcc4462860e"
+    },
+    "src/road-draping.ts": {
+      "testedSha256": "e8afeb9011f07caed613bab88ce50f7d5bfa0dd082dd574ef62cdb811e3c5b1e",
+      "committedSha256": "e8afeb9011f07caed613bab88ce50f7d5bfa0dd082dd574ef62cdb811e3c5b1e",
+      "currentSha256": "e8afeb9011f07caed613bab88ce50f7d5bfa0dd082dd574ef62cdb811e3c5b1e"
+    },
+    "src/road-profile.ts": {
+      "testedSha256": "37a92cd44e7787c02334525393201dc71622cfadededaaed53279853a7242811",
+      "committedSha256": "37a92cd44e7787c02334525393201dc71622cfadededaaed53279853a7242811",
+      "currentSha256": "37a92cd44e7787c02334525393201dc71622cfadededaaed53279853a7242811"
+    },
+    "src/world/road-surface.ts": {
+      "testedSha256": "d974bd8c2a632cf8dc2979b6e279cfdda12a28da4ba22865c097bfd9d5e47ba7",
+      "committedSha256": "d974bd8c2a632cf8dc2979b6e279cfdda12a28da4ba22865c097bfd9d5e47ba7",
+      "currentSha256": "d974bd8c2a632cf8dc2979b6e279cfdda12a28da4ba22865c097bfd9d5e47ba7"
+    },
+    "src/terrain.ts": {
+      "testedSha256": "cf5c4a5d2a06c1dd09b6c95d923319098f5d41f912a05901de264f920775e35a",
+      "committedSha256": "cf5c4a5d2a06c1dd09b6c95d923319098f5d41f912a05901de264f920775e35a",
+      "currentSha256": "cf5c4a5d2a06c1dd09b6c95d923319098f5d41f912a05901de264f920775e35a"
+    },
+    "src/terrain-road-cutouts.ts": {
+      "testedSha256": "255adf6aaf3d7796fbafb2c6e7968d3c1f5bee035a11fa71fdec13f8de7c39f8",
+      "committedSha256": "255adf6aaf3d7796fbafb2c6e7968d3c1f5bee035a11fa71fdec13f8de7c39f8",
+      "currentSha256": "255adf6aaf3d7796fbafb2c6e7968d3c1f5bee035a11fa71fdec13f8de7c39f8"
+    },
+    "src/main.ts": {
+      "testedSha256": "1851db324ffc95622e3acd975bcec73125d1a6ea52725a0a0dbadd193ea7b40a",
+      "committedSha256": "1851db324ffc95622e3acd975bcec73125d1a6ea52725a0a0dbadd193ea7b40a",
+      "currentSha256": "1851db324ffc95622e3acd975bcec73125d1a6ea52725a0a0dbadd193ea7b40a"
+    }
+  }
+}
