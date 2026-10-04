@@ -5,7 +5,7 @@
 // Usage:
 //   node scripts/environment/capture_village_fidelity.mjs --phase before --base http://127.0.0.1:5174
 //   node scripts/environment/capture_village_fidelity.mjs --phase after --base http://127.0.0.1:5174
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -235,7 +235,7 @@ async function main() {
       const actorGroundY = await cdp.evaluate(`window.__game.terrainHeightAt(${actorTarget.x},${actorTarget.z})`);
       const actorCamera = { position: { x: actorTarget.x - 13, y: actorGroundY + 5.2, z: actorTarget.z - 11 },
         target: { x: actorTarget.x, y: actorGroundY + 1.25, z: actorTarget.z }, fovRadians: 0.8, preset: 'diagnostic-actor-frame' };
-      manifest = { generatedAt: new Date().toISOString(), generatedFrom: 'actual game, window.__game.terrainHeightAt', baseBaselineHead: '349d98494c1108060e6a0cf7f87f4803701c6a07', quality, viewport: { width, height, deviceScaleFactor: 1 }, fovRadians: 0.8, fovSource: 'UniversalCamera default from Babylon.js 8.56.2; unchanged in src/runtime/rendering-runtime.ts', views,
+      manifest = { generatedAt: new Date().toISOString(), generatedFrom: 'actual game, window.__game.terrainHeightAt', baseBaselineHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), quality, viewport: { width, height, deviceScaleFactor: 1 }, fovRadians: 0.8, fovSource: 'UniversalCamera default from Babylon.js 8.56.2; unchanged in src/runtime/rendering-runtime.ts', views,
         playable: { name: 'spawn', url: `${base}/?quality=${quality}`, camera: 'native player chase camera; unmodified playable spawn' },
         actorDiagnostic: { name: 'character_npc', groundY: actorGroundY, camera: actorCamera,
           explanation: 'Diagnostic free camera showing real village NPCs. Free-camera mode does not instantiate the playable player or vehicle; use spawn.png for playable actors.' } };
@@ -262,7 +262,7 @@ async function main() {
       await waitRenderedScene(cdp);
       await sleep(1600);
       const metrics = await cdp.evaluate(`(()=>{const g=window.__game;const canvas=document.getElementById('render-canvas');const gl=canvas?.getContext('webgl2')??canvas?.getContext('webgl');const ext=gl?.getExtension('WEBGL_debug_renderer_info');return {perf:g.perf(),runtime:g.runtime?.()??null,renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null,textures:g.runtime?.().textures??null,vehicle:g.vehicle?.telemetry?.()??null,player:g.player?.telemetry?.()??null,npc:g.villageNpcs?.stats?.()??null};})()`);
-      const record = { name: view.name, camera: view.camera, groundY: view.groundY, diagnosticPlacement: true, screenshot: `${view.name}.png`, ...metrics };
+      const record = { captureOrigin: { base, capturedAt: new Date().toISOString() }, name: view.name, camera: view.camera, groundY: view.groundY, diagnosticPlacement: true, screenshot: `${view.name}.png`, ...metrics };
       report.views.push(record);
       await cdp.screenshot(resolve(outDir, record.screenshot));
     }
@@ -276,7 +276,7 @@ async function main() {
       await waitRenderedScene(cdp);
       await sleep(2200);
       const playableMetrics = await cdp.evaluate(`(()=>{const g=window.__game;const canvas=document.getElementById('render-canvas');const gl=canvas?.getContext('webgl2')??canvas?.getContext('webgl');const ext=gl?.getExtension('WEBGL_debug_renderer_info');return {perf:g.perf(),runtime:g.runtime?.()??null,renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null,textures:g.runtime?.().textures??null,vehicle:g.vehicle?.telemetry?.()??null,player:g.player?.telemetry?.()??null,npc:g.villageNpcs?.stats?.()??null};})()`);
-      report.views.push({ name: 'spawn', camera: manifest.playable.camera, diagnosticPlacement: false, screenshot: 'spawn.png', ...playableMetrics });
+      report.views.push({ captureOrigin: { base, capturedAt: new Date().toISOString() }, name: 'spawn', camera: manifest.playable.camera, diagnosticPlacement: false, screenshot: 'spawn.png', ...playableMetrics });
       await cdp.screenshot(resolve(outDir, 'playable.png'));
       writeFileSync(resolve(outDir, 'spawn.png'), readFileSync(resolve(outDir, 'playable.png')));
     }
@@ -290,7 +290,7 @@ async function main() {
       await waitRenderedScene(cdp, { requireNpc: true });
       await sleep(1900);
       const actorMetrics = await cdp.evaluate(`(()=>{const g=window.__game;const canvas=document.getElementById('render-canvas');const gl=canvas?.getContext('webgl2')??canvas?.getContext('webgl');const ext=gl?.getExtension('WEBGL_debug_renderer_info');return {perf:g.perf(),runtime:g.runtime?.()??null,renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null,textures:g.runtime?.().textures??null,vehicle:g.vehicle?.telemetry?.()??null,player:g.player?.telemetry?.()??null,npc:g.villageNpcs?.stats?.()??null};})()`);
-      report.views.push({ name: 'character_npc', camera: actor.camera, diagnosticPlacement: true, placement: actor.explanation, screenshot: 'character_npc.png', ...actorMetrics });
+      report.views.push({ captureOrigin: { base, capturedAt: new Date().toISOString() }, name: 'character_npc', camera: actor.camera, diagnosticPlacement: true, placement: actor.explanation, screenshot: 'character_npc.png', ...actorMetrics });
       await cdp.screenshot(resolve(outDir, 'character_npc.png'));
     }
     report.errors = cdp.errors;

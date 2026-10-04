@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "photos": [
+    {
+      "file": "fotos/Iglesia_plaza.jpg",
+      "sha256": "e92ae58fa42ea534de559f2867270e480b060a67801e4ed03ca233971e3a8f7d",
+      "osmWayIds": [
+        90614388
+      ],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3604.jpg",
+      "sha256": "fd267974b48a77fb221590d4cdeba455b8c48f5051506f31666dc124c50c3ee6",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3605.jpg",
+      "sha256": "147ca369d5901e6d53437019bd4050ddcafd49c44f74c7f06167915c6c274b42",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3606.jpg",
+      "sha256": "f69d1a2a90e84846a0320dc2b0bd68dd98e5a9a8993e0d324c38764b0ca6837c",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3607.jpg",
+      "sha256": "b4b1b91102a6e2d2ccd75caabe281db9a73d46b7a19c11beb402134601326418",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3608.jpg",
+      "sha256": "5fdbe2dd4c1db1fc0db87bc573c768e679a6bcf01988d6d20ec7250df0f7fdca",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/VI3E3609.jpg",
+      "sha256": "7ceafff5b94716fc3fa3fc8a830c744acf3e29ea8683055c0adbbea71f2d9cec",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca montes de oca (vistas aereas)/villafrank.JPG",
+      "sha256": "93dc922db35bfad739e255abd85b21be0c51a89577caacd436b8e6be82bf54f5",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    },
+    {
+      "file": "fotos/Villafranca_Montes_de_Oca_Burgos_Camino_Frances_Iglesia_Santiago.jpg",
+      "sha256": "07d798d06fc17b4f9d60e09f29c2def24cd5c87766e217489353bf2c10ba2f96",
+      "osmWayIds": [],
+      "position": null,
+      "facade": null,
+      "cameraBearingDeg": null,
+      "date": null,
+      "author": null,
+      "permission": "reference-only",
+      "use": "local visual reference; source pixels are not shipped",
+      "confidence": "unreviewed"
+    }
+  ]
+}
