@@ -7,7 +7,7 @@ import { build } from 'esbuild';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine.js';
 import { Scene } from '@babylonjs/core/scene.js';
 import { VILLAGE_BUILDING_OVERRIDES, selectVillageBuildingOverride } from '../../src/environment/village-building-overrides.ts';
-import { hipRoofHeight, triangulateGableRoof, triangulateHipRoof } from '../../src/environment/village-roof-geometry.ts';
+import { hipRoofHeight, triangulateCompoundRoof, triangulateGableRoof, triangulateHipRoof } from '../../src/environment/village-roof-geometry.ts';
 import { selectVillageFacadeKit, VILLAGE_FACADE_KITS } from '../../src/environment/village-facade-kits.ts';
 
 const buildings = JSON.parse(fs.readFileSync('public/village/buildings.json', 'utf8')).buildings;
@@ -18,7 +18,8 @@ assert.equal(selectVillageBuildingOverride(818885708).roofShape, 'hip');
 assert.equal(selectVillageBuildingOverride(474364245).roofShape, 'hip');
 assert.equal(selectVillageBuildingOverride(474649085).ridgeRadians, Math.PI / 2);
 assert.equal(selectVillageBuildingOverride(672017718).roofKind, 'teja');
-assert.equal(selectVillageBuildingOverride(672017718).roofShape, undefined, 'hospital keeps its procedural roof volume');
+assert.equal(selectVillageBuildingOverride(672017718).roofShape, 'compound', 'hospital uses compound roof wings');
+assert.ok(Array.isArray(selectVillageBuildingOverride(672017718).compoundWings), 'hospital defines compound wings');
 assert.equal(selectVillageBuildingOverride(310174514), undefined, 'verified no-op control is not overridden');
 assert.equal(selectVillageFacadeKit(1, { artistic: VILLAGE_FACADE_KITS[0] }).id, VILLAGE_FACADE_KITS[0].id);
 assert.equal(selectVillageFacadeKit(1, { evidence: VILLAGE_FACADE_KITS[1], artistic: VILLAGE_FACADE_KITS[0] }).id, VILLAGE_FACADE_KITS[1].id);
@@ -104,6 +105,35 @@ for (const id of [818885708, 474364245]) {
   assert.ok(Math.abs(triangleArea - Math.abs(signed)) < 1e-4, `${id} roof tessellation preserves OSM footprint area`);
 }
 
+{
+  const hospital = buildings.find(b => b.id === 672017718);
+  const override = selectVillageBuildingOverride(672017718);
+  assert.ok(hospital && override?.compoundWings, 'hospital building and override wings exist');
+  const topY = hospital.heightM;
+  const compound = triangulateCompoundRoof({
+    polygon: hospital.footprint,
+    wings: override.compoundWings,
+    topY,
+  });
+  assert.ok(compound.triangles.length > 0, 'hospital generates compound triangles');
+  let compoundArea = 0, compoundMaxY = -Infinity;
+  for (const tri of compound.triangles) {
+    const [a, b, c] = tri;
+    const centroid = [(a[0] + b[0] + c[0]) / 3, (a[2] + b[2] + c[2]) / 3];
+    assert.ok(inside(hospital.footprint, centroid[0], centroid[1]), 'hospital triangle centroid remains in footprint');
+    for (const v of [a, b, c]) {
+      assert.ok(inside(hospital.footprint, v[0], v[2]), 'hospital triangle vertex remains in footprint');
+    }
+    compoundMaxY = Math.max(compoundMaxY, a[1], b[1], c[1]);
+    compoundArea += Math.abs((b[0] - a[0]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[0] - a[0])) / 2;
+  }
+  const footprintArea = Math.abs(area(hospital.footprint));
+  assert.ok(Math.abs(compoundArea - footprintArea) < 1e-3, 'compound roof tessellation preserves 1259 m² area');
+  assert.ok(compoundMaxY <= topY + 1e-6, 'compound roof does not exceed topY');
+  assert.ok(compound.wings.some(w => w.roofKind === 'chapa'), 'compound roof contains glazing patch in chapa');
+  assert.ok(compound.wings.some(w => w.roofKind === 'teja'), 'compound roof contains main wings in teja');
+}
+
 const temp = mkdtempSync(resolve('.village-nullengine-'));
 const bundled = await build({ entryPoints: ['src/environment/village.ts'], bundle: true, packages: 'external', platform: 'node', format: 'esm', write: false });
 const modulePath = resolve(temp, 'village.mjs');
@@ -139,11 +169,17 @@ async function renderFixture(building, facadeKit, detailed = false) {
       facadeKitsByBuilding: { [building.id]: { evidence: facadeKit } },
     });
     const roof = scene.meshes.find(mesh => mesh.name.startsWith(`pueblo:tejado:${building.roofKind}`));
+    const roofMeshes = scene.meshes.filter(mesh => mesh.name.startsWith('pueblo:tejado:'));
     const body = scene.meshes.find(mesh => mesh.name.startsWith(`pueblo:cuerpo:${building.materialKind}`));
     const shutters = scene.meshes.find(mesh => mesh.name === 'pueblo:contraventanas');
     const result = {
       positions: roof?.getVerticesData('position') ?? [],
       indices: roof?.getIndices() ?? [],
+      roofMeshes: roofMeshes.map(m => ({
+        name: m.name,
+        positions: m.getVerticesData('position') ?? [],
+        indices: m.getIndices() ?? [],
+      })),
       bodyPositions: body?.getVerticesData('position') ?? [],
       shutterVertices: shutters?.getTotalVertices() ?? 0,
       stats: village.stats,
@@ -192,6 +228,40 @@ try {
     }
     assert.ok(Math.abs(meshArea - Math.abs(area(building.footprint))) < 1e-3, `${id} rendered roof area equals footprint area`);
   }
+  const hospital = buildings.find(item => item.id === 672017718);
+  assert.ok(hospital, 'runtime fixture exists for 672017718');
+  const hospitalScene = await renderFixture(hospital, VILLAGE_FACADE_KITS[2]);
+  const tejaMesh = hospitalScene.roofMeshes.find(m => m.name.includes(':teja'));
+  const chapaMesh = hospitalScene.roofMeshes.find(m => m.name.includes(':chapa'));
+  assert.ok(tejaMesh && tejaMesh.positions.length > 0, '672017718 renders teja roof mesh');
+  assert.ok(chapaMesh && chapaMesh.positions.length > 0, '672017718 renders chapa glazing mesh');
+  const hospitalBodyPoints = new Set();
+  for (let i = 0; i < hospitalScene.bodyPositions.length; i += 3) {
+    hospitalBodyPoints.add(`${hospitalScene.bodyPositions[i].toFixed(5)}|${hospitalScene.bodyPositions[i + 1].toFixed(5)}|${hospitalScene.bodyPositions[i + 2].toFixed(5)}`);
+  }
+  let hospitalTotalArea = 0;
+  for (const m of hospitalScene.roofMeshes) {
+    for (let i = 0; i < m.indices.length; i += 3) {
+      const coords = [0, 1, 2].map(k => {
+        const index = m.indices[i + k] * 3;
+        return [m.positions[index], m.positions[index + 1], m.positions[index + 2]];
+      });
+      const [a, b, c] = coords;
+      const centroid = [(a[0] + b[0] + c[0]) / 3, (a[2] + b[2] + c[2]) / 3];
+      assert.ok(inside(hospital.footprint, centroid[0], centroid[1]), '672017718 rendered roof triangle stays in footprint');
+      hospitalTotalArea += Math.abs((b[0] - a[0]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[0] - a[0])) / 2;
+      for (const [x, y, z] of coords) {
+        if (hospital.footprint.some((p, j) => {
+          const q = hospital.footprint[(j + 1) % hospital.footprint.length], dx = q[0] - p[0], dz = q[1] - p[1];
+          const t = Math.max(0, Math.min(1, ((x - p[0]) * dx + (z - p[1]) * dz) / (dx * dx + dz * dz || 1)));
+          return Math.hypot(x - p[0] - dx * t, z - p[1] - dz * t) < 1e-5;
+        })) {
+          assert.ok(hospitalBodyPoints.has(`${x.toFixed(5)}|${y.toFixed(5)}|${z.toFixed(5)}`), '672017718 roof boundary vertex joins the wall top');
+        }
+      }
+    }
+  }
+  assert.ok(Math.abs(hospitalTotalArea - Math.abs(area(hospital.footprint))) < 1e-3, '672017718 rendered roof area equals footprint area');
   const building = buildings.find(item => item.id === 818885706);
   const styleWithShutters = await renderFixture(building, VILLAGE_FACADE_KITS[0], true);
   const styleWithoutShutters = await renderFixture(building, VILLAGE_FACADE_KITS[2], true);

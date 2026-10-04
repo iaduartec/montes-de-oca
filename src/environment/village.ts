@@ -39,7 +39,7 @@ import { gridExtent } from '../heightfield';
 import { buildingRoofTint, buildingTint } from './building-tint';
 import { selectRoofShape } from './roof-shape';
 import { selectVillageBuildingOverride } from './village-building-overrides';
-import { triangulateGableRoof, triangulateHipRoof, type RoofTriangle } from './village-roof-geometry';
+import { triangulateCompoundRoof, triangulateGableRoof, triangulateHipRoof, type RoofTriangle } from './village-roof-geometry';
 import { constrainEaveOverhang, VILLAGE_DETAIL_RADIUS_M } from './roof-clearance';
 import { nearestFacadeRoutePoint, selectVillageFacadeKit, type FacadeRoutePoint, type VillageFacadeKitSources } from './village-facade-kits';
 import { VILLAGE_PILOT_HOUSES, type VillagePilotHouseStyle } from './village-pilot';
@@ -1030,6 +1030,10 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
   // Longitud media de la cumbrera: en cuatro aguas se recorta en los testeros.
   const ridgeHalfU = shape === 'hip' ? Math.max(0, axis.halfU - axis.halfV) : axis.halfU;
 
+  const compound = shape === 'compound' && override?.compoundWings
+    ? triangulateCompoundRoof({ polygon: points, wings: override.compoundWings, topY })
+    : null;
+
   // Altura del tejado POR VERTICE. Con tejado plano es `topY` para todos; con
   // dos aguas sube linealmente desde los aleros hasta la cumbrera, lo que deja
   // los muros sin agujeros en los entrantes del footprint.
@@ -1042,7 +1046,9 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     const v = dx * -axis.u[1] + dz * axis.u[0]; // componente sobre el eje corto
     projU.push(u);
     let y = topY;
-    if (gable) {
+    if (compound) {
+      y = compound.heightAt([x, z]);
+    } else if (gable) {
       y = roofEaveY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV));
     } else if (shape === 'hip') {
       // Distancia adimensional al borde: 0 en la cumbrera, 1 en el alero. El
@@ -1059,11 +1065,13 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     roofY.push(y);
   }
 
-  const roofSurfaceTriangles: RoofTriangle[] = gable
-    ? triangulateGableRoof(points, { center: axis.c, axis: axis.u, halfV: axis.halfV, eaveY: roofEaveY, rise })
-    : shape === 'hip' && override?.roofShape === 'hip'
-      ? triangulateHipRoof(points, { center: axis.c, axis: axis.u, halfU: axis.halfU, halfV: axis.halfV, ridgeHalfU, topY, drop: hipDrop })
-      : [];
+  const roofSurfaceTriangles: RoofTriangle[] = compound
+    ? [...compound.triangles]
+    : gable
+      ? triangulateGableRoof(points, { center: axis.c, axis: axis.u, halfV: axis.halfV, eaveY: roofEaveY, rise })
+      : shape === 'hip' && override?.roofShape === 'hip'
+        ? triangulateHipRoof(points, { center: axis.c, axis: axis.u, halfU: axis.halfU, halfV: axis.halfV, ridgeHalfU, topY, drop: hipDrop })
+        : [];
 
   const ccw = signedArea(points) > 0;
   const ridgeSpan = Math.max(1e-6, 2 * axis.halfU);
@@ -1092,7 +1100,7 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
       pushWallStrip(body, a[0], a[1], b[0], b[1], baseY, topA, topB, edgeNx, edgeNz);
     }
 
-    if (shape === 'flat' || shape === 'shed' || gable || (shape === 'hip' && override?.roofShape === 'hip')) continue;
+    if (shape === 'flat' || shape === 'shed' || gable || (shape === 'hip' && override?.roofShape === 'hip') || compound) continue;
 
     // Cuatro aguas: cada arista sube hasta la cumbrera recortada. En los testeros
     // los dos extremos caen en el mismo punto y sale un triangulo de faldon.
@@ -1126,9 +1134,18 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     }
   }
 
-  for (const [a, b, c] of roofSurfaceTriangles) pushRoofTriangle(roof, a, b, c, axis.c);
-
-  tintVertices(roof, roofFirstVertex, roofTint);
+  if (compound) {
+    for (const wing of compound.wings) {
+      const wingRoof = ctx.roofs[wing.roofKind];
+      const wingFirstVertex = wingRoof.positions.length / 3;
+      for (const [a, b, c] of wing.triangles) pushRoofTriangle(wingRoof, a, b, c, axis.c);
+      const wingTint = wing.roofTint ? [baseRoofTint[0] * wing.roofTint[0], baseRoofTint[1] * wing.roofTint[1], baseRoofTint[2] * wing.roofTint[2]] as const : roofTint;
+      tintVertices(wingRoof, wingFirstVertex, wingTint);
+    }
+  } else {
+    for (const [a, b, c] of roofSurfaceTriangles) pushRoofTriangle(roof, a, b, c, axis.c);
+    tintVertices(roof, roofFirstVertex, roofTint);
+  }
 
   const pilotStyle = VILLAGE_PILOT_HOUSES[building.id] ?? (detailed
     ? selectVillageFacadeKit(building.id, ctx.facadeKitsByBuilding?.[building.id])
