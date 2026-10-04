@@ -26,8 +26,17 @@ export const VILLAGE_FACADE_KITS: readonly VillageFacadeKit[] = [
   { id: 'casa-cuadra', tileCourses: false, stoneReturns: true, chimney: true, porton: true, sparseWindows: true, shutters: false },
 ];
 
-/** Stable ID hashing avoids adjacent OSM ids producing repetitive facade runs. */
-export function selectVillageFacadeKit(buildingId: number): VillageFacadeKit {
+export interface VillageFacadeKitSources {
+  readonly building?: VillageFacadeKit;
+  readonly evidence?: VillageFacadeKit;
+  readonly artistic?: VillageFacadeKit;
+}
+
+/** Evidence-backed choices take precedence; stable ID hashing remains fallback. */
+export function selectVillageFacadeKit(buildingId: number, sources: VillageFacadeKitSources = {}): VillageFacadeKit {
+  if (sources.building) return sources.building;
+  if (sources.evidence) return sources.evidence;
+  if (sources.artistic) return sources.artistic;
   let hash = buildingId | 0;
   hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b);
   hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b);

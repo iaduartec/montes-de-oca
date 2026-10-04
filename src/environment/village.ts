@@ -38,8 +38,10 @@ import type { WorldTerrain } from '../terrain';
 import { gridExtent } from '../heightfield';
 import { buildingRoofTint, buildingTint } from './building-tint';
 import { selectRoofShape } from './roof-shape';
+import { selectVillageBuildingOverride } from './village-building-overrides';
+import { triangulateGableRoof, triangulateHipRoof, type RoofTriangle } from './village-roof-geometry';
 import { constrainEaveOverhang, VILLAGE_DETAIL_RADIUS_M } from './roof-clearance';
-import { nearestFacadeRoutePoint, selectVillageFacadeKit, type FacadeRoutePoint } from './village-facade-kits';
+import { nearestFacadeRoutePoint, selectVillageFacadeKit, type FacadeRoutePoint, type VillageFacadeKitSources } from './village-facade-kits';
 import { VILLAGE_PILOT_HOUSES, type VillagePilotHouseStyle } from './village-pilot';
 
 /* ------------------------------------------------------------------------- *
@@ -94,6 +96,8 @@ export interface LoadVillageOptions {
    */
   readonly mappedWallsUrl?: string;
   readonly facadeRoute?: { readonly points: readonly FacadeRoutePoint[]; readonly radiusM: number };
+  /** Optional per-building facade choices; pilot art retains precedence. */
+  readonly facadeKitsByBuilding?: Readonly<Record<number, VillageFacadeKitSources>>;
   readonly roadClearance?: readonly {
     readonly x: number;
     readonly z: number;
@@ -383,6 +387,19 @@ function principalAxis(points: readonly V2[]): { c: V2; u: V2; halfU: number; ha
     const dz = p[1] - c[1];
     halfU = Math.max(halfU, Math.abs(dx * u[0] + dz * u[1]));
     halfV = Math.max(halfV, Math.abs(dx * v[0] + dz * v[1]));
+  }
+  return { c, u, halfU, halfV };
+}
+
+function roofAxis(points: readonly V2[], ridgeRadians?: number): { c: V2; u: V2; halfU: number; halfV: number } {
+  if (ridgeRadians === undefined) return principalAxis(points);
+  const c = centroidOf(points);
+  const u: V2 = [Math.cos(ridgeRadians), Math.sin(ridgeRadians)];
+  let halfU = 0; let halfV = 0;
+  for (const p of points) {
+    const dx = p[0] - c[0], dz = p[1] - c[1];
+    halfU = Math.max(halfU, Math.abs(dx * u[0] + dz * u[1]));
+    halfV = Math.max(halfV, Math.abs(-dx * u[1] + dz * u[0]));
   }
   return { c, u, halfU, halfV };
 }
@@ -898,6 +915,7 @@ function pushFacadeQuad(
 
 interface BuildContext {
   readonly heightAt: (x: number, z: number) => number;
+  readonly facadeKitsByBuilding: Readonly<Record<number, VillageFacadeKitSources>>;
   /**
    * Muestras del eje viario cercanas al spawn, para orientar ventanas a la calle y
    * clavar postes. `dx`/`dz` es la dirección del eje (opcional: sin ella no se postea).
@@ -924,6 +942,33 @@ interface BuildContext {
   } | null;
 }
 
+interface RoofBoundaryPoint { readonly x: number; readonly z: number; readonly y: number; }
+
+function roofBoundaryPoints(
+  triangles: readonly RoofTriangle[],
+  a: V2,
+  b: V2,
+  startY: number,
+  endY: number,
+): RoofBoundaryPoint[] {
+  const dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
+  const byT = new Map<number, RoofBoundaryPoint>();
+  const add = (t: number, x: number, z: number, y: number): void => {
+    const clamped = Math.max(0, Math.min(1, t));
+    const key = Math.round(clamped * 1e8);
+    if (!byT.has(key)) byT.set(key, { x, z, y });
+  };
+  add(0, a[0], a[1], startY);
+  add(1, b[0], b[1], endY);
+  for (const triangle of triangles) for (const vertex of triangle) {
+    const t = ((vertex[0] - a[0]) * dx + (vertex[2] - a[1]) * dz) / (length * length);
+    if (t < -1e-7 || t > 1 + 1e-7) continue;
+    const x = a[0] + t * dx, z = a[1] + t * dz;
+    if (Math.hypot(vertex[0] - x, vertex[2] - z) <= 1e-5) add(t, vertex[0], vertex[2], vertex[1]);
+  }
+  return [...byT.entries()].sort(([ta], [tb]) => ta - tb).map(([, point]) => point);
+}
+
 /** Construye muros + tejado de UN edificio dentro de los buffers de su grupo. */
 function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean, facadeFocus: FacadeRoutePoint | null): void {
   const points = building.footprint;
@@ -940,12 +985,15 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
   const topY = minY + building.heightM;
 
   const body = ctx.bodies[building.materialKind];
-  const roof = ctx.roofs[building.roofKind];
+  const override = selectVillageBuildingOverride(building.id);
+  const roofKind = override?.roofKind ?? building.roofKind;
+  const roof = ctx.roofs[roofKind];
   const bodyFirstVertex = body.positions.length / 3;
   const roofFirstVertex = roof.positions.length / 3;
-  const roofTint = buildingRoofTint(building.id);
+  const baseRoofTint = buildingRoofTint(building.id);
+  const roofTint = override?.roofTint ? [baseRoofTint[0] * override.roofTint[0], baseRoofTint[1] * override.roofTint[1], baseRoofTint[2] * override.roofTint[2]] as const : baseRoofTint;
 
-  const axis = principalAxis(points);
+  const axis = roofAxis(points, override?.ridgeRadians);
   const elongation = axis.halfV > 0.5 ? axis.halfU / axis.halfV : 0;
   const elongated = elongation >= GABLE_ELONGATION && axis.halfV > 0.5;
   // Forma de la cubierta independiente del LOD de fachadas. La cumbrera se
@@ -958,7 +1006,7 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
   // plano, de modo que es segura tambien en plantas no convexas; solo se limita
   // el tamano para que un unico faldon no cruce un edificio complejo.
   const safeShed = n <= 16 && areaM2 <= 1000;
-  const shape = selectRoofShape({
+  const shape = override?.roofShape ?? selectRoofShape({
     elongated,
     hipAllowed: safeHip,
     shedAllowed: safeShed,
@@ -968,6 +1016,13 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
   // Puntas del tejado: crecen con el ancho y estan limitadas para que ningun
   // edificio se dispare (una nave de 30 m no lleva un fronton de 8 m).
   const rise = gable ? Math.min(Math.max(0.25 * (2 * axis.halfV), 0.4), 3) : 0;
+  // Ordinary gables and the 474649085 correction keep their historic peak;
+  // 818885706 instead keeps its former shed maximum at topY.
+  const peakRise = gable && override?.roofShape === 'gable'
+    ? (override.gablePeakRise ?? 0) * rise
+    : rise;
+  const gablePeakY = topY + peakRise;
+  const roofEaveY = gable ? gablePeakY - rise : topY;
   // Cuanto baja el alero respecto a `topY`; la cumbrera (o el alero alto) queda
   // siempre en `topY` para no alterar la altura maxima medida.
   const hipDrop = shape === 'hip' ? Math.min(Math.max(0.45 * Math.min(axis.halfU, axis.halfV), 0.5), HIP_MAX_DROP_M) : 0;
@@ -988,13 +1043,13 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     projU.push(u);
     let y = topY;
     if (gable) {
-      y = topY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV));
+      y = roofEaveY + rise * (1 - Math.min(1, Math.abs(v) / axis.halfV));
     } else if (shape === 'hip') {
       // Distancia adimensional al borde: 0 en la cumbrera, 1 en el alero. El
       // max() de las dos direcciones da el quiebro de las cuatro aguas; si la
       // planta es cuadrada la cumbrera degenera en un vertice.
       const dShort = Math.abs(v) / Math.max(axis.halfV, 1e-3);
-      const dLong = ridgeHalfU > 1e-3 ? Math.max(0, Math.abs(u) - ridgeHalfU) / Math.max(axis.halfV, 1e-3) : 0;
+      const dLong = Math.max(0, Math.abs(u) - ridgeHalfU) / Math.max(axis.halfV, 1e-3);
       y = topY - hipDrop * Math.min(1, Math.max(dShort, dLong));
     } else if (shape === 'shed') {
       // Faldon unico: sube del alero bajo (-halfV) al alto (+halfV), tope en topY.
@@ -1003,6 +1058,12 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     }
     roofY.push(y);
   }
+
+  const roofSurfaceTriangles: RoofTriangle[] = gable
+    ? triangulateGableRoof(points, { center: axis.c, axis: axis.u, halfV: axis.halfV, eaveY: roofEaveY, rise })
+    : shape === 'hip' && override?.roofShape === 'hip'
+      ? triangulateHipRoof(points, { center: axis.c, axis: axis.u, halfU: axis.halfU, halfV: axis.halfV, ridgeHalfU, topY, drop: hipDrop })
+      : [];
 
   const ccw = signedArea(points) > 0;
   const ridgeSpan = Math.max(1e-6, 2 * axis.halfU);
@@ -1018,33 +1079,20 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     const topA = roofY[i]!;
     const topB = roofY[j]!;
 
-    // Muro: de la base (min del terreno - faldon) hasta la linea de tejado.
-    pushWallStrip(body, a[0], a[1], b[0], b[1], baseY, topA, topB, edgeNx, edgeNz);
-
-    if (shape === 'flat' || shape === 'shed') continue;
-
-    const isEndEdge = Math.abs(projU[i]! - projU[j]!) <= 0.05 * ridgeSpan;
-
-    if (gable) {
-      const uMid = (projU[i]! + projU[j]!) / 2;
-      const ridgeX = axis.c[0] + axis.u[0] * uMid;
-      const ridgeZ = axis.c[1] + axis.u[1] * uMid;
-      const ridgeY = topY + rise;
-      if (isEndEdge) {
-        // Hastial: el triangulo vertical cierra el techo por los extremos y lleva
-        // la normal del muro, porque es continuation de la pared.
-        pushWallTriangle(body, a[0], topA, a[1], b[0], topB, b[1], ridgeX, ridgeY, ridgeZ, edgeNx, edgeNz);
-      } else {
-        // Dos aguas: cuadrilatero desde el alero hasta la cumbrera.
-        const rA = [axis.c[0] + axis.u[0] * projU[i]!, ridgeY, axis.c[1] + axis.u[1] * projU[i]!] as const;
-        const rB = [axis.c[0] + axis.u[0] * projU[j]!, ridgeY, axis.c[1] + axis.u[1] * projU[j]!] as const;
-        const pa = [a[0], topA, a[1]] as const;
-        const pb = [b[0], topB, b[1]] as const;
-        pushRoofTriangle(roof, pa, pb, rB, axis.c);
-        pushRoofTriangle(roof, pa, rB, rA, axis.c);
+    // Follow every roof crease that reaches a source edge so the wall top and
+    // clipped roof boundary share exactly the same vertices and heights.
+    if (roofSurfaceTriangles.length > 0) {
+      const edgePoints = roofBoundaryPoints(roofSurfaceTriangles, a, b, topA, topB);
+      for (let k = 1; k < edgePoints.length; k++) {
+        const p = edgePoints[k - 1]!;
+        const q = edgePoints[k]!;
+        pushWallStrip(body, p.x, p.z, q.x, q.z, baseY, p.y, q.y, edgeNx, edgeNz);
       }
-      continue;
+    } else {
+      pushWallStrip(body, a[0], a[1], b[0], b[1], baseY, topA, topB, edgeNx, edgeNz);
     }
+
+    if (shape === 'flat' || shape === 'shed' || gable || (shape === 'hip' && override?.roofShape === 'hip')) continue;
 
     // Cuatro aguas: cada arista sube hasta la cumbrera recortada. En los testeros
     // los dos extremos caen en el mismo punto y sale un triangulo de faldon.
@@ -1078,11 +1126,15 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
     }
   }
 
+  for (const [a, b, c] of roofSurfaceTriangles) pushRoofTriangle(roof, a, b, c, axis.c);
+
   tintVertices(roof, roofFirstVertex, roofTint);
 
-  const pilotStyle = VILLAGE_PILOT_HOUSES[building.id] ?? (detailed ? selectVillageFacadeKit(building.id) : undefined);
-  if (detailed && pilotStyle?.tileCourses && gable && building.roofKind === 'teja') {
-    buildRoofTileCourses(roof, points, axis, topY, rise, roofTint);
+  const pilotStyle = VILLAGE_PILOT_HOUSES[building.id] ?? (detailed
+    ? selectVillageFacadeKit(building.id, ctx.facadeKitsByBuilding?.[building.id])
+    : undefined);
+  if (detailed && pilotStyle?.tileCourses && gable && roofKind === 'teja') {
+    buildRoofTileCourses(roof, points, axis, roofEaveY, rise, roofTint);
   }
 
   if (detailed) {
@@ -1116,7 +1168,7 @@ function buildBuilding(ctx: BuildContext, building: Building, detailed: boolean,
         [cx - axis.u[0] * 0.3 + v[0] * 0.25, cz - axis.u[1] * 0.3 + v[1] * 0.25],
       ];
       if (corners.some((corner) => distanceToPolygon(points, corner[0], corner[1]) > 0)) return;
-      const ridgeY = gable ? topY + rise : topY;
+      const ridgeY = gable ? gablePeakY : topY;
       const bottom = ridgeY - 0.28;
       const top = ridgeY + 1.4;
       for (let i = 0; i < 4; i++) {
@@ -1562,30 +1614,6 @@ function buildMappedWalls(group: GroupBuffers, walls: readonly MappedWall[], hei
   return walls.length;
 }
 
-/** Triangulo vertical (hastial) con la normal del muro. */
-function pushWallTriangle(
-  g: GroupBuffers,
-  ax: number,
-  ay: number,
-  az: number,
-  bx: number,
-  by: number,
-  bz: number,
-  cx: number,
-  cy: number,
-  cz: number,
-  nx: number,
-  nz: number,
-): void {
-  const length = Math.hypot(nx, nz) || 1;
-  const ux = nx / length;
-  const uz = nz / length;
-  const i0 = pushVertex(g, ax, ay, az, ux, 0, uz);
-  const i1 = pushVertex(g, bx, by, bz, ux, 0, uz);
-  const i2 = pushVertex(g, cx, cy, cz, ux, 0, uz);
-  pushTri(g, i0, i1, i2);
-}
-
 /* ------------------------------------------------------------------------- *
  * Mallas y materiales
  * ------------------------------------------------------------------------- */
@@ -1744,6 +1772,7 @@ export async function loadVillage(
   const shutters = emptyGroup();
   const ctx: BuildContext = {
     heightAt,
+    facadeKitsByBuilding: options.facadeKitsByBuilding ?? {},
     roadClearance: options.roadClearance ?? [],
     bodies,
     roofs,
