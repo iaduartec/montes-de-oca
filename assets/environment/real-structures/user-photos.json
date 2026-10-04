@@ -110,7 +110,9 @@
     {
       "file": "fotos/Villafranca_Montes_de_Oca_Burgos_Camino_Frances_Iglesia_Santiago.jpg",
       "sha256": "07d798d06fc17b4f9d60e09f29c2def24cd5c87766e217489353bf2c10ba2f96",
-      "osmWayIds": [],
+      "osmWayIds": [
+        90614388
+      ],
       "position": null,
       "facade": null,
       "cameraBearingDeg": null,
