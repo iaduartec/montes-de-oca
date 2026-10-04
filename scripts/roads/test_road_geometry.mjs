@@ -66,6 +66,10 @@ try {
   const real=await loadRoadNetwork(scene,mdt,{fetchImpl:async()=>({ok:true,json:async()=>({roads:realRoads})})});
   const realMaxGrade=maxPavementTriangleGrade(real.meshes[0],real.diagnosticBands[0].roles);
   assert.ok(realMaxGrade<1,`OSM/MDT bend pavement has no near-vertical triangle (max ${realMaxGrade})`);
+  const pathMesh=real.meshes.find(m=>m.name==='vias:PATH');
+  const pathBand=real.diagnosticBands.find(b=>b.class==='PATH');
+  const pathMaxGrade=maxPavementTriangleGrade(pathMesh,pathBand.roles);
+  assert.ok(pathMaxGrade<1.35,`OSM/MDT PATH pavement has no near-vertical triangle (max ${pathMaxGrade})`);
   real.dispose();
   const gentle={heightAt:(x,z)=>.04*x+.07*z,normalAt:(x,z,out)=>(out??new Vector3()).set(-.04,1,-.07).normalize()};
   const multi=[{id:'connector',class:'ROAD',width:7.5,bridge:false,points:[[20,0],[20,16]]},{id:'south',class:'ROAD',width:7.5,bridge:false,points:[[0,0],[40,0]]},{id:'north',class:'ROAD',width:7.5,bridge:false,points:[[0,16],[40,16]]},{id:'deck',class:'ROAD',width:7.5,bridge:true,points:[[20,-20],[20,0]]}];
