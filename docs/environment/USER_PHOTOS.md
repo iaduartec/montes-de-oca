@@ -2,7 +2,7 @@
 
 El registro local es `assets/environment/real-structures/user-photos.json`. Guarda ruta y SHA-256, OSM IDs, posición geográfica, fachada, dirección de cámara en grados desde norte, fecha, autor y permiso. Los campos desconocidos permanecen `null`; el permiso de distribución nunca se deduce de la presencia de un archivo. Estas referencias no se copian a `public/` ni se usan como texturas.
 
-La asociación inicial de `fotos/Iglesia_plaza.jpg` a la iglesia OSM 90614388 identifica el sujeto, sin atribuir orientación, fecha, autor ni licencia. Las ocho referencias adicionales quedan sin asociación a casas concretas. Son orientación local: las fotos aéreas apoyan contexto y silueta, no conteos de ventanas. El registro no demuestra corrección de edificios.
+La asociación de `fotos/Iglesia_plaza.jpg` y `fotos/Villafranca_Montes_de_Oca_Burgos_Camino_Frances_Iglesia_Santiago.jpg` a la iglesia OSM 90614388 identifica el sujeto desde la plaza sur y desde Calle Mayor (N-120) respectivamente, sin atribuir fecha, autor ni licencia. Las siete referencias adicionales quedan sin asociación a casas concretas. Son orientación local: las fotos aéreas apoyan contexto y silueta, no conteos de ventanas. El registro no demuestra corrección de edificios.
 
 ```bash
 python3 scripts/environment/register_user_photo.py --check
