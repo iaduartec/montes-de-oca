@@ -1,0 +1,23 @@
+npm notice run montes-de-oca-offroad@0.1.0 test:motorcycle
+npm notice run node scripts/vehicle/validate_motorcycle.mjs
+BJS - [20:32:18]: Babylon.js v8.56.2 - Null engine
+PASS trail: drive, turn, instability, recovery, slope, two contacts, anchors and disposal
+PASS enduro: drive, turn, instability, recovery, slope, two contacts, anchors and disposal
+[geometría] trail: piezas=76 triángulos=1656 formas=22 alto=1.233 ancho=0.771
+[geometría] enduro: piezas=74 triángulos=1604 formas=21 alto=1.142 ancho=0.711
+PASS geometría de motos: trail (CRF300L) y enduro (450 SX-F) diferenciadas
+PASS motorcycle and legacy factory overload
+AFTER trail straight: roll 0.00°, yaw 0.000 rad/s, speed 20.28 m/s, fallen null
+AFTER trail gentle-turn: roll 35.34°, yaw 0.528 rad/s, speed 13.19 m/s, fallen null
+AFTER trail medium-turn: roll 37.24°, yaw 0.612 rad/s, speed 13.19 m/s, fallen null
+AFTER trail slalom: roll 35.94°, yaw 0.818 rad/s, speed 10.00 m/s, fallen null
+AFTER trail brake-and-turn: roll 37.24°, yaw 1.004 rad/s, speed 15.91 m/s, fallen null
+AFTER trail low-speed-turn: roll 0.92°, yaw 0.200 rad/s, speed 0.99 m/s, fallen null
+AFTER trail release-recovery: roll 36.51°, yaw 0.709 rad/s, speed 11.98 m/s, fallen null
+AFTER enduro straight: roll 0.00°, yaw 0.000 rad/s, speed 20.91 m/s, fallen null
+AFTER enduro gentle-turn: roll 41.14°, yaw 0.631 rad/s, speed 13.60 m/s, fallen null
+AFTER enduro medium-turn: roll 41.25°, yaw 0.705 rad/s, speed 13.60 m/s, fallen null
+AFTER enduro slalom: roll 40.64°, yaw 0.964 rad/s, speed 10.00 m/s, fallen null
+AFTER enduro brake-and-turn: roll 41.25°, yaw 1.162 rad/s, speed 15.89 m/s, fallen null
+AFTER enduro low-speed-turn: roll 1.05°, yaw 0.230 rad/s, speed 0.99 m/s, fallen null
+AFTER enduro release-recovery: roll 40.53°, yaw 0.845 rad/s, speed 11.98 m/s, fallen null

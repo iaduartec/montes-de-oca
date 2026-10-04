@@ -41,3 +41,17 @@ Use this skill for runtime art and rendering work in this game. Read the reposit
 The player can use `public/characters/field-player.glb`, built from the retained Kenney Animated Characters 3 source pack under `assets/characters/kenney-animated-characters-3/` with `scripts/player/build_kenney_character.py`. Its license and source are recorded in `asset.json`; the GLB contains Idle, retargeted Walk, and Run groups. Refresh these paths and properties from the live checkout before relying on this note.
 
 The default 4x4 and patrol use `public/vehicles/four-door-utility.glb`. It is a generic four-door SUV, not a Mitsubishi or Nissan model; `public/vehicles/ATTRIBUTION.md` preserves the provider's CC0 and AI-origin claims without presenting them as independently verified. The runtime validates four named wheel pivots and drawable meshes, drives those pivots, and retains a visible procedural fallback. The NullEngine model validator does not prove the asynchronous GLB loaded: verify the actual browser scene and wheel pose with the vehicle capture harness before claiming the asset works. Refresh the live asset, loader, manifest, and triangle/draw measurements before relying on this note.
+
+## Village fidelity comparisons
+
+- DECISION: Keep per-building roof overrides ahead of heuristics; inspect the same actual-game cameras before accepting a roof correction.
+- WHY: A plausible silhouette or passing lookup test can conceal concave roof fans, wall gaps or changed roof peaks.
+- INVARIANT: Retain OSM footprint/position and the existing height source. A ridge-axis correction must preserve the baseline peak unless separate height evidence justifies a change. Clip targeted roof planes within the source polygon and join wall tops at every boundary crease.
+- VALIDATION: Exercise actual renderer vertex/index buffers for source footprints: area, vertices/edge containment, boundary joins, peak, and material group. Compare fixed HIGH/FOV/resolution cameras, draw calls, triangles, meshes and textures. Use `capture_village_fidelity.mjs`; free-camera views exclude the player/vehicle, while native spawn includes actors. Keep no-op controls.
+- ANTI-PATTERN: Testing a height against itself, treating a selector API as connected runtime evidence, inferring facades from orthophotos, or confusing PNOA retrieval date with flight date. Unknown photo author/permission/camera pose stay unknown in the user-photo registry.
+
+- DECISION: Gate captures on the loaded URL, positive rendered geometry and settled terrain; foreground the dedicated CDP tab for rAF measurement.
+- WHY: The debug API can appear before a frame; a hidden Windows Chrome tab can suspend rAF. Repeated zero counters are not a stable scene.
+- INVARIANT: Keep failed attempts separate, record each view origin and source hashes when merging targeted retries, and never carry a frozen absolute baseline URL into another server.
+- VALIDATION: Check actual PNGs, finite positive scene counters and full exception descriptions. Require visible-tab samples on the declared GPU; compare actual camera transforms and PNGs, not only a desired pose in metadata. Reject long rAF suspensions even when most interval percentiles are low. A normal motorcycle turn must pass a no-fall assertion; fall/recovery needs a separate supported fixture.
+- ANTI-PATTERN: Accepting `0/0/0` resources, comparing hidden-tab frame times, clearing failed records without an archive, or requiring a stable motorcycle to fall during a normal hard turn.

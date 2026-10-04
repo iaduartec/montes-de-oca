@@ -1,0 +1,225 @@
+npm notice run montes-de-oca-offroad@0.1.0 test:village-fidelity:final
+npm notice run node scripts/environment/validate_real_structure_evidence.mjs --phase=village
+[OK  ] esquema versionado — schemaVersion 1
+[OK  ] la fuente esta fechada y localizada — PNOA 2023 (PNOA MA 2023) · 2023 · CC BY 4.0
+[OK  ] la fuente declara solo planta/cubierta — nota presente
+[OK  ] se conservan los once objetivos originales — 16 registros
+[OK  ] ids unicos
+[OK  ] house-474364247: ways OSM declarados — 474364247
+[OK  ] house-474364247: ways presentes en el crudo versionado
+[OK  ] house-474364247: bounds WGS84 coinciden con el crudo — crudo -3.30902,42.38813,-3.30888,42.38826
+[OK  ] house-474364247: imagen real localizada
+[OK  ] house-474364247: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364247: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364247: confianza declarada — observado
+[OK  ] house-474364247: discrepancia visible
+[OK  ] house-474364247: estado anterior descrito
+[OK  ] house-474364247: correccion propuesta
+[OK  ] house-474364247: resultado descrito
+[OK  ] house-474364247: comparacion antes/despues — output/real_structures/model/house_474364247.png -> output/real_structures/model/after_house_474364247.png
+[OK  ] house-474364247: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-474364248: ways OSM declarados — 474364248
+[OK  ] house-474364248: ways presentes en el crudo versionado
+[OK  ] house-474364248: bounds WGS84 coinciden con el crudo — crudo -3.30905,42.38802,-3.30890,42.38815
+[OK  ] house-474364248: imagen real localizada
+[OK  ] house-474364248: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-474364248: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-474364248: confianza declarada — observado
+[OK  ] house-474364248: discrepancia visible
+[OK  ] house-474364248: estado anterior descrito
+[OK  ] house-474364248: correccion propuesta
+[OK  ] house-474364248: resultado descrito
+[OK  ] house-474364248: comparacion antes/despues — output/real_structures/model/house_474364248.png -> output/real_structures/model/after_house_474364248.png
+[OK  ] house-474364248: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] house-818885678: ways OSM declarados — 818885678
+[OK  ] house-818885678: ways presentes en el crudo versionado
+[OK  ] house-818885678: bounds WGS84 coinciden con el crudo — crudo -3.30906,42.38800,-3.30893,42.38804
+[OK  ] house-818885678: imagen real localizada
+[OK  ] house-818885678: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-818885678: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-818885678: confianza declarada — sin evidencia
+[OK  ] house-818885678: blocker justificado
+[OK  ] house-818885678: no inventa correccion
+[OK  ] house-1509797545: ways OSM declarados — 1509797545
+[OK  ] house-1509797545: ways presentes en el crudo versionado
+[OK  ] house-1509797545: bounds WGS84 coinciden con el crudo — crudo -3.30908,42.38781,-3.30894,42.38802
+[OK  ] house-1509797545: imagen real localizada
+[OK  ] house-1509797545: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797545: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797545: confianza declarada — sin evidencia
+[OK  ] house-1509797545: blocker justificado
+[OK  ] house-1509797545: no inventa correccion
+[OK  ] house-1509797544: ways OSM declarados — 1509797544
+[OK  ] house-1509797544: ways presentes en el crudo versionado
+[OK  ] house-1509797544: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38774,-3.30897,42.38781
+[OK  ] house-1509797544: imagen real localizada
+[OK  ] house-1509797544: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-1509797544: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-1509797544: confianza declarada — sin evidencia
+[OK  ] house-1509797544: blocker justificado
+[OK  ] house-1509797544: no inventa correccion
+[OK  ] house-305647007: ways OSM declarados — 305647007
+[OK  ] house-305647007: ways presentes en el crudo versionado
+[OK  ] house-305647007: bounds WGS84 coinciden con el crudo — crudo -3.30916,42.38768,-3.30898,42.38774
+[OK  ] house-305647007: imagen real localizada
+[OK  ] house-305647007: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-305647007: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-305647007: confianza declarada — sin evidencia
+[OK  ] house-305647007: blocker justificado
+[OK  ] house-305647007: no inventa correccion
+[OK  ] house-310458426: ways OSM declarados — 310458426
+[OK  ] house-310458426: ways presentes en el crudo versionado
+[OK  ] house-310458426: bounds WGS84 coinciden con el crudo — crudo -3.30870,42.38769,-3.30860,42.38783
+[OK  ] house-310458426: imagen real localizada
+[OK  ] house-310458426: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-310458426: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-310458426: confianza declarada — sin evidencia
+[OK  ] house-310458426: blocker justificado
+[OK  ] house-310458426: no inventa correccion
+[OK  ] house-433198559: ways OSM declarados — 433198559
+[OK  ] house-433198559: ways presentes en el crudo versionado
+[OK  ] house-433198559: bounds WGS84 coinciden con el crudo — crudo -3.30871,42.38759,-3.30861,42.38770
+[OK  ] house-433198559: imagen real localizada
+[OK  ] house-433198559: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] house-433198559: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] house-433198559: confianza declarada — sin evidencia
+[OK  ] house-433198559: blocker justificado
+[OK  ] house-433198559: no inventa correccion
+[OK  ] church-90614388: ways OSM declarados — 90614388
+[OK  ] church-90614388: ways presentes en el crudo versionado
+[OK  ] church-90614388: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38855,-3.30878,42.38877
+[OK  ] church-90614388: imagen real localizada
+[OK  ] church-90614388: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] church-90614388: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] church-90614388: confianza declarada — aproximado
+[OK  ] church-90614388: discrepancia visible
+[OK  ] church-90614388: estado anterior descrito
+[OK  ] church-90614388: correccion propuesta
+[OK  ] church-90614388: resultado descrito
+[OK  ] church-90614388: comparacion antes/despues — output/real_structures/model/before_church_focal_sites.png -> output/real_structures/model/after_church_focal_sites.png
+[OK  ] church-90614388: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] plaza-645040295-741760074: ways OSM declarados — 645040295, 741760074
+[OK  ] plaza-645040295-741760074: ways presentes en el crudo versionado
+[OK  ] plaza-645040295-741760074: bounds WGS84 coinciden con el crudo — crudo -3.30924,42.38873,-3.30868,42.38918
+[OK  ] plaza-645040295-741760074: imagen real localizada
+[OK  ] plaza-645040295-741760074: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] plaza-645040295-741760074: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] plaza-645040295-741760074: confianza declarada — aproximado
+[OK  ] plaza-645040295-741760074: discrepancia visible
+[OK  ] plaza-645040295-741760074: estado anterior descrito
+[OK  ] plaza-645040295-741760074: correccion propuesta
+[OK  ] plaza-645040295-741760074: resultado descrito
+[OK  ] plaza-645040295-741760074: comparacion antes/despues — output/real_structures/model/before_plaza_focal_sites.png -> output/real_structures/model/after_plaza_focal_sites.png
+[OK  ] plaza-645040295-741760074: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] dam-168459142: ways OSM declarados — 168459142
+[OK  ] dam-168459142: ways presentes en el crudo versionado
+[OK  ] dam-168459142: bounds WGS84 coinciden con el crudo — crudo -3.31733,42.36586,-3.31565,42.36704
+[OK  ] dam-168459142: imagen real localizada
+[OK  ] dam-168459142: autoria y licencia — Instituto Geografico Nacional (IGN/CNIG) · CC BY 4.0
+[OK  ] dam-168459142: fecha de captura o desconocimiento explicito — 2023 (vuelo PNOA 2023, registro IDEE spaignPNOA2023)
+[OK  ] dam-168459142: confianza declarada — observado
+[OK  ] dam-168459142: discrepancia visible
+[OK  ] dam-168459142: estado anterior descrito
+[OK  ] dam-168459142: correccion propuesta
+[OK  ] dam-168459142: resultado descrito
+[OK  ] dam-168459142: comparacion antes/despues — output/real_structures/model/dam.png -> output/real_structures/model/after_dam.png
+[OK  ] dam-168459142: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885706: ways OSM declarados — 818885706
+[OK  ] building-818885706: ways presentes en el crudo versionado
+[OK  ] building-818885706: bounds WGS84 coinciden con el crudo — crudo -3.30852,42.38875,-3.30839,42.38885
+[OK  ] building-818885706: imagen real localizada
+[OK  ] building-818885706: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885706: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885706: confianza declarada — observed
+[OK  ] building-818885706: discrepancia visible
+[OK  ] building-818885706: estado anterior descrito
+[OK  ] building-818885706: correccion propuesta
+[OK  ] building-818885706: resultado descrito
+[OK  ] building-818885706: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885706.png -> outputs/village-fidelity-20261004/after/house_818885706.png
+[OK  ] building-818885706: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-818885708: ways OSM declarados — 818885708
+[OK  ] building-818885708: ways presentes en el crudo versionado
+[OK  ] building-818885708: bounds WGS84 coinciden con el crudo — crudo -3.30843,42.38854,-3.30826,42.38865
+[OK  ] building-818885708: imagen real localizada
+[OK  ] building-818885708: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-818885708: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-818885708: confianza declarada — probable
+[OK  ] building-818885708: discrepancia visible
+[OK  ] building-818885708: estado anterior descrito
+[OK  ] building-818885708: correccion propuesta
+[OK  ] building-818885708: resultado descrito
+[OK  ] building-818885708: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_818885708.png -> outputs/village-fidelity-20261004/after/house_818885708.png
+[OK  ] building-818885708: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474364245: ways OSM declarados — 474364245
+[OK  ] building-474364245: ways presentes en el crudo versionado
+[OK  ] building-474364245: bounds WGS84 coinciden con el crudo — crudo -3.30921,42.38739,-3.30906,42.38748
+[OK  ] building-474364245: imagen real localizada
+[OK  ] building-474364245: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474364245: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474364245: confianza declarada — probable
+[OK  ] building-474364245: discrepancia visible
+[OK  ] building-474364245: estado anterior descrito
+[OK  ] building-474364245: correccion propuesta
+[OK  ] building-474364245: resultado descrito
+[OK  ] building-474364245: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474364245.png -> outputs/village-fidelity-20261004/after/house_474364245.png
+[OK  ] building-474364245: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-474649085: ways OSM declarados — 474649085
+[OK  ] building-474649085: ways presentes en el crudo versionado
+[OK  ] building-474649085: bounds WGS84 coinciden con el crudo — crudo -3.30922,42.38728,-3.30909,42.38735
+[OK  ] building-474649085: imagen real localizada
+[OK  ] building-474649085: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-474649085: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-474649085: confianza declarada — observed
+[OK  ] building-474649085: discrepancia visible
+[OK  ] building-474649085: estado anterior descrito
+[OK  ] building-474649085: correccion propuesta
+[OK  ] building-474649085: resultado descrito
+[OK  ] building-474649085: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_474649085.png -> outputs/village-fidelity-20261004/after/house_474649085.png
+[OK  ] building-474649085: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] building-672017718: ways OSM declarados — 672017718
+[OK  ] building-672017718: ways presentes en el crudo versionado
+[OK  ] building-672017718: bounds WGS84 coinciden con el crudo — crudo -3.31020,42.38829,-3.30950,42.38873
+[OK  ] building-672017718: imagen real localizada
+[OK  ] building-672017718: autoria y licencia — Instituto Geografico Nacional / Sistema Cartografico Nacional · CC BY 4.0
+[OK  ] building-672017718: fecha de captura o desconocimiento explicito — vuelo desconocido; recuperacion registrada
+[OK  ] building-672017718: confianza declarada — artistic
+[OK  ] building-672017718: discrepancia visible
+[OK  ] building-672017718: estado anterior descrito
+[OK  ] building-672017718: correccion propuesta
+[OK  ] building-672017718: resultado descrito
+[OK  ] building-672017718: comparacion antes/despues — outputs/village-fidelity-20261004/before/house_672017718.png -> outputs/village-fidelity-20261004/after/house_672017718.png
+[OK  ] building-672017718: la correccion no reclama fachada/vertical — solo planta/cubierta
+[OK  ] village: capturas antes/despues sin errores
+[OK  ] village 818885706: correccion aceptada
+[OK  ] village 818885706: parametros coinciden con runtime
+[OK  ] village 818885706: beforeView existe
+[OK  ] village 818885706: afterView existe
+[OK  ] village 818885706: misma camara y preset
+[OK  ] village 818885706: referencia reutilizable conservada
+[OK  ] village 818885708: correccion aceptada
+[OK  ] village 818885708: parametros coinciden con runtime
+[OK  ] village 818885708: beforeView existe
+[OK  ] village 818885708: afterView existe
+[OK  ] village 818885708: misma camara y preset
+[OK  ] village 818885708: referencia reutilizable conservada
+[OK  ] village 474364245: correccion aceptada
+[OK  ] village 474364245: parametros coinciden con runtime
+[OK  ] village 474364245: beforeView existe
+[OK  ] village 474364245: afterView existe
+[OK  ] village 474364245: misma camara y preset
+[OK  ] village 474364245: referencia reutilizable conservada
+[OK  ] village 474649085: correccion aceptada
+[OK  ] village 474649085: parametros coinciden con runtime
+[OK  ] village 474649085: beforeView existe
+[OK  ] village 474649085: afterView existe
+[OK  ] village 474649085: misma camara y preset
+[OK  ] village 474649085: referencia reutilizable conservada
+[OK  ] village 672017718: correccion aceptada
+[OK  ] village 672017718: parametros coinciden con runtime
+[OK  ] village 672017718: beforeView existe
+[OK  ] village 672017718: afterView existe
+[OK  ] village 672017718: misma camara y preset
+[OK  ] village 672017718: referencia reutilizable conservada
+
+220 checks OK · 10 corregidos · 6 blockers · fase village
+TODO OK
