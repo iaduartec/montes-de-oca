@@ -124,8 +124,8 @@
         3067.357,
         3976.874
       ],
-      "bytes": 114468,
-      "sha256": "32056b326dc6d458f830f386ab4bbe54c5e4242c245ed0e021c4d7a0a01086c7",
+      "bytes": 114408,
+      "sha256": "6c49f265159f7e997f49cd39c1f07a6124d1253ab93274da5f9aa3d90caba860",
       "verticalExtentM": 26.54,
       "triangles": 1731,
       "meshes": 1,
@@ -150,8 +150,8 @@
         3063.04,
         4012.346
       ],
-      "bytes": 140508,
-      "sha256": "6576980612189de4138aa251c3bf177c0720c98b57ea4c70a9bd61011b4f1df1",
+      "bytes": 140448,
+      "sha256": "8af66471746a087a585b5d1a39147e58d9a579c5b55208e3192d753204e47b57",
       "verticalExtentM": 12.76,
       "triangles": 3014,
       "meshes": 1,
@@ -179,8 +179,8 @@
         2440.325,
         1513.065
       ],
-      "bytes": 12392,
-      "sha256": "bdbba7263f7863e1b63eace05e99415c0c698d5a9d3f19005dee8d9aab5498ed",
+      "bytes": 12332,
+      "sha256": "4506e6e075f4c72660904fd1647449cf07af548fb8799752e06821942c5dcf26",
       "verticalExtentM": 5.2,
       "triangles": 174,
       "meshes": 1,
