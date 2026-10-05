@@ -112,7 +112,7 @@ class MeshBatch:
         material = bpy.data.materials.new(f'{name}:vertex-colors')
         material.diffuse_color = (1, 1, 1, 1)
         material.use_nodes = True
-        bsdf = material.node_tree.nodes.get('Principled BSDF')
+        bsdf = next((node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED'), None)
         if bsdf:
             bsdf.inputs['Base Color'].default_value = (1, 1, 1, 1)
             bsdf.inputs['Roughness'].default_value = 0.9
@@ -679,24 +679,6 @@ def sample_terrain_height(grids, x, y, datum):
     return meters - datum
 
 
-def make_plaza(collection, road, source, world_polygon, grids, building_footprints, vertical_datum):
-    p0, p1 = road['points'][0], road['points'][-1]
-    dx, dz = p1[0] - p0[0], p1[1] - p0[1]
-    length = math.hypot(dx, dz)
-    # Set props 8 m north of the mapped living_street centerline, outside its clearance.
-    anchor = ((p0[0] + p1[0]) / 2 + dz / length * 8, (p0[1] + p1[1]) / 2 - dx / length * 8)
-    anchor_y = sample_terrain_height(grids, anchor[0], anchor[1], vertical_datum)
-    batch = MeshBatch()
-    # Linear vertex colours based on the grey paving / dark railing visible in
-    # the user's photo. Pattern and elevations remain artistic, not surveyed.
-    # Keep enough slab variation to read as stone without a high-contrast 1 m grid.
-    paving_palette = ((0.2075, 0.2035, 0.1975, 1.0), (0.2095, 0.2055, 0.1995, 1.0),
-                      (0.2115, 0.2075, 0.2015, 1.0), (0.2085, 0.2045, 0.1985, 1.0))
-    paving_light = (0.265, 0.254, 0.235, 1.0)
-    plaza_metal = (0.045, 0.048, 0.045, 1.0)
-
-    # Rebuild the mapped square as a continuous, fine-grained paving surface that
-    # samples the exact runtime terrain triangles at shared vertices. A narrow
 def make_plaza(collection, road, source, world_polygon, grids, building_footprints, vertical_datum):
     p0, p1 = road['points'][0], road['points'][-1]
     dx, dz = p1[0] - p0[0], p1[1] - p0[1]
