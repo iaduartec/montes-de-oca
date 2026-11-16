@@ -1,0 +1,578 @@
+{
+  "generatedAt": "2026-10-04T16:53:58.413Z",
+  "generatedFrom": "actual game, window.__game.terrainHeightAt",
+  "baseBaselineHead": "349d98494c1108060e6a0cf7f87f4803701c6a07",
+  "quality": "HIGH",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "deviceScaleFactor": 1
+  },
+  "fovRadians": 0.8,
+  "fovSource": "UniversalCamera default from Babylon.js 8.56.2; unchanged in src/runtime/rendering-runtime.ts",
+  "views": [
+    {
+      "name": "calle_mayor_1",
+      "target": {
+        "x": 3060,
+        "z": 3992
+      },
+      "offset": {
+        "x": -21,
+        "z": -14
+      },
+      "cameraHeight": 6,
+      "targetHeight": 1.5,
+      "groundY": 77.60000000000002,
+      "camera": {
+        "position": {
+          "x": 3039,
+          "y": 83.60000000000002,
+          "z": 3978
+        },
+        "target": {
+          "x": 3060,
+          "y": 79.10000000000002,
+          "z": 3992
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "calle_mayor_2",
+      "target": {
+        "x": 3075,
+        "z": 3952
+      },
+      "offset": {
+        "x": -22,
+        "z": -9
+      },
+      "cameraHeight": 5.5,
+      "targetHeight": 1.5,
+      "groundY": 77,
+      "camera": {
+        "position": {
+          "x": 3053,
+          "y": 82.5,
+          "z": 3943
+        },
+        "target": {
+          "x": 3075,
+          "y": 78.5,
+          "z": 3952
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "plaza",
+      "target": {
+        "x": 3060,
+        "z": 3963
+      },
+      "offset": {
+        "x": -1,
+        "z": 16
+      },
+      "cameraHeight": 20,
+      "targetHeight": 1.5,
+      "groundY": 78,
+      "camera": {
+        "position": {
+          "x": 3059,
+          "y": 98,
+          "z": 3979
+        },
+        "target": {
+          "x": 3060,
+          "y": 79.5,
+          "z": 3963
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "iglesia",
+      "target": {
+        "x": 3067.357,
+        "z": 3976.874
+      },
+      "offset": {
+        "x": 0,
+        "z": 42
+      },
+      "cameraHeight": 21,
+      "targetHeight": 4.5,
+      "groundY": 78,
+      "camera": {
+        "position": {
+          "x": 3067.357,
+          "y": 99,
+          "z": 4018.874
+        },
+        "target": {
+          "x": 3067.357,
+          "y": 82.5,
+          "z": 3976.874
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "entrada_norte",
+      "target": {
+        "x": 3063,
+        "z": 4058
+      },
+      "offset": {
+        "x": -14,
+        "z": -30
+      },
+      "cameraHeight": 7,
+      "targetHeight": 1.5,
+      "groundY": 79.39999999999998,
+      "camera": {
+        "position": {
+          "x": 3049,
+          "y": 86.39999999999998,
+          "z": 4028
+        },
+        "target": {
+          "x": 3063,
+          "y": 80.89999999999998,
+          "z": 4058
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "entrada_sur",
+      "target": {
+        "x": 3080,
+        "z": 3900
+      },
+      "offset": {
+        "x": 12,
+        "z": 30
+      },
+      "cameraHeight": 8,
+      "targetHeight": 1.5,
+      "groundY": 76,
+      "camera": {
+        "position": {
+          "x": 3092,
+          "y": 84,
+          "z": 3930
+        },
+        "target": {
+          "x": 3080,
+          "y": 77.5,
+          "z": 3900
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "pilot_houses",
+      "target": {
+        "x": 3090,
+        "z": 3975
+      },
+      "offset": {
+        "x": -14,
+        "z": -16
+      },
+      "cameraHeight": 7,
+      "targetHeight": 1.5,
+      "groundY": 75,
+      "camera": {
+        "position": {
+          "x": 3076,
+          "y": 82,
+          "z": 3959
+        },
+        "target": {
+          "x": 3090,
+          "y": 76.5,
+          "z": 3975
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "road",
+      "target": {
+        "x": 3087.53,
+        "z": 3935.05
+      },
+      "offset": {
+        "x": 0,
+        "z": -24
+      },
+      "cameraHeight": 5.5,
+      "targetHeight": 1.5,
+      "groundY": 75,
+      "camera": {
+        "position": {
+          "x": 3087.53,
+          "y": 80.5,
+          "z": 3911.05
+        },
+        "target": {
+          "x": 3087.53,
+          "y": 76.5,
+          "z": 3935.05
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "vehicle",
+      "target": {
+        "x": 3087.53,
+        "z": 3935.05
+      },
+      "offset": {
+        "x": -12,
+        "z": -9
+      },
+      "cameraHeight": 6.5,
+      "targetHeight": 1.2,
+      "groundY": 75,
+      "camera": {
+        "position": {
+          "x": 3075.53,
+          "y": 81.5,
+          "z": 3926.05
+        },
+        "target": {
+          "x": 3087.53,
+          "y": 76.2,
+          "z": 3935.05
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "track",
+      "target": {
+        "x": 3087,
+        "z": 3780
+      },
+      "offset": {
+        "x": 14,
+        "z": 24
+      },
+      "cameraHeight": 8,
+      "targetHeight": 1.5,
+      "groundY": 77,
+      "camera": {
+        "position": {
+          "x": 3101,
+          "y": 85,
+          "z": 3804
+        },
+        "target": {
+          "x": 3087,
+          "y": 78.5,
+          "z": 3780
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "forest",
+      "target": {
+        "x": 3270,
+        "z": 4140
+      },
+      "offset": {
+        "x": -45,
+        "z": -54
+      },
+      "cameraHeight": 30,
+      "targetHeight": 3,
+      "groundY": 64,
+      "camera": {
+        "position": {
+          "x": 3225,
+          "y": 94,
+          "z": 4086
+        },
+        "target": {
+          "x": 3270,
+          "y": 67,
+          "z": 4140
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "river",
+      "target": {
+        "x": 2820,
+        "z": 2122
+      },
+      "offset": {
+        "x": -28,
+        "z": -18
+      },
+      "cameraHeight": 17,
+      "targetHeight": 2,
+      "groundY": 102,
+      "camera": {
+        "position": {
+          "x": 2792,
+          "y": 119,
+          "z": 2104
+        },
+        "target": {
+          "x": 2820,
+          "y": 104,
+          "z": 2122
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "aerial",
+      "target": {
+        "x": 3070,
+        "z": 3995
+      },
+      "offset": {
+        "x": 75,
+        "z": -85
+      },
+      "cameraHeight": 180,
+      "targetHeight": 0,
+      "groundY": 77,
+      "camera": {
+        "position": {
+          "x": 3145,
+          "y": 257,
+          "z": 3910
+        },
+        "target": {
+          "x": 3070,
+          "y": 77,
+          "z": 3995
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_310174514",
+      "target": {
+        "x": 3050.902,
+        "z": 3902.772
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 310174514,
+      "groundY": 78,
+      "camera": {
+        "position": {
+          "x": 3050.902,
+          "y": 103,
+          "z": 3890.772
+        },
+        "target": {
+          "x": 3050.902,
+          "y": 86,
+          "z": 3902.772
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_818885706",
+      "target": {
+        "x": 3110.194,
+        "z": 3992.493
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 818885706,
+      "groundY": 72,
+      "camera": {
+        "position": {
+          "x": 3110.194,
+          "y": 97,
+          "z": 3980.493
+        },
+        "target": {
+          "x": 3110.194,
+          "y": 80,
+          "z": 3992.493
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_818885708",
+      "target": {
+        "x": 3121.82,
+        "z": 3969.491
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 818885708,
+      "groundY": 69.63599999999997,
+      "camera": {
+        "position": {
+          "x": 3121.82,
+          "y": 94.63599999999997,
+          "z": 3957.491
+        },
+        "target": {
+          "x": 3121.82,
+          "y": 77.63599999999997,
+          "z": 3969.491
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_474364245",
+      "target": {
+        "x": 3054.489,
+        "z": 3838.234
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 474364245,
+      "groundY": 80.10220000000004,
+      "camera": {
+        "position": {
+          "x": 3054.489,
+          "y": 105.10220000000004,
+          "z": 3826.234
+        },
+        "target": {
+          "x": 3054.489,
+          "y": 88.10220000000004,
+          "z": 3838.234
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_474649085",
+      "target": {
+        "x": 3052.797,
+        "z": 3828.178
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 474649085,
+      "groundY": 80.44060000000002,
+      "camera": {
+        "position": {
+          "x": 3052.797,
+          "y": 105.44060000000002,
+          "z": 3816.178
+        },
+        "target": {
+          "x": 3052.797,
+          "y": 88.44060000000002,
+          "z": 3828.178
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    },
+    {
+      "name": "house_672017718",
+      "target": {
+        "x": 3002.991,
+        "z": 3955.656
+      },
+      "offset": {
+        "x": 0,
+        "z": -12
+      },
+      "cameraHeight": 25,
+      "targetHeight": 8,
+      "buildingId": 672017718,
+      "title": "Antiguo Hospital",
+      "groundY": 88.86880000000008,
+      "camera": {
+        "position": {
+          "x": 3002.991,
+          "y": 113.86880000000008,
+          "z": 3943.656
+        },
+        "target": {
+          "x": 3002.991,
+          "y": 96.86880000000008,
+          "z": 3955.656
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      }
+    }
+  ],
+  "playable": {
+    "name": "spawn",
+    "url": "http://127.0.0.1:5174/?quality=HIGH",
+    "camera": "native player chase camera; unmodified playable spawn"
+  },
+  "actorDiagnostic": {
+    "name": "character_npc",
+    "groundY": 77.86120000000005,
+    "camera": {
+      "position": {
+        "x": 3050.04,
+        "y": 83.06120000000006,
+        "z": 4001.346
+      },
+      "target": {
+        "x": 3063.04,
+        "y": 79.11120000000005,
+        "z": 4012.346
+      },
+      "fovRadians": 0.8,
+      "preset": "diagnostic-actor-frame"
+    },
+    "explanation": "Diagnostic free camera showing real village NPCs. Free-camera mode does not instantiate the playable player or vehicle; use spawn.png for playable actors."
+  }
+}

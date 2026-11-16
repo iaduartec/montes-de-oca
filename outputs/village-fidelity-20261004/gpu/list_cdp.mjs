@@ -1,0 +1,1 @@
+const pages=await(await fetch('http://127.0.0.1:9239/json/list')).json();console.log(JSON.stringify(pages.map(({id,type,title,url})=>({id,type,title,url:url.startsWith('http://127.0.0.1')?url:(new URL(url)).origin})),null,2));

@@ -1,0 +1,152 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:4188",
+  "quality": "HIGH",
+  "durationSeconds": 12,
+  "method": "Free camera (actors/NPC excluded); Real GPU browser rAF intervals after tile settle, fixed scene locations; Windows Chrome via isolated profile",
+  "views": [
+    {
+      "camera": {
+        "name": "village",
+        "px": 3090,
+        "py": 100,
+        "pz": 3900,
+        "tx": 3070,
+        "ty": 50,
+        "tz": 4020
+      },
+      "width": 1920,
+      "height": 1080,
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 (0x00001F02) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "firstWorldReadyMs": 9757.1535,
+      "firstPlayableMs": null,
+      "loadAndSettleMs": 29654.495199999998,
+      "frames": 0,
+      "frameTimeMs": {},
+      "fps": null,
+      "perf": {
+        "fps": 0,
+        "frameTimeMs": 0,
+        "drawCalls": 0,
+        "triangles": 0,
+        "vertices": 1289379,
+        "activeMeshes": 51
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 2,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 377.4999999701977,
+          "roadCutoutBuildMs": 2302.6000000089407,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 1,
+            "waterPan": 0.8087360811875092
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 2,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 364,
+          "lastTreeCandidates": 2,
+          "lastVillageCandidates": 135,
+          "maxWaterCandidates": 364,
+          "maxTreeCandidates": 2,
+          "maxVillageCandidates": 135
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1920,
+        "renderHeight": 1080,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "heap": 257173943,
+      "requests": 83,
+      "resourceBytes": 24900
+    }
+  ],
+  "errors": [],
+  "failure": "TypeError: Cannot read properties of null (reading 'toFixed')"
+}

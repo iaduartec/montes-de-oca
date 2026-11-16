@@ -1,0 +1,485 @@
+[
+  {
+    "name": "worst_01",
+    "id": "PATH/311677968/80.868",
+    "severity": 1.5594281166400885,
+    "metrics": [
+      "crossSlope",
+      "sourceBranchCrossSlope",
+      "ownFacetBank",
+      "crossSectionSlope"
+    ],
+    "sample": {
+      "id": "311677968",
+      "class": "PATH",
+      "chainageM": 80.86807818134571,
+      "contactClass": "PATH",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.5391007683457139,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "PATH"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "PATH"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 2490.827357678177,
+      "z": 1735.5191895885948,
+      "tangentX": 0.7279397668728885,
+      "tangentZ": 0.6856410838077345,
+      "height": 142.91569783235042,
+      "longitudinalSlope": 0.0948116457575511,
+      "crossSlope": 1.5594281166400885,
+      "sourceBranchCrossSlope": 1.5594281166400885,
+      "ownFacetBank": 1.5594281166400885,
+      "centerlineFiniteSlope": 0.02752740713088997,
+      "crossSectionSlope": 1.5575844043329803,
+      "heightDeltaPerMeter": 0.4301240019158873,
+      "slopeDerivative": 0.36979474948870567,
+      "normalDeltaPerMeter": 0.07677826553057768
+    },
+    "query": "px=2483.547960009448&py=162.91569783235042&pz=1728.6627787505174&tx=2490.827357678177&ty=142.91569783235042&tz=1735.5191895885948&vx=2490.827357678177&vz=1735.5191895885948&vyaw=0.8153123103050288&player=0"
+  },
+  {
+    "name": "worst_02",
+    "id": "PATH/310896594/4.419",
+    "severity": 1.4091777979911149,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "310896594",
+      "class": "PATH",
+      "chainageM": 4.418744858265626,
+      "contactClass": "ROAD",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9767267051226476,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": true,
+      "x": 3035.805714285714,
+      "z": 3967.0885714285714,
+      "tangentX": -0.9537291356396014,
+      "tangentZ": 0.30066715123561244,
+      "height": 81.1790815654694,
+      "longitudinalSlope": 0.16573981854275613,
+      "crossSlope": 0.14406170085464856,
+      "sourceBranchCrossSlope": 0.14406170085464856,
+      "ownFacetBank": 0.14406170085464856,
+      "centerlineFiniteSlope": 0.1655076816182941,
+      "crossSectionSlope": 0.14520988533607945,
+      "heightDeltaPerMeter": 0.35311418505436676,
+      "slopeDerivative": 1.4091777979911149,
+      "normalDeltaPerMeter": 0.9060414576793097
+    },
+    "query": "px=3045.3430056421103&py=101.1790815654694&pz=3964.081899916215&tx=3035.805714285714&ty=81.1790815654694&tz=3967.0885714285714&vx=3035.805714285714&vz=3967.0885714285714&vyaw=-1.2654042312723415&player=0"
+  },
+  {
+    "name": "worst_03",
+    "id": "PATH/168459117/3.987",
+    "severity": 1.3338785618089388,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "168459117",
+      "class": "PATH",
+      "chainageM": 3.9874611058852665,
+      "contactClass": "PATH",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9805809138090826,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": true,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "PATH"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": null
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 3031.6980551417732,
+      "z": 3632.4523500723244,
+      "tangentX": 0.9725624999950028,
+      "tangentZ": -0.23264174948506156,
+      "height": 86.78039476977304,
+      "longitudinalSlope": -0.19451249921653826,
+      "crossSlope": -0.04652292504078676,
+      "sourceBranchCrossSlope": -0.04652292504078676,
+      "ownFacetBank": -0.04652292504078676,
+      "centerlineFiniteSlope": -0.19451249841951324,
+      "crossSectionSlope": 0.05348665494131191,
+      "heightDeltaPerMeter": 0.5854816787979593,
+      "slopeDerivative": 1.3338785618089388,
+      "normalDeltaPerMeter": 0.8015312234148593
+    },
+    "query": "px=3021.972430141823&py=106.78039476977304&pz=3634.7787675671752&tx=3031.6980551417732&ty=86.78039476977304&tz=3632.4523500723244&vx=3031.6980551417732&vz=3632.4523500723244&vyaw=1.8055894084641022&player=0"
+  },
+  {
+    "name": "worst_04",
+    "id": "ROAD/168459114/2.920",
+    "severity": 1.297213244835718,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "168459114",
+      "class": "ROAD",
+      "chainageM": 2.920043435591707,
+      "contactClass": "ROAD",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9912805761899425,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": true,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": null
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 3051.0900058568864,
+      "z": 3848.388188607755,
+      "tangentX": 0.8150583747753193,
+      "tangentZ": -0.5793788447195971,
+      "height": 79.44235986845993,
+      "longitudinalSlope": 0.11584478624024618,
+      "crossSlope": -0.06518894903697504,
+      "sourceBranchCrossSlope": -0.06518894903697504,
+      "ownFacetBank": -0.06518894903697504,
+      "centerlineFiniteSlope": 0.12436919806428648,
+      "crossSectionSlope": -0.09522805819179131,
+      "heightDeltaPerMeter": 0.21202451823037813,
+      "slopeDerivative": 1.297213244835718,
+      "normalDeltaPerMeter": 1.0164704125212147
+    },
+    "query": "px=3042.9394221091334&py=99.44235986845993&pz=3854.181977054951&tx=3051.0900058568864&ty=79.44235986845993&tz=3848.388188607755&vx=3051.0900058568864&vz=3848.388188607755&vyaw=2.188762711721652&player=0"
+  },
+  {
+    "name": "worst_05",
+    "id": "ROAD/168459105/19.701",
+    "severity": 1.2679748462104083,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "168459105",
+      "class": "ROAD",
+      "chainageM": 19.700855793804052,
+      "contactClass": "ROAD",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.993493973030893,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 3087.9700000000003,
+      "z": 3850.399090909091,
+      "tangentX": -0.9948806389499385,
+      "tangentZ": -0.10105698512503919,
+      "height": 74.08123848222813,
+      "longitudinalSlope": 0.06734804922608124,
+      "crossSlope": -0.09275985096941684,
+      "sourceBranchCrossSlope": -0.09275985096941684,
+      "ownFacetBank": -0.09275985096941684,
+      "centerlineFiniteSlope": 0.06840401035722721,
+      "crossSectionSlope": -0.06507141030770859,
+      "heightDeltaPerMeter": 0.26888799692614423,
+      "slopeDerivative": 1.2679748462104083,
+      "normalDeltaPerMeter": 0.8631687029821778
+    },
+    "query": "px=3097.9188063894994&py=94.08123848222813&pz=3851.409660760341&tx=3087.9700000000003&ty=74.08123848222813&tz=3850.399090909091&vx=3087.9700000000003&vz=3850.399090909091&vyaw=-1.6720261148925826&player=0"
+  },
+  {
+    "name": "worst_06",
+    "id": "PATH/305923847/126.933",
+    "severity": 1.2647440430558747,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "305923847",
+      "class": "PATH",
+      "chainageM": 126.93295483317671,
+      "contactClass": "PATH",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.6681987805939831,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "PATH"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "PATH"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 2530.2321168361927,
+      "z": 1695.973627577798,
+      "tangentX": -0.8043536876965971,
+      "tangentZ": 0.5941507763934044,
+      "height": 108.60339707669618,
+      "longitudinalSlope": 0.13722037354187272,
+      "crossSlope": -1.104927301624588,
+      "sourceBranchCrossSlope": -1.104927301624588,
+      "ownFacetBank": -1.104927301624588,
+      "centerlineFiniteSlope": 0.13722037354186511,
+      "crossSectionSlope": -1.2647440430558747,
+      "heightDeltaPerMeter": 0.046482989794668986,
+      "slopeDerivative": 0.9173869291223644,
+      "normalDeltaPerMeter": 0.7060518820109822
+    },
+    "query": "px=2538.2756537131586&py=128.60339707669618&pz=1690.032119813864&tx=2530.2321168361927&ty=108.60339707669618&tz=1695.973627577798&vx=2530.2321168361927&vz=1695.973627577798&vyaw=-0.9345868741187731&player=0"
+  },
+  {
+    "name": "worst_07",
+    "id": "PATH/476660996/7.190",
+    "severity": 1.217816009561318,
+    "metrics": [
+      "centerlineFiniteSlope",
+      "heightDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "476660996",
+      "class": "PATH",
+      "chainageM": 7.190354650502591,
+      "contactClass": "ROAD",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9917620521076898,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "ROAD"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": true,
+      "x": 3070.7,
+      "z": 3689.81,
+      "tangentX": -0.9957784209572854,
+      "tangentZ": -0.0917896309820174,
+      "height": 79.6674961663868,
+      "longitudinalSlope": 0.0880691666279775,
+      "crossSlope": 0.09447522702344574,
+      "sourceBranchCrossSlope": 0.09447522702344574,
+      "ownFacetBank": 0.09447522702344574,
+      "centerlineFiniteSlope": 1.217816009561318,
+      "crossSectionSlope": 0.06514815226802047,
+      "heightDeltaPerMeter": 0.9376366383542383,
+      "slopeDerivative": 0.14123007083431488,
+      "normalDeltaPerMeter": 0.16373143469467297
+    },
+    "query": "px=3080.6577842095726&py=99.6674961663868&pz=3690.72789630982&tx=3070.7&ty=79.6674961663868&tz=3689.81&vx=3070.7&vz=3689.81&vyaw=-1.6627153420131058&player=0"
+  },
+  {
+    "name": "worst_08",
+    "id": "TRACK/168459131/3.964",
+    "severity": 1.1797628733548915,
+    "metrics": [
+      "slopeDerivative",
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "168459131",
+      "class": "TRACK",
+      "chainageM": 3.9638461931814106,
+      "contactClass": "TRACK",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9920518771360987,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "TRACK"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "TRACK"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 3271.0862334423946,
+      "z": 3459.7075907651824,
+      "tangentX": -0.19520599939965005,
+      "tangentZ": 0.9807622636492414,
+      "height": 77.19724813681512,
+      "longitudinalSlope": -0.10552083999858956,
+      "crossSlope": 0.07037858045707475,
+      "sourceBranchCrossSlope": 0.07037858045707475,
+      "ownFacetBank": 0.07037858045707475,
+      "centerlineFiniteSlope": -0.13205896831833286,
+      "crossSectionSlope": 0.05949102645556554,
+      "heightDeltaPerMeter": 0.5447810007522609,
+      "slopeDerivative": 1.1797628733548915,
+      "normalDeltaPerMeter": 0.8058630122808437
+    },
+    "query": "px=3273.038293436391&py=97.19724813681512&pz=3449.89996812869&tx=3271.0862334423946&ty=77.19724813681512&tz=3459.7075907651824&vx=3271.0862334423946&vz=3459.7075907651824&vyaw=-0.19646748587061674&player=0"
+  },
+  {
+    "name": "worst_09",
+    "id": "ROAD/168459116/21.695",
+    "severity": 0.9977602082993862,
+    "metrics": [
+      "normalDeltaPerMeter"
+    ],
+    "sample": {
+      "id": "168459116",
+      "class": "ROAD",
+      "chainageM": 21.694616001203986,
+      "contactClass": "ROAD",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.9920604222625621,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": true,
+      "lateralLeft": {
+        "skirt": false,
+        "class": null
+      },
+      "lateralRight": {
+        "skirt": true,
+        "class": "ROAD"
+      },
+      "lateralSkirt": true,
+      "lateralClassMismatch": false,
+      "x": 3085.5851162790696,
+      "z": 3537.820232558139,
+      "tangentX": -0.9225737722123998,
+      "tangentZ": 0.3858207288700067,
+      "height": 77.66505843995415,
+      "longitudinalSlope": -0.030299439986778375,
+      "crossSlope": 0.12309440320309473,
+      "sourceBranchCrossSlope": 0.12309440320309473,
+      "ownFacetBank": 0.12309440320309473,
+      "centerlineFiniteSlope": -0.008354299670614296,
+      "crossSectionSlope": 0.16302890656834018,
+      "heightDeltaPerMeter": 0.030389425877492614,
+      "slopeDerivative": 0.00023440645283759304,
+      "normalDeltaPerMeter": 0.9977602082993862
+    },
+    "query": "px=3094.8108540011935&py=97.66505843995415&pz=3533.962025269439&tx=3085.5851162790696&ty=77.66505843995415&tz=3537.820232558139&vx=3085.5851162790696&vz=3537.820232558139&vyaw=-1.174699061694668&player=0"
+  },
+  {
+    "name": "worst_10",
+    "id": "TRACK/90614389/575.527",
+    "severity": 0.8956728755491906,
+    "metrics": [
+      "crossSlope",
+      "sourceBranchCrossSlope",
+      "ownFacetBank",
+      "crossSectionSlope"
+    ],
+    "sample": {
+      "id": "90614389",
+      "class": "TRACK",
+      "chainageM": 575.526765851436,
+      "contactClass": "TRACK",
+      "contactSkirt": false,
+      "contactBridge": false,
+      "centerlineMissing": false,
+      "slopeSource": "sampled-triangle-normal-dot-source-tangent",
+      "normalY": 0.7367798925279103,
+      "nearVerticalContact": false,
+      "ownFacetTangentSource": "source-polyline-tangent-fallback",
+      "lateralMissing": false,
+      "lateralLeft": {
+        "skirt": false,
+        "class": "TRACK"
+      },
+      "lateralRight": {
+        "skirt": false,
+        "class": "TRACK"
+      },
+      "lateralSkirt": false,
+      "lateralClassMismatch": false,
+      "x": 3320.00322590754,
+      "z": 3705.3476601084058,
+      "tangentX": -0.2514579605276635,
+      "tangentZ": -0.9678682214471493,
+      "height": 84.03478536488612,
+      "longitudinalSlope": 0.19979462561611686,
+      "crossSlope": 0.8956728755491906,
+      "sourceBranchCrossSlope": 0.8956728755491906,
+      "ownFacetBank": 0.8956728755491906,
+      "centerlineFiniteSlope": 0.14892851516501082,
+      "crossSectionSlope": 0.8499733430820244,
+      "heightDeltaPerMeter": 0.19979438215641684,
+      "slopeDerivative": 0.000004417813717954441,
+      "normalDeltaPerMeter": 0.025301611473262466
+    },
+    "query": "px=3322.5178055128167&py=104.03478536488612&pz=3715.026342322877&tx=3320.00322590754&ty=84.03478536488612&tz=3705.3476601084058&vx=3320.00322590754&vz=3705.3476601084058&vyaw=-2.8874063298914168&player=0"
+  }
+]

@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>Montes de Oca: Offroad Stories</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0b0f14;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      #render-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+        outline: none;
+      }
+      /* Panel de diagnóstico. No es la interfaz del juego: es instrumentación. */
+      #hud {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        padding: 10px 12px;
+        min-width: 208px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(8, 12, 18, 0.72);
+        color: #d7e2ee;
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #hud[hidden] {
+        display: none;
+      }
+      #hud.hud-error,
+      .hud-error {
+        color: #ff8f8f;
+      }
+      /* Misión: lo único que el jugador tiene que leer. Arriba y centrado, para no
+         competir con el panel de diagnóstico ni con el aviso de acción. */
+      #mision {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 11px 18px;
+        min-width: 280px;
+        max-width: 62vw;
+        border: 1px solid rgba(231, 195, 138, 0.4);
+        border-radius: 10px;
+        background: rgba(28, 32, 29, 0.82);
+        box-shadow: 0 8px 28px rgba(12, 17, 16, 0.24);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        line-height: 1.55;
+        text-align: center;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #mision[hidden] {
+        display: none;
+      }
+      #mision .mision-titulo {
+        color: #d8c3a2;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      #mision .mision-estado {
+        color: #ffdc99;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+      }
+      #mision .mision-pista {
+        margin-top: 3px;
+      }
+      #mision.mision-completada .mision-estado {
+        color: #86e08a;
+      }
+      /* Barra de progreso de la reparación: sólo aparece mientras se mantiene E. */
+      #mision .mision-progreso {
+        margin-top: 7px;
+        height: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      #mision .mision-progreso[hidden] {
+        display: none;
+      }
+      #mision .mision-progreso > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: #86e08a;
+      }
+      /* Aviso de acción disponible: abajo y centrado, donde mira el jugador. */
+      #accion {
+        position: fixed;
+        bottom: 56px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 7px 14px;
+        border: 1px solid rgba(231, 195, 138, 0.42);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #accion[hidden] {
+        display: none;
+      }
+      /* Aviso de hundimiento/enfangado (§5.3): misma familia que #accion, un
+         punto más arriba para no taparlo. Solo lo muestra la regla del agua. */
+      #aviso {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 12;
+        padding: 7px 14px;
+        border: 1px solid rgba(255, 143, 143, 0.55);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+      #aviso[hidden] {
+        display: none;
+      }
+      /* Selector de vehículo (FASE 2): chip persistente arriba a la derecha y
+         panel de tarjetas con las cifras reales de cada preset. Misma familia
+         visual que #mision/#accion; las tarjetas son <button> nativos (Tab y
+         Enter funcionan sin código extra). */
+      #vehiculo-chip {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 12;
+        padding: 7px 12px;
+        border: 1px solid rgba(231, 195, 138, 0.42);
+        border-radius: 8px;
+        background: rgba(28, 32, 29, 0.86);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+      }
+      #vehiculos-panel {
+        position: fixed;
+        top: 56px;
+        right: 12px;
+        z-index: 30;
+        width: min(330px, calc(100vw - 24px));
+        padding: 12px;
+        border: 1px solid rgba(231, 195, 138, 0.4);
+        border-radius: 10px;
+        background: rgba(28, 32, 29, 0.94);
+        color: #f3eee5;
+        font-family: system-ui, sans-serif;
+        box-shadow: 0 8px 28px rgba(12, 17, 16, 0.4);
+        backdrop-filter: blur(4px);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+      }
+      #vehiculos-panel[hidden] {
+        display: none;
+      }
+      #minimapa {
+        position: fixed;
+        top: 68px;
+        right: 12px;
+        z-index: 11;
+        width: 188px;
+        height: 188px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 245, 222, 0.48);
+        border-radius: 50%;
+        background: rgba(12, 21, 22, 0.86);
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.34);
+        touch-action: none;
+        user-select: none;
+      }
+      #minimapa canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      #minimapa-recenter {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        min-width: 32px;
+        min-height: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 50%;
+        background: rgba(18, 25, 24, 0.88);
+        color: #fff4dd;
+        font: 700 17px/1 system-ui, sans-serif;
+        cursor: pointer;
+      }
+      #minimapa-recenter:focus-visible { outline: 2px solid #ffdc99; outline-offset: 2px; }
+      #vehiculos-panel h2 {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #d8c3a2;
+      }
+      #vehiculos-panel h2 .vehiculo-cierre {
+        float: right;
+        color: rgba(243, 238, 229, 0.6);
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .vehiculo-lista {
+        display: grid;
+        gap: 8px;
+      }
+      .vehiculo-grupo + .vehiculo-grupo {
+        margin-top: 6px;
+      }
+      .vehiculo-grupo-titulo {
+        margin: 0 0 4px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(216, 195, 162, 0.85);
+      }
+      .vehiculo-tarjeta {
+        display: block;
+        width: 100%;
+        padding: 9px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #f3eee5;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .vehiculo-tarjeta.activa {
+        border-color: rgba(231, 195, 138, 0.75);
+        background: rgba(231, 195, 138, 0.1);
+      }
+      .vehiculo-nombre {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .vehiculo-marca {
+        float: right;
+        padding: 1px 7px;
+        border-radius: 4px;
+        background: rgba(231, 195, 138, 0.28);
+        color: #ffdc99;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .vehiculo-marca[hidden] {
+        display: none;
+      }
+      .vehiculo-resumen {
+        display: block;
+        margin: 2px 0 6px;
+        color: rgba(243, 238, 229, 0.72);
+        font-size: 11px;
+      }
+      .vehiculo-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 10px;
+        font-size: 11px;
+        color: rgba(243, 238, 229, 0.72);
+      }
+      .vehiculo-stats b {
+        color: #f3eee5;
+        font-weight: 600;
+      }
+      .vehiculo-ayuda {
+        margin: 8px 0 0;
+        color: rgba(243, 238, 229, 0.55);
+        font-size: 11px;
+      }
+      #vehiculo-chip:focus-visible,
+      .vehiculo-tarjeta:focus-visible {
+        outline: 2px solid #9fd0ff;
+        outline-offset: 2px;
+      }
+      #accion kbd {
+        padding: 1px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        font: inherit;
+      }
+      #controls {
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        z-index: 10;
+        max-width: 60vw;
+        color: rgba(247, 239, 226, 0.83);
+        font-size: 11px;
+        line-height: 1.5;
+        pointer-events: none;
+      }
+      #runtime-settings {
+        position: fixed; left: 12px; bottom: 36px; z-index: 10;
+        display: flex; gap: 8px; align-items: center; color: #f7efe2;
+        font: 11px system-ui, sans-serif;
+      }
+      #runtime-settings button, #runtime-settings select {
+        background: rgba(8, 12, 18, 0.8); color: #f7efe2;
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; padding: 5px;
+      }
+      #datos {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 10;
+        color: rgba(247, 239, 226, 0.78);
+        font: 10px/1.5 system-ui, sans-serif;
+      }
+      #datos summary {
+        padding: 3px 7px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 5px;
+        background: rgba(8, 12, 18, 0.55);
+        cursor: pointer;
+        list-style: none;
+      }
+      #datos summary::-webkit-details-marker {
+        display: none;
+      }
+      #datos summary::before {
+        content: 'ⓘ ';
+      }
+      #datos[open] .datos-contenido {
+        position: absolute;
+        right: 0;
+        bottom: 28px;
+        width: min(390px, 86vw);
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 7px;
+        background: rgba(8, 12, 18, 0.88);
+        color: #d7e2ee;
+      }
+      #datos a {
+        color: #d8c3a2;
+      }
+      #mobile-controls {
+        display: none;
+      }
+      @media (pointer: coarse), (max-width: 760px) {
+        #runtime-settings {
+          bottom: max(215px, calc(env(safe-area-inset-bottom) + 215px));
+          max-width: calc(100vw - 24px);
+        }
+        #mision {
+          top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+          min-width: 0;
+          width: max-content;
+          max-width: calc(100vw - 24px);
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+        #hud {
+          top: max(8px, env(safe-area-inset-top));
+          left: 8px;
+          min-width: 0;
+          max-width: 48vw;
+          font-size: 10px;
+        }
+        #controls {
+          display: none;
+        }
+        #datos {
+          top: calc(max(8px, env(safe-area-inset-top)) + 280px);
+          right: 8px;
+          bottom: auto;
+        }
+        #mobile-controls {
+          position: fixed;
+          inset: auto 0 max(12px, env(safe-area-inset-bottom));
+          z-index: 20;
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
+          padding: 0 14px;
+          pointer-events: none;
+          font-family: system-ui, sans-serif;
+          user-select: none;
+          -webkit-user-select: none;
+        }
+        .mobile-actions {
+          display: grid;
+          gap: 7px;
+          pointer-events: auto;
+        }
+        .mobile-joystick {
+          position: relative;
+          width: 148px;
+          height: 148px;
+          border: 1px solid rgba(244, 224, 190, 0.48);
+          border-radius: 50%;
+          background:
+            radial-gradient(circle, rgba(255, 255, 255, 0.09) 0 1px, transparent 2px),
+            radial-gradient(circle, rgba(9, 16, 17, 0.48), rgba(9, 16, 17, 0.72));
+          box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.035), 0 7px 24px rgba(0, 0, 0, 0.26);
+          touch-action: none;
+          pointer-events: auto;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-joystick::before {
+          position: absolute;
+          inset: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.11);
+          border-radius: 50%;
+          content: '';
+          pointer-events: none;
+        }
+        .joystick-thumb {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: grid;
+          width: 62px;
+          height: 62px;
+          place-items: center;
+          border: 1px solid rgba(255, 240, 214, 0.84);
+          border-radius: 50%;
+          background: linear-gradient(145deg, rgba(169, 132, 83, 0.96), rgba(82, 63, 42, 0.96));
+          box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.42);
+          color: rgba(255, 248, 232, 0.92);
+          font: 700 22px/1 system-ui, sans-serif;
+          transform: translate(calc(-50% + var(--joy-x, 0px)), calc(-50% + var(--joy-y, 0px)));
+          pointer-events: none;
+        }
+        .mobile-actions {
+          grid-template-columns: repeat(2, minmax(76px, 96px));
+          align-items: end;
+        }
+        .mobile-control {
+          min-width: 54px;
+          min-height: 54px;
+          border: 1px solid rgba(255, 255, 255, 0.38);
+          border-radius: 16px;
+          background: rgba(17, 24, 27, 0.72);
+          color: #fff7e8;
+          font: 700 19px/1 system-ui, sans-serif;
+          text-shadow: 0 1px 4px #000;
+          touch-action: none;
+          -webkit-tap-highlight-color: transparent;
+          backdrop-filter: blur(5px);
+        }
+        .mobile-control:active,
+        .mobile-control.is-pressed {
+          background: rgba(151, 111, 62, 0.92);
+          border-color: rgba(255, 231, 187, 0.86);
+          transform: scale(0.96);
+        }
+        .mobile-control.action {
+          min-height: 58px;
+          font-size: 12px;
+          line-height: 1.15;
+        }
+        .mobile-control.primary {
+          background: rgba(108, 81, 48, 0.88);
+        }
+        #accion {
+          bottom: max(260px, calc(env(safe-area-inset-bottom) + 260px));
+          max-width: calc(100vw - 32px);
+          text-align: center;
+        }
+        #aviso {
+          bottom: max(304px, calc(env(safe-area-inset-bottom) + 304px));
+          max-width: calc(100vw - 32px);
+          text-align: center;
+        }
+        #vehiculo-chip {
+          top: max(8px, env(safe-area-inset-top));
+          right: 8px;
+        }
+        #vehiculos-panel {
+          top: auto;
+          right: 8px;
+          left: 8px;
+          bottom: 235px;
+          width: auto;
+          max-height: 36vh;
+          overflow: auto;
+        }
+      }
+      @media (max-width: 390px) {
+        #mobile-controls { padding: 0 9px; }
+        .mobile-joystick { width: 132px; height: 132px; }
+        .joystick-thumb { width: 56px; height: 56px; }
+        .mobile-control { min-width: 48px; min-height: 48px; border-radius: 14px; }
+        .mobile-actions { grid-template-columns: repeat(2, minmax(68px, 82px)); gap: 5px; }
+        .mobile-control.action { min-height: 52px; font-size: 11px; }
+      }
+      @media (max-height: 500px) and (pointer: coarse) {
+        .mobile-joystick { width: 120px; height: 120px; }
+        .joystick-thumb { width: 52px; height: 52px; }
+        .mobile-control.action { min-height: 48px; }
+      }
+      @media (pointer: coarse), (max-width: 760px) {
+        #minimapa {
+          top: calc(max(144px, env(safe-area-inset-top) + 136px));
+          right: 8px;
+          width: 128px;
+          height: 128px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="render-canvas" tabindex="0"></canvas>
+    <div id="hud" role="status" aria-live="polite" hidden>Cargando terreno…</div>
+    <div id="mision" role="status" aria-live="polite" hidden></div>
+    <div id="accion" role="status" aria-live="polite" hidden></div>
+    <div id="aviso" role="status" aria-live="assertive" hidden>El 4x4 se hundió — volvés a la orilla</div>
+    <button id="vehiculo-chip" type="button" aria-controls="vehiculos-panel" aria-expanded="false" title="Cambiar vehículo (V)">4x4 · Estándar</button>
+    <div id="minimapa" role="group" aria-label="Minimapa interactivo, orientado según el rumbo">
+      <canvas id="minimapa-canvas" aria-label="Calles, ruta y posición del vehículo"></canvas>
+      <button id="minimapa-recenter" type="button" aria-label="Centrar el minimapa en el vehículo" title="Recentrar">◎</button>
+    </div>
+    <div id="vehiculos-panel" role="dialog" aria-label="Selector de vehículo" hidden>
+      <h2>Vehículo <span class="vehiculo-cierre">V o Esc cierra</span></h2>
+      <div class="vehiculo-lista"></div>
+      <p class="vehiculo-ayuda">Elegir cambia el vehículo al instante y lo recuerda.</p>
+    </div>
+    <div id="controls">
+      F3: ayuda y diagnóstico
+    </div>
+    <div id="runtime-settings">
+      <button id="sound-toggle" type="button" aria-pressed="true">Sonido: sí</button>
+      <label>Calidad (reinicia partida)
+        <select id="graphics-quality" aria-label="Calidad gráfica; cambiar reinicia la partida">
+          <option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option>
+          <option value="HIGH" selected>HIGH</option><option value="ULTRA">ULTRA</option>
+        </select>
+      </label>
+    </div>
+    <div id="mobile-controls" role="group" aria-label="Controles táctiles">
+      <div id="mobile-joystick" class="mobile-joystick" role="group" aria-label="Joystick: inclina para avanzar y girar" aria-roledescription="joystick">
+        <div id="joystick-thumb" class="joystick-thumb" aria-hidden="true">✥</div>
+      </div>
+      <div class="mobile-actions" aria-label="Acciones">
+        <button class="mobile-control action primary" type="button" data-code="KeyF" aria-label="Entrar o salir del 4x4">F · 4x4</button>
+        <button class="mobile-control action" type="button" data-code="KeyE" aria-label="Mantener para interactuar">Mantener<br />E · acción</button>
+        <button class="mobile-control action" type="button" data-code="Space" aria-label="Freno de mano">Freno</button>
+        <button class="mobile-control action" type="button" data-code="KeyR" aria-label="Reiniciar misión">Reiniciar</button>
+        <button class="mobile-control action" type="button" data-code="KeyV" aria-label="Abrir el selector de vehículo">V · vehículo</button>
+      </div>
+    </div>
+    <details id="datos">
+      <summary>Fuentes de datos</summary>
+      <div class="datos-contenido">
+        Vías y huellas: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> (ODbL 1.0).<br />
+        Terreno y alturas LiDAR: © <a href="https://centrodedescargas.cnig.es/CentroDescargas/home" target="_blank" rel="noreferrer">IGN/CNIG</a> (CC BY 4.0).
+      </div>
+    </details>
+    <script>
+      (() => {
+        const retryKey = 'montes-de-oca:chunk-reload-at';
+        const retryWindowMs = 30_000;
+
+        function showReloadNotice() {
+          if (document.getElementById('chunk-reload-notice')) return;
+
+          const notice = document.createElement('div');
+          notice.id = 'chunk-reload-notice';
+          notice.setAttribute('role', 'alert');
+          Object.assign(notice.style, {
+            position: 'fixed',
+            zIndex: '100',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            maxWidth: 'min(420px, calc(100vw - 32px))',
+            padding: '20px',
+            border: '1px solid rgba(231, 195, 138, 0.55)',
+            borderRadius: '12px',
+            background: 'rgba(18, 23, 25, 0.96)',
+            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+            color: '#f3eee5',
+            font: '15px/1.5 system-ui, sans-serif',
+            textAlign: 'center',
+          });
+
+          const message = document.createElement('p');
+          message.textContent = 'El juego se ha actualizado. Recarga la página para continuar.';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = 'Recargar ahora';
+          Object.assign(button.style, {
+            marginTop: '8px',
+            padding: '9px 14px',
+            border: '1px solid rgba(231, 195, 138, 0.6)',
+            borderRadius: '8px',
+            background: '#d8c3a2',
+            color: '#18201d',
+            font: '600 14px system-ui, sans-serif',
+            cursor: 'pointer',
+          });
+          button.addEventListener('click', () => window.location.reload());
+          notice.append(message, button);
+          document.body.append(notice);
+        }
+
+        window.addEventListener('vite:preloadError', (event) => {
+          event.preventDefault();
+
+          try {
+            const lastAttempt = Number(sessionStorage.getItem(retryKey));
+            const elapsed = Date.now() - lastAttempt;
+            if (Number.isFinite(lastAttempt) && lastAttempt > 0 && elapsed >= 0 && elapsed < retryWindowMs) {
+              showReloadNotice();
+              return;
+            }
+
+            sessionStorage.setItem(retryKey, String(Date.now()));
+            window.location.reload();
+          } catch {
+            showReloadNotice();
+          }
+        });
+      })();
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

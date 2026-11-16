@@ -1,0 +1,129 @@
+{
+  "generado_por": "scripts/milestone/drive_milestone.mjs",
+  "base": "http://127.0.0.1:4193",
+  "out_dir": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/mission",
+  "budget_s": 300,
+  "fecha": "2026-10-01T00:55:32.134Z",
+  "checks": [
+    {
+      "name": "api.route expone first-route",
+      "ok": true,
+      "value": {
+        "waypoints": 15,
+        "polyline": 238
+      },
+      "threshold": "polyline > 100 puntos"
+    },
+    {
+      "name": "api.route.checkpoints incluye track-entry",
+      "ok": true,
+      "value": [
+        "start",
+        "junction",
+        "track-entry",
+        "target",
+        "return"
+      ],
+      "threshold": "incluye 'track-entry'"
+    },
+    {
+      "name": "pueblo cargado y batcheado (meshes <= 20 con > 300 casas)",
+      "ok": true,
+      "value": {
+        "buildings": 329,
+        "meshes": 10,
+        "triangles": 35525,
+        "footprintAreaM2": 28186.1,
+        "tallestM": 13.34298154488586,
+        "droppedAtSpawn": 0,
+        "detailedBuildings": 142,
+        "courtyardWalls": 23,
+        "lidarAdjustedBuildings": 265,
+        "lidarFallbackBuildings": 65,
+        "roofLiftedBuildings": 3,
+        "maxRoofLiftM": 0.8300000000001546,
+        "streetPoles": 54
+      },
+      "threshold": "buildings > 300 y meshes <= 20"
+    },
+    {
+      "name": "diez vecinos animados con rutas cargados en Villafranca",
+      "ok": true,
+      "value": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 92,
+        "tiers": {
+          "FULL": 6,
+          "REDUCED": 4,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 135,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 0,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      },
+      "threshold": "10 personajes; dos Idle y ocho Idle/Walk"
+    }
+  ],
+  "errores_consola": [],
+  "capturas": [],
+  "notas": [
+    "FPS/frame medidos en Chrome headless con SwiftShader (CPU): NO son señal de rendimiento.",
+    "draw calls y triángulos sí son válidos. El FPS real se mide en la GPU del usuario a 1920x1080 (objetivo ~60 fps RTX 2070)."
+  ],
+  "pueblo": {
+    "buildings": 329,
+    "meshes": 10,
+    "triangles": 35525,
+    "footprintAreaM2": 28186.1,
+    "tallestM": 13.34298154488586,
+    "droppedAtSpawn": 0,
+    "detailedBuildings": 142,
+    "courtyardWalls": 23,
+    "lidarAdjustedBuildings": 265,
+    "lidarFallbackBuildings": 65,
+    "roofLiftedBuildings": 3,
+    "maxRoofLiftM": 0.8300000000001546,
+    "streetPoles": 54
+  },
+  "puebloNpcs": {
+    "characters": 10,
+    "meshes": 10,
+    "triangles": 16040,
+    "animations": 18,
+    "animationSamples": 92,
+    "tiers": {
+      "FULL": 6,
+      "REDUCED": 4,
+      "VISUAL": 0,
+      "SLEEP": 0
+    },
+    "routeValidation": {
+      "candidatesPassed": 135,
+      "sampleStepM": 0.25,
+      "rejected": {
+        "road": 62,
+        "building": 36,
+        "wall": 37,
+        "water": 0,
+        "terrain": 0,
+        "anchor": 175,
+        "spacing": 37
+      }
+    }
+  },
+  "error_fatal": "TypeError: Cannot read properties of undefined (reading 'vegetation')\n    at <anonymous>:1:15"
+}

@@ -11,11 +11,11 @@ Videojuego 3D off-road ambientado en Villafranca Montes de Oca (Burgos). El obje
 ## Empezar
 
 ```bash
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
-`npm run build` compila y genera la versión de producción. `npm test` ejecuta las comprobaciones del proyecto.
+`pnpm run build` compila y genera la versión de producción. `pnpm test` ejecuta las comprobaciones del proyecto.
 
 ## Estructura
 

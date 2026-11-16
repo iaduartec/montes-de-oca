@@ -1,0 +1,528 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:4193",
+  "sourceReport": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/rendered-before.json",
+  "cameras": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/worst-cameras.json",
+  "captures": [
+    {
+      "name": "worst_01",
+      "id": "PATH/311677968/80.868",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 80.86807818134571,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2490.827357678177,
+        "z": 1735.5191895885948,
+        "height": 142.91569783235042,
+        "longitudinalSlope": 0.02952522820703507,
+        "crossSlope": 1.5575844043329803,
+        "heightDeltaPerMeter": 0.4301240019158873,
+        "slopeDerivative": 0.43518767016297183,
+        "normalDeltaPerMeter": 0.07677826553057768
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_01.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2490.827357678177&py=155.91569783235042&pz=1711.5191895885948&tx=2490.827357678177&ty=142.91569783235042&tz=1735.5191895885948&vx=2490.827357678177&vz=1735.5191895885948&vyaw=0&player=0",
+        "road": {
+          "height": 143.8181695012438,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.36338175140631257,
+            "_y": 0.9153260397770553,
+            "_z": -0.17358555138874152
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.8307632480245134,
+          "tangentZ": 0.5566259298054314,
+          "longitudinalSlope": -0.224250131874969,
+          "crossSlope": 0.37852763570136444
+        },
+        "terrainHeight": 142.79566982813674,
+        "perf": {
+          "fps": 1.4248058702001538,
+          "frameTimeMs": 1592.9000000001397,
+          "drawCalls": 27,
+          "triangles": 937784,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_02",
+      "id": "PATH/311677968/82.865",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 82.86482085249006,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2492.6034797920483,
+        "z": 1736.4315335650563,
+        "height": 142.23423508909687,
+        "longitudinalSlope": -0.34117336227896544,
+        "crossSlope": 1.5243965198757317,
+        "heightDeltaPerMeter": 0.34127504990910906,
+        "slopeDerivative": 0.00012617455829647757,
+        "normalDeltaPerMeter": 0.0008448191576520377
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_02.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2492.6034797920483&py=155.23423508909687&pz=1712.4315335650563&tx=2492.6034797920483&ty=142.23423508909687&tz=1736.4315335650563&vx=2492.6034797920483&vz=1736.4315335650563&vyaw=0&player=0",
+        "road": {
+          "height": 143.30271613967878,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.25649745359140974,
+            "_y": 0.9370575674050772,
+            "_z": -0.23692229036121037
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.8895097746822337,
+          "tangentZ": 0.45691614191748803,
+          "longitudinalSlope": -0.12795731817907602,
+          "crossSlope": 0.34997051561217557
+        },
+        "terrainHeight": 142.1143604860191,
+        "perf": {
+          "fps": 1.0196105087856278,
+          "frameTimeMs": 663.4000000001397,
+          "drawCalls": 38,
+          "triangles": 973035,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_03",
+      "id": "PATH/311677968/83.863",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 83.86319218806223,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2493.491540848984,
+        "z": 1736.8877055532869,
+        "height": 141.8936947428298,
+        "longitudinalSlope": -0.34109587698819155,
+        "crossSlope": 1.5243685711940218,
+        "heightDeltaPerMeter": 0.34109587698839133,
+        "slopeDerivative": 0.00007761169417938654,
+        "normalDeltaPerMeter": 0
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_03.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2493.491540848984&py=154.8936947428298&pz=1712.8877055532869&tx=2493.491540848984&ty=141.8936947428298&tz=1736.8877055532869&vx=2493.491540848984&vz=1736.8877055532869&vyaw=0&player=0",
+        "road": {
+          "height": 143.17496722472254,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.25649745359140974,
+            "_y": 0.9370575674050772,
+            "_z": -0.23692229036121037
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.8895097746822337,
+          "tangentZ": 0.45691614191748803,
+          "longitudinalSlope": -0.12795731817907602,
+          "crossSlope": 0.34997051561217557
+        },
+        "terrainHeight": 141.77370581496007,
+        "perf": {
+          "fps": 1.0368603867489325,
+          "frameTimeMs": 647,
+          "drawCalls": 38,
+          "triangles": 973055,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_04",
+      "id": "PATH/311677968/81.866",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 81.86644951691788,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2491.7154187351125,
+        "z": 1735.9753615768254,
+        "height": 142.5749543164721,
+        "longitudinalSlope": -0.3412993313412471,
+        "crossSlope": 1.5235226675133853,
+        "heightDeltaPerMeter": 0.3412993780345744,
+        "slopeDerivative": 0.3714294935518758,
+        "normalDeltaPerMeter": 0.0009093562141124561
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_04.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2491.7154187351125&py=155.5749543164721&pz=1711.9753615768254&tx=2491.7154187351125&ty=142.5749543164721&tz=1735.9753615768254&vx=2491.7154187351125&vz=1735.9753615768254&vyaw=0&player=0",
+        "road": {
+          "height": 143.5521243546345,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.3388932832883458,
+            "_y": 0.9337483381254693,
+            "_z": -0.11517544699270507
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.7598573806712047,
+          "tangentZ": 0.6500898099797413,
+          "longitudinalSlope": -0.19559464864309767,
+          "crossSlope": 0.3296691100128951
+        },
+        "terrainHeight": 142.45501515707792,
+        "perf": {
+          "fps": 0.7411250277921949,
+          "frameTimeMs": 1237.6000000000931,
+          "drawCalls": 38,
+          "triangles": 973025,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_05",
+      "id": "PATH/311677968/84.862",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 84.86156352363439,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2494.37960190592,
+        "z": 1737.3438775415177,
+        "height": 141.6283012611612,
+        "longitudinalSlope": -0.076326913643328,
+        "crossSlope": 1.492524590981124,
+        "heightDeltaPerMeter": 0.26582642370888515,
+        "slopeDerivative": 0.26520088659509283,
+        "normalDeltaPerMeter": 0.2062246925423964
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_05.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2494.37960190592&py=154.6283012611612&pz=1713.3438775415177&tx=2494.37960190592&ty=141.6283012611612&tz=1737.3438775415177&vx=2494.37960190592&vz=1737.3438775415177&vyaw=0&player=0",
+        "road": {
+          "height": 143.1113919160685,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.015384447121206435,
+            "_y": 0.9077905199436319,
+            "_z": -0.41914161173432213
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.7917933344408064,
+          "tangentZ": 0.6107890925148461,
+          "longitudinalSlope": 0.2685926065816686,
+          "crossSlope": 0.3759349534463169
+        },
+        "terrainHeight": 141.43305114390114,
+        "perf": {
+          "fps": 1.0143016533116709,
+          "frameTimeMs": 685.5,
+          "drawCalls": 38,
+          "triangles": 973079,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_06",
+      "id": "PATH/311677968/79.870",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 79.86970684577355,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2490.347526823485,
+        "z": 1734.6521395490483,
+        "height": 142.486274358096,
+        "longitudinalSlope": 0.4640041236921775,
+        "crossSlope": 1.429980375623098,
+        "heightDeltaPerMeter": 0.4640041236920316,
+        "slopeDerivative": 4.839572642978183e-13,
+        "normalDeltaPerMeter": 0
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_06.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2490.347526823485&py=155.486274358096&pz=1710.6521395490483&tx=2490.347526823485&ty=142.486274358096&tz=1734.6521395490483&vx=2490.347526823485&vz=1734.6521395490483&vyaw=0&player=0",
+        "road": {
+          "height": 143.38394608798694,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.08190626102091902,
+            "_y": 0.8640700895771584,
+            "_z": -0.49666310986794104
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.53923267737645,
+          "tangentZ": 0.842156826042172,
+          "longitudinalSlope": 0.4329529517420119,
+          "crossSlope": 0.38977728701079883
+        },
+        "terrainHeight": 142.30461272556317,
+        "perf": {
+          "fps": 1.1332942976408489,
+          "frameTimeMs": 394.39999999990687,
+          "drawCalls": 38,
+          "triangles": 972920,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_07",
+      "id": "PATH/311677968/78.871",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 78.87133551020138,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2489.88562293711,
+        "z": 1733.7670462638837,
+        "height": 142.0230259414146,
+        "longitudinalSlope": 0.4640041236916943,
+        "crossSlope": 1.3662209726623566,
+        "heightDeltaPerMeter": 0.44549027757681303,
+        "slopeDerivative": 0.0386271522953519,
+        "normalDeltaPerMeter": 0.042513052896616936
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_07.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2489.88562293711&py=155.0230259414146&pz=1709.7670462638837&tx=2489.88562293711&ty=142.0230259414146&tz=1733.7670462638837&vx=2489.88562293711&vz=1733.7670462638837&vyaw=0&player=0",
+        "road": {
+          "height": 142.91898338635508,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.08190626102091902,
+            "_y": 0.8640700895771584,
+            "_z": -0.49666310986794104
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.53923267737645,
+          "tangentZ": 0.842156826042172,
+          "longitudinalSlope": 0.4329529517420119,
+          "crossSlope": 0.38977728701079883
+        },
+        "terrainHeight": 141.88142332677376,
+        "perf": {
+          "fps": 1.7761638807206954,
+          "frameTimeMs": 413.5,
+          "drawCalls": 38,
+          "triangles": 972910,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_08",
+      "id": "PATH/311677968/76.875",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 76.87459283905703,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2488.961815164359,
+        "z": 1731.9968596935546,
+        "height": 141.15510848908482,
+        "longitudinalSlope": 0.42384302698164333,
+        "crossSlope": 1.3492047385574084,
+        "heightDeltaPerMeter": 0.42384302698134724,
+        "slopeDerivative": 0.04212940467682564,
+        "normalDeltaPerMeter": 0
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_08.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2488.961815164359&py=154.15510848908482&pz=1707.9968596935546&tx=2488.961815164359&ty=141.15510848908482&tz=1731.9968596935546&vx=2488.961815164359&vz=1731.9968596935546&vyaw=0&player=0",
+        "road": {
+          "height": 141.9982686283052,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.08468491386388557,
+            "_y": 0.865939298107349,
+            "_z": -0.49292757820720257
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.4626574027808216,
+          "tangentZ": 0.8865371552575247,
+          "longitudinalSlope": 0.4594069255181148,
+          "crossSlope": 0.35006254639909345
+        },
+        "terrainHeight": 141.0350445291956,
+        "perf": {
+          "fps": 1.1390386513782669,
+          "frameTimeMs": 418.5,
+          "drawCalls": 38,
+          "triangles": 972886,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_09",
+      "id": "PATH/311677968/77.873",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 77.8729641746292,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2489.4237190507342,
+        "z": 1732.8819529787193,
+        "height": 141.57826121800582,
+        "longitudinalSlope": 0.4254398820652341,
+        "crossSlope": 1.3492031684763832,
+        "heightDeltaPerMeter": 0.4238430269820245,
+        "slopeDerivative": 0.0015994600673061043,
+        "normalDeltaPerMeter": 0
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_09.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2489.4237190507342&py=154.57826121800582&pz=1708.8819529787193&tx=2489.4237190507342&ty=141.57826121800582&tz=1732.8819529787193&vx=2489.4237190507342&vz=1732.8819529787193&vyaw=0&player=0",
+        "road": {
+          "height": 142.45692733519223,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.08468491386388557,
+            "_y": 0.865939298107349,
+            "_z": -0.49292757820720257
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.4626574027808216,
+          "tangentZ": 0.8865371552575247,
+          "longitudinalSlope": 0.4594069255181148,
+          "crossSlope": 0.35006254639909345
+        },
+        "terrainHeight": 141.45823392798502,
+        "perf": {
+          "fps": 1.3696753869332967,
+          "frameTimeMs": 313.5,
+          "drawCalls": 38,
+          "triangles": 972880,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    },
+    {
+      "name": "worst_10",
+      "id": "PATH/311677968/75.876",
+      "baselineMetrics": [
+        "crossSlope"
+      ],
+      "baselineSample": {
+        "id": "311677968",
+        "class": "PATH",
+        "chainageM": 75.87622150348487,
+        "contactClass": "PATH",
+        "contactSkirt": false,
+        "contactBridge": false,
+        "x": 2488.4999112779833,
+        "z": 1731.1117664083902,
+        "height": 140.7319557601645,
+        "longitudinalSlope": 0.38178223696758096,
+        "crossSlope": 1.3491858589434473,
+        "heightDeltaPerMeter": 0.33647890936399216,
+        "slopeDerivative": 0.0486356729108023,
+        "normalDeltaPerMeter": 0.051376307321439184
+      },
+      "image": "/home/kiri_/projects/montes-de-oca-offroad/outputs/road-v3-20261001/worst/after_worst_10.png",
+      "observed": {
+        "url": "http://127.0.0.1:4193/?px=2488.4999112779833&py=153.7319557601645&pz=1707.1117664083902&tx=2488.4999112779833&ty=140.7319557601645&tz=1731.1117664083902&vx=2488.4999112779833&vz=1731.1117664083902&vyaw=0&player=0",
+        "road": {
+          "height": 141.53960992141833,
+          "normal": {
+            "_isDirty": true,
+            "_x": 0.08468491386388557,
+            "_y": 0.865939298107349,
+            "_z": -0.49292757820720257
+          },
+          "class": "PATH",
+          "bridge": false,
+          "skirt": false,
+          "tangentX": 0.4626574027808216,
+          "tangentZ": 0.8865371552575247,
+          "longitudinalSlope": 0.4594069255181148,
+          "crossSlope": 0.35006254639909345
+        },
+        "terrainHeight": 140.61185513040687,
+        "perf": {
+          "fps": 1.455150192287704,
+          "frameTimeMs": 415.80000000004657,
+          "drawCalls": 38,
+          "triangles": 972886,
+          "vertices": 1201293,
+          "activeMeshes": 38
+        }
+      }
+    }
+  ]
+}

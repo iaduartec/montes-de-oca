@@ -1,0 +1,15 @@
+{
+  "base": "http://127.0.0.1:4194",
+  "quality": "HIGH",
+  "requestedHardware": true,
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  },
+  "backend": "Hardware requested; verify unmasked renderer",
+  "views": [],
+  "errors": [
+    "Error: WebGL not supported\n    at new _ThinEngine (http://127.0.0.1:4194/node_modules/.vite/deps/chunk-N3V4MKZ5.js?v=ffd8d1ce:358:15)\n    at new _Engine (http://127.0.0.1:4194/node_modules/.vite/deps/chunk-LKHSHQBL.js?v=ffd8d1ce:2744:5)\n    at http://127.0.0.1:4194/src/main.ts:72:16"
+  ],
+  "failure": "Error: Game timeout village"
+}
