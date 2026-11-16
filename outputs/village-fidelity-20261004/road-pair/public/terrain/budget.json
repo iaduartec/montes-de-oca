@@ -1,0 +1,798 @@
+{
+  "generado_por": "scripts/terrain/build_terrain_tiles.py",
+  "sampling_m": 5,
+  "tile_size_m": 1000,
+  "tiles_por_lado": 6,
+  "tiles": 36,
+  "nodos_por_tile": 201,
+  "vertical_datum_m": 870,
+  "dem": {
+    "min_m": 870,
+    "max_m": 1194
+  },
+  "por_tile": {
+    "columnas": 201,
+    "filas": 201,
+    "vertices": 40401,
+    "triangulos": 80000,
+    "json_bytes_promedio": 192665
+  },
+  "totales": {
+    "vertices": 1454436,
+    "triangulos": 2880000,
+    "json_bytes": 6935965,
+    "json_mib": 6.61,
+    "malla_runtime_mib": 83.06
+  },
+  "detalle_tiles": [
+    {
+      "id": "tile_0_0",
+      "ix": 0,
+      "iz": 0,
+      "x0": 0,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202122,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1145,
+        1194
+      ]
+    },
+    {
+      "id": "tile_1_0",
+      "ix": 1,
+      "iz": 0,
+      "x0": 1000,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1032,
+        1191
+      ]
+    },
+    {
+      "id": "tile_2_0",
+      "ix": 2,
+      "iz": 0,
+      "x0": 2000,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1013,
+        1127
+      ]
+    },
+    {
+      "id": "tile_3_0",
+      "ix": 3,
+      "iz": 0,
+      "x0": 3000,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1021,
+        1123
+      ]
+    },
+    {
+      "id": "tile_4_0",
+      "ix": 4,
+      "iz": 0,
+      "x0": 4000,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1059,
+        1145
+      ]
+    },
+    {
+      "id": "tile_5_0",
+      "ix": 5,
+      "iz": 0,
+      "x0": 5000,
+      "z0": 0,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1067,
+        1150
+      ]
+    },
+    {
+      "id": "tile_0_1",
+      "ix": 0,
+      "iz": 1,
+      "x0": 0,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1106,
+        1183
+      ]
+    },
+    {
+      "id": "tile_1_1",
+      "ix": 1,
+      "iz": 1,
+      "x0": 1000,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1014,
+        1169
+      ]
+    },
+    {
+      "id": "tile_2_1",
+      "ix": 2,
+      "iz": 1,
+      "x0": 2000,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 196878,
+      "json_kib": 192.3,
+      "heights_span_m": [
+        965,
+        1111
+      ]
+    },
+    {
+      "id": "tile_3_1",
+      "ix": 3,
+      "iz": 1,
+      "x0": 3000,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202127,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        999,
+        1121
+      ]
+    },
+    {
+      "id": "tile_4_1",
+      "ix": 4,
+      "iz": 1,
+      "x0": 4000,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1033,
+        1126
+      ]
+    },
+    {
+      "id": "tile_5_1",
+      "ix": 5,
+      "iz": 1,
+      "x0": 5000,
+      "z0": 1000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1032,
+        1139
+      ]
+    },
+    {
+      "id": "tile_0_2",
+      "ix": 0,
+      "iz": 2,
+      "x0": 0,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1099,
+        1167
+      ]
+    },
+    {
+      "id": "tile_1_2",
+      "ix": 1,
+      "iz": 2,
+      "x0": 1000,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1024,
+        1154
+      ]
+    },
+    {
+      "id": "tile_2_2",
+      "ix": 2,
+      "iz": 2,
+      "x0": 2000,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 190023,
+      "json_kib": 185.6,
+      "heights_span_m": [
+        956,
+        1089
+      ]
+    },
+    {
+      "id": "tile_3_2",
+      "ix": 3,
+      "iz": 2,
+      "x0": 3000,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 190275,
+      "json_kib": 185.8,
+      "heights_span_m": [
+        950,
+        1101
+      ]
+    },
+    {
+      "id": "tile_4_2",
+      "ix": 4,
+      "iz": 2,
+      "x0": 4000,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 200676,
+      "json_kib": 196,
+      "heights_span_m": [
+        985,
+        1113
+      ]
+    },
+    {
+      "id": "tile_5_2",
+      "ix": 5,
+      "iz": 2,
+      "x0": 5000,
+      "z0": 2000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1018,
+        1116
+      ]
+    },
+    {
+      "id": "tile_0_3",
+      "ix": 0,
+      "iz": 3,
+      "x0": 0,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1082,
+        1154
+      ]
+    },
+    {
+      "id": "tile_1_3",
+      "ix": 1,
+      "iz": 3,
+      "x0": 1000,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202128,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1030,
+        1148
+      ]
+    },
+    {
+      "id": "tile_2_3",
+      "ix": 2,
+      "iz": 3,
+      "x0": 2000,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 189135,
+      "json_kib": 184.7,
+      "heights_span_m": [
+        951,
+        1101
+      ]
+    },
+    {
+      "id": "tile_3_3",
+      "ix": 3,
+      "iz": 3,
+      "x0": 3000,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 176110,
+      "json_kib": 172,
+      "heights_span_m": [
+        935,
+        1062
+      ]
+    },
+    {
+      "id": "tile_4_3",
+      "ix": 4,
+      "iz": 3,
+      "x0": 4000,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 198272,
+      "json_kib": 193.6,
+      "heights_span_m": [
+        974,
+        1078
+      ]
+    },
+    {
+      "id": "tile_5_3",
+      "ix": 5,
+      "iz": 3,
+      "x0": 5000,
+      "z0": 3000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 201667,
+      "json_kib": 196.9,
+      "heights_span_m": [
+        984,
+        1105
+      ]
+    },
+    {
+      "id": "tile_0_4",
+      "ix": 0,
+      "iz": 4,
+      "x0": 0,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202125,
+      "json_kib": 197.4,
+      "heights_span_m": [
+        1021,
+        1120
+      ]
+    },
+    {
+      "id": "tile_1_4",
+      "ix": 1,
+      "iz": 4,
+      "x0": 1000,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202058,
+      "json_kib": 197.3,
+      "heights_span_m": [
+        994,
+        1131
+      ]
+    },
+    {
+      "id": "tile_2_4",
+      "ix": 2,
+      "iz": 4,
+      "x0": 2000,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 184682,
+      "json_kib": 180.4,
+      "heights_span_m": [
+        946,
+        1086
+      ]
+    },
+    {
+      "id": "tile_3_4",
+      "ix": 3,
+      "iz": 4,
+      "x0": 3000,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 164196,
+      "json_kib": 160.3,
+      "heights_span_m": [
+        919,
+        1035
+      ]
+    },
+    {
+      "id": "tile_4_4",
+      "ix": 4,
+      "iz": 4,
+      "x0": 4000,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 167249,
+      "json_kib": 163.3,
+      "heights_span_m": [
+        925,
+        1029
+      ]
+    },
+    {
+      "id": "tile_5_4",
+      "ix": 5,
+      "iz": 4,
+      "x0": 5000,
+      "z0": 4000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 176069,
+      "json_kib": 171.9,
+      "heights_span_m": [
+        925,
+        1047
+      ]
+    },
+    {
+      "id": "tile_0_5",
+      "ix": 0,
+      "iz": 5,
+      "x0": 0,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 202078,
+      "json_kib": 197.3,
+      "heights_span_m": [
+        997,
+        1103
+      ]
+    },
+    {
+      "id": "tile_1_5",
+      "ix": 1,
+      "iz": 5,
+      "x0": 1000,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 198427,
+      "json_kib": 193.8,
+      "heights_span_m": [
+        975,
+        1093
+      ]
+    },
+    {
+      "id": "tile_2_5",
+      "ix": 2,
+      "iz": 5,
+      "x0": 2000,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 176847,
+      "json_kib": 172.7,
+      "heights_span_m": [
+        933,
+        1065
+      ]
+    },
+    {
+      "id": "tile_3_5",
+      "ix": 3,
+      "iz": 5,
+      "x0": 3000,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 161727,
+      "json_kib": 157.9,
+      "heights_span_m": [
+        905,
+        985
+      ]
+    },
+    {
+      "id": "tile_4_5",
+      "ix": 4,
+      "iz": 5,
+      "x0": 4000,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 161727,
+      "json_kib": 157.9,
+      "heights_span_m": [
+        889,
+        959
+      ]
+    },
+    {
+      "id": "tile_5_5",
+      "ix": 5,
+      "iz": 5,
+      "x0": 5000,
+      "z0": 5000,
+      "vertices": 40401,
+      "triangles": 80000,
+      "json_bytes": 161727,
+      "json_kib": 157.9,
+      "heights_span_m": [
+        870,
+        986
+      ]
+    }
+  ],
+  "en_vista_por_radio": [
+    {
+      "radio_m": 400,
+      "estimado_disco_continuo": 40212,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 500,
+      "estimado_disco_continuo": 62832,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 600,
+      "estimado_disco_continuo": 90478,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 700,
+      "estimado_disco_continuo": 123150,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 800,
+      "estimado_disco_continuo": 160850,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 900,
+      "estimado_disco_continuo": 203575,
+      "tiles_disco_360": 4,
+      "triangulos_disco_360": 320000,
+      "tiles_frustum_max": 4,
+      "triangulos_frustum_max": 320000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 270
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 950,
+      "estimado_disco_continuo": 226823,
+      "tiles_disco_360": 7,
+      "triangulos_disco_360": 560000,
+      "tiles_frustum_max": 5,
+      "triangulos_frustum_max": 400000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 100
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 997,
+      "estimado_disco_continuo": 249822,
+      "tiles_disco_360": 8,
+      "triangulos_disco_360": 640000,
+      "tiles_frustum_max": 6,
+      "triangulos_frustum_max": 480000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 160
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 1000,
+      "estimado_disco_continuo": 251327,
+      "tiles_disco_360": 8,
+      "triangulos_disco_360": 640000,
+      "tiles_frustum_max": 6,
+      "triangulos_frustum_max": 480000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 160
+      },
+      "tiles_frustum_norte": 3,
+      "triangulos_frustum_norte": 240000
+    },
+    {
+      "radio_m": 1100,
+      "estimado_disco_continuo": 304106,
+      "tiles_disco_360": 12,
+      "triangulos_disco_360": 960000,
+      "tiles_frustum_max": 7,
+      "triangulos_frustum_max": 560000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 280
+      },
+      "tiles_frustum_norte": 5,
+      "triangulos_frustum_norte": 400000
+    },
+    {
+      "radio_m": 1200,
+      "estimado_disco_continuo": 361911,
+      "tiles_disco_360": 12,
+      "triangulos_disco_360": 960000,
+      "tiles_frustum_max": 7,
+      "triangulos_frustum_max": 560000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 280
+      },
+      "tiles_frustum_norte": 5,
+      "triangulos_frustum_norte": 400000
+    },
+    {
+      "radio_m": 1500,
+      "estimado_disco_continuo": 565487,
+      "tiles_disco_360": 15,
+      "triangulos_disco_360": 1200000,
+      "tiles_frustum_max": 8,
+      "triangulos_frustum_max": 640000,
+      "frustum_max_desde": {
+        "x": 3097.3,
+        "z": 3945,
+        "yaw_deg": 280
+      },
+      "tiles_frustum_norte": 6,
+      "triangulos_frustum_norte": 480000
+    }
+  ],
+  "radio_vista_sugerido_m": 900,
+  "radio_vista_cuenta": {
+    "formula_continua": "π·R²/sampling²·2",
+    "estimado_disco_continuo": 203575,
+    "tiles_frustum_max": 4,
+    "triangulos_max_en_vista": 320000,
+    "triangulos_frustum_norte": 240000,
+    "nota": "El estimado continuo del packet (πR²/25·2) NO contempla la cuantización en tiles de 1000 m (80.000 tris c/u). A R=900 m: continuo 203.575; vista por defecto (al frente) 3 tiles = 240.000 (<=250.000); peor caso simultáneo en esquina de 4 tiles = 320.000. El conteo usa AABB exacto vs frustum de Babylon (port verificado contra la app)."
+  },
+  "cruces_dem_tiles_diff_max_m": 0,
+  "medido_en_app": {
+    "descripcion": "Conteo real de la app (Chrome headless + CDP, HUD de Babylon) para las vistas capturadas. \"triangulos_en_vista\" es lo que reporta scene.getActiveIndices()/3.",
+    "capturas": [
+      {
+        "vista": "terrain_default",
+        "url": "http://127.0.0.1:4173/",
+        "camara": "x=3083 y=175 z=3919",
+        "tiles_totales": "36",
+        "triangulos_en_vista": 240000,
+        "png": "output/terrain_default.png"
+      },
+      {
+        "vista": "terrain_pueblo",
+        "url": "http://127.0.0.1:4173/?px=2750&py=210&pz=3350&tx=3097&ty=80&tz=3950",
+        "camara": "x=2750 y=210 z=3350",
+        "tiles_totales": "36",
+        "triangulos_en_vista": 320000,
+        "png": "output/terrain_pueblo.png"
+      },
+      {
+        "vista": "terrain_montes",
+        "url": "http://127.0.0.1:4173/?px=3097&py=190&pz=3450&tx=1900&ty=95&tz=4300",
+        "camara": "x=3097 y=190 z=3450",
+        "tiles_totales": "36",
+        "triangulos_en_vista": 240000,
+        "png": "output/terrain_montes.png"
+      },
+      {
+        "vista": "terrain_sierra",
+        "url": "http://127.0.0.1:4173/?px=1150&py=600&pz=1150&tx=450&ty=320&tz=400",
+        "camara": "x=1150 y=600 z=1150",
+        "tiles_totales": "36",
+        "triangulos_en_vista": 240000,
+        "png": "output/terrain_sierra.png"
+      }
+    ]
+  }
+}

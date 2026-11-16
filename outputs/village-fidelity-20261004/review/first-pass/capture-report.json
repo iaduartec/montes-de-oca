@@ -1,0 +1,1024 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:5174",
+  "capturedAt": "2026-10-04T17:19:31.757Z",
+  "cameraManifest": "/home/kiri_/projects/montes-de-oca-offroad/outputs/village-fidelity-20261004/before/camera-manifest.json",
+  "quality": "HIGH",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "deviceScaleFactor": 1
+  },
+  "backend": "Chrome headless SwiftShader; FPS/frame time are not target-GPU evidence",
+  "views": [
+    {
+      "name": "house_310174514",
+      "camera": {
+        "position": {
+          "x": 3050.902,
+          "y": 103,
+          "z": 3890.772
+        },
+        "target": {
+          "x": 3050.902,
+          "y": 86,
+          "z": 3902.772
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 78,
+      "diagnosticPlacement": true,
+      "screenshot": "house_310174514.png",
+      "perf": {
+        "fps": 3.5833359299537806,
+        "frameTimeMs": 333.89999999990687,
+        "drawCalls": 41,
+        "triangles": 950058,
+        "vertices": 1286982,
+        "activeMeshes": 31
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 2,
+          "cachedTiles": 14,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 25,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 325.09999999869615,
+          "roadCutoutBuildMs": 2040.5,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 0.9940489930578789,
+            "waterPan": 0.9429903335829319
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 20,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 335,
+          "lastTreeCandidates": 6,
+          "lastVillageCandidates": 147,
+          "maxWaterCandidates": 364,
+          "maxTreeCandidates": 6,
+          "maxVillageCandidates": 147
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 63,
+        "tiers": {
+          "FULL": 3,
+          "REDUCED": 7,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    },
+    {
+      "name": "house_818885706",
+      "camera": {
+        "position": {
+          "x": 3110.194,
+          "y": 97,
+          "z": 3980.493
+        },
+        "target": {
+          "x": 3110.194,
+          "y": 80,
+          "z": 3992.493
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 72,
+      "diagnosticPlacement": true,
+      "screenshot": "house_818885706.png",
+      "perf": {
+        "fps": 3.517882569729458,
+        "frameTimeMs": 270,
+        "drawCalls": 43,
+        "triangles": 1027383,
+        "vertices": 1286982,
+        "activeMeshes": 33
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 3,
+          "cachedTiles": 13,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 23,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 385.20000000018626,
+          "roadCutoutBuildMs": 1967.6000000000931,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 1,
+            "waterPan": 0.9619353574825813
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 19,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 392,
+          "lastTreeCandidates": 8,
+          "lastVillageCandidates": 122,
+          "maxWaterCandidates": 392,
+          "maxTreeCandidates": 8,
+          "maxVillageCandidates": 135
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 16,
+        "tiers": {
+          "FULL": 8,
+          "REDUCED": 2,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    },
+    {
+      "name": "house_818885708",
+      "camera": {
+        "position": {
+          "x": 3121.82,
+          "y": 94.63599999999997,
+          "z": 3957.491
+        },
+        "target": {
+          "x": 3121.82,
+          "y": 77.63599999999997,
+          "z": 3969.491
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 69.63599999999997,
+      "diagnosticPlacement": true,
+      "screenshot": "house_818885708.png",
+      "perf": {
+        "fps": 3.9408866995073892,
+        "frameTimeMs": 239.59999999962747,
+        "drawCalls": 43,
+        "triangles": 947426,
+        "vertices": 1286982,
+        "activeMeshes": 33
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 2,
+          "cachedTiles": 14,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 24,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 307.8000000002794,
+          "roadCutoutBuildMs": 1998.1000000000931,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 1,
+            "waterPan": 0.9257719347132118
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 20,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 392,
+          "lastTreeCandidates": 8,
+          "lastVillageCandidates": 122,
+          "maxWaterCandidates": 392,
+          "maxTreeCandidates": 8,
+          "maxVillageCandidates": 135
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 27,
+        "tiers": {
+          "FULL": 7,
+          "REDUCED": 3,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    },
+    {
+      "name": "house_474364245",
+      "camera": {
+        "position": {
+          "x": 3054.489,
+          "y": 105.10220000000004,
+          "z": 3826.234
+        },
+        "target": {
+          "x": 3054.489,
+          "y": 88.10220000000004,
+          "z": 3838.234
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 80.10220000000004,
+      "diagnosticPlacement": true,
+      "screenshot": "house_474364245.png",
+      "perf": {
+        "fps": 3.6502059759085816,
+        "frameTimeMs": 271.40000000037253,
+        "drawCalls": 42,
+        "triangles": 954757,
+        "vertices": 1286982,
+        "activeMeshes": 32
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 2,
+          "cachedTiles": 14,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 23,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 313.99999999813735,
+          "roadCutoutBuildMs": 2015.3999999999069,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 1,
+            "waterPan": 0.9886592647309952
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 19,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 338,
+          "lastTreeCandidates": 11,
+          "lastVillageCandidates": 156,
+          "maxWaterCandidates": 364,
+          "maxTreeCandidates": 11,
+          "maxVillageCandidates": 156
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 72,
+        "tiers": {
+          "FULL": 0,
+          "REDUCED": 9,
+          "VISUAL": 1,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    },
+    {
+      "name": "house_474649085",
+      "camera": {
+        "position": {
+          "x": 3052.797,
+          "y": 105.44060000000002,
+          "z": 3816.178
+        },
+        "target": {
+          "x": 3052.797,
+          "y": 88.44060000000002,
+          "z": 3828.178
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 80.44060000000002,
+      "diagnosticPlacement": true,
+      "screenshot": "house_474649085.png",
+      "perf": {
+        "fps": 3.6131518728169962,
+        "frameTimeMs": 258.60000000009313,
+        "drawCalls": 42,
+        "triangles": 955318,
+        "vertices": 1286982,
+        "activeMeshes": 32
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 2,
+          "cachedTiles": 14,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 23,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 307.99999999953434,
+          "roadCutoutBuildMs": 2015.1000000000931,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.9,
+            "forest": 0,
+            "village": 1,
+            "water": 1,
+            "waterPan": 0.9892705926778445
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 19,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 338,
+          "lastTreeCandidates": 11,
+          "lastVillageCandidates": 156,
+          "maxWaterCandidates": 364,
+          "maxTreeCandidates": 11,
+          "maxVillageCandidates": 156
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 64,
+        "tiers": {
+          "FULL": 0,
+          "REDUCED": 8,
+          "VISUAL": 2,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    },
+    {
+      "name": "house_672017718",
+      "camera": {
+        "position": {
+          "x": 3002.991,
+          "y": 113.86880000000008,
+          "z": 3943.656
+        },
+        "target": {
+          "x": 3002.991,
+          "y": 96.86880000000008,
+          "z": 3955.656
+        },
+        "fovRadians": 0.8,
+        "preset": "diagnostic-free-camera"
+      },
+      "groundY": 88.86880000000008,
+      "diagnosticPlacement": true,
+      "screenshot": "house_672017718.png",
+      "perf": {
+        "fps": 3.0759293151442937,
+        "frameTimeMs": 349.20000000018626,
+        "drawCalls": 45,
+        "triangles": 1112645,
+        "vertices": 1286982,
+        "activeMeshes": 35
+      },
+      "runtime": {
+        "terrain": {
+          "totalTiles": 36,
+          "residentGpuMeshes": 16,
+          "unloadedTiles": 20,
+          "queuedTiles": 0,
+          "loadingTiles": 0,
+          "activeTiles": 4,
+          "cachedTiles": 12,
+          "residentTriangles": 1337340,
+          "retainedCpuHeightSamples": 1454436,
+          "retainedCpuHeightBytesEstimate": 11635488,
+          "residentGpuGeometryBytesEstimate": 43069416,
+          "taskFrames": 22,
+          "taskSteps": 0,
+          "taskOvershootFrames": 0,
+          "lastTaskFrameMs": 0,
+          "maxTaskFrameMs": 0,
+          "initialGeometryBuildMs": 398.19999999785796,
+          "roadCutoutBuildMs": 2047.1999999997206,
+          "roadCutoutRemovedAreaM2": 624217.4992262921,
+          "roadCutoutAddedVertices": 182447,
+          "roadCutoutTriangleDelta": 129217
+        },
+        "queue": {
+          "executedSteps": 0,
+          "completedTasks": 0,
+          "pendingTasks": 0,
+          "spentMs": 0,
+          "overshotBudget": false
+        },
+        "quality": {
+          "id": "HIGH",
+          "renderScale": 1,
+          "shadowMapSize": 1024,
+          "shadowRadiusM": 100,
+          "vegetationRadii": {
+            "arbol": [
+              110,
+              320,
+              900
+            ],
+            "arbusto": [
+              90,
+              250,
+              500
+            ],
+            "hierba": [
+              45,
+              120,
+              220
+            ]
+          }
+        },
+        "audio": {
+          "state": "locked",
+          "nodes": 0,
+          "sources": 0,
+          "enabled": true,
+          "procedural": true,
+          "surface": "ROAD",
+          "ambient": true,
+          "ambientLevels": {
+            "wind": 0.8986264257166805,
+            "forest": 0.002113191205107016,
+            "village": 1,
+            "water": 0.385766905788807,
+            "waterPan": 0.9501748459430374
+          },
+          "impactEvents": 0
+        },
+        "audioEnvironment": {
+          "updates": 18,
+          "waterSegments": 15879,
+          "treeInstances": 24034,
+          "villageFootprints": 330,
+          "lastWaterCandidates": 312,
+          "lastTreeCandidates": 2,
+          "lastVillageCandidates": 135,
+          "maxWaterCandidates": 364,
+          "maxTreeCandidates": 2,
+          "maxVillageCandidates": 135
+        },
+        "effects": {
+          "systems": 1,
+          "activeParticles": 0,
+          "capacity": 96,
+          "emitRate": 0,
+          "emitting": false,
+          "sceneNodeAllocations": 0,
+          "textures": 1,
+          "disposed": false
+        },
+        "textures": 39,
+        "shadowCasters": 10,
+        "renderWidth": 1280,
+        "renderHeight": 720,
+        "surface": {
+          "type": "ROAD",
+          "grip": 1,
+          "lateralGrip": 1,
+          "brakingGrip": 1,
+          "rollingResistance": 0.65,
+          "roughness": 0.08,
+          "dust": 0,
+          "suspensionNoise": 0.08,
+          "wheelAudio": 0.08,
+          "skidAudio": 0.5
+        }
+      },
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "textures": 39,
+      "vehicle": null,
+      "player": null,
+      "npc": {
+        "characters": 10,
+        "meshes": 10,
+        "triangles": 16040,
+        "animations": 18,
+        "animationSamples": 56,
+        "tiers": {
+          "FULL": 3,
+          "REDUCED": 7,
+          "VISUAL": 0,
+          "SLEEP": 0
+        },
+        "routeValidation": {
+          "candidatesPassed": 134,
+          "sampleStepM": 0.25,
+          "rejected": {
+            "road": 62,
+            "building": 36,
+            "wall": 37,
+            "water": 0,
+            "terrain": 1,
+            "anchor": 175,
+            "spacing": 37
+          }
+        }
+      }
+    }
+  ],
+  "errors": []
+}

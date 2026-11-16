@@ -1,0 +1,14 @@
+const port = Number(process.argv[2]);
+const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+const target = list.find(t => t.type === 'page' && t.url.includes('127.0.0.1:'));
+const ws = new WebSocket(target.webSocketDebuggerUrl);
+await new Promise((resolve, reject) => { ws.addEventListener('open', resolve, { once: true }); ws.addEventListener('error', reject, { once: true }); });
+let id = 0;
+const pending = new Map();
+ws.addEventListener('message', ({ data }) => { const m = JSON.parse(data); if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); p(m); } });
+const send = (method, params = {}) => new Promise(resolve => { const i = ++id; pending.set(i, resolve); ws.send(JSON.stringify({ id: i, method, params })); setTimeout(() => { if (pending.has(i)) { pending.delete(i); resolve({ timeout: true }); } }, 15000); });
+await send('Runtime.enable'); await send('Page.enable');
+const state = await send('Runtime.evaluate', { expression: `(()=>({href:location.href,readyState:document.readyState,title:document.title,bodyText:(document.body?.innerText||'').slice(0,500),raf:window.__coldProbe?.raf,hasGame:!!window.__game}))()`, returnByValue: true });
+const shot = await send('Page.captureScreenshot', { format: 'png' });
+console.log(JSON.stringify({ state, screenshot: shot.result?.data?.length, target: target.url }));
+ws.close();

@@ -1,0 +1,10 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:4188",
+  "quality": "HIGH",
+  "durationSeconds": 12,
+  "method": "Free camera (actors/NPC excluded); Real GPU browser rAF intervals after tile settle, fixed scene locations; Windows Chrome via isolated profile",
+  "views": [],
+  "errors": [],
+  "failure": "Error: TypeError: Cannot read properties of undefined (reading 'runtime')\n    at <anonymous>:1:15"
+}

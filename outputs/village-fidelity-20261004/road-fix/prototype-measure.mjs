@@ -1,0 +1,45 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import ts from 'typescript';
+import { pathToFileURL } from 'node:url';
+import { NullEngine } from '@babylonjs/core/Engines/nullEngine.js';
+import { Scene } from '@babylonjs/core/scene.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+const root='outputs/village-fidelity-20261004/road-fix/prototype';
+fs.mkdirSync(root,{recursive:true});
+async function moduleFrom(file,source=fs.readFileSync(file,'utf8')) {
+  const rel=path.relative('src',file).replace(/\.ts$/,'.mjs'), dest=path.join(root,rel);fs.mkdirSync(path.dirname(dest),{recursive:true});
+  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace(/(['"])(@babylonjs\/core\/[^'"]+)\1/g,'$1$2.js$1').replace(/(['"])(\.\.?\/[^'"]+)\1/g,(m,q,r)=>q+r+'.mjs'+q);
+  fs.writeFileSync(dest,code);return import(pathToFileURL(path.resolve(dest)).href+'?v='+Date.now());
+}
+for(const file of ['src/heightfield.ts','src/road-profile.ts','src/road-visuals.ts','src/world/road-surface.ts'])await moduleFrom(file);
+let source=fs.readFileSync('src/road-draping.ts','utf8');
+source=source.replace('  return {\n    meshes,','  return {\n    diagnosticBands: CLASSES.map((cls) => ({ class: cls, ...typed[cls] })),\n    meshes,');
+const old=`    const nearby=planes.map(p=>{const distance=Math.hypot(g.x-p.x,g.z-p.z),approach=12;
+      const weight=distance<=p.radius?1:distance<p.radius+approach?.5*(1+Math.cos(Math.PI*(distance-p.radius)/approach)):0;
+      return {p,weight};}).filter(p=>p.weight>0);
+    if(!nearby.length)continue;
+    const weight=nearby.reduce((sum,p)=>sum+p.weight,0),blend=Math.max(...nearby.map(p=>p.weight));
+    const b=buffers[cls];
+    for(const v of g.vertices){const index=v*3+1,px=b.positions[v*3]!,pz=b.positions[v*3+2]!;
+      const target=nearby.reduce((sum,{p,weight})=>sum+(p.y+p.gx*(px-p.x)+p.gz*(pz-p.z))*weight,0)/weight+(b.roles[v]===4?.025:0);
+      b.positions[index]=original[cls][index]!*(1-blend)+target*blend;
+    }`;
+const replacement=`    const reach=Math.max(g.width*.5,0), candidates=planes.filter(p=>Math.hypot(g.x-p.x,g.z-p.z)<p.radius+12+reach);
+    if(!candidates.length)continue;
+    const b=buffers[cls];
+    for(const v of g.vertices){const index=v*3+1,px=b.positions[v*3]!,pz=b.positions[v*3+2]!;
+      const nearby=candidates.map(p=>{const distance=Math.hypot(px-p.x,pz-p.z),approach=12;const weight=distance<=p.radius?1:distance<p.radius+approach?.5*(1+Math.cos(Math.PI*(distance-p.radius)/approach)):0;return {p,weight};}).filter(item=>item.weight>0);
+      if(!nearby.length)continue;
+      const weight=nearby.reduce((sum,item)=>sum+item.weight,0),blend=Math.max(...nearby.map(item=>item.weight));
+      const target=nearby.reduce((sum,{p,weight})=>sum+(p.y+p.gx*(px-p.x)+p.gz*(pz-p.z))*weight,0)/weight+(b.roles[v]===4?.025:0);
+      b.positions[index]=original[cls][index]!*(1-blend)+target*blend;
+    }`;
+if(!source.includes(old))throw Error('reconcile block not found'); source=source.replace(old,replacement);
+const {loadRoadNetwork}=await moduleFrom('src/road-draping.ts',source);
+const {createHeightfield}=await moduleFrom('src/heightfield.ts');const config=JSON.parse(fs.readFileSync('public/terrain/config.json','utf8'));
+const tiles=config.tiles.map(tile=>createHeightfield(JSON.parse(fs.readFileSync('public'+tile.url,'utf8')).grid,config.worldScale));
+const terrain={heightAt(x,z){x=Math.max(0,Math.min(6000,x));z=Math.max(0,Math.min(6000,z));const tile=tiles.find(t=>x>=t.grid.x0&&z>=t.grid.z0&&x<=t.grid.x0+1000&&z<=t.grid.z0+1000);if(!tile)throw Error(`missing MDT ${x},${z}`);return tile.heightAt(x,z)-config.verticalDatum;},normalAt(x,z,out){const e=.1;return(out??new Vector3()).set(-(this.heightAt(x+e,z)-this.heightAt(x-e,z))/(2*e),1,-(this.heightAt(x,z+e)-this.heightAt(x,z-e))/(2*e)).normalize();}};
+const roads=JSON.parse(fs.readFileSync('public/roads/roads.json','utf8')).roads,engine=new NullEngine(),scene=new Scene(engine),network=await loadRoadNetwork(scene,terrain,{fetchImpl:async()=>({ok:true,json:async()=>({roads})})});
+function stats(band){const rows=[];for(let i=0;i<band.indices.length;i+=3){const [a,b,c]=[band.indices[i],band.indices[i+1],band.indices[i+2]];if([a,b,c].some(v=>band.roles[v]!==0))continue;const p=band.positions,ax=p[a*3],ay=p[a*3+1],az=p[a*3+2],bx=p[b*3],by=p[b*3+1],bz=p[b*3+2],cx=p[c*3],cy=p[c*3+1],cz=p[c*3+2],nx=(by-ay)*(cz-az)-(bz-az)*(cy-ay),ny=(bz-az)*(cx-ax)-(bx-ax)*(cz-az),nz=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax),horizontal=Math.hypot(nx,nz),grade=horizontal/Math.max(1e-12,Math.abs(ny));if(Number.isFinite(grade))rows.push({grade,center:[(ax+bx+cx)/3,(az+bz+cz)/3],triangle:i/3});}rows.sort((a,b)=>a.grade-b.grade);const at=p=>rows[Math.min(rows.length-1,Math.floor((rows.length-1)*p))]?.grade;return{count:rows.length,p50:at(.5),p95:at(.95),p99:at(.99),max:rows.at(-1),top10:rows.slice(-10).reverse()};}
+const result=Object.fromEntries(network.diagnosticBands.map(b=>[b.class,stats(b)]));console.log(JSON.stringify(result,null,2));fs.writeFileSync('outputs/village-fidelity-20261004/road-fix/prototype-rendered-triangle-metrics.json',JSON.stringify(result,null,2));network.dispose();engine.dispose();
